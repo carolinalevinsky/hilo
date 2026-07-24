@@ -12,6 +12,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hilo · Copiloto para terapias infantiles</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236c5ce7'/%3E%3Crect x='9' y='10.5' width='14' height='2.6' rx='1.3' fill='white'/%3E%3Crect x='9' y='15.4' width='14' height='2.6' rx='1.3' fill='white'/%3E%3Crect x='9' y='20.3' width='9.5' height='2.6' rx='1.3' fill='white'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -48,8 +49,8 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .side .who{background:rgba(255,255,255,.12);border-radius:14px;padding:12px 13px;font-size:12.5px;line-height:1.5}
 .side .who b{color:#fff}
 /* main */
-.main{padding:26px 32px 70px;overflow:auto}
-@media(max-width:760px){.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:5px;padding:12px}.side .brand{width:100%;margin-bottom:6px}.side .who,.side .sp{display:none}.nav{padding:8px 11px;font-size:13px}.main{padding:18px 15px 60px}.topbar h1{font-size:21px}}
+.main{padding:44px 34px 70px;overflow:auto}
+@media(max-width:760px){.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:5px;padding:12px}.side .brand{width:100%;margin-bottom:6px}.side .who,.side .sp{display:none}.nav{padding:8px 11px;font-size:13px}.main{padding:26px 16px 60px}.topbar h1{font-size:21px}}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .topbar h1{margin:0;font-size:25px;letter-spacing:-.6px}
 .topbar .sub{color:var(--muted);font-size:13.5px;margin-top:3px}
@@ -69,11 +70,15 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 13px;min-width:230px}
 .search input{border:0;outline:0;font:inherit;width:100%;background:none}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;color:#3a4256;transition:.15s}
-.btn .ico{flex:0 0 auto}
+.btn .ico,.seg button .ico{flex:0 0 auto}
+.btn .ic,.seg button .ic{display:inline-flex;align-items:center;justify-content:center}
 .btn:hover{border-color:#d4d8e6}
 .btn.primary{background:var(--violet);color:#fff;border-color:var(--violet);box-shadow:0 4px 12px rgba(108,92,231,.20)}
 .btn.primary:hover{filter:brightness(1.07)}
 .btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.btn.rec{background:var(--coral-s);color:var(--coral);border-color:transparent}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;flex:0 0 auto;transition:.13s}
+.iconbtn:hover{border-color:#c8ccdd;color:#3a4256}
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
 @media(max-width:820px){.kpis{grid-template-columns:1fr 1fr}}
@@ -86,6 +91,10 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .homecounts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;max-width:440px}
 .obstep{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
 .obn{width:26px;height:26px;border-radius:50%;background:var(--violet);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.obstep2{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+.obstep2:first-of-type{border-top:0}
+.obcheck{width:28px;height:28px;border-radius:50%;background:var(--violet-s);color:var(--violet);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.obstep2.done .obcheck{background:var(--green-s);color:var(--green)}
 @media(max-width:820px){.homecounts{max-width:none}}
 .hoycard{border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;background:#fff}
 .hoyhead{display:flex;align-items:center;gap:12px}
@@ -209,6 +218,11 @@ textarea.f{resize:vertical;min-height:66px}
 .msg.ai{align-self:flex-start;background:#f4f4fb;color:#2f3348;border-radius:5px 16px 16px 16px;display:flex;gap:10px}
 .msg.me{align-self:flex-end;background:var(--violet);color:#fff;border-radius:16px 16px 5px 16px}
 .msg .av2{width:26px;height:26px;border-radius:50%;background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px}
+.chatlog.welc{justify-content:center;align-items:center;text-align:center}
+.chatwelc{max-width:460px;padding:20px}
+.chatwelc-ic{width:60px;height:60px;border-radius:18px;background:var(--violet-s);color:var(--violet);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.chatwelc-t{font-size:20px;font-weight:800;letter-spacing:-.3px;color:#20293a}
+.chatwelc-s{color:var(--muted);font-size:14px;line-height:1.55;margin-top:8px}
 /* doc */
 .doc{padding:26px 28px;font-family:Georgia,serif;color:#20293a;border:1px solid var(--line);border-radius:12px;background:#fff}
 .doc h2{font-size:18px;text-align:center;margin:0 0 2px}
@@ -234,10 +248,10 @@ textarea.f{resize:vertical;min-height:66px}
     <div id="authErr" style="display:none;background:var(--coral-s);color:#c0392b;border-radius:11px;padding:10px 13px;font-size:12.5px;margin-bottom:14px;line-height:1.4"></div>
     <!-- REGISTRO -->
     <div id="authReg">
-      <label>Nombre y apellido</label><input class="f" id="au_nombre" placeholder="Ej: Maite Rodríguez" autocomplete="name">
+      <label>Nombre y apellido</label><input class="f" id="au_nombre" placeholder="Nombre y apellido" autocomplete="name">
       <label>Email</label><input class="f" id="au_email" type="email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
-      <div style="position:relative"><input class="f" id="au_pass" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" style="padding-right:62px" oninput="passHint()"><button type="button" onclick="togglePass('au_pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--violet);font-weight:700;font-size:12px;cursor:pointer;padding:4px">Ver</button></div>
+      <div style="position:relative"><input class="f" id="au_pass" type="password" placeholder="Contraseña" autocomplete="new-password" style="padding-right:46px" oninput="passHint()"><button type="button" aria-label="Mostrar contraseña" onclick="togglePass('au_pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span class="ic" data-ic="eye" data-sz="19"></span></button></div>
       <div class="hint" id="au_passHint" style="margin-top:6px">Usá al menos 6 caracteres.</div>
       <label>Tu profesión</label><select class="f" id="au_prof"></select>
       <button class="btn primary" id="au_btn" style="width:100%;margin-top:20px;padding:13px" onclick="registrar()">Crear cuenta</button>
@@ -246,7 +260,7 @@ textarea.f{resize:vertical;min-height:66px}
     <div id="authLog" style="display:none">
       <label>Email</label><input class="f" id="al_email" type="email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
-      <div style="position:relative"><input class="f" id="al_pass" type="password" placeholder="Tu contraseña" autocomplete="current-password" style="padding-right:62px" onkeydown="if(event.key==='Enter')ingresar()"><button type="button" onclick="togglePass('al_pass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--violet);font-weight:700;font-size:12px;cursor:pointer;padding:4px">Ver</button></div>
+      <div style="position:relative"><input class="f" id="al_pass" type="password" placeholder="Tu contraseña" autocomplete="current-password" style="padding-right:46px" onkeydown="if(event.key==='Enter')ingresar()"><button type="button" aria-label="Mostrar contraseña" onclick="togglePass('al_pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span class="ic" data-ic="eye" data-sz="19"></span></button></div>
       <button class="btn primary" id="al_btn" style="width:100%;margin-top:20px;padding:13px" onclick="ingresar()">Entrar</button>
     </div>
     <div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px">Tus datos están protegidos y encriptados.</div>
@@ -275,6 +289,7 @@ textarea.f{resize:vertical;min-height:66px}
         <div><h1 id="dashHola">¡Hola! 👋</h1><div class="sub" id="dashSub">Esto es lo que tenés hoy. Empezá por acá.</div></div>
         <button class="btn primary" onclick="openNuevo()" style="display:inline-flex;align-items:center;gap:7px"><span class="ic" data-ic="useradd" data-sz="18"></span> Nuevo paciente</button>
       </div>
+      <div id="onbBox"></div>
       <div class="homecounts" id="homecounts"></div>
       <div class="card" id="hoyCard"><div class="hd"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic" data-ic="calendar" data-sz="18"></span>Hoy</span> <span class="hint" id="hoyN"></span></div><div class="bd" id="hoy" style="padding-top:14px"></div></div>
       <div class="card"><div class="hd"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic" data-ic="chat" data-sz="18"></span>Preguntale a Hilo</span> <span class="hint">sobre cualquier paciente o tu práctica</span></div><div class="bd" style="padding:8px 18px 18px">
@@ -290,7 +305,7 @@ textarea.f{resize:vertical;min-height:66px}
     <!-- PACIENTES -->
     <section data-view="pac" style="display:none">
       <div class="topbar">
-        <div><h1>Pacientes</h1><div class="sub">Cada ficha se carga una vez. Después, todo sale de acá.</div></div>
+        <div><h1>Pacientes</h1><div class="sub">Todos tus pacientes en un solo lugar.</div></div>
         <div style="display:flex;gap:10px">
           <div class="search"><span class="ic" data-ic="search" data-sz="16"></span> <input id="q" placeholder="Buscar..." oninput="renderPac()"></div>
           <button class="btn primary" onclick="openNuevo()">+ Nuevo</button>
@@ -307,14 +322,14 @@ textarea.f{resize:vertical;min-height:66px}
 
     <!-- AGENDA -->
     <section data-view="age" style="display:none">
-      <div class="topbar"><div><h1>Agenda de la semana</h1><div class="sub">Tus sesiones. Desde acá registrás cada una en dos toques.</div></div>
+      <div class="topbar"><div><h1>Agenda</h1><div class="sub">Tu semana de sesiones.</div></div>
         <button class="btn primary" onclick="openAgendar()"><span class="ic" data-ic="add" data-sz="17"></span> Agendar sesión</button></div>
       <div id="agenda"></div>
     </section>
 
     <!-- INFORMES Y EVALUACIONES -->
     <section data-view="docs" style="display:none">
-      <div class="topbar"><div><h1>Informes y evaluaciones</h1><div class="sub">Todo queda linkeado al paciente: elegís para quién y Hilo lo arma con lo que ya sabe.</div></div>
+      <div class="topbar"><div><h1>Informes y evaluaciones</h1><div class="sub">Vinculados a cada paciente y disponibles en su ficha.</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" onclick="openEval()"><span class="ic" data-ic="pie" data-sz="17"></span> Nueva evaluación</button>
           <button class="btn primary" onclick="openInforme()"><span class="ic" data-ic="file" data-sz="17"></span> Generar informe</button>
@@ -325,20 +340,23 @@ textarea.f{resize:vertical;min-height:66px}
     <!-- PLANIFICACIÓN -->
     <section data-view="plani" style="display:none">
       <div class="topbar"><div><h1>Planificación</h1><div class="sub">Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar.</div></div></div>
-      <div class="seg" id="planiTabs" style="margin-bottom:18px;max-width:440px">
-        <button class="on" data-t="mat" onclick="planiTab('mat')"><span class="ic" data-ic="book" data-sz="17"></span> Materiales</button>
-        <button data-t="ses" onclick="planiTab('ses')"><span class="ic" data-ic="clipboard" data-sz="17"></span> Planificar sesión</button>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+        <div class="seg" id="planiTabs" style="max-width:420px;flex:0 0 auto">
+          <button class="on" data-t="mat" onclick="planiTab('mat')"><span class="ic" data-ic="book" data-sz="17"></span> Materiales</button>
+          <button data-t="ses" onclick="planiTab('ses')"><span class="ic" data-ic="clipboard" data-sz="17"></span> Planificar sesión</button>
+        </div>
+        <div id="planiActions" style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" onclick="openPub()"><span class="ic" data-ic="share" data-sz="16"></span> Publicar material</button>
+          <button class="btn primary" onclick="openGen()"><span class="ic" data-ic="shine" data-sz="16"></span> Generar con IA</button>
+        </div>
       </div>
-      <div id="planiMat">
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap"><button class="btn" onclick="openPub()"><span class="ic" data-ic="share" data-sz="16"></span> Publicar material</button><button class="btn primary" onclick="openGen()"><span class="ic" data-ic="shine" data-sz="16"></span> Generar con IA</button></div>
-        <div id="matBox"></div>
-      </div>
+      <div id="planiMat"><div id="matBox"></div></div>
       <div id="planiSes" style="display:none"></div>
     </section>
 
     <!-- COBROS -->
     <section data-view="cob" style="display:none">
-      <div class="topbar"><div><h1>Cobros</h1><div class="sub">Cuánto te paga cada paciente y quién está al día.</div></div></div>
+      <div class="topbar"><div><h1>Cobros</h1><div class="sub">Honorarios y estado de pago de cada paciente.</div></div></div>
       <div id="cobBox"></div>
     </section>
 
@@ -352,7 +370,7 @@ textarea.f{resize:vertical;min-height:66px}
 
     <!-- CHAT -->
     <section data-view="chat" style="display:none">
-      <div class="topbar"><div><h1>Chat con Hilo</h1><div class="sub">Preguntale lo que quieras sobre tus pacientes o tu práctica.</div></div></div>
+      <div class="topbar"><div><h1>Chat con Hilo</h1><div class="sub">Consultá sobre tus pacientes o tu práctica.</div></div></div>
       <div class="chatwrap">
         <div id="chatLog" class="chatlog"></div>
         <div class="chatquick" id="chatQuick"></div>
@@ -373,9 +391,8 @@ textarea.f{resize:vertical;min-height:66px}
 
 <!-- MODALS -->
 <div class="ov" id="ovNuevo"><div class="modal"><div class="mh">Nuevo paciente <button class="x" onclick="cls('ovNuevo')">×</button></div><div class="mb">
-  <div class="banner">Esto se carga una sola vez. Después no volvés a escribir estos datos.</div>
   <div class="row"><div><label>Nombre</label><input class="f" id="n_nombre" placeholder="Nombre y apellido"></div><div><label>Edad</label><input class="f" id="n_edad" type="number" min="0" inputmode="numeric" placeholder="años"></div></div>
-  <div class="row"><div><label>Escolaridad</label><input class="f" id="n_esc" placeholder="Grado o año"></div><div><label>Colegio / escuela</label><input class="f" id="n_col" placeholder="Nombre del colegio"></div></div>
+  <div class="row"><div><label>Colegio / escuela <span class="hint">· opcional</span></label><input class="f" id="n_col" placeholder="Nombre del colegio"></div><div><label>Mutualista <span class="hint">· opcional</span></label><input class="f" id="n_mut" placeholder="Mutualista o particular"></div></div>
   <label>Motivo de consulta</label><textarea class="f" id="n_motivo" placeholder="¿Por qué llega a la consulta?"></textarea>
   <label>Objetivos iniciales <span class="hint">· uno por línea</span></label><textarea class="f" id="n_obj" placeholder="Producción del fonema /r/&#10;Ampliación de vocabulario"></textarea>
   <div class="nsub">Sesiones</div>
@@ -385,31 +402,29 @@ textarea.f{resize:vertical;min-height:66px}
     <div><label>Hora</label><input class="f" id="n_shora" type="time"></div>
   </div>
   <div class="nsub">Cobro</div>
-  <div class="row"><div><label>Mutualista</label><input class="f" id="n_mut" placeholder="Mutualista o particular"></div><div><label>Cuánto cobrás ($)</label><input class="f" id="n_fee" type="number" min="0" inputmode="numeric" placeholder="monto"></div></div>
-  <label>Cada cuánto paga</label><select class="f" id="n_freq"><option value="sesion">Por sesión</option><option value="semanal">Por semana</option><option value="quincenal">Por quincena</option><option value="mensual">Por mes</option></select>
-  <button class="btn primary" style="width:100%;margin-top:18px" onclick="crearPaciente()"><span class="ic" data-ic="useradd" data-sz="16"></span> Crear ficha</button>
+  <div class="row"><div><label>Honorario ($)</label><input class="f" id="n_fee" type="number" min="0" inputmode="numeric" placeholder="Monto"></div><div><label>Frecuencia de pago</label><select class="f" id="n_freq"><option value="sesion">Por sesión</option><option value="semanal">Por semana</option><option value="quincenal">Por quincena</option><option value="mensual">Por mes</option></select></div></div>
+  <button class="btn primary" style="width:100%;margin-top:18px" onclick="crearPaciente()"><span class="ic" data-ic="useradd" data-sz="16"></span> Crear paciente</button>
 </div></div></div>
 
 <div class="ov" id="ovPerfil"><div class="modal"><div class="mh">Tu perfil profesional <button class="x" onclick="cls('ovPerfil')">×</button></div><div class="mb">
-  <div class="banner v">Esto normalmente lo elegís al crear tu cuenta. Tu profesión define qué secciones, tests y materiales ves. Es tuya, no de cada paciente.</div>
+  <div class="banner">Tu profesión define las secciones, los tests y los materiales disponibles.</div>
   <label>Nombre</label><input class="f" id="pf_nombre" placeholder="Nombre y apellido">
   <label>Tu profesión</label><select class="f" id="pf_prof"></select>
   <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarPerfil()">Guardar perfil</button>
 </div></div></div>
 
 <div class="ov" id="ovSesion"><div class="modal"><div class="mh">Registrar sesión <button class="x" onclick="cls('ovSesion')">×</button></div><div class="mb">
-  <div class="banner t">Dos toques al terminar. Esto alimenta la memoria y los informes.</div>
-  <label>Objetivos trabajados hoy</label><div id="s_objs"></div>
-  <label>¿Cómo salió? <span class="hint">· escribí o dictá por voz</span></label>
+  <label>Objetivos trabajados</label><div id="s_objs"></div>
+  <label>Evolución de la sesión <span class="hint">· escribí o dictá por voz</span></label>
   <div style="display:flex;gap:8px;align-items:stretch"><textarea class="f" id="s_evo" style="flex:1" placeholder="Logró la /r/ en posición inicial, muy conectado."></textarea><button class="btn" style="white-space:nowrap;align-self:flex-start" onclick="dictar('s_evo',this)"><span class="ic" data-ic="mic" data-sz="15"></span> Dictar</button></div>
-  <label>Nota rápida <span class="hint">· opcional</span></label><input class="f" id="s_nota" placeholder="La mamá cuenta que practicó en casa.">
+  <label>Observaciones <span class="hint">· opcional</span></label><input class="f" id="s_nota" placeholder="Anotación adicional">
   <label style="display:flex;gap:8px;align-items:center;font-weight:400;margin-top:12px"><input type="checkbox" id="s_evid" style="width:auto"> Adjunté evidencia (audio o foto de la sesión)</label>
   <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarSesion()">Guardar sesión</button>
 </div></div></div>
 
 <div class="ov" id="ovInforme"><div class="modal" style="max-width:660px"><div class="mh">Generar informe <button class="x" onclick="cls('ovInforme')">×</button></div><div class="mb">
   <div id="infPick">
-    <div class="banner v">Hilo lo arma solo con todo lo que ya sabe. Vos elegís el paciente y para quién es.</div>
+    <div class="banner">Hilo genera el borrador desde la ficha del paciente. Elegí el paciente y el destinatario.</div>
     <label>Paciente</label><select class="f" id="inf_pac"></select>
     <label>¿Para quién es?</label>
     <div class="seg" id="destSeg"><button data-v="colegio" class="on">Colegio</button><button data-v="familia">Familia</button><button data-v="mutualista">Mutualista</button><button data-v="adecuacion">Adecuación ANEP</button></div>
@@ -428,7 +443,7 @@ textarea.f{resize:vertical;min-height:66px}
 
 <div class="ov" id="ovEval"><div class="modal" style="max-width:680px"><div class="mh">Nueva evaluación <button class="x" onclick="cls('ovEval')">×</button></div><div class="mb">
   <div id="evPick">
-    <div class="banner t">Cargá los resultados. Hilo sabe de qué prueba se trata y te arma el borrador del análisis. Vos lo corregís y lo firmás.</div>
+    <div class="banner">Cargá los resultados. Hilo genera un borrador del análisis para que lo revises y firmes.</div>
     <div class="row"><div><label>Paciente</label><select class="f" id="ev_pac"></select></div>
       <div><label>Prueba aplicada</label><select class="f" id="ev_test" onchange="renderEvalFields()">
         <option>WISC-V (inteligencia)</option><option>WPPSI-IV</option><option>Bender (viso-motor)</option>
@@ -498,9 +513,9 @@ textarea.f{resize:vertical;min-height:66px}
   <div class="row3" style="margin-top:4px">
     <div><label>Día</label><select class="f" id="ag_dia"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
     <div><label>Hora</label><input class="f" id="ag_hora" type="time" value="09:00"></div>
-    <div><label>Repite</label><select class="f" id="ag_tipo"><option value="semanal">Cada semana</option><option value="unica">Solo esta vez</option></select></div>
+    <div><label>Repite</label><select class="f" id="ag_tipo"><option value="semanal">Cada semana</option><option value="quincenal">Cada dos semanas</option><option value="mensual">Una vez al mes</option><option value="unica">Solo esta vez</option></select></div>
   </div>
-  <div class="hint" style="margin-top:8px">Las sesiones que se repiten se guardan como el horario fijo del paciente y aparecen todas las semanas.</div>
+  <div class="hint" style="margin-top:8px">El horario queda fijo en la ficha del paciente y aparece en tu semana.</div>
   <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarAgendar()">Agendar</button>
 </div></div></div>
 
@@ -584,7 +599,11 @@ const ICONS={
  mic:'<path d="M12 15C13.66 15 15 13.66 15 12V6C15 4.34 13.66 3 12 3C10.34 3 9 4.34 9 6V12C9 13.66 10.34 15 12 15ZM5 11V12C5 15.87 8.13 19 12 19C15.87 19 19 15.87 19 12V11M12 19V22"/>',
  download:'<path d="M12 3V15M12 15L8 11M12 15L16 11M5 17V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V17"/>',
  clipboard:'<path d="M9 4H7C5.9 4 5 4.9 5 6V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V6C19 4.9 18.1 4 17 4H15M9 4C9 5.1 9.9 6 11 6H13C14.1 6 15 5.1 15 4M9 4C9 2.9 9.9 2 11 2H13C14.1 2 15 2.9 15 4M9 12H15M9 16H13"/>',
- sparkles2:'<path d="M12 3C12 7.97 7.97 12 3 12C7.97 12 12 16.03 12 21C12 16.03 16.03 12 21 12C16.03 12 12 7.97 12 3Z"/>'
+ sparkles2:'<path d="M12 3C12 7.97 7.97 12 3 12C7.97 12 12 16.03 12 21C12 16.03 16.03 12 21 12C16.03 12 12 7.97 12 3Z"/>',
+ dots:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+ edit:'<path d="M4 20H8L18.5 9.5C19.33 8.67 19.33 7.33 18.5 6.5C17.67 5.67 16.33 5.67 15.5 6.5L5 17V20M13.5 8.5L16.5 11.5"/>',
+ eye:'<path d="M2 12C2 12 5.6 5.5 12 5.5C18.4 5.5 22 12 22 12C22 12 18.4 18.5 12 18.5C5.6 18.5 2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+ eyeoff:'<path d="M3 3L21 21M10.6 10.7C10.2 11.1 10 11.5 10 12C10 13.1 10.9 14 12 14C12.5 14 13 13.8 13.4 13.4M9.4 5.2C10.2 5 11 4.9 12 4.9C18.4 4.9 22 12 22 12C21.4 13.1 20.7 14.1 19.9 15M6.1 6.2C3.8 7.7 2 12 2 12C2 12 5.6 18.5 12 18.5C13.7 18.5 15.2 18.1 16.4 17.4"/>'
 };
 function ic(n,s){s=s||18;return ICONS[n]?`<svg class="ico" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`:'';}
 function paintIcons(root){(root||document).querySelectorAll('[data-ic]').forEach(el=>{el.innerHTML=ic(el.dataset.ic,el.dataset.sz?+el.dataset.sz:18);});}
@@ -618,17 +637,27 @@ function sugeActividad(t){
   const bank={'/r/':'praxias linguales y repetición de la /r/ en palabras cortas','articul':'praxias y producción del fonema en sílaba, palabra y frase','vocabul':'lotería de imágenes por campo semántico','oracion':'armar frases con apoyo visual','fonológ':'segmentar y unir sonidos con palmas','lector':'lectura repetida de un texto breve','fluid':'lectura cronometrada de listas de palabras','atenci':'tareas cortas de 10 minutos con pausa activa','pinza':'circuito de pinza: encastre, ensartado y pinzas','sensor':'circuito sensorial breve y dieta sensorial','regula':'estrategias de autorregulación (respiración, rincón de la calma)','coordin':'circuito de coordinación óculo-manual y bilateral','avd':'práctica guiada de la actividad de la vida diaria','expres':'juego de descripción de láminas','enunci':'ampliar frases sumando una palabra','cálcul':'cálculo mental con material concreto','concien':'rimas y juegos con sonidos','escrit':'copia guiada respetando el renglón','problem':'resolver problemas cortos subrayando los datos','memor':'juegos de recordar secuencias','lengua':'juego oral ampliando cada respuesta','soplo':'juegos de soplo graduados con sorbete y burbujas','voz':'ejercicios de proyección y cuidado de la voz','ansied':'respiración de la caja y registro de disparadores','emocion':'termómetro emocional y diario de emociones','social':'role-play de situaciones y semáforo social','sueño':'pauta de higiene del sueño','equilib':'circuito de equilibrio estático y dinámico','esquema':'juego de reconocimiento del propio cuerpo','lateral':'juegos de derecha/izquierda y orientación espacial','rango':'movilidad articular progresiva','elong':'elongación sostenida de la cadena trabajada','fuerza':'fortalecimiento con progresión de carga','marcha':'reeducación de la marcha con apoyos','propio':'ejercicios propioceptivos sobre superficie inestable','dolor':'dosificar la carga y pautas para casa'};
   const k=Object.keys(bank).find(k=>t.toLowerCase().includes(k));return k?bank[k]:'actividades graduadas centradas en ese objetivo';
 }
-function onboardingHTML(){
-  const nom=esc(first(perfil.nombre||''));
-  return `<div class="card"><div class="bd" style="padding:22px 22px 24px">
-    <div class="hint" style="margin-bottom:18px">Cargá tu primer paciente y Hilo empieza a armarte la agenda, los informes y las evaluaciones. Se hace una sola vez por paciente.</div>
-    <div class="obstep"><div class="obn">1</div><div><b>Cargá tu primer paciente</b><div class="hint">Nombre, edad y motivo de consulta.</div></div></div>
-    <div class="obstep"><div class="obn">2</div><div><b>Registrá una sesión o una evaluación</b><div class="hint">Desde la ficha del paciente. Ahí Hilo arranca el seguimiento.</div></div></div>
-    <div class="obstep"><div class="obn">3</div><div><b>Generá un informe o un material con IA</b><div class="hint">Con lo que cargaste, Hilo te escribe el borrador.</div></div></div>
-    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn primary" style="display:inline-flex;align-items:center;gap:7px" onclick="openNuevo()">${ic('useradd',18)} Cargar mi primer paciente</button>
-      <button class="btn" onclick="goto('mat')">Explorar materiales</button>
+function onbSteps(){
+  const hasPac=patients.length>0;
+  const hasSes=patients.some(p=>p.ses&&p.ses.length);
+  const hasInf=patients.some(p=>(p.informes&&p.informes.length)||(p.evals&&p.evals.length));
+  return {hasPac,hasSes,hasInf,done:hasPac&&hasSes&&hasInf,count:[hasPac,hasSes,hasInf].filter(Boolean).length};
+}
+function onbCard(){
+  const s=onbSteps();
+  const step=(ok,n,titulo,desc,btn)=>`<div class="obstep2${ok?' done':''}">
+    <div class="obcheck">${ok?ic('check',16):n}</div>
+    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14.5px;${ok?'color:var(--muted);text-decoration:line-through':''}">${titulo}</div>${ok?'':`<div class="hint" style="margin-top:2px">${desc}</div>`}</div>
+    ${ok||!btn?'':btn}
+  </div>`;
+  return `<div class="card"><div class="bd" style="padding:18px 22px 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px">
+      <div style="font-size:16px;font-weight:800">Primeros pasos</div>
+      <span class="hint">${[s.hasPac,s.hasSes].filter(Boolean).length} de 2</span>
     </div>
+    <div class="hint" style="margin-bottom:12px">Dos pasos para empezar a usar Hilo.</div>
+    ${step(s.hasPac,1,'Cargá tu primer paciente','Nombre, edad y motivo. Se hace una sola vez.',`<button class="btn sm primary" onclick="openNuevo()">Cargar paciente</button>`)}
+    ${step(s.hasSes,2,'Registrá tu primera sesión','Desde la ficha del paciente empieza el seguimiento.',s.hasPac?`<button class="btn sm" onclick="goto('pac')">Ir a pacientes</button>`:'')}
   </div></div>`;
 }
 function renderDash(){
@@ -636,22 +665,25 @@ function renderDash(){
   const ao=$('askOut');if(ao)ao.innerHTML='';
   const nom=first(perfil.nombre||'');
   const hola=$('dashHola');if(hola)hola.innerHTML='¡Hola'+(nom?', '+esc(nom):'')+'! 👋';
-  const hc=$('homecounts'),hcard=$('hoyCard');
+  const hc=$('homecounts'),hcard=$('hoyCard'),onb=$('onbBox');
+  const st=onbSteps();
+  const showOnb=!st.hasSes; /* solo mientras no registraste tu primera sesión */
+  if(onb)onb.innerHTML=showOnb?onbCard():'';
   if(!patients.length){
-    if(hola)hola.innerHTML='Bienvenida a Hilo'+(nom?', '+esc(nom):'')+' '+ic('shine',20);
-    const sub=$('dashSub');if(sub)sub.textContent='Tu cuenta está vacía. Arranquemos en 3 pasos.';
-    if(hc){hc.style.display='block';hc.innerHTML=onboardingHTML();}
+    if(hola)hola.innerHTML='Bienvenida a Hilo'+(nom?', '+esc(nom):'');
+    const sub=$('dashSub');if(sub)sub.textContent='Empezá con estos dos pasos.';
+    if(hc){hc.style.display='none';hc.innerHTML='';}
     if(hcard)hcard.style.display='none';
     return;
   }
   if(hc)hc.style.display='grid';
   if(hcard)hcard.style.display='';
-  const sub=$('dashSub');if(sub)sub.textContent='Esto es lo que tenés hoy. Empezá por acá.';
+  const sub=$('dashSub');if(sub)sub.textContent='Esto es lo que tenés hoy.';
   $('homecounts').innerHTML=`
     <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('group',23)}</div><div class="n">${patients.length}</div><div class="l">Pacientes activos</div></div>
     <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('calendar',23)}</div><div class="n">${agendaHoy.length}</div><div class="l">Sesiones hoy</div></div>`;
   $('hoyN').textContent=`· ${agendaHoy.length} sesiones`;
-  $('hoy').innerHTML=agendaHoy.map(s=>{const p=P(s.id);const o=[...p.obj].sort((a,b)=>a.p-b.p)[0]||{t:'—',p:0};const last=p.ses[0];
+  $('hoy').innerHTML=agendaHoy.map(s=>{const p=P(s.id);if(!p)return '';const o=[...p.obj].sort((a,b)=>a.p-b.p)[0]||{t:'—',p:0};const last=p.ses[0];
     const al=[];const slow=p.obj.find(ob=>ob.p<45);if(slow)al.push({ic:ic('warning',13),t:`${esc(slow.t)} viene lento`,bg:'var(--amber-s)',fg:'#8a5a00'});
     if(!p.pago&&Number(p.fee)>0)al.push({ic:ic('wallet',13),t:'pago pendiente',bg:'var(--coral-s)',fg:'#c0392b'});
     return `<div class="hoycard">
@@ -845,8 +877,8 @@ function guardarAgendar(){
   const p=P(+$('ag_pac').value);if(!p)return;
   const dia=$('ag_dia').value,hora=$('ag_hora').value,tipo=$('ag_tipo').value;
   if(!hora){alert('Elegí una hora.');return;}
-  if(tipo==='semanal')p.sesCfg={freq:'semanal',dia,hora};
-  else{p.extraSes=p.extraSes||[];p.extraSes.push({dia,hora});}
+  if(tipo==='unica'){p.extraSes=p.extraSes||[];p.extraSes.push({dia,hora});}
+  else{p.sesCfg={freq:tipo,dia,hora};}
   savePatient(p);
   if(REAL)rebuildAgenda();else{(semana[dia]=semana[dia]||[]).push({h:hora,id:p.id});semana[dia].sort((a,b)=>a.h.localeCompare(b.h));}
   cls('ovAgendar');goto('age');
@@ -874,7 +906,7 @@ function renderAgenda(){
     rows+=`<div class="tcell">${h}:00</div>`;
     dias.forEach(d=>{
       const evs=(semana[d]||[]).filter(s=>s.h.slice(0,2)===h);
-      rows+=`<div class="cell">${evs.map(s=>{const p=P(s.id);const pl=plan[planKey(d,s)];const done=pl&&pl.done?'✓ ':'';return `<div class="ev" style="background:${p.c};${pl&&pl.done?'opacity:.6':''}" onclick="abrir(${p.id})">${done}${s.h} · ${esc(first(p.nombre))}<br><span style="font-weight:400;opacity:.92">${esc(p.edad)}</span></div>`;}).join('')}</div>`;
+      rows+=`<div class="cell">${evs.map(s=>{const p=P(s.id);if(!p)return '';const pl=plan[planKey(d,s)];const done=pl&&pl.done?'✓ ':'';return `<div class="ev" style="background:${p.c};${pl&&pl.done?'opacity:.6':''}" onclick="abrir(${p.id})">${done}${s.h} · ${esc(first(p.nombre))}<br><span style="font-weight:400;opacity:.92">${esc(p.edad)}</span></div>`;}).join('')}</div>`;
     });
   });
   const emptyHint=totalSes===0?`<div class="banner" style="margin:0 0 12px">Todavía no tenés sesiones agendadas. Tocá <b>Agendar sesión</b> (o cargá el día y la hora al crear el paciente) y aparecen acá.</div>`:'';
@@ -883,7 +915,7 @@ function renderAgenda(){
   let planRows='';
   dias.forEach(d=>{
     (semana[d]||[]).forEach(s=>{
-      const p=P(s.id);const key=planKey(d,s);
+      const p=P(s.id);if(!p)return;const key=planKey(d,s);
       if(!plan[key])plan[key]={objIdx:lowestIdx(p),done:false};
       const pl=plan[key];
       const sel=p.obj.length?`<select class="f" onchange="setPlanObj('${key}',this.value)">${p.obj.map((o,i)=>`<option value="${i}" ${i==pl.objIdx?'selected':''}>${esc(o.t)} (${o.p}%)</option>`).join('')}</select>`:'<span class="hint">Sin objetivos cargados</span>';
@@ -940,7 +972,7 @@ function renderDocs(){
     return `<div class="tcard"><div class="n">${esc(t.n)}</div><div class="s">${esc(t.s)}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span class="chip" style="background:var(--violet-s);color:var(--violet)">${t.cat}</span><button class="btn sm primary" onclick="${oc}">Crear →</button></div></div>`;}).join('');
   $('docsBox').innerHTML=infoBanner()+`
-    <div class="banner v" style="max-width:none;margin-bottom:18px">Cargás una evaluación o generás un informe y queda <b>linkeado al paciente</b>: lo ves acá y también en su ficha. Hilo arma el borrador con lo que ya sabe; el criterio y la firma son tuyos.</div>
+    <div class="banner" style="max-width:none;margin-bottom:18px">Cada informe y evaluación queda vinculado al paciente y disponible en su ficha. El criterio y la firma son tuyos.</div>
     <div class="cols">
       <div class="card" style="margin-bottom:0"><div class="hd">${hd('file','Informes generados')} <span class="hint">${informes.length}</span></div><div class="bd" style="padding-top:14px">${infHTML}</div></div>
       <div class="card" style="margin-bottom:0"><div class="hd">${hd('pie','Evaluaciones')} <span class="hint">${evals.length}</span></div><div class="bd" style="padding-top:14px">${evHTML}</div></div>
@@ -1005,7 +1037,7 @@ const TESTS_BY_PROF={
  'psicomotor':['TEPSI (desarrollo)','EEDP (desarrollo)','Bender (viso-motor)','Otra'],
  'kinésico':['EVA (dolor)','Goniometría / rango articular','Barthel (autonomía)','Berg (equilibrio)','Otra']
 };
-const DEST_LABELS={colegio:'🏫 Colegio',familia:'👨‍👩‍👧 Familia',mutualista:'🏥 Mutualista',adecuacion:'📝 Adecuación ANEP',medico:'🩺 Médico derivante',obrasocial:'🏥 Obra social',paciente:'🙍 Paciente'};
+const DEST_LABELS={colegio:'Colegio',familia:'Familia',mutualista:'Mutualista',adecuacion:'Adecuación ANEP',medico:'Médico derivante',obrasocial:'Obra social',paciente:'Paciente'};
 const DESTINOS_BY_PROF={
  'psicopedagógico':['colegio','familia','mutualista','adecuacion'],
  'fonoaudiológico':['colegio','familia','mutualista','medico'],
@@ -1045,7 +1077,7 @@ function interpretar(){
   if(!pares.length&&res)sec+=`<h3>Análisis</h3><p>${esc(cap(res))}.</p>`;
   const orient=bajos.length?`Se sugiere priorizar la intervención en ${esc(names(bajos))}, con actividades graduadas y apoyándose en las fortalezas detectadas.`:`Se sugiere sostener los logros alcanzados y monitorear la evolución.`;
   sec+=`<h3>Orientaciones para la intervención</h3><p>${orient}</p>`;
-  $('evDoc').innerHTML=`<div class="banner t noprint">${ic('shine',15)} Borrador armado por Hilo desde los resultados que cargaste. Es editable: tocá el texto y ajustalo. El criterio clínico y la firma son tuyos.</div>
+  $('evDoc').innerHTML=`<div class="banner t noprint">${ic('shine',15)} Borrador generado por Hilo. Editá el texto y firmá; el criterio clínico es tuyo.</div>
     <div class="doc" contenteditable="true" style="outline:none"><h2>Interpretación de evaluación</h2><div class="subt">${esc(test)} · ${esc(p.nombre)} · Montevideo, ${hoy}</div><div id="evBody">${sec}</div>
     <div class="firma"><div class="line"></div>Firma y aclaración<br><span style="color:#7a839a">Profesional ${esc(perfil.profesion)}</span></div></div>`;
   let props=(bajos.length?bajos:medios.concat(altos)).slice(0,3).map(x=>'Mejorar '+x.a.toLowerCase());
@@ -1083,7 +1115,7 @@ function consultaOnline(){if(!current)return;
    <div style="margin-top:18px;font-size:13px;font-weight:600;color:#3a4256">Cuando termine la sesión</div>
    <div class="hint" style="margin:2px 0 6px">Anotá lo que trabajaron y se guarda en la ficha (podés dejarlo para después).</div>
    <textarea class="f" id="cresumen" style="min-height:100px" placeholder="Qué trabajaron, cómo salió…"></textarea>
-   <button class="btn primary" style="width:100%;margin-top:12px" onclick="guardarConsulta()">Guardar como sesión</button>`;}
+   <button class="btn primary" style="width:100%;margin-top:12px" onclick="guardarConsulta()">Registrar sesión</button>`;}
 function guardarConsulta(){const el=$('cresumen');const r=el?el.value.trim():'';if(!current)return;current.ses.unshift({d:new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short'}),trab:[],evo:r,nota:'Consulta online',evid:true});savePatient(current);cls('ovConsulta');renderFicha();}
 
 /* ---------- materiales (cargados) ---------- */
@@ -1366,7 +1398,7 @@ function renderMat(){
   const aCol={'Lectura':'var(--teal)','Escritura':'var(--violet)','Matemática':'var(--amber)','Atención':'var(--coral)','Lenguaje':'var(--blue)','Motricidad':'var(--green)','Socioemocional':'#e0518a'};
   const list=mine.filter(m=>(matArea==='Todas'||m.area===matArea)&&(matGrado==='Todos'||matEdades(m).includes(matGrado)));
   $('matBox').innerHTML=`
-    <div class="banner v" style="max-width:none">Biblioteca de <b>${profLabel(perfil.profesion)}</b> · ${mine.length} materiales. Cambiás tu profesión en el perfil y la biblioteca se adapta.</div>
+    <div class="banner" style="max-width:none">Biblioteca de <b>${profLabel(perfil.profesion)}</b> · ${mine.length} materiales.</div>
     <div class="card"><div class="bd" style="padding:14px 16px">
       <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;${showGrados?'margin-bottom:12px':''}"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Área</span><div class="fchips">${areas.map(a=>`<span class="fchip${a===matArea?' on':''}" onclick="matArea='${esc(a)}';renderMat()">${esc(a)}</span>`).join('')}</div></div>
       ${showGrados?`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Edad</span><div class="fchips">${grados.map(g=>`<span class="fchip${g===matGrado?' on':''}" onclick="matGrado='${g}';renderMat()">${g}</span>`).join('')}</div></div>`:''}
@@ -1474,35 +1506,51 @@ function renderFam(){
 let cobros=[];
 const FREQS=[['mensual','por mes'],['quincenal','por quincena'],['semanal','por semana'],['sesion','por sesión']];
 function freqLabel(f){return (FREQS.find(x=>x[0]===f)||FREQS[0])[1];}
+let cobEdit=null;
 function renderCob(){
   const cobrado=patients.filter(p=>p.pago).reduce((s,p)=>s+(Number(p.fee)||0),0);
   const pend=patients.filter(p=>!p.pago).reduce((s,p)=>s+(Number(p.fee)||0),0);
-  const sinMonto=patients.filter(p=>!(Number(p.fee)>0)).length;
   const opts=f=>FREQS.map(([v,l])=>`<option value="${v}" ${f===v?'selected':''}>${l}</option>`).join('');
+  const row=p=>{
+    const editing=cobEdit===p.id;
+    const feeTxt=Number(p.fee)>0?`$${Number(p.fee).toLocaleString('es-UY')} · ${freqLabel(p.freq||'mensual')}`:'<span style="color:var(--muted)">Sin monto definido</span>';
+    if(editing){
+      return `<div class="slot" style="align-items:center">
+        <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
+        <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
+            <span style="color:var(--muted);font-size:13px">$</span>
+            <input class="f" id="cf_${p.id}" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto" style="width:96px;padding:7px 10px">
+            <select class="f" id="cq_${p.id}" style="width:auto;padding:7px 10px">${opts(p.freq||'mensual')}</select>
+          </div>
+        </div>
+        <button class="btn sm primary" onclick="cobGuardar(${p.id})">Guardar</button>
+        <button class="btn sm" onclick="cobCancel()">Cancelar</button>
+      </div>`;
+    }
+    return `<div class="slot" style="align-items:center">
+      <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
+      <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div><div class="ti" style="margin-top:2px">${feeTxt}</div></div>
+      ${p.pago?`<button class="chip" style="background:var(--green-s);color:#1a8f57;border:0;cursor:pointer" onclick="setPago(${p.id},false)">Al día</button>`:`<button class="btn sm" onclick="setPago(${p.id},true)">Marcar pago</button>`}
+      <button class="iconbtn" title="Editar" onclick="cobEditar(${p.id})">${ic('dots',18)}</button>
+    </div>`;
+  };
   $('cobBox').innerHTML=`
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
       <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('dollar',23)}</div><div class="n">$${cobrado.toLocaleString('es-UY')}</div><div class="l">Cobrado</div></div>
       <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('clock',23)}</div><div class="n">$${pend.toLocaleString('es-UY')}</div><div class="l">Pendiente</div></div>
       <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('group',23)}</div><div class="n">${patients.length}</div><div class="l">Pacientes</div></div>
     </div>
-    <div class="card"><div class="hd">Pagos <span class="hint">definí cuánto y cada cuánto te paga cada uno</span></div><div class="bd" style="padding-top:10px">
-      ${patients.length?patients.map(p=>`<div class="slot">
-        <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
-        <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div>
-          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-            <span style="color:var(--muted);font-size:13px">$</span>
-            <input class="f" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto" style="width:92px;padding:6px 9px" onchange="setFee(${p.id},this.value)">
-            <select class="f" style="width:auto;padding:6px 9px" onchange="setFreq(${p.id},this.value)">${opts(p.freq||'mensual')}</select>
-          </div>
-        </div>
-        ${p.pago?`<button class="chip" style="background:var(--green-s);color:#1a8f57;border:0;cursor:pointer" onclick="setPago(${p.id},false)">✓ Al día</button>`:`<button class="btn sm" onclick="setPago(${p.id},true)">Marcar pago</button>`}
-      </div>`).join(''):'<div class="empty" style="padding:26px"><div class="hint">Cargá pacientes para gestionar los cobros.</div></div>'}
-    </div></div>
-    ${sinMonto?`<div class="hint" style="margin:0 2px">${sinMonto} paciente${sinMonto===1?'':'s'} sin monto definido. Poné cuánto te paga${sinMonto===1?'':'n'} para ver el total.</div>`:''}`;
+    <div class="card"><div class="hd">Pagos <span class="hint">tocá ⋯ para editar el honorario o la frecuencia</span></div><div class="bd" style="padding-top:10px">
+      ${patients.length?patients.map(row).join(''):'<div class="empty" style="padding:26px"><div class="hint">Cargá pacientes para gestionar los cobros.</div></div>'}
+    </div></div>`;
 }
-function setFee(id,v){const p=P(id);if(!p)return;p.fee=Number(v)||0;savePatient(p);renderCob();}
-function setFreq(id,v){const p=P(id);if(!p)return;p.freq=v;savePatient(p);renderCob();}
+function cobEditar(id){cobEdit=id;renderCob();}
+function cobCancel(){cobEdit=null;renderCob();}
+function cobGuardar(id){const p=P(id);if(!p)return;const f=$('cf_'+id),q=$('cq_'+id);p.fee=Number(f&&f.value)||0;p.freq=(q&&q.value)||'mensual';savePatient(p);cobEdit=null;renderCob();}
 function setPago(id,val){const p=P(id);if(!p)return;p.pago=!!val;savePatient(p);renderCob();}
+function setFee(id,v){const p=P(id);if(!p)return;p.fee=Number(v)||0;savePatient(p);}
+function setFreq(id,v){const p=P(id);if(!p)return;p.freq=v;savePatient(p);}
 function marcarPago(id){setPago(id,true);}
 
 /* ---------- chat con Hilo ---------- */
@@ -1537,11 +1585,18 @@ function chatReply(q){
   return `Puedo contarte cómo viene cada paciente y qué trabajar en la próxima sesión. Tus pacientes son: <b>${patients.map(pp=>first(pp.nombre)).join(', ')}</b>. Nombrame a alguno, o preguntame por la agenda, los materiales o una evaluación.`;
 }
 function renderChat(){
-  $('chatLog').innerHTML=chatLog.map(m=>m.r==='ai'
-    ?`<div class="msg ai"><span class="av2">${ic('shine',15)}</span><div>${m.t}</div></div>`
-    :`<div class="msg me">${esc(m.t)}</div>`).join('');
+  const l=$('chatLog');
+  if(chatLog.length<=1){
+    l.classList.add('welc');
+    l.innerHTML=`<div class="chatwelc"><div class="chatwelc-ic">${ic('shine',30)}</div><div class="chatwelc-t">¿En qué te doy una mano?</div><div class="chatwelc-s">${chatLog.length?chatLog[0].t:''}</div></div>`;
+  }else{
+    l.classList.remove('welc');
+    l.innerHTML=chatLog.map(m=>m.r==='ai'
+      ?`<div class="msg ai"><span class="av2">${ic('shine',15)}</span><div>${m.t}</div></div>`
+      :`<div class="msg me">${esc(m.t)}</div>`).join('');
+  }
   const q=$('chatQuick');if(q)q.innerHTML=CHATQUICK.map(x=>`<span class="qchip" onclick="quickAsk(${JSON.stringify(x).replace(/"/g,'&quot;')})">${esc(x)}</span>`).join('');
-  const l=$('chatLog');l.scrollTop=l.scrollHeight;}
+  l.scrollTop=l.scrollHeight;}
 async function chatSend(){const q=$('chatIn').value.trim();if(!q)return;chatLog.push({r:'me',t:q});$('chatIn').value='';
   if(!IA_ON){chatLog.push({r:'ai',t:chatReply(q)});renderChat();return;}
   chatLog.push({r:'ai',t:'<span style="opacity:.6">escribiendo…</span>'});renderChat();const idx=chatLog.length-1;
@@ -1565,7 +1620,7 @@ function renderEst(){
       <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('trend',23)}</div><div class="n">${prom}%</div><div class="l">Avance promedio</div></div>
     </div>
     <div class="card"><div class="hd">Avance por paciente</div><div class="bd" style="padding-top:16px">${bars}</div></div>
-    <div class="banner v" style="max-width:none">Estos números se actualizan solos con cada sesión que registrás. En la versión real, incluye horas ahorradas, adherencia y evolución por objetivo.</div>`;
+`;
 }
 
 /* ---------- nuevo paciente ---------- */
@@ -1578,9 +1633,9 @@ function crearPaciente(){
   const edad=isNaN(edadN)?'—':(edadN+' años');
   const publico=isNaN(edadN)?'ninos':(edadN>=18?'adultos':edadN>=13?'adolescentes':'ninos');
   const ses={freq:$('n_sfreq').value||'',dia:$('n_sdia').value||'',hora:$('n_shora').value||''};
-  patients.unshift({id:++seq,c,nombre,edad,esc:$('n_esc').value.trim()||'—',col:$('n_col').value.trim()||'—',mut:$('n_mut').value.trim()||'—',esp:perfil.profesion,publico,motivo:$('n_motivo').value.trim()||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj,ses:[],sesCfg:ses,fee:Number($('n_fee').value)||0,freq:$('n_freq').value||'sesion',pago:false});
+  patients.unshift({id:++seq,c,nombre,edad,esc:'—',col:$('n_col').value.trim()||'—',mut:$('n_mut').value.trim()||'—',esp:perfil.profesion,publico,motivo:$('n_motivo').value.trim()||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj,ses:[],sesCfg:ses,fee:Number($('n_fee').value)||0,freq:$('n_freq').value||'sesion',pago:false});
   savePatient(patients[0]);
-  ['n_nombre','n_edad','n_esc','n_col','n_mut','n_motivo','n_obj','n_fee','n_shora'].forEach(i=>{if($(i))$(i).value='';});
+  ['n_nombre','n_edad','n_col','n_mut','n_motivo','n_obj','n_fee','n_shora'].forEach(i=>{if($(i))$(i).value='';});
   if($('q'))$('q').value='';cls('ovNuevo');goto('pac');
 }
 
@@ -1593,13 +1648,21 @@ function guardarSesion(){
   current.ses.unshift({d:new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short'}),trab:ch.map(i=>current.obj[i].t),evo,nota:$('s_nota').value.trim(),evid:!!($('s_evid')&&$('s_evid').checked)});
   savePatient(current);cls('ovSesion');renderFicha();
 }
+let _rec=null,_recBtn=null;
 function dictar(id,btn){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){alert('El dictado por voz funciona en Chrome. Abrí la app en Chrome (no en la vista previa) para probarlo.');return;}
-  const r=new SR();r.lang='es-UY';r.interimResults=false;const orig=btn.textContent;btn.textContent='🎙️ Escuchando…';
-  r.onresult=e=>{const t=e.results[0][0].transcript;const el=$(id);el.value=(el.value?el.value+' ':'')+t;};
-  r.onend=()=>{btn.textContent=orig;};r.onerror=()=>{btn.textContent=orig;};
-  try{r.start();}catch(e){btn.textContent=orig;}
+  if(!SR){alert('El dictado por voz funciona en Chrome. Abrí Hilo en Chrome para usarlo.');return;}
+  const el=$(id);if(!el)return;
+  if(_rec){try{_rec.stop();}catch(e){}return;}
+  const r=new SR();_rec=r;_recBtn=btn;r.lang='es-UY';r.interimResults=true;r.continuous=true;
+  let base=el.value?el.value.trim()+' ':'';
+  const setBtn=(html,rec)=>{btn.innerHTML=html;btn.classList.toggle('rec',!!rec);};
+  setBtn(ic('mic',15)+' Grabando… tocá para parar',true);
+  r.onresult=e=>{let fin='',intr='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t+' ';else intr+=t;}if(fin)base+=fin;el.value=(base+intr).replace(/\s{2,}/g,' ');};
+  const stop=()=>{setBtn(ic('mic',15)+' Dictar',false);_rec=null;_recBtn=null;};
+  r.onend=stop;
+  r.onerror=ev=>{stop();if(ev&&ev.error==='not-allowed')alert('Necesito permiso del micrófono. Habilitalo en el navegador y probá de nuevo.');};
+  try{r.start();}catch(e){stop();}
 }
 
 /* ---------- informe ---------- */
@@ -1635,7 +1698,7 @@ function hacerInforme(){
   const reco=()=>destino==='adecuacion'?`En el aula se sugiere: dar consignas cortas y de a una, ofrecer más tiempo en las tareas, permitir apoyos visuales y valorar el proceso de ${first(n)}, no solo el resultado.`:destino==='colegio'?`Se sugiere en el aula dar consignas cortas y de a una, contemplando apoyos según el ritmo de ${first(n)}.`:destino==='familia'?`Sugerimos sostener las actividades de la terapia en casa con juegos breves y cotidianos.`:`Se recomienda la continuidad de la intervención con la frecuencia actual.`;
   let sec='';if(p.motivo)sec+=`<h3>Motivo de consulta</h3><p>${esc(cap(p.motivo))}.</p>`;if(objTxt())sec+=`<h3>Objetivos del período</h3><p>${esc(objTxt())}</p>`;if(av())sec+=`<h3>Avances observados</h3><p>${esc(av())}</p>`;if(dif())sec+=`<h3>Aspectos a continuar</h3><p>${esc(dif())}</p>`;sec+=`<h3>Recomendaciones</h3><p>${esc(reco())}</p>`;
   const titulo=({familia:'Informe de avance',mutualista:`Informe ${perfil.profesion}`,adecuacion:'Sugerencias de adecuaciones curriculares (ANEP)',colegio:'Informe de avance para el centro educativo',medico:'Informe de derivación',obrasocial:'Constancia de tratamiento',paciente:'Resumen de tu proceso'})[destino]||'Informe de avance';
-  $('infDoc').innerHTML=`<div class="banner t noprint">${ic('shine',15)} Generado desde la ficha y las ${p.ses.length} sesiones de ${esc(first(n))}. No escribiste nada.</div>
+  $('infDoc').innerHTML=`<div class="banner t noprint">${ic('shine',15)} Generado por Hilo desde la ficha de ${esc(first(n))}. Revisalo y firmá.</div>
     <div class="doc" contenteditable="true" style="outline:none"><h2>${esc(titulo)}</h2><div class="subt">${esc(cap(perfil.profesion))} · Montevideo, ${hoy}</div>
     <div class="meta"><div><b>${pub(p).c}:</b> ${esc(n)}</div><div><b>Edad:</b> ${esc(p.edad)}</div><div><b>${pub(p).s==='paciente'?'Ocupación':'Escolaridad'}:</b> ${esc(p.esc)}</div><div><b>Período:</b> desde ${esc(p.inicio)}</div></div>
     <div id="infBody"><p>${esc(t.s)}:</p><p>${esc(t.i)}</p>${sec}<p>${esc(t.c)}</p></div>
@@ -1672,6 +1735,7 @@ function planiTab(t){
   document.querySelectorAll('#planiTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   $('planiMat').style.display=t==='mat'?'block':'none';
   $('planiSes').style.display=t==='ses'?'block':'none';
+  const pa=$('planiActions');if(pa)pa.style.display=t==='mat'?'flex':'none';
   if(t==='mat')renderMat();else renderPlanner();
 }
 function planItems(pid){return sesionPlan[pid]||(sesionPlan[pid]=[]);}
@@ -1707,7 +1771,7 @@ function renderPlanner(){
   box.innerHTML=`
     <div class="card"><div class="bd" style="padding:16px">
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-        <div style="flex:1;min-width:200px"><label style="margin-top:0">¿A quién le planificás?</label><select class="f" onchange="setPlanPac(this.value)">${opts}</select></div>
+        <div style="flex:1;min-width:200px"><label style="margin-top:0">Paciente</label><select class="f" onchange="setPlanPac(this.value)">${opts}</select></div>
         <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
       </div>
       <div class="hint" style="margin-top:10px">${esc(p.edad)} · ${esc(pub(p).c)} · avance general ${avgP(p)}%. La planificación es lo que más tiempo lleva; Hilo te la deja casi armada.</div>
@@ -1723,7 +1787,7 @@ function renderPlanner(){
       <div>
         <div class="card"><div class="hd">${hd('clipboard','Planificación de '+first(p.nombre))} <span class="hint">${items.length}</span></div><div class="bd" style="padding-top:12px">${chosen}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-            <button class="btn primary" onclick="guardarPlanSesion(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('check',15)}</span> Guardar como sesión</button>
+            <button class="btn primary" onclick="guardarPlanSesion(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('check',15)}</span> Registrar sesión</button>
             <button class="btn" onclick="printPlanPac(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('print',15)}</span> Imprimir</button>
             ${items.length?`<button class="btn" onclick="planClear(${p.id})">Vaciar</button>`:''}
           </div>
@@ -1798,7 +1862,7 @@ function renderClinica(){
     </div>
     <div class="card"><div class="hd">${hd('group','Equipo de '+esc(clinica.nombre))} <span class="hint">${usados} activos · ${clinica.asientos-usados} asiento(s) libre(s)</span></div><div class="bd" style="padding-top:12px">${rows}</div></div>
     <div class="banner v" style="max-width:none"><b>Privacidad (modelo híbrido):</b> por defecto cada profesional ve solo sus pacientes; como coordinador ves la actividad (cantidades), no el contenido clínico. Un paciente se comparte entre profesionales solo con consentimiento, para abordaje interdisciplinario.</div>
-    <div class="banner" style="background:var(--blue-s);color:#2f6fd6;max-width:none">💳 <b>Cobro por asiento:</b> una sola factura a la institución por asiento activo (USD ${clinica.precioAsiento} c/u desde 5, con descuento por volumen). El coordinador agrega o quita asientos e invita a los profesionales por mail.</div>`;
+    <div class="banner" style="background:var(--blue-s);color:#2f6fd6;max-width:none"><b>Cobro por asiento:</b> una sola factura a la institución por asiento activo (USD ${clinica.precioAsiento} c/u desde 5, con descuento por volumen). El coordinador agrega o quita asientos e invita a los profesionales por mail.</div>`;
 }
 function invitarProf(){
   const link=location.origin+location.pathname;
@@ -1839,7 +1903,7 @@ function authTab(t){const reg=t==='reg';$('authReg').style.display=reg?'block':'
 function mostrarAuth(){$('au_prof').innerHTML=PROFS.map(p=>`<option value="${p[0]}">${p[1]}</option>`).join('');authTab('reg');$('authScreen').style.display='flex';document.querySelector('.app').style.display='none';}
 function ocultarAuth(){$('authScreen').style.display='none';document.querySelector('.app').style.display='';}
 function authErr(m){const el=$('authErr');if(!el)return;if(m){el.textContent=m;el.style.display='block';}else{el.style.display='none';el.textContent='';}}
-function togglePass(id,btn){const el=$(id);if(!el)return;if(el.type==='password'){el.type='text';btn.textContent='Ocultar';}else{el.type='password';btn.textContent='Ver';}}
+function togglePass(id,btn){const el=$(id);if(!el)return;const show=el.type==='password';el.type=show?'text':'password';btn.innerHTML=ic(show?'eyeoff':'eye',19);}
 function passHint(){const el=$('au_passHint'),v=$('au_pass').value;if(!el)return;if(!v){el.textContent='Usá al menos 6 caracteres.';el.style.color='';}else if(v.length<6){el.textContent=`Te faltan ${6-v.length} caracter(es).`;el.style.color='var(--coral)';}else{el.textContent='✓ Contraseña válida.';el.style.color='var(--green)';}}
 async function registrar(){
   authErr('');
@@ -1868,7 +1932,8 @@ async function salir(){if(sb)await sb.auth.signOut();location.reload();}
 async function loadPerfil(){
   const meta=(authUser&&authUser.user_metadata)||{};
   const emailName=((authUser&&authUser.email)||'').split('@')[0];
-  const fbNombre=(meta.nombre&&meta.nombre.trim())||emailName||'Profesional';
+  const pretty=s=>s.split(/[._-]+/).filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  const fbNombre=(meta.nombre&&meta.nombre.trim())||(emailName?pretty(emailName):'')||'Profesional';
   const fbProf=meta.profesion||'psicopedagógico';
   let {data}=await sb.from('profesionales').select('*').eq('id',authUser.id).maybeSingle();
   if(!data){
