@@ -23,10 +23,55 @@ Registro según destinatario del informe:
 - Mutualista / obra social / médico: formal y técnico, para constancia y continuidad del tratamiento.
 - Paciente (adulto/adolescente): segunda persona, claro y respetuoso.`;
 
+// ---- Resolución dinámica de modelo ----
+// En vez de escribir un nombre de modelo fijo (que puede cambiar o no existir
+// en la cuenta), le preguntamos a la propia cuenta qué modelos tiene y elegimos
+// el mejor. Se guarda en memoria para no repetir el pedido en cada informe.
+// Podés forzar uno con la variable de entorno HILO_MODELO (ej: un id de Sonnet).
+let MODEL_CACHE = null;
+
+async function resolveModel(key) {
+  if (process.env.HILO_MODELO) return process.env.HILO_MODELO.trim();
+  if (MODEL_CACHE) return MODEL_CACHE;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/models?limit=100', {
+      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    });
+    if (r.ok) {
+      const j = await r.json();
+      const list = Array.isArray(j.data) ? j.data.slice() : [];
+      // más nuevos primero
+      list.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+      const ids = list.map(m => m && m.id).filter(Boolean);
+      // Preferimos Haiku (económico); si no hay, Sonnet; si no, el primero disponible.
+      const pick = ids.find(id => /haiku/i.test(id)) || ids.find(id => /sonnet/i.test(id)) || ids[0];
+      if (pick) { MODEL_CACHE = pick; return pick; }
+    }
+  } catch (e) { /* si falla, seguimos sin modelo */ }
+  return null;
+}
+
+async function callMessages(key, model, system, user) {
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: 1600,
+      system: system,
+      messages: [{ role: 'user', content: user }],
+    }),
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
 
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = (process.env.ANTHROPIC_API_KEY || '').trim();
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body || '{}'); } catch (e) { body = {}; } }
@@ -45,32 +90,34 @@ export default async function handler(req, res) {
   const system = BASE_INSTRUCTIVO + (taskSystem ? '\n\n' + taskSystem : '');
 
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        // Modelo económico y muy bueno. Para máxima calidad podés cambiarlo por
-        // 'claude-3-5-sonnet-latest' (cuesta un poco más).
-        model: 'claude-3-5-haiku-latest',
-        max_tokens: 1600,
-        system: system,
-        messages: [{ role: 'user', content: user }],
-      }),
-    });
+    let model = await resolveModel(key);
+    if (!model) { res.status(200).json({ text: null, apiError: 'no_pude_listar_modelos_de_la_cuenta' }); return; }
+
+    let r = await callMessages(key, model, system, user);
+    let errText = '';
 
     if (!r.ok) {
-      const errText = await r.text();
-      res.status(200).json({ text: null, apiError: String(errText).slice(0, 400) });
+      errText = await r.text();
+      // Si el modelo elegido no existe, refrescamos la lista y reintentamos una vez.
+      if (/not_found_error/.test(errText)) {
+        MODEL_CACHE = null;
+        const m2 = await resolveModel(key);
+        if (m2 && m2 !== model) {
+          model = m2;
+          r = await callMessages(key, model, system, user);
+          errText = r.ok ? '' : await r.text();
+        }
+      }
+    }
+
+    if (!r.ok) {
+      res.status(200).json({ text: null, apiError: String(errText).slice(0, 400), model });
       return;
     }
 
     const j = await r.json();
     const text = j && j.content && j.content[0] && j.content[0].text ? j.content[0].text : null;
-    res.status(200).json({ text });
+    res.status(200).json({ text, model });
   } catch (e) {
     res.status(200).json({ text: null, error: String(e && e.message ? e.message : e) });
   }
