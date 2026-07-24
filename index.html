@@ -68,7 +68,8 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .calwrap{overflow-x:auto}
 .search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 13px;min-width:230px}
 .search input{border:0;outline:0;font:inherit;width:100%;background:none}
-.btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;color:#3a4256;transition:.15s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;color:#3a4256;transition:.15s}
+.btn .ico{flex:0 0 auto}
 .btn:hover{border-color:#d4d8e6}
 .btn.primary{background:var(--violet);color:#fff;border-color:var(--violet);box-shadow:0 4px 12px rgba(108,92,231,.20)}
 .btn.primary:hover{filter:brightness(1.07)}
@@ -83,6 +84,8 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .i-violet{background:var(--violet-s)}.i-teal{background:var(--teal-s)}.i-coral{background:var(--coral-s)}.i-amber{background:var(--amber-s)}.i-green{background:var(--green-s)}.i-blue{background:var(--blue-s)}
 /* home */
 .homecounts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;max-width:440px}
+.obstep{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
+.obn{width:26px;height:26px;border-radius:50%;background:var(--violet);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 @media(max-width:820px){.homecounts{max-width:none}}
 .hoycard{border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;background:#fff}
 .hoyhead{display:flex;align-items:center;gap:12px}
@@ -128,7 +131,7 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .slot .nm{font-weight:600;font-size:14px}.slot .ti{color:var(--muted);font-size:12px}
 /* patient grid */
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:16px}
-.pcard{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);cursor:pointer;transition:transform .13s,box-shadow .13s;border-top:4px solid var(--violet)}
+.pcard{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);cursor:pointer;transition:transform .13s,box-shadow .13s;border:1px solid var(--line)}
 .pcard:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,36,54,.08)}
 .pcard .top{display:flex;align-items:center;gap:12px;margin-bottom:13px}
 .av{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;flex:0 0 auto}
@@ -167,7 +170,7 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .legend b{width:11px;height:11px;border-radius:3px;display:inline-block}
 /* plantillas */
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:15px}
-.tcard{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px;border-left:4px solid var(--amber)}
+.tcard{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px;border:1px solid var(--line)}
 .tcard .n{font-weight:700;font-size:14.5px}
 .tcard .s{color:var(--muted);font-size:12.5px;margin:4px 0 10px}
 /* labels/inputs */
@@ -177,8 +180,12 @@ input.f,select.f,textarea.f{width:100%;border:1px solid var(--line);border-radiu
 input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-s)}
 textarea.f{resize:vertical;min-height:66px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.row3{grid-template-columns:1fr}}
+.nsub{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:18px 0 2px;padding-top:14px;border-top:1px solid var(--line)}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{flex:1;min-width:104px;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px;cursor:pointer;font:inherit;font-weight:600;color:#586074}
+.seg button{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:1;min-width:104px;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px;cursor:pointer;font:inherit;font-weight:600;color:#586074}
+.seg button .ico{flex:0 0 auto}
 .seg button.on{border-color:var(--violet);background:var(--violet-s);color:var(--violet)}
 /* modal */
 .ov{position:fixed;inset:0;background:rgba(28,26,54,.5);display:none;align-items:flex-start;justify-content:center;padding:38px 16px;overflow:auto;z-index:60;backdrop-filter:blur(2px)}
@@ -187,9 +194,21 @@ textarea.f{resize:vertical;min-height:66px}
 .modal .mh{padding:17px 22px;border-bottom:1px solid var(--line);font-weight:800;display:flex;justify-content:space-between;align-items:center;font-size:16px}
 .modal .mb{padding:20px 22px}
 .x{background:none;border:0;font-size:23px;cursor:pointer;color:var(--muted);line-height:1}
-.banner{border-radius:12px;padding:10px 13px;font-size:12.5px;margin-bottom:14px}
-.banner.v{background:var(--violet-s);color:var(--violet)}
-.banner.t{background:var(--teal-s);color:#12706a}
+.banner{border-radius:12px;padding:11px 14px;font-size:12.5px;margin-bottom:14px;background:#f5f6fb;color:#5b6273;border:1px solid var(--line);line-height:1.5}
+.banner.v{background:var(--violet-s);color:#574fb0;border-color:transparent}
+.banner.t{background:var(--teal-s);color:#12706a;border-color:transparent}
+/* chat */
+.chatwrap{display:flex;flex-direction:column;height:calc(100vh - 172px);min-height:420px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.chatlog{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:22px 22px 10px}
+.chatquick{display:flex;gap:8px;flex-wrap:wrap;padding:2px 16px 12px}
+.chatbar{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line);background:#fff}
+.chatbar .f{flex:1}
+.qchip{font-size:12.5px;font-weight:600;color:#586074;background:#f4f5fb;border:1px solid var(--line);border-radius:999px;padding:8px 13px;cursor:pointer;transition:.13s}
+.qchip:hover{border-color:var(--violet);color:var(--violet)}
+.msg{max-width:80%;padding:12px 15px;font-size:14px;line-height:1.55}
+.msg.ai{align-self:flex-start;background:#f4f4fb;color:#2f3348;border-radius:5px 16px 16px 16px;display:flex;gap:10px}
+.msg.me{align-self:flex-end;background:var(--violet);color:#fff;border-radius:16px 16px 5px 16px}
+.msg .av2{width:26px;height:26px;border-radius:50%;background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px}
 /* doc */
 .doc{padding:26px 28px;font-family:Georgia,serif;color:#20293a;border:1px solid var(--line);border-radius:12px;background:#fff}
 .doc h2{font-size:18px;text-align:center;margin:0 0 2px}
@@ -246,7 +265,6 @@ textarea.f{resize:vertical;min-height:66px}
     <div class="nav" data-v="clinica" onclick="nav(this)"><span class="ic" data-ic="group" data-sz="19"></span> Clínica</div>
     <div class="sp"></div>
     <div class="who" style="cursor:pointer" onclick="openPerfil()"><b id="whoNombre">Lucía Fernández</b><br><span id="whoProf" style="opacity:.85">Psicopedagogía</span> · <span style="text-decoration:underline">editar perfil</span></div>
-    <div style="font-size:11.5px;color:#e2ddff;padding:6px 3px 0"><span id="whoPlan">Plan Free</span> · <a href="#" onclick="mejorarPlan();return false" style="color:#fff;font-weight:700;text-decoration:underline">Mejorar ↗</a></div>
     <div id="logoutRow" style="display:none;font-size:11.5px;padding:8px 3px 0"><a href="#" onclick="salir();return false" style="color:#e2ddff;text-decoration:underline">Cerrar sesión</a></div>
   </aside>
 
@@ -254,11 +272,11 @@ textarea.f{resize:vertical;min-height:66px}
     <!-- DASHBOARD -->
     <section data-view="dash">
       <div class="topbar">
-        <div><h1>¡Hola, Lucía! 👋</h1><div class="sub">Esto es lo que tenés hoy. Empezá por acá.</div></div>
+        <div><h1 id="dashHola">¡Hola! 👋</h1><div class="sub" id="dashSub">Esto es lo que tenés hoy. Empezá por acá.</div></div>
         <button class="btn primary" onclick="openNuevo()" style="display:inline-flex;align-items:center;gap:7px"><span class="ic" data-ic="useradd" data-sz="18"></span> Nuevo paciente</button>
       </div>
       <div class="homecounts" id="homecounts"></div>
-      <div class="card"><div class="hd"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic" data-ic="calendar" data-sz="18"></span>Hoy</span> <span class="hint" id="hoyN"></span></div><div class="bd" id="hoy" style="padding-top:14px"></div></div>
+      <div class="card" id="hoyCard"><div class="hd"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic" data-ic="calendar" data-sz="18"></span>Hoy</span> <span class="hint" id="hoyN"></span></div><div class="bd" id="hoy" style="padding-top:14px"></div></div>
       <div class="card"><div class="hd"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic" data-ic="chat" data-sz="18"></span>Preguntale a Hilo</span> <span class="hint">sobre cualquier paciente o tu práctica</span></div><div class="bd" style="padding:8px 18px 18px">
         <div style="display:flex;gap:10px;align-items:center">
           <input class="f" id="askInput" placeholder="Ej: ¿qué me recomendás para Tomás?" style="flex:1" onkeydown="if(event.key==='Enter')askHilo()">
@@ -274,7 +292,7 @@ textarea.f{resize:vertical;min-height:66px}
       <div class="topbar">
         <div><h1>Pacientes</h1><div class="sub">Cada ficha se carga una vez. Después, todo sale de acá.</div></div>
         <div style="display:flex;gap:10px">
-          <div class="search">🔎 <input id="q" placeholder="Buscar..." oninput="renderPac()"></div>
+          <div class="search"><span class="ic" data-ic="search" data-sz="16"></span> <input id="q" placeholder="Buscar..." oninput="renderPac()"></div>
           <button class="btn primary" onclick="openNuevo()">+ Nuevo</button>
         </div>
       </div>
@@ -289,7 +307,8 @@ textarea.f{resize:vertical;min-height:66px}
 
     <!-- AGENDA -->
     <section data-view="age" style="display:none">
-      <div class="topbar"><div><h1>Agenda de la semana</h1><div class="sub">Tus sesiones. Desde acá registrás cada una en dos toques.</div></div></div>
+      <div class="topbar"><div><h1>Agenda de la semana</h1><div class="sub">Tus sesiones. Desde acá registrás cada una en dos toques.</div></div>
+        <button class="btn primary" onclick="openAgendar()"><span class="ic" data-ic="add" data-sz="17"></span> Agendar sesión</button></div>
       <div id="agenda"></div>
     </section>
 
@@ -297,8 +316,8 @@ textarea.f{resize:vertical;min-height:66px}
     <section data-view="docs" style="display:none">
       <div class="topbar"><div><h1>Informes y evaluaciones</h1><div class="sub">Todo queda linkeado al paciente: elegís para quién y Hilo lo arma con lo que ya sabe.</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn" onclick="openEval()">📊 Nueva evaluación</button>
-          <button class="btn primary" onclick="openInforme()">📄 Generar informe</button>
+          <button class="btn" onclick="openEval()"><span class="ic" data-ic="pie" data-sz="17"></span> Nueva evaluación</button>
+          <button class="btn primary" onclick="openInforme()"><span class="ic" data-ic="file" data-sz="17"></span> Generar informe</button>
         </div></div>
       <div id="docsBox"></div>
     </section>
@@ -307,11 +326,11 @@ textarea.f{resize:vertical;min-height:66px}
     <section data-view="plani" style="display:none">
       <div class="topbar"><div><h1>Planificación</h1><div class="sub">Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar.</div></div></div>
       <div class="seg" id="planiTabs" style="margin-bottom:18px;max-width:440px">
-        <button class="on" data-t="mat" onclick="planiTab('mat')">📚 Materiales</button>
-        <button data-t="ses" onclick="planiTab('ses')">🧩 Planificar sesión</button>
+        <button class="on" data-t="mat" onclick="planiTab('mat')"><span class="ic" data-ic="book" data-sz="17"></span> Materiales</button>
+        <button data-t="ses" onclick="planiTab('ses')"><span class="ic" data-ic="clipboard" data-sz="17"></span> Planificar sesión</button>
       </div>
       <div id="planiMat">
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap"><button class="btn" onclick="openPub()">Publicar material</button><button class="btn primary" onclick="openGen()">Generar con IA</button></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap"><button class="btn" onclick="openPub()"><span class="ic" data-ic="share" data-sz="16"></span> Publicar material</button><button class="btn primary" onclick="openGen()"><span class="ic" data-ic="shine" data-sz="16"></span> Generar con IA</button></div>
         <div id="matBox"></div>
       </div>
       <div id="planiSes" style="display:none"></div>
@@ -319,7 +338,7 @@ textarea.f{resize:vertical;min-height:66px}
 
     <!-- COBROS -->
     <section data-view="cob" style="display:none">
-      <div class="topbar"><div><h1>Cobros</h1><div class="sub">Tus suscripciones y quién está al día. Cobro automático con Mercado Pago.</div></div></div>
+      <div class="topbar"><div><h1>Cobros</h1><div class="sub">Cuánto te paga cada paciente y quién está al día.</div></div></div>
       <div id="cobBox"></div>
     </section>
 
@@ -334,10 +353,14 @@ textarea.f{resize:vertical;min-height:66px}
     <!-- CHAT -->
     <section data-view="chat" style="display:none">
       <div class="topbar"><div><h1>Chat con Hilo</h1><div class="sub">Preguntale lo que quieras sobre tus pacientes o tu práctica.</div></div></div>
-      <div class="card"><div class="bd" style="padding:16px">
-        <div id="chatLog" style="min-height:280px;max-height:54vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:6px"></div>
-        <div style="display:flex;gap:8px;margin-top:12px"><input class="f" id="chatIn" placeholder="Escribí tu mensaje… ej: ¿cómo viene Malena?" style="flex:1" onkeydown="if(event.key==='Enter')chatSend()"><button class="btn primary" onclick="chatSend()">Enviar</button></div>
-      </div></div>
+      <div class="chatwrap">
+        <div id="chatLog" class="chatlog"></div>
+        <div class="chatquick" id="chatQuick"></div>
+        <div class="chatbar">
+          <input class="f" id="chatIn" placeholder="Escribí tu mensaje…" onkeydown="if(event.key==='Enter')chatSend()">
+          <button class="btn primary" onclick="chatSend()"><span class="ic" data-ic="send" data-sz="17"></span> Enviar</button>
+        </div>
+      </div>
     </section>
 
     <!-- ESTADISTICAS -->
@@ -350,19 +373,26 @@ textarea.f{resize:vertical;min-height:66px}
 
 <!-- MODALS -->
 <div class="ov" id="ovNuevo"><div class="modal"><div class="mh">Nuevo paciente <button class="x" onclick="cls('ovNuevo')">×</button></div><div class="mb">
-  <div class="banner v">Esto se carga una sola vez. Después no volvés a escribir estos datos nunca más.</div>
-  <div class="row"><div><label>Nombre</label><input class="f" id="n_nombre" placeholder="Ej: Martina G."></div><div><label>Edad</label><input class="f" id="n_edad" placeholder="Ej: 6 años"></div></div>
-  <div class="row"><div><label>Escolaridad</label><input class="f" id="n_esc" placeholder="Ej: 1er año"></div><div><label>Colegio / escuela</label><input class="f" id="n_col" placeholder="Ej: Escuela N.º 12"></div></div>
-  <div class="row"><div><label>Mutualista</label><input class="f" id="n_mut" placeholder="Ej: CASMU"></div><div><label>Trabajás con</label><select class="f" id="n_pub"><option value="ninos">Niños</option><option value="adolescentes">Adolescentes</option><option value="adultos">Adultos</option></select></div></div>
-  <div class="hint" style="margin:-2px 0 2px">La especialidad la definís una vez en tu perfil; no hace falta cargarla por paciente.</div>
-  <label>Motivo de consulta</label><textarea class="f" id="n_motivo" placeholder="Ej: dificultades en la articulación y el lenguaje."></textarea>
+  <div class="banner">Esto se carga una sola vez. Después no volvés a escribir estos datos.</div>
+  <div class="row"><div><label>Nombre</label><input class="f" id="n_nombre" placeholder="Nombre y apellido"></div><div><label>Edad</label><input class="f" id="n_edad" type="number" min="0" inputmode="numeric" placeholder="años"></div></div>
+  <div class="row"><div><label>Escolaridad</label><input class="f" id="n_esc" placeholder="Grado o año"></div><div><label>Colegio / escuela</label><input class="f" id="n_col" placeholder="Nombre del colegio"></div></div>
+  <label>Motivo de consulta</label><textarea class="f" id="n_motivo" placeholder="¿Por qué llega a la consulta?"></textarea>
   <label>Objetivos iniciales <span class="hint">· uno por línea</span></label><textarea class="f" id="n_obj" placeholder="Producción del fonema /r/&#10;Ampliación de vocabulario"></textarea>
-  <button class="btn primary" style="width:100%;margin-top:16px" onclick="crearPaciente()">Crear ficha ✨</button>
+  <div class="nsub">Sesiones</div>
+  <div class="row3">
+    <div><label>Frecuencia</label><select class="f" id="n_sfreq"><option value="">A convenir</option><option value="semanal">Semanal</option><option value="2xsem">2 veces/semana</option><option value="quincenal">Quincenal</option></select></div>
+    <div><label>Día</label><select class="f" id="n_sdia"><option value="">—</option><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
+    <div><label>Hora</label><input class="f" id="n_shora" type="time"></div>
+  </div>
+  <div class="nsub">Cobro</div>
+  <div class="row"><div><label>Mutualista</label><input class="f" id="n_mut" placeholder="Mutualista o particular"></div><div><label>Cuánto cobrás ($)</label><input class="f" id="n_fee" type="number" min="0" inputmode="numeric" placeholder="monto"></div></div>
+  <label>Cada cuánto paga</label><select class="f" id="n_freq"><option value="sesion">Por sesión</option><option value="semanal">Por semana</option><option value="quincenal">Por quincena</option><option value="mensual">Por mes</option></select>
+  <button class="btn primary" style="width:100%;margin-top:18px" onclick="crearPaciente()"><span class="ic" data-ic="useradd" data-sz="16"></span> Crear ficha</button>
 </div></div></div>
 
 <div class="ov" id="ovPerfil"><div class="modal"><div class="mh">Tu perfil profesional <button class="x" onclick="cls('ovPerfil')">×</button></div><div class="mb">
   <div class="banner v">Esto normalmente lo elegís al crear tu cuenta. Tu profesión define qué secciones, tests y materiales ves. Es tuya, no de cada paciente.</div>
-  <label>Nombre</label><input class="f" id="pf_nombre" placeholder="Ej: Lucía Fernández">
+  <label>Nombre</label><input class="f" id="pf_nombre" placeholder="Nombre y apellido">
   <label>Tu profesión</label><select class="f" id="pf_prof"></select>
   <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarPerfil()">Guardar perfil</button>
 </div></div></div>
@@ -371,10 +401,10 @@ textarea.f{resize:vertical;min-height:66px}
   <div class="banner t">Dos toques al terminar. Esto alimenta la memoria y los informes.</div>
   <label>Objetivos trabajados hoy</label><div id="s_objs"></div>
   <label>¿Cómo salió? <span class="hint">· escribí o dictá por voz</span></label>
-  <div style="display:flex;gap:8px;align-items:stretch"><textarea class="f" id="s_evo" style="flex:1" placeholder="Ej: logró la /r/ en posición inicial, muy conectado."></textarea><button class="btn" style="white-space:nowrap;align-self:flex-start" onclick="dictar('s_evo',this)">🎤 Dictar</button></div>
-  <label>Nota rápida <span class="hint">· opcional</span></label><input class="f" id="s_nota" placeholder="Ej: la mamá cuenta que practicó en casa.">
-  <label style="display:flex;gap:8px;align-items:center;font-weight:400;margin-top:12px"><input type="checkbox" id="s_evid" style="width:auto"> 📎 Adjunté evidencia (audio o foto de la sesión)</label>
-  <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarSesion()">Guardar sesión ✓</button>
+  <div style="display:flex;gap:8px;align-items:stretch"><textarea class="f" id="s_evo" style="flex:1" placeholder="Logró la /r/ en posición inicial, muy conectado."></textarea><button class="btn" style="white-space:nowrap;align-self:flex-start" onclick="dictar('s_evo',this)"><span class="ic" data-ic="mic" data-sz="15"></span> Dictar</button></div>
+  <label>Nota rápida <span class="hint">· opcional</span></label><input class="f" id="s_nota" placeholder="La mamá cuenta que practicó en casa.">
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400;margin-top:12px"><input type="checkbox" id="s_evid" style="width:auto"> Adjunté evidencia (audio o foto de la sesión)</label>
+  <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarSesion()">Guardar sesión</button>
 </div></div></div>
 
 <div class="ov" id="ovInforme"><div class="modal" style="max-width:660px"><div class="mh">Generar informe <button class="x" onclick="cls('ovInforme')">×</button></div><div class="mb">
@@ -382,7 +412,7 @@ textarea.f{resize:vertical;min-height:66px}
     <div class="banner v">Hilo lo arma solo con todo lo que ya sabe. Vos elegís el paciente y para quién es.</div>
     <label>Paciente</label><select class="f" id="inf_pac"></select>
     <label>¿Para quién es?</label>
-    <div class="seg" id="destSeg"><button data-v="colegio" class="on">🏫 Colegio</button><button data-v="familia">👨‍👩‍👧 Familia</button><button data-v="mutualista">🏥 Mutualista</button><button data-v="adecuacion">📝 Adecuación ANEP</button></div>
+    <div class="seg" id="destSeg"><button data-v="colegio" class="on">Colegio</button><button data-v="familia">Familia</button><button data-v="mutualista">Mutualista</button><button data-v="adecuacion">Adecuación ANEP</button></div>
     <button class="btn primary" style="width:100%;margin-top:16px" onclick="hacerInforme()">Generar informe →</button>
   </div>
   <div id="infOut" style="display:none">
@@ -390,7 +420,7 @@ textarea.f{resize:vertical;min-height:66px}
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap" class="noprint">
       <button class="btn" onclick="infReset()">← Otro destino</button>
       <button class="btn" onclick="copiarInforme()">Copiar</button>
-      <button class="btn" id="infWa" style="display:none;background:#25d366;color:#fff;border-color:#25d366" onclick="compartirInformeWa()">💬 Enviar por WhatsApp</button>
+      <button class="btn" id="infWa" style="display:none;background:#25d366;color:#fff;border-color:#25d366" onclick="compartirInformeWa()"><span class="ic" data-ic="whatsapp" data-sz="15"></span> Enviar por WhatsApp</button>
       <button class="btn primary" onclick="printInforme()">Imprimir / PDF</button>
     </div>
   </div>
@@ -410,7 +440,7 @@ textarea.f{resize:vertical;min-height:66px}
     <div id="ev_fields"></div>
     <label>Observaciones de conducta <span class="hint">· opcional</span></label>
     <textarea class="f" id="ev_obs" placeholder="Ej: colaborador; se cansó en tareas de atención sostenida."></textarea>
-    <button class="btn primary" style="width:100%;margin-top:16px" onclick="interpretar()">Interpretar con Hilo ✨</button>
+    <button class="btn primary" style="width:100%;margin-top:16px" onclick="interpretar()"><span class="ic" data-ic="shine" data-sz="16"></span> Interpretar con Hilo</button>
   </div>
   <div id="evOut" style="display:none">
     <div id="evDoc"></div>
@@ -425,12 +455,13 @@ textarea.f{resize:vertical;min-height:66px}
 <div class="ov" id="ovMat"><div class="modal" style="max-width:680px"><div class="mh">Material <button class="x" onclick="cls('ovMat')">×</button></div><div class="mb">
   <div id="matDoc"></div>
   <div id="matIA" style="display:none;margin-top:12px" class="noprint">
-    <div style="display:flex;gap:8px"><input class="f" id="matIAin" placeholder="¿Qué querés cambiar? ej: hacelo más fácil · con temática de animales · para 4º" style="flex:1" onkeydown="if(event.key==='Enter')modificarIA()"><button class="btn primary" onclick="modificarIA()">Aplicar ✨</button></div>
+    <div style="display:flex;gap:8px"><input class="f" id="matIAin" placeholder="¿Qué querés cambiar? más fácil · con temática de animales · para 4º" style="flex:1" onkeydown="if(event.key==='Enter')modificarIA()"><button class="btn primary" onclick="modificarIA()">Aplicar</button></div>
   </div>
   <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center" class="noprint">
-    <button class="btn" onclick="toggleMatIA()">✨ Modificar con IA</button>
-    <button class="btn" onclick="descargarMaterial()">⬇️ Descargar (.rtf · abre en Word/Pages)</button>
-    <button class="btn primary" onclick="printMaterial()">🖨️ Imprimir</button>
+    <button class="btn primary" onclick="matAPlan()"><span class="ic" data-ic="add" data-sz="15"></span> Sumar a una sesión</button>
+    <button class="btn" onclick="toggleMatIA()"><span class="ic" data-ic="shine" data-sz="15"></span> Modificar con IA</button>
+    <button class="btn" onclick="descargarMaterial()"><span class="ic" data-ic="download" data-sz="15"></span> Descargar (.rtf)</button>
+    <button class="btn" onclick="printMaterial()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir</button>
     <span class="hint">También podés editar el texto tocándolo directamente.</span>
   </div>
 </div></div></div>
@@ -438,18 +469,18 @@ textarea.f{resize:vertical;min-height:66px}
 <div class="ov" id="ovGen"><div class="modal"><div class="mh">Generar material con IA <button class="x" onclick="cls('ovGen')">×</button></div><div class="mb">
   <div class="banner v">Decile a Hilo qué necesitás y te arma una actividad original, a medida del objetivo y la edad.</div>
   <div class="row"><div><label>Área</label><select class="f" id="g_area"><option>Lectura</option><option>Escritura</option><option>Matemática</option><option>Atención</option><option>Lenguaje</option></select></div>
-    <div><label>Grado</label><select class="f" id="g_grado"><option>Inicial</option><option>1º</option><option>2º</option><option>3º</option><option>4º</option><option>5º</option><option>6º</option></select></div></div>
+    <div><label>Edad</label><select class="f" id="g_grado"><option>3-5 años</option><option>6-7 años</option><option>8-9 años</option><option>10-11 años</option><option>12-14 años</option><option>15+ años</option></select></div></div>
   <label>¿Qué necesitás trabajar?</label><input class="f" id="g_obj" placeholder="Ej: cálculo mental de sumas hasta 20 para un nene que se distrae">
-  <button class="btn primary" style="width:100%;margin-top:16px" onclick="generarMaterial()">Generar actividad ✨</button>
+  <button class="btn primary" style="width:100%;margin-top:16px" onclick="generarMaterial()"><span class="ic" data-ic="shine" data-sz="16"></span> Generar actividad</button>
 </div></div></div>
 
 <div class="ov" id="ovPub"><div class="modal"><div class="mh">Publicar material <button class="x" onclick="cls('ovPub')">×</button></div><div class="mb">
   <label>Visibilidad</label>
-  <div class="seg" id="pubVis"><button data-v="privado" class="on" onclick="pubVisPick(this)">🔒 Privado · solo para mí</button><button data-v="publico" onclick="pubVisPick(this)">🌐 Público · comunidad</button></div>
+  <div class="seg" id="pubVis"><button data-v="privado" class="on" onclick="pubVisPick(this)"><span class="ic" data-ic="lock" data-sz="15"></span> Privado · solo para mí</button><button data-v="publico" onclick="pubVisPick(this)"><span class="ic" data-ic="globe" data-sz="15"></span> Público · comunidad</button></div>
   <div class="banner v" id="pubHint" style="margin-top:12px">Privado: queda solo en tu biblioteca. Nadie más lo ve.</div>
   <label>Título</label><input class="f" id="pub_t" placeholder="Ej: Tarjetas de sílabas trabadas">
   <div class="row"><div><label>Área</label><select class="f" id="pub_area"><option>Lectura</option><option>Escritura</option><option>Matemática</option><option>Atención</option><option>Lenguaje</option><option>Motricidad</option><option>Socioemocional</option></select></div>
-    <div><label>Grado</label><select class="f" id="pub_g"><option>Inicial</option><option>1º</option><option>2º</option><option>3º</option><option>4º</option><option>5º</option><option>6º</option></select></div></div>
+    <div><label>Edad</label><select class="f" id="pub_g"><option>3-5 años</option><option>6-7 años</option><option>8-9 años</option><option>10-11 años</option><option>12-14 años</option><option>15+ años</option></select></div></div>
   <label>Objetivo</label><input class="f" id="pub_obj" placeholder="Ej: leer sílabas trabadas (bl, br, cl…)">
   <label>Contenido de la actividad</label><textarea class="f" id="pub_c" style="min-height:120px" placeholder="Escribí la consigna, los ítems, el juego… (una idea por línea)"></textarea>
   <label id="pub_okRow" style="display:none;gap:8px;align-items:flex-start;font-weight:400;margin-top:12px"><input type="checkbox" id="pub_ok" style="width:auto;margin-top:3px"><span>Declaro que este material es de mi autoría o tengo permiso para compartirlo, y no incluye contenido con derechos de autor de terceros (por ejemplo ARASAAC u otros bancos de uso no comercial).</span></label>
@@ -461,6 +492,17 @@ textarea.f{resize:vertical;min-height:66px}
 
 <div class="ov" id="ovBooking"><div class="modal"><div class="mh">Reservá tu sesión <button class="x" onclick="cls('ovBooking')">×</button></div>
 <div class="mb" id="bookingBody"></div></div></div>
+
+<div class="ov" id="ovAgendar"><div class="modal" style="max-width:480px"><div class="mh">Agendar sesión <button class="x" onclick="cls('ovAgendar')">×</button></div><div class="mb">
+  <label>Paciente</label><select class="f" id="ag_pac"></select>
+  <div class="row3" style="margin-top:4px">
+    <div><label>Día</label><select class="f" id="ag_dia"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></div>
+    <div><label>Hora</label><input class="f" id="ag_hora" type="time" value="09:00"></div>
+    <div><label>Repite</label><select class="f" id="ag_tipo"><option value="semanal">Cada semana</option><option value="unica">Solo esta vez</option></select></div>
+  </div>
+  <div class="hint" style="margin-top:8px">Las sesiones que se repiten se guardan como el horario fijo del paciente y aparecen todas las semanas.</div>
+  <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarAgendar()">Agendar</button>
+</div></div></div>
 
 <button class="fab noprint" onclick="goto('chat')" title="Chat con Hilo"><span class="ic" data-ic="chat" data-sz="20" style="display:inline-flex;align-items:center"></span> Preguntá a Hilo</button>
 
@@ -534,7 +576,15 @@ const ICONS={
  send:'<path d="M21 3L3 10L10 14L14 21L21 3ZM10 14L21 3"/>',
  megaphone:'<path d="M6 18V14M6 14H8L13 17V7L8 10H5C3.89543 10 3 10.8954 3 12C3 13.1046 3.89543 14 5 14H6ZM17 7L19 5M17 17L19 19M19 12H21"/>',
  share:'<path d="M8 7L12 3L16 7M12 3V16M20 13V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18L4 13"/>',
- star:'<path d="M11.0767 4.21981C11.4183 3.39851 12.5817 3.39851 12.9233 4.21981L14.7812 8.68657L19.6034 9.07317C20.4901 9.14425 20.8496 10.2508 20.174 10.8294L16.5 13.9766L17.6225 18.6823C17.8289 19.5476 16.8876 20.2314 16.1285 19.7678L12 17.2461L7.87148 19.7678C7.11238 20.2314 6.17113 19.5476 6.37752 18.6823L7.5 13.9766L3.82596 10.8294C3.15042 10.2508 3.50994 9.14425 4.3966 9.07317L9.21885 8.68657L11.0767 4.21981Z"/>'
+ star:'<path d="M11.0767 4.21981C11.4183 3.39851 12.5817 3.39851 12.9233 4.21981L14.7812 8.68657L19.6034 9.07317C20.4901 9.14425 20.8496 10.2508 20.174 10.8294L16.5 13.9766L17.6225 18.6823C17.8289 19.5476 16.8876 20.2314 16.1285 19.7678L12 17.2461L7.87148 19.7678C7.11238 20.2314 6.17113 19.5476 6.37752 18.6823L7.5 13.9766L3.82596 10.8294C3.15042 10.2508 3.50994 9.14425 4.3966 9.07317L9.21885 8.68657L11.0767 4.21981Z"/>',
+ search:'<path d="M13.3891 13.3891L19 19M9.5 15C12.5376 15 15 12.5376 15 9.5C15 6.4624 12.5376 4 9.5 4C6.4624 4 4 6.4624 4 9.5C4 12.5376 6.4624 15 9.5 15Z"/>',
+ target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.6"/>',
+ video:'<path d="M15 8.5V7C15 5.9 14.1 5 13 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19H13C14.1 19 15 18.1 15 17V15.5M15 8.5L21 5.75V18.25L15 15.5M15 8.5V15.5"/>',
+ lock:'<path d="M8 11V7.5C8 5.29 9.79 3.5 12 3.5C14.21 3.5 16 5.29 16 7.5V11M6.8 11H17.2C18.19 11 19 11.81 19 12.8V18.7C19 19.69 18.19 20.5 17.2 20.5H6.8C5.81 20.5 5 19.69 5 18.7V12.8C5 11.81 5.81 11 6.8 11Z"/>',
+ mic:'<path d="M12 15C13.66 15 15 13.66 15 12V6C15 4.34 13.66 3 12 3C10.34 3 9 4.34 9 6V12C9 13.66 10.34 15 12 15ZM5 11V12C5 15.87 8.13 19 12 19C15.87 19 19 15.87 19 12V11M12 19V22"/>',
+ download:'<path d="M12 3V15M12 15L8 11M12 15L16 11M5 17V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V17"/>',
+ clipboard:'<path d="M9 4H7C5.9 4 5 4.9 5 6V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V6C19 4.9 18.1 4 17 4H15M9 4C9 5.1 9.9 6 11 6H13C14.1 6 15 5.1 15 4M9 4C9 2.9 9.9 2 11 2H13C14.1 2 15 2.9 15 4M9 12H15M9 16H13"/>',
+ sparkles2:'<path d="M12 3C12 7.97 7.97 12 3 12C7.97 12 12 16.03 12 21C12 16.03 16.03 12 21 12C16.03 12 12 7.97 12 3Z"/>'
 };
 function ic(n,s){s=s||18;return ICONS[n]?`<svg class="ico" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`:'';}
 function paintIcons(root){(root||document).querySelectorAll('[data-ic]').forEach(el=>{el.innerHTML=ic(el.dataset.ic,el.dataset.sz?+el.dataset.sz:18);});}
@@ -559,6 +609,7 @@ function goto(v){
   document.querySelector(`[data-view="${v}"]`).style.display='block';
   document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));
   if(v==='dash')renderDash();if(v==='pac')renderPac();if(v==='age')renderAgenda();if(v==='docs')renderDocs();if(v==='plani')renderPlani();if(v==='cob')renderCob();if(v==='clinica')renderClinica();if(v==='chat')renderChat();if(v==='est')renderEst();
+  const fab=document.querySelector('.fab');if(fab)fab.style.display=(v==='chat')?'none':'';
   window.scrollTo(0,0);
 }
 
@@ -567,16 +618,42 @@ function sugeActividad(t){
   const bank={'/r/':'praxias linguales y repetición de la /r/ en palabras cortas','articul':'praxias y producción del fonema en sílaba, palabra y frase','vocabul':'lotería de imágenes por campo semántico','oracion':'armar frases con apoyo visual','fonológ':'segmentar y unir sonidos con palmas','lector':'lectura repetida de un texto breve','fluid':'lectura cronometrada de listas de palabras','atenci':'tareas cortas de 10 minutos con pausa activa','pinza':'circuito de pinza: encastre, ensartado y pinzas','sensor':'circuito sensorial breve y dieta sensorial','regula':'estrategias de autorregulación (respiración, rincón de la calma)','coordin':'circuito de coordinación óculo-manual y bilateral','avd':'práctica guiada de la actividad de la vida diaria','expres':'juego de descripción de láminas','enunci':'ampliar frases sumando una palabra','cálcul':'cálculo mental con material concreto','concien':'rimas y juegos con sonidos','escrit':'copia guiada respetando el renglón','problem':'resolver problemas cortos subrayando los datos','memor':'juegos de recordar secuencias','lengua':'juego oral ampliando cada respuesta','soplo':'juegos de soplo graduados con sorbete y burbujas','voz':'ejercicios de proyección y cuidado de la voz','ansied':'respiración de la caja y registro de disparadores','emocion':'termómetro emocional y diario de emociones','social':'role-play de situaciones y semáforo social','sueño':'pauta de higiene del sueño','equilib':'circuito de equilibrio estático y dinámico','esquema':'juego de reconocimiento del propio cuerpo','lateral':'juegos de derecha/izquierda y orientación espacial','rango':'movilidad articular progresiva','elong':'elongación sostenida de la cadena trabajada','fuerza':'fortalecimiento con progresión de carga','marcha':'reeducación de la marcha con apoyos','propio':'ejercicios propioceptivos sobre superficie inestable','dolor':'dosificar la carga y pautas para casa'};
   const k=Object.keys(bank).find(k=>t.toLowerCase().includes(k));return k?bank[k]:'actividades graduadas centradas en ese objetivo';
 }
+function onboardingHTML(){
+  const nom=esc(first(perfil.nombre||''));
+  return `<div class="card"><div class="bd" style="padding:22px 22px 24px">
+    <div class="hint" style="margin-bottom:18px">Cargá tu primer paciente y Hilo empieza a armarte la agenda, los informes y las evaluaciones. Se hace una sola vez por paciente.</div>
+    <div class="obstep"><div class="obn">1</div><div><b>Cargá tu primer paciente</b><div class="hint">Nombre, edad y motivo de consulta.</div></div></div>
+    <div class="obstep"><div class="obn">2</div><div><b>Registrá una sesión o una evaluación</b><div class="hint">Desde la ficha del paciente. Ahí Hilo arranca el seguimiento.</div></div></div>
+    <div class="obstep"><div class="obn">3</div><div><b>Generá un informe o un material con IA</b><div class="hint">Con lo que cargaste, Hilo te escribe el borrador.</div></div></div>
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn primary" style="display:inline-flex;align-items:center;gap:7px" onclick="openNuevo()">${ic('useradd',18)} Cargar mi primer paciente</button>
+      <button class="btn" onclick="goto('mat')">Explorar materiales</button>
+    </div>
+  </div></div>`;
+}
 function renderDash(){
+  rebuildAgenda();
   const ao=$('askOut');if(ao)ao.innerHTML='';
-  if(!cobros.length)patients.forEach((p,i)=>cobros.push({id:p.id,pago:i%3!==2}));
+  const nom=first(perfil.nombre||'');
+  const hola=$('dashHola');if(hola)hola.innerHTML='¡Hola'+(nom?', '+esc(nom):'')+'! 👋';
+  const hc=$('homecounts'),hcard=$('hoyCard');
+  if(!patients.length){
+    if(hola)hola.innerHTML='Bienvenida a Hilo'+(nom?', '+esc(nom):'')+' '+ic('shine',20);
+    const sub=$('dashSub');if(sub)sub.textContent='Tu cuenta está vacía. Arranquemos en 3 pasos.';
+    if(hc){hc.style.display='block';hc.innerHTML=onboardingHTML();}
+    if(hcard)hcard.style.display='none';
+    return;
+  }
+  if(hc)hc.style.display='grid';
+  if(hcard)hcard.style.display='';
+  const sub=$('dashSub');if(sub)sub.textContent='Esto es lo que tenés hoy. Empezá por acá.';
   $('homecounts').innerHTML=`
     <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('group',23)}</div><div class="n">${patients.length}</div><div class="l">Pacientes activos</div></div>
     <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('calendar',23)}</div><div class="n">${agendaHoy.length}</div><div class="l">Sesiones hoy</div></div>`;
   $('hoyN').textContent=`· ${agendaHoy.length} sesiones`;
   $('hoy').innerHTML=agendaHoy.map(s=>{const p=P(s.id);const o=[...p.obj].sort((a,b)=>a.p-b.p)[0]||{t:'—',p:0};const last=p.ses[0];
     const al=[];const slow=p.obj.find(ob=>ob.p<45);if(slow)al.push({ic:ic('warning',13),t:`${esc(slow.t)} viene lento`,bg:'var(--amber-s)',fg:'#8a5a00'});
-    const c=(cobros||[]).find(x=>x.id===p.id);if(c&&!c.pago)al.push({ic:ic('wallet',13),t:'pago pendiente',bg:'var(--coral-s)',fg:'#c0392b'});
+    if(!p.pago&&Number(p.fee)>0)al.push({ic:ic('wallet',13),t:'pago pendiente',bg:'var(--coral-s)',fg:'#c0392b'});
     return `<div class="hoycard">
       <div class="hoyhead">
         <div class="hoyhora">${s.h}</div>
@@ -595,10 +672,10 @@ function renderTriage(){
   const items=[];
   patients.forEach(p=>{
     const est=p.obj.find(o=>o.p<45);
-    if(est)items.push({ic:'⚠️',bg:'var(--amber-s)',t:`${first(p.nombre)}: "${est.t}" viene lento (${est.p}%)`,s:'Puede convenir cambiar de estrategia.',id:p.id});
-    if(!p.ses.length)items.push({ic:'🕐',bg:'var(--coral-s)',t:`${first(p.nombre)} sin sesiones registradas`,s:'Registrá la primera para arrancar el seguimiento.',id:p.id});
+    if(est)items.push({ic:ic('warning',18),bg:'var(--amber-s)',t:`${first(p.nombre)}: "${est.t}" viene lento (${est.p}%)`,s:'Puede convenir cambiar de estrategia.',id:p.id});
+    if(!p.ses.length)items.push({ic:ic('clock',18),bg:'var(--coral-s)',t:`${first(p.nombre)} sin sesiones registradas`,s:'Registrá la primera para arrancar el seguimiento.',id:p.id});
   });
-  (cobros||[]).forEach(c=>{if(!c.pago){const p=P(c.id);if(p)items.push({ic:'💳',bg:'var(--violet-s)',t:`${first(p.nombre)}: pago pendiente`,s:'Figura como no abonado este mes.',id:p.id});}});
+  patients.forEach(p=>{if(!p.pago&&Number(p.fee)>0)items.push({ic:ic('wallet',18),bg:'var(--violet-s)',t:`${first(p.nombre)}: pago pendiente`,s:'Figura como no abonado.',id:p.id});});
   const box=$('triage'),card=$('triageCard');if(!box)return;
   if(!items.length){card.style.display='none';return;}
   card.style.display='';
@@ -606,7 +683,7 @@ function renderTriage(){
 }
 function askHilo(){
   const q=$('askInput').value.trim();if(!q)return;
-  $('askOut').innerHTML=`<div class="membox" style="margin-top:12px">🤖 ${chatReply(q)}</div>`;
+  $('askOut').innerHTML=`<div class="membox" style="margin-top:12px">${chatReply(q)}</div>`;
 }
 const P=id=>patients.find(p=>p.id===id);
 const norm=s=>(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
@@ -645,7 +722,10 @@ function renderPac(){
    </div></div>`;
   const cont=`<div class="hint" style="margin:0 2px 10px">${list.length} paciente${list.length===1?'':'s'}</div>`;
   let body;
-  if(!list.length){body='<div class="empty"><div class="b">🔎</div>Sin resultados.</div>';}
+  if(!list.length){
+    if(!patients.length&&!q){body=`<div class="empty" style="padding:38px 20px"><div class="b">${ic('group',30)}</div><div style="font-weight:700;margin:8px 0 4px;color:#20293a">Todavía no tenés pacientes</div><div class="hint" style="margin-bottom:16px">Cargá el primero y su ficha queda guardada para siempre.</div><button class="btn primary" onclick="openNuevo()">+ Cargar primer paciente</button></div>`;}
+    else{body=`<div class="empty"><div class="b">${ic('search',26)}</div>Sin resultados.</div>`;}
+  }
   else if(pacVista==='lista'){
     body=`<div class="card"><div class="bd" style="padding:6px 10px">`+list.map((p,i)=>`
       <div class="slot" style="cursor:pointer;border:0;${i<list.length-1?'border-bottom:1px solid var(--line)':''};border-radius:0;margin:0" onclick="abrir(${p.id})">
@@ -657,7 +737,7 @@ function renderPac(){
       </div>`).join('')+`</div></div>`;
   } else {
     body=`<div class="pgrid">`+list.map(p=>`
-      <div class="pcard" style="border-top-color:${p.c}" onclick="abrir(${p.id})">
+      <div class="pcard" onclick="abrir(${p.id})">
         <div class="nm" style="font-size:15.5px">${esc(p.nombre)}</div>
         <div class="mt" style="margin:3px 0 13px">${esc(p.edad)} · ${esc(p.esc)}</div>
         <div><span class="chip" style="background:${ec[1]};color:${ec[2]}">${pub(p).c}</span><span class="chip" style="background:var(--blue-s);color:#2f6fd6">${p.ses.length} ${p.ses.length===1?'sesión':'sesiones'}</span></div>
@@ -676,17 +756,17 @@ function renderFicha(){
    <div class="phdr" style="background:linear-gradient(120deg,${p.c},${p.c}cc)">
      <div class="av">${ini(p.nombre)}</div>
      <div><h2>${esc(p.nombre)}</h2><div class="meta">${esc(p.edad)} · ${esc(p.esc)} · ${esc(p.col)} · ${esc(pub(p).c)}</div></div>
-     <div class="acts noprint"><button class="btn ib" onclick="openSesion()">${ic('add',16)} Sesión</button><button class="btn ib" onclick="consultaOnline()">🎥 Consulta online</button><button class="btn ib" onclick="openEvalFor(${p.id})">${ic('pie',16)} Evaluar</button><button class="btn ib" onclick="compartirFamilia(${p.id})">${ic('whatsapp',16)} Compartir con familia</button><button class="btn wt ib" onclick="openInforme()">${ic('file',16)} Generar informe</button><button class="btn ib" onclick="borrarPaciente(${p.id})" title="Borrar paciente" style="background:rgba(255,255,255,.16);border-color:transparent;color:#fff">🗑</button></div>
+     <div class="acts noprint"><button class="btn ib" onclick="openSesion()">${ic('add',16)} Sesión</button><button class="btn ib" onclick="consultaOnline()">${ic('video',16)} Consulta online</button><button class="btn ib" onclick="openEvalFor(${p.id})">${ic('pie',16)} Evaluar</button><button class="btn ib" onclick="compartirFamilia(${p.id})">${ic('whatsapp',16)} Compartir con familia</button><button class="btn wt ib" onclick="openInforme()">${ic('file',16)} Generar informe</button></div>
    </div>
    <div class="cols">
      <div>
        <div class="card"><div class="hd">${hd('trend','Evolución')} <span class="hint">avance por objetivo en el tiempo</span></div>
          <div class="bd">${chart}</div></div>
-       <div class="card"><div class="hd">🎯 Objetivos <span class="hint">${p.obj.length}</span></div><div class="bd">
+       <div class="card"><div class="hd">${hd('target','Objetivos')} <span class="hint">${p.obj.length}</span></div><div class="bd">
          ${p.obj.length?p.obj.map((o,i)=>{const col=COLORS[i%COLORS.length][0];return `<div class="obj"><div class="t"><span>${esc(o.t)}</span><span>${o.p}%</span></div><div class="bar"><i style="width:${o.p}%;background:${col}"></i></div></div>`}).join(''):'<div class="hint">Todavía no cargaste objetivos. Hacé una evaluación (botón <b>Evaluar</b>) y Hilo te ayuda a plantearlos.</div>'}
        </div></div>
        <div class="card"><div class="hd">${hd('clock','Historial de sesiones')} <span class="hint">${p.ses.length}</span></div><div class="bd"><div class="timeline">
-         ${p.ses.map(s=>`<div class="ses"><div class="d">${esc(s.d)}${s.evid?' · <span class="tag" style="background:var(--amber-s);color:#a5680f">📎 evidencia</span>':''}</div><div class="txt">${esc(cap(s.evo))}.</div>${s.trab.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${s.nota?`<div class="txt" style="color:#7a839a;margin-top:4px">📝 ${esc(s.nota)}</div>`:''}</div>`).join('')||'<span class="hint">Sin sesiones.</span>'}
+         ${p.ses.map(s=>`<div class="ses"><div class="d">${esc(s.d)}${s.evid?' · <span class="tag" style="background:var(--amber-s);color:#a5680f">evidencia</span>':''}</div><div class="txt">${esc(cap(s.evo))}.</div>${s.trab.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${s.nota?`<div class="txt" style="color:#7a839a;margin-top:4px">${esc(s.nota)}</div>`:''}</div>`).join('')||'<span class="hint">Sin sesiones.</span>'}
        </div></div></div>
      </div>
      <div>
@@ -697,25 +777,26 @@ function renderFicha(){
          <div class="k">Motivo</div><div>${esc(p.motivo)}</div><div class="k">Inicio</div><div>${esc(p.inicio)}</div>
          <div class="k">Consentimiento</div><div>${p.consent?`<span style="display:inline-flex;align-items:center;gap:5px;color:var(--green)">${ic('check',15)}Registrado (Ley 18.331)</span>`:`<button class="btn sm" onclick="consentToggle(${p.id})">Registrar</button>`}</div>
        </div></div></div>
-       <div class="card"><div class="hd">🧠 Memoria de Hilo</div><div class="bd"><div class="membox">
-         Hilo ya sabe todo de ${esc(first(p.nombre))}: <b>${p.ses.length} sesiones</b>, <b>${p.obj.length} objetivos</b> con su evolución, colegio y mutualista.<br><br>
-         Cuando generes un informe, <b>no escribís nada</b>: sale de acá.</div></div></div>
-       <div class="card"><div class="hd">✨ Qué hacer en la próxima sesión</div><div class="bd">${sugeHTML(p)}</div></div>
+       <div class="card"><div class="hd">${hd('shine','Memoria de Hilo')}</div><div class="bd"><div class="membox">
+         ${(p.ses.length||p.obj.length)?`Hilo va guardando todo lo de ${esc(first(p.nombre))}: por ahora <b>${p.ses.length} ${p.ses.length===1?'sesión':'sesiones'}</b> y <b>${p.obj.length} ${p.obj.length===1?'objetivo':'objetivos'}</b>. Con esto arma los informes sin que escribas de cero.`:`Todavía no cargaste nada de ${esc(first(p.nombre))}. A medida que registres sesiones y evaluaciones, todo se guarda acá — y después Hilo lo usa para armar los informes por vos.`}</div></div></div>
+       <div class="card"><div class="hd">${hd('shine','Qué hacer en la próxima sesión')}</div><div class="bd">${sugeHTML(p)}</div></div>
        <div class="card"><div class="hd">${hd('file','Evaluaciones e informes')}</div><div class="bd">${docsHTML(p)}</div></div>
      </div>
-   </div>`;
+   </div>
+   <div class="noprint" style="margin-top:6px;text-align:right"><button class="btn sm" onclick="borrarPaciente(${p.id})" style="color:var(--coral);border-color:transparent;background:none">Eliminar paciente</button></div>`;
 }
 
 /* ---------- compartir con la familia ---------- */
 function compartirFamilia(id){
   const p=P(id);if(!p)return;const ord=[...p.obj].sort((a,b)=>a.p-b.p).slice(0,2);
-  const ej=ord.length?` Para practicar en casa esta semana: ${ord.map(o=>o.t).join(', ')}.`:'';
-  const txt=`Hola! Les paso cómo viene ${first(p.nombre)}: avance general ${avgP(p)}%.${ej} Cualquier duda me escriben. Saludos, Lucía.`;
+  const yo=first(perfil.nombre||'');const firma=yo?` Saludos, ${yo}.`:'';
+  const ej=ord.length?` Esta semana estamos trabajando en: ${ord.map(o=>o.t.toLowerCase()).join(', ')}.`:'';
+  const txt=`Hola! Te escribo por ${first(p.nombre)}.${ej} Cualquier cosa quedo a las órdenes.${firma}`;
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 function compartirInformeWa(){
-  const p=current;if(!p)return;
-  const txt=`Hola! Les comparto el informe de avance de ${first(p.nombre)} (avance general ${avgP(p)}%). Quedo a las órdenes por cualquier duda. Saludos, Lucía.`;
+  const p=current;if(!p)return;const yo=first(perfil.nombre||'');const firma=yo?` Saludos, ${yo}.`:'';
+  const txt=`Hola! Te comparto el informe de ${first(p.nombre)}. Cualquier duda quedo a las órdenes.${firma}`;
   window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 
@@ -741,8 +822,40 @@ let plan={};
 const AGLINK='hilo.uy/lucia';
 function planKey(d,s){return d+'|'+s.h+'|'+s.id;}
 function lowestIdx(p){if(!p.obj.length)return 0;let idx=0,min=1e9;p.obj.forEach((o,i)=>{if(o.p<min){min=o.p;idx=i;}});return idx;}
+const DIAS_SEM=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function rebuildAgenda(){
+  if(!REAL)return;
+  Object.keys(semana).forEach(k=>delete semana[k]);
+  patients.forEach(p=>{
+    if(p.sesCfg&&p.sesCfg.dia&&p.sesCfg.hora){(semana[p.sesCfg.dia]=semana[p.sesCfg.dia]||[]).push({h:p.sesCfg.hora,id:p.id});}
+    (p.extraSes||[]).forEach(s=>{if(s&&s.dia&&s.hora)(semana[s.dia]=semana[s.dia]||[]).push({h:s.hora,id:p.id,once:true});});
+  });
+  Object.keys(semana).forEach(d=>semana[d].sort((a,b)=>a.h.localeCompare(b.h)));
+  agendaHoy.length=0;
+  const hoy=DIAS_SEM[new Date().getDay()];
+  (semana[hoy]||[]).forEach(s=>agendaHoy.push({h:s.h,id:s.id,t:'Sesión'}));
+  agendaHoy.sort((a,b)=>a.h.localeCompare(b.h));
+}
+function openAgendar(){
+  if(!patients.length){alert('Primero cargá un paciente.');return;}
+  $('ag_pac').innerHTML=patients.map(p=>`<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
+  opn('ovAgendar');
+}
+function guardarAgendar(){
+  const p=P(+$('ag_pac').value);if(!p)return;
+  const dia=$('ag_dia').value,hora=$('ag_hora').value,tipo=$('ag_tipo').value;
+  if(!hora){alert('Elegí una hora.');return;}
+  if(tipo==='semanal')p.sesCfg={freq:'semanal',dia,hora};
+  else{p.extraSes=p.extraSes||[];p.extraSes.push({dia,hora});}
+  savePatient(p);
+  if(REAL)rebuildAgenda();else{(semana[dia]=semana[dia]||[]).push({h:hora,id:p.id});semana[dia].sort((a,b)=>a.h.localeCompare(b.h));}
+  cls('ovAgendar');goto('age');
+}
 function renderAgenda(){
-  const dias=Object.keys(semana);
+  rebuildAgenda();
+  const orden=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const dias=orden.filter(d=>d!=='Sábado'||(semana['Sábado']&&semana['Sábado'].length));
+  const totalSes=dias.reduce((a,d)=>a+((semana[d]||[]).length),0);
   // link de reserva (concepto)
   const booking=`<div class="card"><div class="hd">${hd('link','Tu link para que te agenden')} <span class="hint">las familias reservan solas</span></div><div class="bd" style="padding-top:14px">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -764,7 +877,8 @@ function renderAgenda(){
       rows+=`<div class="cell">${evs.map(s=>{const p=P(s.id);const pl=plan[planKey(d,s)];const done=pl&&pl.done?'✓ ':'';return `<div class="ev" style="background:${p.c};${pl&&pl.done?'opacity:.6':''}" onclick="abrir(${p.id})">${done}${s.h} · ${esc(first(p.nombre))}<br><span style="font-weight:400;opacity:.92">${esc(p.edad)}</span></div>`;}).join('')}</div>`;
     });
   });
-  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} <span class="hint">tocá una sesión para abrir la ficha del paciente</span></div><div class="bd" style="padding-top:14px"><div class="calwrap"><div class="cal"><div class="grid">${head}${rows}</div></div></div></div></div>`;
+  const emptyHint=totalSes===0?`<div class="banner" style="margin:0 0 12px">Todavía no tenés sesiones agendadas. Tocá <b>Agendar sesión</b> (o cargá el día y la hora al crear el paciente) y aparecen acá.</div>`:'';
+  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} <span class="hint">tocá una sesión para abrir la ficha del paciente</span></div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div></div></div>`;
   // plan de la semana
   let planRows='';
   dias.forEach(d=>{
@@ -781,13 +895,13 @@ function renderAgenda(){
         <div class="av" style="background:${p.c};width:34px;height:34px;font-size:13px">${ini(p.nombre)}</div>
         <div style="flex:1;min-width:90px"><div class="nm" style="font-weight:700;font-size:14px">${esc(first(p.nombre))}</div><div class="ti">${esc(p.edad)}</div></div>
         <div class="planobj">${sel}</div>
-        <div class="planmat">${m?`<button class="btn sm" onclick="openMaterial(${m.id})">📚 Material</button>`:'<span class="hint">—</span>'}</div>
+        <div class="planmat">${m?`<button class="btn sm" onclick="openMaterial(${m.id})"><span class="ico">${ic('book',14)}</span> Material</button>`:'<span class="hint">—</span>'}</div>
         <button class="btn sm" onclick="abrir(${p.id})">Ficha</button>
       </div>`;
     });
   });
   const done=Object.values(plan).filter(x=>x.done).length,tot=Object.keys(plan).length;
-  const planPanel=`<div class="card"><div class="hd">🎯 Plan de la semana <span class="hint">${done}/${tot} listas · elegí el objetivo de cada sesión y marcá cuando la des</span></div><div class="bd" style="padding-top:10px">${planRows||'<div class="hint">Sin sesiones esta semana.</div>'}</div></div>`;
+  const planPanel=`<div class="card"><div class="hd">${hd('target','Plan de la semana')} <span class="hint">${done}/${tot} listas · elegí el objetivo de cada sesión y marcá cuando la des</span></div><div class="bd" style="padding-top:10px">${planRows||'<div class="hint">Sin sesiones esta semana.</div>'}</div></div>`;
   $('agenda').innerHTML=grid+planPanel+booking;
 }
 function setPlanObj(key,v){if(plan[key]){plan[key].objIdx=+v;renderAgenda();}}
@@ -804,7 +918,7 @@ function previewBooking(){
     <button class="btn primary" style="width:100%;margin-top:16px" onclick="bkConfirm()">Reservar sesión</button>`;
 }
 function bkPick(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
-function bkConfirm(){$('bookingBody').innerHTML=`<div style="text-align:center;padding:28px 10px"><div style="font-size:44px">✅</div><div style="font-weight:800;margin-top:8px;font-size:17px">¡Sesión reservada!</div><div class="hint" style="margin-top:6px;max-width:340px;margin-left:auto;margin-right:auto">La familia recibe la confirmación y a vos te aparece sola en la agenda. (Demo)</div><button class="btn primary" style="margin-top:18px" onclick="cls('ovBooking')">Listo</button></div>`;}
+function bkConfirm(){$('bookingBody').innerHTML=`<div style="text-align:center;padding:28px 10px"><div style="width:56px;height:56px;border-radius:50%;background:var(--green-s);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic('check',30)}</div><div style="font-weight:800;margin-top:12px;font-size:17px">¡Sesión reservada!</div><div class="hint" style="margin-top:6px;max-width:340px;margin-left:auto;margin-right:auto">La familia recibe la confirmación y a vos te aparece sola en la agenda. (Demo)</div><button class="btn primary" style="margin-top:18px" onclick="cls('ovBooking')">Listo</button></div>`;}
 
 /* ---------- informes + evaluaciones (sección combinada) ---------- */
 function plantillaAccion(t){
@@ -823,7 +937,7 @@ function renderDocs(){
     ? evals.map(e=>`<div class="slot"><div class="av" style="background:${e.c}">${ini(e.p)}</div><div style="flex:1"><div class="nm">${esc(e.p)}</div><div class="ti">${esc(e.test)}</div></div><span class="chip" style="background:var(--violet-s);color:var(--violet)">Interpretada</span><span class="hint" style="margin-left:10px">${esc(e.f)}</span></div>`).join('')
     : '<div class="hint">Todavía no cargaste evaluaciones. Tocá <b>Nueva evaluación</b> y elegí el paciente.</div>';
   const formatos=plantillas.map(t=>{const a=plantillaAccion(t);const oc=a.ev?'openEval()':`openInforme(null,'${a.dest}')`;
-    return `<div class="tcard" style="border-left-color:${t.col}"><div class="n">${esc(t.n)}</div><div class="s">${esc(t.s)}</div>
+    return `<div class="tcard"><div class="n">${esc(t.n)}</div><div class="s">${esc(t.s)}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span class="chip" style="background:var(--violet-s);color:var(--violet)">${t.cat}</span><button class="btn sm primary" onclick="${oc}">Crear →</button></div></div>`;}).join('');
   $('docsBox').innerHTML=infoBanner()+`
     <div class="banner v" style="max-width:none;margin-bottom:18px">Cargás una evaluación o generás un informe y queda <b>linkeado al paciente</b>: lo ves acá y también en su ficha. Hilo arma el borrador con lo que ya sabe; el criterio y la firma son tuyos.</div>
@@ -936,7 +1050,7 @@ function interpretar(){
     <div class="firma"><div class="line"></div>Firma y aclaración<br><span style="color:#7a839a">Profesional ${esc(perfil.profesion)}</span></div></div>`;
   let props=(bajos.length?bajos:medios.concat(altos)).slice(0,3).map(x=>'Mejorar '+x.a.toLowerCase());
   if(!props.length&&res)props=['Trabajar sobre lo detectado en '+test.split(' (')[0]];
-  if(props.length){window._propObj={pid:p.id,list:props};$('evDoc').innerHTML+=`<div class="banner v" style="margin-top:14px">🎯 <b>Objetivos sugeridos</b> a partir de esta evaluación:${props.map(o=>`<div style="margin-top:5px">• ${esc(cap(o))}</div>`).join('')}<button class="btn primary" style="margin-top:12px" onclick="cargarObjetivos()">Cargar objetivos a la ficha de ${esc(first(p.nombre))}</button></div>`;}
+  if(props.length){window._propObj={pid:p.id,list:props};$('evDoc').innerHTML+=`<div class="banner v" style="margin-top:14px"><b>Objetivos sugeridos</b> a partir de esta evaluación:${props.map(o=>`<div style="margin-top:5px">• ${esc(cap(o))}</div>`).join('')}<button class="btn primary" style="margin-top:12px" onclick="cargarObjetivos()">Cargar objetivos a la ficha de ${esc(first(p.nombre))}</button></div>`;}
   const fdate=new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short',year:'numeric'});
   if(!evals.find(e=>e.p===p.nombre&&e.test===test))evals.unshift({p:p.nombre,test,f:fdate,c:p.c});
   (p.evals=p.evals||[]).unshift({test,f:fdate});
@@ -966,8 +1080,9 @@ function consultaOnline(){if(!current)return;
   b.innerHTML=`<div class="chip" style="margin-bottom:12px">Sala de video privada para esta sesión. Se abre en una pestaña nueva; compartí el link con la familia para que entren.</div>
    <a class="btn primary" style="width:100%;justify-content:center;text-decoration:none;display:inline-flex" target="_blank" rel="noopener" href="${url}">${ic('globe',17)}&nbsp;Entrar a la videollamada</a>
    <a class="btn" style="width:100%;justify-content:center;text-decoration:none;display:inline-flex;margin-top:8px;background:#25d366;color:#fff;border-color:#25d366" target="_blank" rel="noopener" href="${wa}">${ic('whatsapp',17)}&nbsp;Enviar link a la familia</a>
-   <div style="margin-top:16px;font-size:13px;color:var(--muted)">Resumen de la sesión</div>
-   <textarea class="f" id="cresumen" style="min-height:110px;margin-top:6px" placeholder="Escribí lo que trabajaron en la sesión. Se guarda en la ficha del paciente."></textarea>
+   <div style="margin-top:18px;font-size:13px;font-weight:600;color:#3a4256">Cuando termine la sesión</div>
+   <div class="hint" style="margin:2px 0 6px">Anotá lo que trabajaron y se guarda en la ficha (podés dejarlo para después).</div>
+   <textarea class="f" id="cresumen" style="min-height:100px" placeholder="Qué trabajaron, cómo salió…"></textarea>
    <button class="btn primary" style="width:100%;margin-top:12px" onclick="guardarConsulta()">Guardar como sesión</button>`;}
 function guardarConsulta(){const el=$('cresumen');const r=el?el.value.trim():'';if(!current)return;current.ses.unshift({d:new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short'}),trab:[],evo:r,nota:'Consulta online',evid:true});savePatient(current);cls('ovConsulta');renderFicha();}
 
@@ -1191,10 +1306,10 @@ const AREAS_BY_PROF={
  const areas={Lectura:['Conciencia fonológica','Fluidez lectora','Comprensión lectora','Velocidad lectora','Vocabulario visual'],Escritura:['Grafismo','Ortografía','Producción de textos','Caligrafía'],Matemática:['Cálculo mental','Cálculo escrito','Resolución de problemas','Numeración','Geometría'],Atención:['Atención sostenida','Atención selectiva','Funciones ejecutivas','Memoria de trabajo'],Lenguaje:['Vocabulario','Morfosintaxis','Narrativa','Articulación','Comprensión oral'],Motricidad:['Motricidad fina','Regulación sensorial','Coordinación','Grafomotricidad'],Socioemocional:['Reconocer emociones','Habilidades sociales','Autorregulación']};
  const fmt=['Ficha','Juego','Tarjetas','Desafío','Actividad'];let id=200,fi=0;
  const A2P={Lectura:'psicopedagógico',Escritura:'psicopedagógico',Matemática:'psicopedagógico',Atención:'psicopedagógico',Lenguaje:'fonoaudiológico',Motricidad:'de terapia ocupacional',Socioemocional:'psicológico'};
- for(let v=1;v<=3;v++)Object.keys(areas).forEach(area=>areas[area].forEach(sub=>G.forEach(g=>{if(materialData.length>=330)return;id++;const f=fmt[fi++%fmt.length];materialData.push({id,prof:A2P[area]||'psicopedagógico',t:`${sub} — ${g}${v>1?' · '+v:''}`,area,sub,g:[g],obj:`Desarrollar ${sub.toLowerCase()} en nivel ${g}`,tipo:f,c:`${build(area,sub,g,id)}<p style="color:#7a839a;font-size:12px;margin-top:10px">Material original de Hilo · editable · imprimible.</p>`});})));
+ for(let v=1;v<=3;v++)Object.keys(areas).forEach(area=>areas[area].forEach(sub=>G.forEach(g=>{if(materialData.length>=330)return;id++;const f=fmt[fi++%fmt.length];materialData.push({id,prof:A2P[area]||'psicopedagógico',t:`${sub} — ${edadGrupo(g)}${v>1?' · '+v:''}`,area,sub,g:[g],obj:`Desarrollar ${sub.toLowerCase()} para ${edadGrupo(g)}`,tipo:f,c:`${build(area,sub,g,id)}<p style="color:#7a839a;font-size:12px;margin-top:10px">Material original de Hilo · editable · imprimible.</p>`});})));
  /* materiales propios de cada disciplina (áreas específicas) */
  Object.keys(AREAS_BY_PROF).forEach(prof=>{if(prof==='psicopedagógico')return;const ap=AREAS_BY_PROF[prof];const salud=(prof==='kinésico'||prof==='psicológico');const gs=salud?['—']:['Inicial','2º','4º'];
-   Object.keys(ap).forEach(area=>ap[area].forEach(sub=>gs.forEach(g=>{if(id>760)return;id++;const f=fmt[fi++%fmt.length];materialData.push({id,prof,t:`${sub}${g!=='—'?' · '+g:''}`,area,sub,g:[g],obj:`Trabajar ${sub.toLowerCase()}`,tipo:f,c:`${build(area,sub,g,id)}<p style="color:#7a839a;font-size:12px;margin-top:10px">Material de Hilo · ${prof} · editable.</p>`});})));});
+   Object.keys(ap).forEach(area=>ap[area].forEach(sub=>gs.forEach(g=>{if(id>760)return;id++;const f=fmt[fi++%fmt.length];materialData.push({id,prof,t:`${sub}${g!=='—'?' · '+edadGrupo(g):''}`,area,sub,g:[g],obj:`Trabajar ${sub.toLowerCase()}`,tipo:f,c:`${build(area,sub,g,id)}<p style="color:#7a839a;font-size:12px;margin-top:10px">Material de Hilo · ${prof} · editable.</p>`});})));});
  /* materiales escritos a mano: etiquetar profesión según área */
  materialData.forEach(m=>{if(!m.prof)m.prof=A2P[m.area]||'psicopedagógico';});
 })();
@@ -1237,34 +1352,37 @@ const AREAS_BY_PROF={
  {prof:'kinésico',area:'Pautas para casa',sub:'Cuidados post-lesión',g:['—'],tipo:'Pauta',t:'Pautas post-esguince de tobillo',obj:'Guiar el cuidado en casa tras un esguince',c:`<p><b>Primeras 48-72h (RICE):</b> reposo relativo, hielo 15 min varias veces al día, compresión y elevación.</p><p><b>Después:</b> movilidad suave (dibujar el abecedario con el pie), carga progresiva según dolor, y los ejercicios de propiocepción.</p><p><b>Consultá</b> si hay dolor intenso, no podés apoyar o el tobillo "se va".</p>`}
 ];let k=801;EX.forEach(m=>{m.id=k++;m.tipo=m.tipo||'Ficha';materialData.push(m);});})();
 let matArea='Todas',matGrado='Todos';
+const GRUPOS_EDAD=['3-5 años','6-7 años','8-9 años','10-11 años','12-14 años','15+ años'];
+function edadGrupo(g){return {'Inicial':'3-5 años','1º':'6-7 años','2º':'6-7 años','3º':'8-9 años','4º':'8-9 años','5º':'10-11 años','6º':'10-11 años'}[g]||g;}
+function matEdades(m){return Array.from(new Set((m.g||[]).filter(x=>x&&x!=='—').map(edadGrupo)));}
 function renderMat(){
   const mine=materialData.filter(m=>m.prof===perfil.profesion);
   const areas=['Todas',...Array.from(new Set(mine.map(m=>m.area)))];
-  const gset=Array.from(new Set(mine.flatMap(m=>m.g))).filter(g=>g!=='—');
-  const showGrados=gset.length>0;
-  const grados=['Todos',...['Inicial','1º','2º','3º','4º','5º','6º'].filter(g=>gset.includes(g))];
+  const eset=Array.from(new Set(mine.flatMap(matEdades)));
+  const showGrados=eset.length>0;
+  const grados=['Todos',...GRUPOS_EDAD.filter(e=>eset.includes(e)),...eset.filter(e=>!GRUPOS_EDAD.includes(e))];
   if(!areas.includes(matArea))matArea='Todas';
-  if(!showGrados)matGrado='Todos';
+  if(!showGrados||!grados.includes(matGrado))matGrado='Todos';
   const aCol={'Lectura':'var(--teal)','Escritura':'var(--violet)','Matemática':'var(--amber)','Atención':'var(--coral)','Lenguaje':'var(--blue)','Motricidad':'var(--green)','Socioemocional':'#e0518a'};
-  const list=mine.filter(m=>(matArea==='Todas'||m.area===matArea)&&(matGrado==='Todos'||m.g.includes(matGrado)));
+  const list=mine.filter(m=>(matArea==='Todas'||m.area===matArea)&&(matGrado==='Todos'||matEdades(m).includes(matGrado)));
   $('matBox').innerHTML=`
     <div class="banner v" style="max-width:none">Biblioteca de <b>${profLabel(perfil.profesion)}</b> · ${mine.length} materiales. Cambiás tu profesión en el perfil y la biblioteca se adapta.</div>
     <div class="card"><div class="bd" style="padding:14px 16px">
       <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;${showGrados?'margin-bottom:12px':''}"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Área</span><div class="fchips">${areas.map(a=>`<span class="fchip${a===matArea?' on':''}" onclick="matArea='${esc(a)}';renderMat()">${esc(a)}</span>`).join('')}</div></div>
-      ${showGrados?`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Grado</span><div class="fchips">${grados.map(g=>`<span class="fchip${g===matGrado?' on':''}" onclick="matGrado='${g}';renderMat()">${g}</span>`).join('')}</div></div>`:''}
+      ${showGrados?`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Edad</span><div class="fchips">${grados.map(g=>`<span class="fchip${g===matGrado?' on':''}" onclick="matGrado='${g}';renderMat()">${g}</span>`).join('')}</div></div>`:''}
     </div></div>
     <div class="pgrid">
-      ${list.map(m=>`<div class="pcard" style="border-top-color:${aCol[m.area]||'var(--violet)'}" onclick="openMaterial(${m.id})">
+      ${list.map(m=>`<div class="pcard" onclick="openMaterial(${m.id})">
         <div class="nm" style="font-size:15px;margin-bottom:6px">${esc(m.t)}</div>
         <div class="mt" style="margin-bottom:11px">${esc(m.obj)}</div>
-        <div><span class="chip" style="background:var(--violet-s);color:var(--violet)">${esc(m.area)}</span><span class="chip" style="background:var(--blue-s);color:#2f6fd6">${m.g.join(', ')}</span></div>
+        <div><span class="chip" style="background:var(--violet-s);color:var(--violet)">${esc(m.area)}</span>${matEdades(m).length?`<span class="chip" style="background:var(--blue-s);color:#2f6fd6">${esc(matEdades(m).join(', '))}</span>`:''}</div>
         <div class="ft"><span>${esc(m.sub)}</span><span>${esc(m.tipo)} · abrir →</span></div>
-      </div>`).join('')||'<div class="empty"><div class="b">📭</div>No hay materiales con ese filtro.</div>'}
+      </div>`).join('')||`<div class="empty"><div class="b">${ic('search',30)}</div>No hay materiales con ese filtro.</div>`}
     </div>
     <div class="banner" style="background:var(--amber-s);color:#8a5a12;max-width:none;margin-top:18px">Material original y generado con IA, de uso libre dentro de Hilo. Los bancos abiertos (ARASAAC, Orientación Andújar) tienen licencia <b>no comercial</b>: se enlazan, no se copian acá. Los manuales de tests con derechos de autor no se alojan.</div>`;
 }
 let curMat=null;
-function renderMatDoc(body,m){$('matDoc').innerHTML=`<div class="doc" id="matEditable" contenteditable="true" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:left;outline:none"><h2 style="text-align:left;margin-bottom:2px">${esc(m.t)}</h2><div style="color:#7a839a;font-size:12.5px;margin-bottom:16px">${esc(m.area)} › ${esc(m.sub)} · ${m.g.join(', ')} · ${esc(m.tipo)}</div><div style="line-height:1.6">${body}</div></div>`;}
+function renderMatDoc(body,m){$('matDoc').innerHTML=`<div class="doc" id="matEditable" contenteditable="true" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:left;outline:none"><h2 style="text-align:left;margin-bottom:2px">${esc(m.t)}</h2><div style="color:#7a839a;font-size:12.5px;margin-bottom:16px">${esc(m.area)} › ${esc(m.sub)}${matEdades(m).length?' · '+esc(matEdades(m).join(', ')):''} · ${esc(m.tipo)}</div><div style="line-height:1.6">${body}</div></div>`;}
 function openMaterial(id){const m=materialData.find(x=>x.id===id);curMat=m;renderMatDoc(m.c,m);$('matIA').style.display='none';opn('ovMat');}
 function toggleMatIA(){const el=$('matIA');el.style.display=el.style.display==='none'?'block':'none';if(el.style.display==='block')$('matIAin').focus();}
 function variar(m,ins){return `${m.obj}. Adaptalo a: ${ins.toLowerCase()}. Empezá por lo más simple y subí la dificultad según cómo responda el niño; registrá los aciertos.`;}
@@ -1310,7 +1428,7 @@ async function generarMaterial(){
   if(IA_ON){
     const btn=document.querySelector('#ovGen .btn.primary');if(btn){btn.disabled=true;btn.textContent='Generando…';}
     const sys=`Sos asistente de un/a profesional de ${perfil.profesion} en Uruguay. Diseñás una actividad terapéutica breve y concreta en español rioplatense para trabajar en sesión. Devolvés: objetivo, materiales, paso a paso de la consigna, y una variación más fácil y una más difícil. Claro y aplicable.`;
-    const out=await iaText(sys,`Área: ${area}. Nivel/grado: ${grado}. Trabajar: ${obj}.`);
+    const out=await iaText(sys,`Área: ${area}. Edad: ${grado}. Trabajar: ${obj}.`);
     if(out)c=iaHtmlBody(out)+`<p style="color:#7a839a;font-size:12px">${ic('shine',13)} Generado con IA de Hilo · revisalo antes de usarlo.</p>`;
     if(btn){btn.disabled=false;btn.innerHTML='Generar actividad '+ic('shine',15);}
   }
@@ -1333,7 +1451,7 @@ function publicarMaterial(){
   const area=$('pub_area').value,g=$('pub_g').value,obj=$('pub_obj').value.trim()||t;
   const body=c.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>`<p>${esc(l)}</p>`).join('');
   const pub=pubVis==='publico';
-  materialData.unshift({id:++matSeq,prof:perfil.profesion,t,area,sub:pub?'Publicado por la comunidad':'Mi material',g:[g],obj,tipo:pub?'Publicado':'Privado',priv:!pub,c:`${body}<p style="color:#7a839a;font-size:12px;margin-top:10px">${pub?'Publicado por Lucía · comunidad Hilo':'Material privado de Lucía'} · editable.</p>`});
+  materialData.unshift({id:++matSeq,prof:perfil.profesion,t,area,sub:pub?'Publicado por la comunidad':'Mi material',g:[g],obj,tipo:pub?'Publicado':'Privado',priv:!pub,c:`${body}<p style="color:#7a839a;font-size:12px;margin-top:10px">${pub?'Publicado por '+esc(first(perfil.nombre))+' · comunidad Hilo':'Material privado de '+esc(first(perfil.nombre))} · editable.</p>`});
   matArea=area;matGrado='Todos';cls('ovPub');renderMat();
 }
 
@@ -1342,37 +1460,55 @@ function renderFam(){
   $('famBox').innerHTML=`<div class="banner v" style="max-width:none">Así ven los padres el proceso de su hijo: el avance y los ejercicios de la semana. Ayuda a que la familia acompañe desde casa. La terapeuta decide si lo activa.</div>`+
     '<div class="pgrid">'+patients.map(p=>{
       const ord=[...p.obj].sort((a,b)=>a.p-b.p).slice(0,2);
-      const ex=ord.map(o=>`<div class="insight" style="margin-bottom:8px"><div class="tag" style="background:var(--teal-s)">🏠</div><div style="flex:1"><div class="t" style="font-size:13px">${esc(o.t)}</div><div class="s">Practicar en casa 2 veces esta semana</div></div><input type="checkbox" style="width:auto;align-self:center"></div>`).join('');
+      const ex=ord.map(o=>`<div class="insight" style="margin-bottom:8px"><div class="tag" style="background:var(--teal-s)">${ic('home',16)}</div><div style="flex:1"><div class="t" style="font-size:13px">${esc(o.t)}</div><div class="s">Practicar en casa 2 veces esta semana</div></div><input type="checkbox" style="width:auto;align-self:center"></div>`).join('');
       return `<div class="card" style="margin:0"><div class="bd" style="padding:18px">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div class="av" style="background:${p.c}">${ini(p.nombre)}</div><div style="flex:1"><div class="nm" style="font-weight:700">${esc(first(p.nombre))}</div><div style="color:var(--muted);font-size:12.5px">${esc(p.edad)}</div></div><div class="ring" style="--v:${avgP(p)};--rc:${ringColor(avgP(p))}"><i>${avgP(p)}%</i></div></div>
         <div class="hint" style="margin-bottom:8px">Ejercicios de esta semana:</div>${ex}
-        <div class="membox" style="margin-top:6px">💬 "${esc(first(p.nombre))} viene muy bien, sigan acompañando en casa. Cualquier cosa me escriben." — Lucía</div>
-        <a class="btn sm" style="margin-top:10px;display:inline-flex;text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Hola! Les paso los ejercicios de '+first(p.nombre)+' para esta semana: '+ord.map(o=>o.t).join(', ')+'. Cualquier duda me escriben. Saludos, Lucía.')}">Compartir por WhatsApp</a>
+        <div class="membox" style="margin-top:6px">💬 "${esc(first(p.nombre))} viene muy bien, sigan acompañando en casa. Cualquier cosa me escriben." — ${esc(first(perfil.nombre))}</div>
+        <a class="btn sm" style="margin-top:10px;display:inline-flex;text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Hola! Les paso los ejercicios de '+first(p.nombre)+' para esta semana: '+ord.map(o=>o.t).join(', ')+'. Cualquier duda me escriben. Saludos, '+first(perfil.nombre)+'.')}">Compartir por WhatsApp</a>
       </div></div>`;
     }).join('')+'</div>';
 }
 
 /* ---------- cobros ---------- */
 let cobros=[];
+const FREQS=[['mensual','por mes'],['quincenal','por quincena'],['semanal','por semana'],['sesion','por sesión']];
+function freqLabel(f){return (FREQS.find(x=>x[0]===f)||FREQS[0])[1];}
 function renderCob(){
-  patients.forEach((p,i)=>{if(!cobros.find(c=>c.id===p.id))cobros.push({id:p.id,pago:i%3!==2});});
-  const fee=900;
-  const pagas=patients.filter(p=>(cobros.find(c=>c.id===p.id)||{}).pago).length,pend=patients.length-pagas;
+  const cobrado=patients.filter(p=>p.pago).reduce((s,p)=>s+(Number(p.fee)||0),0);
+  const pend=patients.filter(p=>!p.pago).reduce((s,p)=>s+(Number(p.fee)||0),0);
+  const sinMonto=patients.filter(p=>!(Number(p.fee)>0)).length;
+  const opts=f=>FREQS.map(([v,l])=>`<option value="${v}" ${f===v?'selected':''}>${l}</option>`).join('');
   $('cobBox').innerHTML=`
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('dollar',23)}</div><div class="n">$${(pagas*fee).toLocaleString('es-UY')}</div><div class="l">Cobrado este mes</div></div>
-      <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('clock',23)}</div><div class="n">$${(pend*fee).toLocaleString('es-UY')}</div><div class="l">Pendiente</div></div>
-      <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('refresh',23)}</div><div class="n">${patients.length}</div><div class="l">Suscripciones activas</div></div>
+      <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('dollar',23)}</div><div class="n">$${cobrado.toLocaleString('es-UY')}</div><div class="l">Cobrado</div></div>
+      <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('clock',23)}</div><div class="n">$${pend.toLocaleString('es-UY')}</div><div class="l">Pendiente</div></div>
+      <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('group',23)}</div><div class="n">${patients.length}</div><div class="l">Pacientes</div></div>
     </div>
-    <div class="card"><div class="hd">Estado de pagos <span class="hint">$${fee}/mes por paciente</span></div><div class="bd" style="padding-top:14px">
-      ${patients.map(p=>{const c=cobros.find(x=>x.id===p.id)||{pago:false};return `<div class="slot"><div class="av" style="background:${p.c}">${ini(p.nombre)}</div><div style="flex:1"><div class="nm">${esc(p.nombre)}</div><div class="ti">$${fee} · mensual</div></div>${c.pago?'<span class="chip" style="background:var(--green-s);color:#1a8f57">Al día</span>':'<button class="btn sm" onclick="marcarPago('+p.id+')">Marcar pago</button>'}</div>`}).join('')}
+    <div class="card"><div class="hd">Pagos <span class="hint">definí cuánto y cada cuánto te paga cada uno</span></div><div class="bd" style="padding-top:10px">
+      ${patients.length?patients.map(p=>`<div class="slot">
+        <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
+        <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <span style="color:var(--muted);font-size:13px">$</span>
+            <input class="f" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto" style="width:92px;padding:6px 9px" onchange="setFee(${p.id},this.value)">
+            <select class="f" style="width:auto;padding:6px 9px" onchange="setFreq(${p.id},this.value)">${opts(p.freq||'mensual')}</select>
+          </div>
+        </div>
+        ${p.pago?`<button class="chip" style="background:var(--green-s);color:#1a8f57;border:0;cursor:pointer" onclick="setPago(${p.id},false)">✓ Al día</button>`:`<button class="btn sm" onclick="setPago(${p.id},true)">Marcar pago</button>`}
+      </div>`).join(''):'<div class="empty" style="padding:26px"><div class="hint">Cargá pacientes para gestionar los cobros.</div></div>'}
     </div></div>
-    <div class="banner v" style="max-width:none">Cobro automático con Mercado Pago: la suscripción se debita sola cada mes. Vos solo ves quién está al día.</div>`;
+    ${sinMonto?`<div class="hint" style="margin:0 2px">${sinMonto} paciente${sinMonto===1?'':'s'} sin monto definido. Poné cuánto te paga${sinMonto===1?'':'n'} para ver el total.</div>`:''}`;
 }
-function marcarPago(id){const c=cobros.find(x=>x.id===id);if(c)c.pago=true;renderCob();}
+function setFee(id,v){const p=P(id);if(!p)return;p.fee=Number(v)||0;savePatient(p);renderCob();}
+function setFreq(id,v){const p=P(id);if(!p)return;p.freq=v;savePatient(p);renderCob();}
+function setPago(id,val){const p=P(id);if(!p)return;p.pago=!!val;savePatient(p);renderCob();}
+function marcarPago(id){setPago(id,true);}
 
 /* ---------- chat con Hilo ---------- */
-let chatLog=[{r:'ai',t:'¡Hola! Soy Hilo. Probá: "¿cómo viene Tomás?", "¿qué hago con Malena?", "¿qué tengo hoy?" o "sugerime materiales". <span style="color:#8a8f9c;font-size:12px">(En este demo respondo sobre tus pacientes y la app; en la versión real contesto cualquier consulta clínica.)</span>'}];
+let chatLog=[{r:'ai',t:'¡Hola! Soy Hilo. Puedo contarte cómo viene cada paciente, qué trabajar en la próxima sesión, sugerirte materiales o darte una mano con un informe. ¿Con qué arrancamos?'}];
+const CHATQUICK=['¿Qué tengo hoy?','¿Cómo viene cada paciente?','Sugerime materiales','¿A quién le falta pagar?'];
+function quickAsk(q){const el=$('chatIn');if(el)el.value=q;chatSend();}
 /* ---------- IA real (backend /api/ia · con respaldo) ---------- */
 let IA_ON=false;
 async function iaPing(){try{const r=await fetch('/api/ia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ping:true})});if(r.ok){const j=await r.json();IA_ON=!!(j&&j.ready);}}catch(e){IA_ON=false;}}
@@ -1400,7 +1536,12 @@ function chatReply(q){
   if(/(estadistica|metrica|numero|dato|cuantos)/.test(nq))return 'En Estadísticas tenés tus números: pacientes activos, sesiones y avance por objetivo.';
   return `Puedo contarte cómo viene cada paciente y qué trabajar en la próxima sesión. Tus pacientes son: <b>${patients.map(pp=>first(pp.nombre)).join(', ')}</b>. Nombrame a alguno, o preguntame por la agenda, los materiales o una evaluación.`;
 }
-function renderChat(){$('chatLog').innerHTML=chatLog.map(m=>m.r==='ai'?`<div style="align-self:flex-start;max-width:80%;background:var(--violet-s);color:#3a3d66;padding:11px 14px;border-radius:16px 16px 16px 5px;font-size:14px;line-height:1.5">🤖 ${m.t}</div>`:`<div style="align-self:flex-end;max-width:80%;background:var(--violet);color:#fff;padding:11px 14px;border-radius:16px 16px 5px 16px;font-size:14px">${esc(m.t)}</div>`).join('');const l=$('chatLog');l.scrollTop=l.scrollHeight;}
+function renderChat(){
+  $('chatLog').innerHTML=chatLog.map(m=>m.r==='ai'
+    ?`<div class="msg ai"><span class="av2">${ic('shine',15)}</span><div>${m.t}</div></div>`
+    :`<div class="msg me">${esc(m.t)}</div>`).join('');
+  const q=$('chatQuick');if(q)q.innerHTML=CHATQUICK.map(x=>`<span class="qchip" onclick="quickAsk(${JSON.stringify(x).replace(/"/g,'&quot;')})">${esc(x)}</span>`).join('');
+  const l=$('chatLog');l.scrollTop=l.scrollHeight;}
 async function chatSend(){const q=$('chatIn').value.trim();if(!q)return;chatLog.push({r:'me',t:q});$('chatIn').value='';
   if(!IA_ON){chatLog.push({r:'ai',t:chatReply(q)});renderChat();return;}
   chatLog.push({r:'ai',t:'<span style="opacity:.6">escribiendo…</span>'});renderChat();const idx=chatLog.length-1;
@@ -1433,9 +1574,13 @@ function crearPaciente(){
   const nombre=$('n_nombre').value.trim();if(!nombre){alert('Poné al menos el nombre.');return;}
   const obj=$('n_obj').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,p:12,h:[12,12,12,12,12]}));
   const c=COLORS[patients.length%COLORS.length][0];
-  patients.unshift({id:++seq,c,nombre,edad:$('n_edad').value.trim()||'—',esc:$('n_esc').value.trim()||'—',col:$('n_col').value.trim()||'—',mut:$('n_mut').value.trim()||'—',esp:perfil.profesion,publico:$('n_pub').value,motivo:$('n_motivo').value.trim()||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj,ses:[]});
+  const edadN=parseInt($('n_edad').value,10);
+  const edad=isNaN(edadN)?'—':(edadN+' años');
+  const publico=isNaN(edadN)?'ninos':(edadN>=18?'adultos':edadN>=13?'adolescentes':'ninos');
+  const ses={freq:$('n_sfreq').value||'',dia:$('n_sdia').value||'',hora:$('n_shora').value||''};
+  patients.unshift({id:++seq,c,nombre,edad,esc:$('n_esc').value.trim()||'—',col:$('n_col').value.trim()||'—',mut:$('n_mut').value.trim()||'—',esp:perfil.profesion,publico,motivo:$('n_motivo').value.trim()||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj,ses:[],sesCfg:ses,fee:Number($('n_fee').value)||0,freq:$('n_freq').value||'sesion',pago:false});
   savePatient(patients[0]);
-  ['n_nombre','n_edad','n_esc','n_col','n_mut','n_motivo','n_obj'].forEach(i=>$(i).value='');
+  ['n_nombre','n_edad','n_esc','n_col','n_mut','n_motivo','n_obj','n_fee','n_shora'].forEach(i=>{if($(i))$(i).value='';});
   if($('q'))$('q').value='';cls('ovNuevo');goto('pac');
 }
 
@@ -1542,18 +1687,18 @@ function resultsHTML(pid,q){
   if(!nq)return '<div class="hint">Escribí para buscar en la biblioteca (por área, objetivo o título).</div>';
   const list=materialData.filter(m=>m.prof===perfil.profesion&&norm(m.t+' '+m.sub+' '+m.area+' '+m.obj).includes(nq)).slice(0,10);
   if(!list.length)return '<div class="hint">Sin resultados. Probá otra palabra o generá uno con IA en la pestaña Materiales.</div>';
-  return list.map(m=>{const added=planHas(pid,'',m.id);return `<div class="slot" style="margin-bottom:8px"><span class="chip" style="background:var(--violet-s);color:var(--violet)">${esc(m.area)}</span><div style="flex:1;margin:0 8px"><div class="nm" style="font-size:13.5px">${esc(m.t)}</div><div class="ti">${esc(m.sub)} · ${m.g.join(', ')}</div></div><button class="btn sm ${added?'':'primary'}" onclick="planAddMat(${pid},${m.id})" ${added?'disabled':''}>${added?'✓':'Agregar'}</button></div>`;}).join('');
+  return list.map(m=>{const added=planHas(pid,'',m.id);const ed=matEdades(m).join(', ');return `<div class="slot" style="margin-bottom:8px"><span class="chip" style="background:var(--violet-s);color:var(--violet)">${esc(m.area)}</span><div style="flex:1;margin:0 8px"><div class="nm" style="font-size:13.5px">${esc(m.t)}</div><div class="ti">${esc(m.sub)}${ed?' · '+esc(ed):''}</div></div><button class="btn sm ${added?'':'primary'}" onclick="planAddMat(${pid},${m.id})" ${added?'disabled':''}>${added?'Agregado':'Agregar'}</button></div>`;}).join('');
 }
 function planSearchDo(v){planSearchQ=v;const el=$('planResults');if(el)el.innerHTML=resultsHTML(planPac,v);}
 function renderPlanner(){
   const box=$('planiSes');if(!box)return;
-  if(!patients.length){box.innerHTML='<div class="empty"><div class="b">🧒</div>Creá un paciente para planificar.</div>';return;}
+  if(!patients.length){box.innerHTML=`<div class="empty"><div class="b">${ic('group',30)}</div>Creá un paciente para planificar.</div>`;return;}
   if(!planPac||!P(planPac))planPac=patients[0].id;
   const p=P(planPac),items=planItems(p.id);
   const idxSorted=p.obj.map((o,i)=>i).sort((a,b)=>p.obj[a].p-p.obj[b].p);
   const evLine=(p.evals&&p.evals.length)?`Tomando en cuenta la última evaluación (<b>${esc(p.evals[0].test)}</b>) y lo que vienen trabajando, Hilo prioriza los objetivos más descendidos:`:`Según los objetivos de ${esc(first(p.nombre))}, Hilo prioriza los más descendidos:`;
   const sug=idxSorted.length?idxSorted.map(i=>{const o=p.obj[i],m=matchMaterial(o.t),added=planHas(p.id,o.t,m?m.id:null);
-    return `<div class="insight"><div class="tag" style="background:var(--violet-s)">🎯</div><div style="flex:1"><div class="t">${esc(o.t)} <span class="hint">(${o.p}%)</span></div><div class="s">${esc(sugeActividad(o.t))}${m?` · material: <b>${esc(m.t)}</b>`:''}</div></div><button class="btn sm ${added?'':'primary'}" onclick="planAddObj(${p.id},${i})" ${added?'disabled':''}>${added?'✓ Agregado':'Agregar'}</button></div>`;}).join('')
+    return `<div class="insight"><div class="tag" style="background:var(--violet-s)">${ic('target',18)}</div><div style="flex:1"><div class="t">${esc(o.t)} <span class="hint">(${o.p}%)</span></div><div class="s">${esc(sugeActividad(o.t))}${m?` · material: <b>${esc(m.t)}</b>`:''}</div></div><button class="btn sm ${added?'':'primary'}" onclick="planAddObj(${p.id},${i})" ${added?'disabled':''}>${added?'Agregado':'Agregar'}</button></div>`;}).join('')
     :'<div class="hint">Este paciente todavía no tiene objetivos. Cargá una evaluación y Hilo arma las sugerencias.</div>';
   const chosen=items.length?items.map((it,i)=>{const m=it.mid?materialData.find(x=>x.id===it.mid):null;const title=it.t?esc(cap(it.t)):(m?esc(m.t):'Actividad');const subt=it.t?(m?`Material: ${esc(m.t)}`:'Actividad'):(m?`${esc(m.area)} · ${esc(m.sub)}`:'');
     return `<div class="planrow"><div style="width:30px;height:30px;border-radius:9px;background:var(--teal-s);color:#12706a;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">${i+1}</div><div style="flex:1;min-width:120px"><div class="nm" style="font-weight:700;font-size:14px">${title}</div><div class="ti">${subt}</div></div><button class="btn sm" onclick="planRemove(${p.id},${i})">Quitar</button></div>`;}).join('')
@@ -1569,23 +1714,45 @@ function renderPlanner(){
     </div></div>
     <div class="cols">
       <div>
-        <div class="card"><div class="hd">✨ Sugerencias de Hilo</div><div class="bd" style="padding-top:12px"><div class="hint" style="margin-bottom:10px">${evLine}</div>${sug}</div></div>
-        <div class="card"><div class="hd">📚 Buscar material <span class="hint">de la biblioteca</span></div><div class="bd" style="padding-top:12px">
+        <div class="card"><div class="hd">${hd('shine','Sugerencias de Hilo')}</div><div class="bd" style="padding-top:12px"><div class="hint" style="margin-bottom:10px">${evLine}</div>${sug}</div></div>
+        <div class="card"><div class="hd">${hd('book','Buscar material')} <span class="hint">de la biblioteca</span></div><div class="bd" style="padding-top:12px">
           <div style="display:flex;gap:8px"><input class="f" id="planSearch" value="${esc(planSearchQ)}" placeholder="Ej: fluidez, sílabas, atención…" oninput="planSearchDo(this.value)" style="flex:1"><button class="btn" onclick="planiTab('mat')">Ir a la biblioteca</button></div>
           <div id="planResults" style="margin-top:12px">${resultsHTML(p.id,planSearchQ)}</div>
         </div></div>
       </div>
       <div>
-        <div class="card"><div class="hd">🧩 Planificación de ${esc(first(p.nombre))} <span class="hint">${items.length}</span></div><div class="bd" style="padding-top:12px">${chosen}
+        <div class="card"><div class="hd">${hd('clipboard','Planificación de '+first(p.nombre))} <span class="hint">${items.length}</span></div><div class="bd" style="padding-top:12px">${chosen}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-            <button class="btn primary" onclick="printPlanPac(${p.id})" ${items.length?'':'disabled'}>🖨️ Imprimir planificación</button>
-            <button class="btn" onclick="printHoy()">🗓️ Imprimir todo lo de hoy</button>
+            <button class="btn primary" onclick="guardarPlanSesion(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('check',15)}</span> Guardar como sesión</button>
+            <button class="btn" onclick="printPlanPac(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('print',15)}</span> Imprimir</button>
             ${items.length?`<button class="btn" onclick="planClear(${p.id})">Vaciar</button>`:''}
           </div>
-          <div class="hint" style="margin-top:10px">Se guarda en la planificación de ${esc(first(p.nombre))}. En la versión real queda asociada a su ficha y a la agenda.</div>
+          <div class="hint" style="margin-top:10px">Al guardar, queda registrada como una sesión en la ficha de ${esc(first(p.nombre))} (con lo que trabajaron) y suma avance a los objetivos incluidos.</div>
         </div></div>
       </div>
     </div>`;
+}
+function guardarPlanSesion(pid){
+  const p=P(pid);if(!p)return;const items=planItems(p.id);
+  if(!items.length){alert('Agregá al menos una actividad al plan.');return;}
+  const trabajados=[];
+  items.forEach(it=>{
+    const m=it.mid?materialData.find(x=>x.id===it.mid):null;
+    trabajados.push(it.t?cap(it.t):(m?m.t:'Actividad'));
+    if(it.t){const o=p.obj.find(o=>o.t.toLowerCase()===it.t.toLowerCase());if(o){o.p=Math.min(100,o.p+8);o.h.push(o.p);}}
+  });
+  const resumen='Se trabajó: '+trabajados.map(t=>t.toLowerCase()).join(', ')+'.';
+  p.ses.unshift({d:new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short'}),trab:trabajados,evo:resumen,nota:'Registrada desde la planificación',evid:false});
+  savePatient(p);
+  sesionPlan[p.id]=[];
+  current=p;abrir(p.id);
+}
+function matAPlan(){
+  if(!curMat)return;
+  if(!patients.length){alert('Creá un paciente primero.');return;}
+  if(!planPac||!P(planPac))planPac=patients[0].id;
+  planAdd(planPac,'',curMat.id);
+  cls('ovMat');planiTab('ses');goto('plani');
 }
 function planPrintBlock(p){
   const items=planItems(p.id);
@@ -1593,7 +1760,7 @@ function planPrintBlock(p){
   if(!items.length)return s+'<p>Sin actividades planificadas.</p>';
   items.forEach((it,i)=>{const m=it.mid?materialData.find(x=>x.id===it.mid):null;
     s+=`<h3 style="margin-top:18px;border-bottom:1px solid #eee;padding-bottom:4px">${i+1}. ${it.t?esc(cap(it.t)):(m?esc(m.t):'Actividad')}</h3>`;
-    if(m)s+=`<div style="font-size:12px;color:#666;margin-bottom:6px">${esc(m.area)} › ${esc(m.sub)} · ${m.g.join(', ')}</div>${m.c}`;});
+    if(m)s+=`<div style="font-size:12px;color:#666;margin-bottom:6px">${esc(m.area)} › ${esc(m.sub)}${matEdades(m).length?' · '+esc(matEdades(m).join(', ')):''}</div>${m.c}`;});
   return s;
 }
 function printPlanPac(pid){const p=P(pid);if(!p||!planItems(p.id).length)return;printHTML(planPrintBlock(p));}
@@ -1630,7 +1797,7 @@ function renderClinica(){
       <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('dollar',23)}</div><div class="n">USD ${factura}</div><div class="l">Factura mensual</div></div>
     </div>
     <div class="card"><div class="hd">${hd('group','Equipo de '+esc(clinica.nombre))} <span class="hint">${usados} activos · ${clinica.asientos-usados} asiento(s) libre(s)</span></div><div class="bd" style="padding-top:12px">${rows}</div></div>
-    <div class="banner v" style="max-width:none">🔒 <b>Privacidad (modelo híbrido):</b> por defecto cada profesional ve solo sus pacientes; como coordinador ves la actividad (cantidades), no el contenido clínico. Un paciente se comparte entre profesionales solo con consentimiento, para abordaje interdisciplinario.</div>
+    <div class="banner v" style="max-width:none"><b>Privacidad (modelo híbrido):</b> por defecto cada profesional ve solo sus pacientes; como coordinador ves la actividad (cantidades), no el contenido clínico. Un paciente se comparte entre profesionales solo con consentimiento, para abordaje interdisciplinario.</div>
     <div class="banner" style="background:var(--blue-s);color:#2f6fd6;max-width:none">💳 <b>Cobro por asiento:</b> una sola factura a la institución por asiento activo (USD ${clinica.precioAsiento} c/u desde 5, con descuento por volumen). El coordinador agrega o quita asientos e invita a los profesionales por mail.</div>`;
 }
 function invitarProf(){
@@ -1649,13 +1816,7 @@ function updateWho(){const wp=$('whoPlan');if(wp)wp.textContent='Plan '+(planAct
 function openPerfil(){$('pf_nombre').value=perfil.nombre;$('pf_prof').innerHTML=PROFS.map(p=>`<option value="${p[0]}">${p[1]}</option>`).join('');$('pf_prof').value=perfil.profesion;opn('ovPerfil');}
 function guardarPerfil(){perfil.nombre=$('pf_nombre').value.trim()||perfil.nombre;perfil.profesion=$('pf_prof').value;matArea='Todas';matGrado='Todos';planSearchQ='';saveProfile();updateWho();cls('ovPerfil');goto('pac');}
 function mejorarPlan(){window.open(PLAN_WEB,'_blank');}
-function infoBanner(){
-  if(planActual!=='free')return '';
-  const rest=Math.max(0,infFree-infMes);
-  return `<div class="banner" style="max-width:none;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;${rest>0?'background:var(--violet-s);color:var(--violet)':'background:var(--amber-s);color:#8a5a12'}">
-    <span style="flex:1;min-width:200px">${rest>0?`Plan Free: te quedan <b>${rest} de ${infFree}</b> informes gratis este mes.`:'Llegaste al límite de informes gratis de este mes.'}</span>
-    <button class="btn sm" onclick="mejorarPlan()">Mejorar plan ↗</button></div>`;
-}
+function infoBanner(){return '';}
 
 /* ---------- modal utils ---------- */
 function opn(id){$(id).classList.add('on');}
@@ -1705,17 +1866,34 @@ async function salir(){if(sb)await sb.auth.signOut();location.reload();}
 
 /* --- cargar y guardar datos --- */
 async function loadPerfil(){
+  const meta=(authUser&&authUser.user_metadata)||{};
+  const emailName=((authUser&&authUser.email)||'').split('@')[0];
+  const fbNombre=(meta.nombre&&meta.nombre.trim())||emailName||'Profesional';
+  const fbProf=meta.profesion||'psicopedagógico';
   let {data}=await sb.from('profesionales').select('*').eq('id',authUser.id).maybeSingle();
-  if(!data){await sb.from('profesionales').insert({id:authUser.id,email:authUser.email,nombre:(authUser.user_metadata&&authUser.user_metadata.nombre)||'',profesion:(authUser.user_metadata&&authUser.user_metadata.profesion)||'psicopedagógico'});const r=await sb.from('profesionales').select('*').eq('id',authUser.id).maybeSingle();data=r.data;}
-  if(data){perfil.nombre=data.nombre||perfil.nombre;perfil.profesion=data.profesion||perfil.profesion;planActual=data.plan||'free';}
+  if(!data){
+    await sb.from('profesionales').insert({id:authUser.id,email:authUser.email,nombre:fbNombre,profesion:fbProf});
+    const r=await sb.from('profesionales').select('*').eq('id',authUser.id).maybeSingle();data=r.data;
+  } else if(!data.nombre||!data.nombre.trim()){
+    /* la fila existe pero quedó sin nombre: la completamos con lo que eligió al registrarse */
+    try{await sb.from('profesionales').update({nombre:fbNombre,profesion:data.profesion||fbProf}).eq('id',authUser.id);}catch(e){}
+    data.nombre=fbNombre;if(!data.profesion)data.profesion=fbProf;
+  }
+  if(data){
+    perfil.nombre=(data.nombre&&data.nombre.trim())||fbNombre;
+    perfil.profesion=data.profesion||fbProf;
+    planActual=data.plan||'free';
+  }else{
+    perfil.nombre=fbNombre;perfil.profesion=fbProf;
+  }
 }
 async function loadPacientes(){
   const {data,error}=await sb.from('pacientes').select('*').order('created_at',{ascending:true});
   if(error){console.error('loadPacientes',error);patients=[];return;}
   seq=20;
-  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[]};});
+  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],fee:Number(d.fee)||0,freq:d.freq||'mensual',pago:!!d.pago,sesCfg:d.sesCfg||null,extraSes:d.extraSes||[]};});
 }
-function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[]},updated_at:new Date().toISOString()};}
+function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],fee:Number(p.fee)||0,freq:p.freq||'mensual',pago:!!p.pago,sesCfg:p.sesCfg||null,extraSes:p.extraSes||[]},updated_at:new Date().toISOString()};}
 async function savePatient(p){
   if(!REAL||!authUser||!p)return;
   try{
