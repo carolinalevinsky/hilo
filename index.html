@@ -1138,7 +1138,7 @@ async function iaUpgradeEval(p,test,resumen){
   const out=await iaText(sys,usr);
   if(out){body.innerHTML=iaHtmlBody(out);
     if(badge)badge.innerHTML=ic('shine',15)+' Interpretación con IA de Hilo. Editala y firmá; el criterio clínico es tuyo.';}
-  else if(badge)badge.innerHTML=ic('shine',15)+' Borrador armado por Hilo. Editalo y firmá.';
+  else if(badge)badge.innerHTML=ic('warning',15)+' La IA no respondió esta vez: te dejé un borrador base. Editalo y firmá.';
 }
 function cargarObjetivos(){const d=window._propObj;if(!d)return;const p=P(d.pid);d.list.forEach(t=>{if(!p.obj.find(o=>o.t.toLowerCase()===t.toLowerCase()))p.obj.push({t:cap(t),p:10,h:[10,10,10,10,10]});});savePatient(p);cls('ovEval');abrir(p.id);}
 function consentToggle(id){const p=P(id);p.consent=true;savePatient(p);renderFicha();}
@@ -1597,8 +1597,16 @@ const CHATQUICK=['¿Qué tengo hoy?','¿Cómo viene cada paciente?','Sugerime ma
 function quickAsk(q){const el=$('chatIn');if(el)el.value=q;chatSend();}
 /* ---------- IA real (backend /api/ia · con respaldo) ---------- */
 let IA_ON=false;
-async function iaPing(){try{const r=await fetch('/api/ia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ping:true})});if(r.ok){const j=await r.json();IA_ON=!!(j&&j.ready);}}catch(e){IA_ON=false;}}
-async function iaText(system,user){try{const r=await fetch('/api/ia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({system,user})});if(!r.ok)return null;const j=await r.json();return (j&&j.text)?String(j.text).trim():null;}catch(e){return null;}}
+async function iaPing(){try{const r=await fetch('/api/ia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ping:true})});if(r.ok){const j=await r.json();IA_ON=!!(j&&j.ready);window.__iaPing=j;}else{IA_ON=false;window.__iaPing={http:r.status};}}catch(e){IA_ON=false;window.__iaPing={ex:String(e&&e.message||e)};}}
+async function iaText(system,user){try{
+    const r=await fetch('/api/ia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({system,user})});
+    if(!r.ok){window.__ia={ok:false,http:r.status};return null;}
+    const j=await r.json();
+    if(j&&j.apiError){window.__ia={ok:false,apiError:j.apiError};return null;}
+    if(j&&j.error){window.__ia={ok:false,error:j.error};return null;}
+    if(j&&j.text){window.__ia={ok:true};return String(j.text).trim();}
+    window.__ia={ok:false,empty:true};return null;
+  }catch(e){window.__ia={ok:false,ex:String(e&&e.message||e)};return null;}}
 function escBr(t){return esc(t).replace(/\n/g,'<br>');}
 function iaHtmlBody(t){/* pasa texto plano de IA a HTML simple con h3/p */
   return t.split(/\n{2,}/).map(bloque=>{const b=bloque.trim();if(!b)return '';
@@ -1762,7 +1770,7 @@ async function iaUpgradeInforme(p,titulo,t){
   const out=await iaText(sys,usr);
   if(out){body.innerHTML='<p>'+esc(t.s)+':</p>'+iaHtmlBody(out.replace(new RegExp('^\\s*'+t.s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*:?','i'),''));
     if(badge)badge.innerHTML=ic('shine',15)+' Redactado con IA de Hilo desde la ficha de '+esc(first(p.nombre))+'. Editalo y firmá.';}
-  else if(badge)badge.innerHTML=ic('shine',15)+' Generado desde la ficha de '+esc(first(p.nombre))+'.';
+  else if(badge)badge.innerHTML=ic('warning',15)+' La IA no respondió esta vez: te dejé un borrador base desde la ficha de '+esc(first(p.nombre))+'. Editalo y firmá.';
 }
 function copiarInforme(){const el=document.querySelector('#infDoc .doc');const r=document.createRange();r.selectNode(el);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');alert('Informe copiado.');}catch(e){}s.removeAllRanges();}
 let _infIdx=0;
