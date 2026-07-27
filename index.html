@@ -14,6 +14,7 @@
 <title>Hilo · Copiloto para terapias infantiles</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236c5ce7'/%3E%3Crect x='9' y='10.5' width='14' height='2.6' rx='1.3' fill='white'/%3E%3Crect x='9' y='15.4' width='14' height='2.6' rx='1.3' fill='white'/%3E%3Crect x='9' y='20.3' width='9.5' height='2.6' rx='1.3' fill='white'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -28,7 +29,7 @@
 body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
 .brandmark{width:30px;height:30px;border-radius:9px;background:var(--violet);position:relative;display:inline-block;flex:0 0 auto}
 .brandmark::after{content:"";position:absolute;inset:9px 8px auto 8px;height:2.5px;border-radius:3px;background:#fff;box-shadow:0 5px 0 rgba(255,255,255,.6),0 10px 0 rgba(255,255,255,.35)}
-.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.app{display:grid;grid-template-columns:236px 1fr;height:100vh}
 /* sidebar */
 .side{background:linear-gradient(180deg,#5a4bd4,#6c5ce7 60%,#7d6ef0);color:#e9e6ff;padding:22px 16px;display:flex;flex-direction:column;gap:5px;position:sticky;top:0;height:100vh}
 .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:22px;color:#fff;margin-bottom:24px;letter-spacing:-.4px}
@@ -49,8 +50,9 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .side .who{background:rgba(255,255,255,.12);border-radius:14px;padding:12px 13px;font-size:12.5px;line-height:1.5}
 .side .who b{color:#fff}
 /* main */
-.main{padding:44px 34px 70px;overflow:auto}
-@media(max-width:760px){.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:5px;padding:12px}.side .brand{width:100%;margin-bottom:6px}.side .who,.side .sp{display:none}.nav{padding:8px 11px;font-size:13px}.main{padding:26px 16px 60px}.topbar h1{font-size:21px}}
+.main{padding:44px 34px 70px;overflow:auto;display:flex;flex-direction:column;min-height:0}
+section[data-view="chat"]{flex:1;min-height:0;flex-direction:column}
+@media(max-width:760px){.app{grid-template-columns:1fr;height:auto;min-height:100vh}.main{display:block}section[data-view="chat"]{display:flex}.chatwrap{height:calc(100vh - 150px)!important}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:5px;padding:12px}.side .brand{width:100%;margin-bottom:6px}.side .who,.side .sp{display:none}.nav{padding:8px 11px;font-size:13px}.main{padding:26px 16px 60px}.topbar h1{font-size:21px}}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .topbar h1{margin:0;font-size:25px;letter-spacing:-.6px}
 .topbar .sub{color:var(--muted);font-size:13.5px;margin-top:3px}
@@ -63,6 +65,9 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .cal .grid{display:grid;grid-template-columns:52px repeat(5,1fr);min-width:640px}
 .cal .hcell{padding:12px 6px;text-align:center;font-weight:700;font-size:13px;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:#faf9ff}
 .cal .hcell.corner{border-left:0;background:#fff}
+.cal .hcell .hdate{font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+.cal .hcell.today{background:var(--violet-s)}
+.cal .hcell.today .hdate{color:var(--violet)}
 .cal .tcell{padding:8px 6px 0;text-align:right;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)}
 .cal .cell{border-bottom:1px solid var(--line);border-left:1px solid var(--line);min-height:56px;padding:4px}
 .cal .ev{border-radius:9px;padding:5px 7px;font-size:11.5px;font-weight:600;color:#fff;cursor:pointer;line-height:1.25;margin-bottom:3px}
@@ -193,10 +198,12 @@ input.f:focus,select.f:focus,textarea.f:focus{border-color:var(--violet);box-sha
 textarea.f{resize:vertical;min-height:66px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.mb .row,.mb .row3{margin-top:15px}
+.mb .row .row,.mb .row .row3{margin-top:0}
 @media(max-width:560px){.row3{grid-template-columns:1fr}}
 .nsub{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:18px 0 2px;padding-top:14px;border-top:1px solid var(--line)}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:1;min-width:104px;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px;cursor:pointer;font:inherit;font-weight:600;color:#586074}
+.seg button{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:1;min-width:104px;white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 16px;cursor:pointer;font:inherit;font-weight:600;color:#586074}
 .seg button .ico{flex:0 0 auto}
 .seg button.on{border-color:var(--violet);background:var(--violet-s);color:var(--violet)}
 /* modal */
@@ -210,11 +217,13 @@ textarea.f{resize:vertical;min-height:66px}
 .banner.v{background:var(--violet-s);color:#574fb0;border-color:transparent}
 .banner.t{background:var(--teal-s);color:#12706a;border-color:transparent}
 /* chat */
-.chatwrap{display:flex;flex-direction:column;height:calc(100vh - 172px);min-height:420px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.chatwrap{display:flex;flex-direction:column;flex:1;min-height:420px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 .chatlog{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:22px 22px 10px}
 .chatquick{display:flex;gap:8px;flex-wrap:wrap;padding:2px 16px 12px}
 .chatbar{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line);background:#fff}
 .chatbar .f{flex:1}
+.micbtn{padding:0 13px;flex:none}
+.btn.rec{background:#fdecec!important;border-color:#f3b4b4!important;color:#c0392b!important}
 .qchip{font-size:12.5px;font-weight:600;color:#586074;background:#f4f5fb;border:1px solid var(--line);border-radius:999px;padding:8px 13px;cursor:pointer;transition:.13s}
 .qchip:hover{border-color:var(--violet);color:var(--violet)}
 .msg{max-width:80%;padding:12px 15px;font-size:14px;line-height:1.55}
@@ -237,13 +246,27 @@ textarea.f{resize:vertical;min-height:66px}
 .doc .meta{font-size:13px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;background:#fbfbfe;font-family:-apple-system,Segoe UI,sans-serif}
 .doc h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--violet);font-family:-apple-system,Segoe UI,sans-serif;margin:17px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
 .doc p{margin:0 0 10px;text-align:justify}
-.doc .firma{margin-top:28px;font-family:-apple-system,Segoe UI,sans-serif;font-size:13px}
-.doc .firma .line{width:220px;border-top:1px solid #333;margin-bottom:5px}
+.doc .firma{margin-top:32px;font-family:-apple-system,Segoe UI,sans-serif;font-size:13px;text-align:center}
+.doc .firma .line{width:220px;border-top:1px solid #333;margin:0 auto 6px}
+.doc .firma .fnm{font-weight:700;color:#20293a}
+.doc b,.doc strong{font-weight:700}
+.ianote{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-family:-apple-system,Segoe UI,sans-serif;font-size:11.5px;line-height:1.4;margin:0 0 16px;padding:0 6px;text-align:center}
+.ianote svg{color:var(--violet);flex:none}
+.ldr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:46px 0;color:var(--muted);font-family:-apple-system,Segoe UI,sans-serif;font-size:13px}
+.spin{width:30px;height:30px;border-radius:50%;border:3px solid var(--violet-s);border-top-color:var(--violet);animation:hspin .7s linear infinite}
+@keyframes hspin{to{transform:rotate(360deg)}}
+.docactions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.iarow{display:flex;gap:8px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.iarow .f{flex:1;margin:0}
+.iarow .btn{flex:none;white-space:nowrap}
 .empty{padding:44px 20px;text-align:center;color:var(--muted)}.empty .b{font-size:40px}
 @media print{body *{visibility:hidden}.ov.on,.ov.on *{visibility:visible}.ov.on{position:absolute;inset:0;background:#fff;padding:0;display:block;overflow:visible}.ov.on .modal{box-shadow:none;max-width:none;border-radius:0}.ov.on .mh,.ov.on .noprint{display:none!important}.doc{border:0}}
 </style>
 </head>
 <body>
+
+<!-- PÁGINA PÚBLICA DE RESERVA (link que comparte la profesional) -->
+<div id="bookScreen" style="display:none;min-height:100vh;padding:38px 16px;background:var(--bg)"></div>
 
 <!-- PANTALLA DE REGISTRO / LOGIN (solo en modo real) -->
 <div id="authScreen" style="display:none;position:fixed;inset:0;z-index:200;background:radial-gradient(900px 500px at 18% -10%,rgba(169,77,240,.9),transparent 60%),linear-gradient(140deg,#5a4bd4,#6c5ce7 55%,#7d6ef0);align-items:center;justify-content:center;padding:20px;overflow:auto">
@@ -255,11 +278,11 @@ textarea.f{resize:vertical;min-height:66px}
     <div id="authErr" style="display:none;background:var(--coral-s);color:#c0392b;border-radius:11px;padding:10px 13px;font-size:12.5px;margin-bottom:14px;line-height:1.4"></div>
     <!-- REGISTRO -->
     <div id="authReg">
-      <label>Nombre y apellido</label><input class="f" id="au_nombre" placeholder="Nombre y apellido" autocomplete="name">
+      <label>Nombre y apellido</label><input class="f" id="au_nombre" autocomplete="name">
       <label>Email</label><input class="f" id="au_email" type="email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
-      <div style="position:relative"><input class="f" id="au_pass" type="password" placeholder="Contraseña" autocomplete="new-password" style="padding-right:46px" oninput="passHint()"><button type="button" aria-label="Mostrar contraseña" onclick="togglePass('au_pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span class="ic" data-ic="eye" data-sz="19"></span></button></div>
-      <div class="hint" id="au_passHint" style="margin-top:6px">Usá al menos 6 caracteres.</div>
+      <div style="position:relative"><input class="f" id="au_pass" type="password" placeholder="Usá al menos 6 caracteres" autocomplete="new-password" style="padding-right:46px" oninput="passHint()"><button type="button" aria-label="Mostrar contraseña" onclick="togglePass('au_pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span class="ic" data-ic="eye" data-sz="19"></span></button></div>
+      <div class="hint" id="au_passHint" style="margin-top:6px;min-height:4px"></div>
       <label>Tu profesión</label><select class="f" id="au_prof"></select>
       <button class="btn primary" id="au_btn" style="width:100%;margin-top:20px;padding:13px" onclick="registrar()">Crear cuenta</button>
     </div>
@@ -268,7 +291,8 @@ textarea.f{resize:vertical;min-height:66px}
       <label>Email</label><input class="f" id="al_email" type="email" placeholder="tu@email.com" autocomplete="email">
       <label>Contraseña</label>
       <div style="position:relative"><input class="f" id="al_pass" type="password" placeholder="Tu contraseña" autocomplete="current-password" style="padding-right:46px" onkeydown="if(event.key==='Enter')ingresar()"><button type="button" aria-label="Mostrar contraseña" onclick="togglePass('al_pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span class="ic" data-ic="eye" data-sz="19"></span></button></div>
-      <button class="btn primary" id="al_btn" style="width:100%;margin-top:20px;padding:13px" onclick="ingresar()">Entrar</button>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px;color:#3a4256;margin-top:14px;cursor:pointer"><input type="checkbox" id="al_remember" style="width:16px;height:16px;accent-color:var(--violet)"> Recordar mi correo en este dispositivo</label>
+      <button class="btn primary" id="al_btn" style="width:100%;margin-top:16px;padding:13px" onclick="ingresar()">Entrar</button>
     </div>
     <div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px">Tus datos están protegidos y encriptados.</div>
   </div>
@@ -348,7 +372,7 @@ textarea.f{resize:vertical;min-height:66px}
     <section data-view="plani" style="display:none">
       <div class="topbar"><div><h1>Planificación</h1><div class="sub">Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar.</div></div></div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
-        <div class="seg" id="planiTabs" style="max-width:420px;flex:0 0 auto">
+        <div class="seg" id="planiTabs" style="max-width:470px;flex:0 0 auto">
           <button class="on" data-t="mat" onclick="planiTab('mat')"><span class="ic" data-ic="book" data-sz="17"></span> Materiales</button>
           <button data-t="ses" onclick="planiTab('ses')"><span class="ic" data-ic="clipboard" data-sz="17"></span> Planificar sesión</button>
         </div>
@@ -382,7 +406,8 @@ textarea.f{resize:vertical;min-height:66px}
         <div id="chatLog" class="chatlog"></div>
         <div class="chatquick" id="chatQuick"></div>
         <div class="chatbar">
-          <input class="f" id="chatIn" placeholder="Escribí tu mensaje…" onkeydown="if(event.key==='Enter')chatSend()">
+          <input class="f" id="chatIn" placeholder="Escribí tu mensaje o dictalo con el micrófono…" onkeydown="if(event.key==='Enter')chatSend()">
+          <button class="btn micbtn" title="Dictar por voz" onclick="dictar('chatIn',this)"><span class="ic" data-ic="mic" data-sz="17"></span></button>
           <button class="btn primary" onclick="chatSend()"><span class="ic" data-ic="send" data-sz="17"></span> Enviar</button>
         </div>
       </div>
@@ -398,8 +423,8 @@ textarea.f{resize:vertical;min-height:66px}
 
 <!-- MODALS -->
 <div class="ov" id="ovNuevo"><div class="modal"><div class="mh">Nuevo paciente <button class="x" onclick="cls('ovNuevo')">×</button></div><div class="mb">
-  <div class="row"><div><label>Nombre</label><input class="f" id="n_nombre" placeholder="Nombre y apellido"></div><div><label>Edad</label><input class="f" id="n_edad" type="number" min="0" inputmode="numeric" placeholder="años"></div></div>
-  <div class="row"><div><label>Colegio / escuela <span class="hint">· opcional</span></label><input class="f" id="n_col" placeholder="Nombre del colegio"></div><div><label>Mutualista <span class="hint">· opcional</span></label><input class="f" id="n_mut" placeholder="Mutualista o particular"></div></div>
+  <div class="row"><div><label>Nombre y apellido</label><input class="f" id="n_nombre"></div><div><label>Edad</label><input class="f" id="n_edad" type="number" min="0" inputmode="numeric"></div></div>
+  <div class="row"><div><label>Colegio / escuela <span class="hint">· opcional</span></label><input class="f" id="n_col"></div><div><label>Mutualista <span class="hint">· opcional</span></label><input class="f" id="n_mut"></div></div>
   <label>Motivo de consulta</label><textarea class="f" id="n_motivo" placeholder="¿Por qué llega a la consulta?"></textarea>
   <label>Objetivos iniciales <span class="hint">· uno por línea</span></label><textarea class="f" id="n_obj" placeholder="Producción del fonema /r/&#10;Ampliación de vocabulario"></textarea>
   <div class="nsub">Sesiones</div>
@@ -435,16 +460,22 @@ textarea.f{resize:vertical;min-height:66px}
     <label>Paciente</label><select class="f" id="inf_pac"></select>
     <label>¿Para quién es?</label>
     <div class="seg" id="destSeg"><button data-v="colegio" class="on">Colegio</button><button data-v="familia">Familia</button><button data-v="mutualista">Mutualista</button><button data-v="adecuacion">Adecuación ANEP</button></div>
+    <label style="margin-top:14px">Notas para este informe <span class="hint">· opcional</span></label>
+    <div style="display:flex;gap:8px;align-items:flex-start"><textarea class="f" id="inf_notas" style="flex:1" placeholder="Algo puntual para incluir o destacar: el foco del informe, un logro reciente, un pedido de la familia o del colegio, el período que abarca…"></textarea><button class="btn micbtn" style="align-self:stretch" title="Dictar por voz" onclick="dictar('inf_notas',this)"><span class="ic" data-ic="mic" data-sz="16"></span></button></div>
     <button class="btn primary" style="width:100%;margin-top:16px" onclick="hacerInforme()">Generar informe →</button>
   </div>
   <div id="infOut" style="display:none">
     <div id="infDoc"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap" class="noprint">
-      <button class="btn primary" onclick="guardarInforme()"><span class="ic" data-ic="check" data-sz="15"></span> Guardar en la ficha</button>
+    <div id="infIter" class="iarow noprint" style="display:none">
+      <input class="f" id="infAjuste" placeholder="Pedile un ajuste a la IA: más breve, más formal, destacá los avances…" onkeydown="if(event.key==='Enter'){event.preventDefault();iterarInforme();}">
+      <button class="btn" onclick="iterarInforme()"><span class="ic" data-ic="refresh" data-sz="15"></span> Volver a generar</button>
+    </div>
+    <div id="infActions" class="docactions noprint">
       <button class="btn" onclick="infReset()">← Otro destino</button>
-      <button class="btn" onclick="copiarInforme()">Copiar</button>
       <button class="btn" id="infWa" style="display:none;background:#25d366;color:#fff;border-color:#25d366" onclick="compartirInformeWa()"><span class="ic" data-ic="whatsapp" data-sz="15"></span> Enviar por WhatsApp</button>
+      <button class="btn" onclick="copiarInforme()">Copiar</button>
       <button class="btn" onclick="printInforme()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir / PDF</button>
+      <button class="btn primary" onclick="guardarInforme()"><span class="ic" data-ic="check" data-sz="15"></span> Guardar en la ficha</button>
     </div>
   </div>
 </div></div></div>
@@ -462,15 +493,19 @@ textarea.f{resize:vertical;min-height:66px}
         <option>Otra</option></select></div></div>
     <div id="ev_fields"></div>
     <label>Observaciones de conducta <span class="hint">· opcional</span></label>
-    <textarea class="f" id="ev_obs" placeholder="Ej: colaborador; se cansó en tareas de atención sostenida."></textarea>
+    <div style="display:flex;gap:8px;align-items:flex-start"><textarea class="f" id="ev_obs" style="flex:1" placeholder="Ej: colaborador; se cansó en tareas de atención sostenida."></textarea><button class="btn micbtn" style="align-self:stretch" title="Dictar por voz" onclick="dictar('ev_obs',this)"><span class="ic" data-ic="mic" data-sz="16"></span></button></div>
     <button class="btn primary" style="width:100%;margin-top:16px" onclick="interpretar()"><span class="ic" data-ic="shine" data-sz="16"></span> Interpretar con Hilo</button>
   </div>
   <div id="evOut" style="display:none">
     <div id="evDoc"></div>
-    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap" class="noprint">
-      <button class="btn primary" onclick="guardarEval()"><span class="ic" data-ic="check" data-sz="15"></span> Guardar en la ficha</button>
+    <div id="evIter" class="iarow noprint" style="display:none">
+      <input class="f" id="evAjuste" placeholder="Pedile un ajuste a la IA: más breve, resaltá la memoria de trabajo, tono para la familia…" onkeydown="if(event.key==='Enter'){event.preventDefault();iterarEval();}">
+      <button class="btn" onclick="iterarEval()"><span class="ic" data-ic="refresh" data-sz="15"></span> Volver a generar</button>
+    </div>
+    <div id="evActions" class="docactions noprint">
       <button class="btn" onclick="evReset()">← Otra evaluación</button>
       <button class="btn" onclick="printEval()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir / PDF</button>
+      <button class="btn primary" onclick="guardarEval()"><span class="ic" data-ic="check" data-sz="15"></span> Guardar en la ficha</button>
     </div>
   </div>
 </div></div></div>
@@ -633,7 +668,7 @@ let current=null,destino="colegio";
 function nav(el){document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));el.classList.add('on');goto(el.dataset.v);}
 function goto(v){
   document.querySelectorAll('[data-view]').forEach(s=>s.style.display='none');
-  document.querySelector(`[data-view="${v}"]`).style.display='block';
+  document.querySelector(`[data-view="${v}"]`).style.display=(v==='chat')?'flex':'block';
   document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));
   if(v==='dash')renderDash();if(v==='pac')renderPac();if(v==='age')renderAgenda();if(v==='docs')renderDocs();if(v==='plani')renderPlani();if(v==='cob')renderCob();if(v==='clinica')renderClinica();if(v==='chat')renderChat();if(v==='est')renderEst();
   const fab=document.querySelector('.fab');if(fab)fab.style.display=(v==='chat')?'none':'';
@@ -707,7 +742,7 @@ function renderDash(){
   $('hoyN').textContent=`· ${agendaHoy.length} sesiones`;
   $('hoy').innerHTML=agendaHoy.map(s=>{const p=P(s.id);if(!p)return '';const o=[...p.obj].sort((a,b)=>a.p-b.p)[0]||{t:'—',p:0};const last=p.ses[0];
     const al=[];const slow=p.obj.find(ob=>ob.p<45);if(slow)al.push({ic:ic('warning',13),t:`${esc(slow.t)} viene lento`,bg:'var(--amber-s)',fg:'#8a5a00'});
-    if(!p.pago&&Number(p.fee)>0)al.push({ic:ic('wallet',13),t:'pago pendiente',bg:'var(--coral-s)',fg:'#c0392b'});
+    if((p.freq||'mensual')==='mensual'&&!pagadoActual(p)&&Number(p.fee)>0)al.push({ic:ic('wallet',13),t:'pago pendiente',bg:'var(--coral-s)',fg:'#c0392b'});
     return `<div class="hoycard">
       <div class="hoyhead">
         <div class="hoyhora">${s.h}</div>
@@ -729,7 +764,7 @@ function renderTriage(){
     if(est)items.push({ic:ic('warning',18),bg:'var(--amber-s)',t:`${first(p.nombre)}: "${est.t}" viene lento (${est.p}%)`,s:'Puede convenir cambiar de estrategia.',id:p.id});
     if(!p.ses.length)items.push({ic:ic('clock',18),bg:'var(--coral-s)',t:`${first(p.nombre)} sin sesiones registradas`,s:'Registrá la primera para arrancar el seguimiento.',id:p.id});
   });
-  patients.forEach(p=>{if(!p.pago&&Number(p.fee)>0)items.push({ic:ic('wallet',18),bg:'var(--violet-s)',t:`${first(p.nombre)}: pago pendiente`,s:'Figura como no abonado.',id:p.id});});
+  patients.forEach(p=>{if((p.freq||'mensual')==='mensual'&&!pagadoActual(p)&&Number(p.fee)>0)items.push({ic:ic('wallet',18),bg:'var(--violet-s)',t:`${first(p.nombre)}: pago pendiente`,s:'Figura como no abonado este mes.',id:p.id});});
   const box=$('triage'),card=$('triageCard');if(!box)return;
   if(!items.length){card.style.display='none';return;}
   card.style.display='';
@@ -877,6 +912,22 @@ const AGLINK='hilo.uy/lucia';
 function planKey(d,s){return d+'|'+s.h+'|'+s.id;}
 function lowestIdx(p){if(!p.obj.length)return 0;let idx=0,min=1e9;p.obj.forEach((o,i)=>{if(o.p<min){min=o.p;idx=i;}});return idx;}
 const DIAS_SEM=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function weekDates(){
+  const now=new Date();const dow=now.getDay();
+  const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-((dow+6)%7));
+  const names=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const map={};for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);map[names[i]]=d;}
+  return map;
+}
+function gcalLink(dt,hhmm,title,details){
+  if(!dt||!hhmm)return '';
+  const parts=String(hhmm).split(':');const H=parseInt(parts[0],10)||0,M=parseInt(parts[1],10)||0;
+  const start=new Date(dt);start.setHours(H,M,0,0);
+  const end=new Date(start.getTime()+45*60000);
+  const z=n=>String(n).padStart(2,'0');
+  const f=x=>x.getFullYear()+z(x.getMonth()+1)+z(x.getDate())+'T'+z(x.getHours())+z(x.getMinutes())+'00';
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+f(start)+'/'+f(end)+(details?'&details='+encodeURIComponent(details):'');
+}
 function rebuildAgenda(){
   if(!REAL)return;
   Object.keys(semana).forEach(k=>delete semana[k]);
@@ -905,24 +956,124 @@ function guardarAgendar(){
   if(REAL)rebuildAgenda();else{(semana[dia]=semana[dia]||[]).push({h:hora,id:p.id});semana[dia].sort((a,b)=>a.h.localeCompare(b.h));}
   cls('ovAgendar');goto('age');
 }
+/* ---------- Google Calendar (Google Identity Services, sin backend) ---------- */
+let _gcalTC=null,gcalToken='',gcalTokenExp=0,_gcalAfter=null;
+function gcalCid(){const c=(typeof GCAL_CLIENT_ID!=='undefined'&&GCAL_CLIENT_ID)?String(GCAL_CLIENT_ID).trim():'';if(c)return c;try{return localStorage.getItem('hilo_gcal_cid')||'';}catch(e){return '';}}
+function gcalAppConfigured(){return !!((typeof GCAL_CLIENT_ID!=='undefined'&&GCAL_CLIENT_ID)&&String(GCAL_CLIENT_ID).trim());}
+function gcalOn(){try{return localStorage.getItem('hilo_gcal_on')==='1';}catch(e){return false;}}
+function gcalNote(m){const el=$('gcalNote');if(el)el.textContent=m||'';}
+function gcalSaveCid(){const el=$('gcalCid');if(!el)return;const v=el.value.trim();try{localStorage.setItem('hilo_gcal_cid',v);}catch(e){}_gcalTC=null;gcalNote(v?'Client ID guardado. Ahora tocá "Conectar".':'');renderAgenda();}
+function gcalTokenClient(){
+  if(_gcalTC)return _gcalTC;
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)||!gcalCid())return null;
+  _gcalTC=google.accounts.oauth2.initTokenClient({
+    client_id:gcalCid(),
+    scope:'https://www.googleapis.com/auth/calendar.events',
+    callback:(resp)=>{
+      if(resp&&resp.access_token){gcalToken=resp.access_token;gcalTokenExp=Date.now()+((resp.expires_in||3300)*1000)-60000;
+        if(_gcalAfter){const f=_gcalAfter;_gcalAfter=null;f();}}
+      else{gcalNote('No se pudo conectar con Google. Probá de nuevo.');}
+    }
+  });
+  return _gcalTC;
+}
+function gcalEnsure(cb){
+  if(gcalToken&&Date.now()<gcalTokenExp){cb();return;}
+  const tc=gcalTokenClient();
+  if(!tc){gcalNote(gcalCid()?'Google todavía no cargó, esperá unos segundos y reintentá.':'Falta pegar y guardar tu Client ID de Google.');return;}
+  _gcalAfter=cb;tc.requestAccessToken({prompt:gcalOn()?'':'consent'});
+}
+function gcalConnect(){
+  if(!gcalCid()){gcalNote('Primero pegá y guardá tu Client ID de Google.');return;}
+  const tc=gcalTokenClient();
+  if(!tc){gcalNote('Google todavía no cargó, esperá unos segundos y reintentá.');return;}
+  _gcalAfter=()=>{try{localStorage.setItem('hilo_gcal_on','1');}catch(e){}renderAgenda();gcalNote('Conectado a Google Calendar ✓');};
+  tc.requestAccessToken({prompt:'consent'});
+}
+function gcalDisconnect(){try{localStorage.removeItem('hilo_gcal_on');}catch(e){}gcalToken='';gcalTokenExp=0;renderAgenda();}
+async function gcalCreate(p,dia,hora,freq,wd){
+  const dt=wd[dia];if(!dt)return null;
+  const parts=String(hora).split(':');const H=parseInt(parts[0],10)||0,M=parseInt(parts[1],10)||0;
+  const start=new Date(dt);start.setHours(H,M,0,0);const end=new Date(start.getTime()+45*60000);
+  const z=n=>String(n).padStart(2,'0');
+  const iso=x=>x.getFullYear()+'-'+z(x.getMonth()+1)+'-'+z(x.getDate())+'T'+z(x.getHours())+':'+z(x.getMinutes())+':00';
+  const body={summary:'Sesión con '+first(p.nombre),description:'Agendado en Hilo',start:{dateTime:iso(start),timeZone:'America/Montevideo'},end:{dateTime:iso(end),timeZone:'America/Montevideo'}};
+  if(freq&&freq!=='unica')body.recurrence=[freq==='quincenal'?'RRULE:FREQ=WEEKLY;INTERVAL=2':'RRULE:FREQ=WEEKLY'];
+  try{const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{method:'POST',headers:{'Authorization':'Bearer '+gcalToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)return null;const j=await r.json();return j.id||true;}catch(e){return null;}
+}
+function gcalSyncWeek(){
+  gcalEnsure(async ()=>{
+    gcalNote('Sincronizando…');const wd=weekDates();let n=0,skip=0,err=0;
+    for(const p of patients){
+      if(p.sesCfg&&p.sesCfg.dia&&p.sesCfg.hora){
+        if(p.sesCfg.gcalId)skip++;
+        else{const id=await gcalCreate(p,p.sesCfg.dia,p.sesCfg.hora,p.sesCfg.freq,wd);if(id){p.sesCfg.gcalId=id;savePatient(p);n++;}else err++;}
+      }
+      for(const s of (p.extraSes||[])){
+        if(s&&s.dia&&s.hora){if(s.gcalId)skip++;else{const id=await gcalCreate(p,s.dia,s.hora,'unica',wd);if(id){s.gcalId=id;savePatient(p);n++;}else err++;}}
+      }
+    }
+    gcalNote(`Listo · ${n} agregada(s) a Google Calendar${skip?`, ${skip} ya estaban`:''}${err?`, ${err} con error (probá reconectar)`:''}.`);
+  });
+}
+function gcalCardHtml(){
+  const connected=gcalOn();
+  const head=`<div class="hd">${hd('calendar','Google Calendar')} <span class="hint">${connected?'conectado':'conectá tu calendario para pasar tus sesiones'}</span></div>`;
+  let body;
+  if(connected){
+    body=`<div class="bd" style="padding-top:14px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span class="chip" style="background:var(--green-s);color:#1a8f57">${ic('check',14)} Conectado</span>
+        <button class="btn primary" onclick="gcalSyncWeek()">${ic('refresh',15)} Pasar mis sesiones a Google Calendar</button>
+        <button class="btn" onclick="gcalDisconnect()">Desconectar</button>
+      </div>
+      <div class="hint" id="gcalNote" style="margin-top:10px;min-height:16px"></div>
+      <div class="hint" style="margin-top:2px">Las sesiones semanales se crean como evento recurrente. No se duplican al volver a sincronizar.</div>
+    </div>`;
+  }else if(gcalCid()){
+    // App ya configurada: cada profesional conecta SU propia cuenta.
+    body=`<div class="bd" style="padding-top:14px">
+      <div class="hint" style="margin-bottom:10px">Conectá tu cuenta de Google para llevar tus sesiones a tu calendario.</div>
+      <button class="btn primary" onclick="gcalConnect()">${ic('calendar',16)} Conectar mi Google Calendar</button>
+      <div class="hint" id="gcalNote" style="margin-top:10px;min-height:16px"></div>
+    </div>`;
+  }else{
+    // Configuración inicial (solo la dueña de Hilo, una vez): falta el Client ID de la app.
+    body=`<div class="bd" style="padding-top:14px">
+      <div class="banner" style="margin:0 0 12px">Configuración inicial (una sola vez, la hace quien administra Hilo). Una vez cargado el Client ID en la app, <b>cada profesional conecta su propio calendario</b> con un botón, sin tocar nada de esto.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><input class="f" id="gcalCid" style="flex:1;min-width:220px" placeholder="…apps.googleusercontent.com" value="${esc(gcalCid())}"><button class="btn" onclick="gcalSaveCid()">Guardar</button><button class="btn primary" onclick="gcalConnect()">Probar conexión</button></div>
+      <div class="hint" id="gcalNote" style="margin-top:10px;min-height:16px"></div>
+      <details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px;color:var(--violet);font-weight:600">Cómo obtener el Client ID (una vez)</summary>
+        <div class="hint" style="margin-top:8px;line-height:1.7">1. Entrá a <b>console.cloud.google.com</b> y creá un proyecto.<br>2. Buscá <b>Google Calendar API</b> y tocá <b>Habilitar</b>.<br>3. En <b>Pantalla de consentimiento de OAuth</b>: tipo <b>Externo</b>. Mientras esté en modo <b>Prueba</b>, agregá en <b>Usuarios de prueba</b> el correo de cada profesional que vaya a conectarse (hasta 100). Para que se conecte cualquiera sin agregarlo, hay que <b>Publicar</b> la app y pasar la verificación de Google.<br>4. En <b>Credenciales → Crear credencial → ID de cliente de OAuth → Aplicación web</b>. En <b>Orígenes autorizados de JavaScript</b> pegá la dirección de Hilo (tu ${esc('https://…vercel.app')}).<br>5. Copiá el <b>Client ID</b> y pegalo en el código de Hilo (constante <b>GCAL_CLIENT_ID</b>) o acá arriba para probar.</div>
+      </details>
+    </div>`;
+  }
+  return `<div class="card">${head}${body}</div>`;
+}
 function renderAgenda(){
   rebuildAgenda();
   const orden=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const dias=orden.filter(d=>d!=='Sábado'||(semana['Sábado']&&semana['Sábado'].length));
   const totalSes=dias.reduce((a,d)=>a+((semana[d]||[]).length),0);
-  // link de reserva (concepto)
-  const booking=`<div class="card"><div class="hd">${hd('link','Tu link para que te agenden')} <span class="hint">las familias reservan solas</span></div><div class="bd" style="padding-top:14px">
+  // link de reserva (real)
+  const bkurl=bookingURL();
+  const booking=`<div class="card"><div class="hd">${hd('link','Tu link para que te agenden')}</div><div class="bd" style="padding-top:14px">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <div class="linkbox" id="aglink">${AGLINK}</div>
+      <div class="linkbox" id="aglink" style="word-break:break-all;flex:1;min-width:200px">${esc(bkurl)}</div>
       <button class="btn" onclick="copiarLink(this)">Copiar</button>
-      <a class="btn" style="text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Hola! Podés reservar tu sesión desde acá: https://'+AGLINK)}">Compartir</a>
-      <button class="btn" onclick="previewBooking()">Ver cómo lo ven</button>
+      <a class="btn" style="text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Hola! Podés reservar tu sesión desde acá: '+bkurl)}">Compartir</a>
+      <a class="btn" target="_blank" rel="noopener" style="text-decoration:none" href="${esc(bkurl)}">Vista previa</a>
     </div>
-    <div class="hint" style="margin-top:9px">Vista previa del concepto. El agendado automático se activa en la versión completa.</div>
+    <div class="hint" style="margin-top:9px">Compartilo con las familias. Cada reserva te aparece como <b>pendiente</b> arriba, para confirmar.</div>
   </div></div>`;
-  // grilla semanal
-  const horas=['08','09','10','11','12','13','14','15','16','17'];
-  const head=`<div class="hcell corner"></div>`+dias.map(d=>`<div class="hcell">${d}</div>`).join('');
+  // grilla semanal — fechas reales de esta semana y rango horario dinámico
+  const wd=weekDates();const hoyN=DIAS_SEM[new Date().getDay()];
+  const fmtDM=dt=>dt?dt.getDate()+'/'+(dt.getMonth()+1):'';
+  const allH=dias.flatMap(d=>(semana[d]||[]).map(s=>parseInt(String(s.h).slice(0,2),10))).filter(n=>!isNaN(n));
+  let hMin=8,hMax=20;if(allH.length){hMin=Math.min(hMin,...allH);hMax=Math.max(hMax,...allH);}
+  const horas=[];for(let x=hMin;x<=hMax;x++)horas.push(String(x).padStart(2,'0'));
+  const head=`<div class="hcell corner"></div>`+dias.map(d=>`<div class="hcell${d===hoyN?' today':''}">${d}<div class="hdate">${fmtDM(wd[d])}</div></div>`).join('');
   let rows='';
   horas.forEach(h=>{
     rows+=`<div class="tcell">${h}:00</div>`;
@@ -932,7 +1083,7 @@ function renderAgenda(){
     });
   });
   const emptyHint=totalSes===0?`<div class="banner" style="margin:0 0 12px">Todavía no tenés sesiones agendadas. Tocá <b>Agendar sesión</b> (o cargá el día y la hora al crear el paciente) y aparecen acá.</div>`:'';
-  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} <span class="hint">tocá una sesión para abrir la ficha del paciente</span></div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div></div></div>`;
+  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} <span class="hint">Semana del ${fmtDM(wd['Lunes'])} al ${fmtDM(wd['Viernes'])} · tocá una sesión para abrir la ficha</span></div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div></div></div>`;
   // plan de la semana
   let planRows='';
   dias.forEach(d=>{
@@ -950,17 +1101,93 @@ function renderAgenda(){
         <div style="flex:1;min-width:90px"><div class="nm" style="font-weight:700;font-size:14px">${esc(first(p.nombre))}</div><div class="ti">${esc(p.edad)}</div></div>
         <div class="planobj">${sel}</div>
         <div class="planmat">${m?`<button class="btn sm" onclick="openMaterial(${m.id})"><span class="ico">${ic('book',14)}</span> Material</button>`:'<span class="hint">—</span>'}</div>
+        <a class="btn sm" style="text-decoration:none" target="_blank" rel="noopener" href="${gcalLink(wd[d],s.h,'Sesión con '+first(p.nombre),'Sesión agendada en Hilo')}" title="Agregar a Google Calendar"><span class="ico">${ic('calendar',14)}</span> Calendar</a>
         <button class="btn sm" onclick="abrir(${p.id})">Ficha</button>
       </div>`;
     });
   });
   const done=Object.values(plan).filter(x=>x.done).length,tot=Object.keys(plan).length;
   const planPanel=`<div class="card"><div class="hd">${hd('target','Plan de la semana')} <span class="hint">${done}/${tot} listas · elegí el objetivo de cada sesión y marcá cuando la des</span></div><div class="bd" style="padding-top:10px">${planRows||'<div class="hint">Sin sesiones esta semana.</div>'}</div></div>`;
-  $('agenda').innerHTML=grid+planPanel+booking;
+  $('agenda').innerHTML='<div id="reservasCard">'+reservasCardInner()+'</div>'+grid+planPanel+gcalCardHtml()+booking;
+  loadReservas();
 }
 function setPlanObj(key,v){if(plan[key]){plan[key].objIdx=+v;renderAgenda();}}
 function togglePlan(key){if(plan[key]){plan[key].done=!plan[key].done;renderAgenda();}}
-function copiarLink(btn){const t='https://'+AGLINK;if(navigator.clipboard)navigator.clipboard.writeText(t).catch(()=>{});const o=btn.textContent;btn.textContent='¡Copiado!';setTimeout(()=>btn.textContent=o,1400);}
+function copiarLink(btn){const t=bookingURL();if(navigator.clipboard)navigator.clipboard.writeText(t).catch(()=>{});const o=btn.textContent;btn.textContent='¡Copiado!';setTimeout(()=>btn.textContent=o,1400);}
+/* ---------- Reservas públicas (link para familias) ---------- */
+function bookingURL(){
+  const base=location.origin+location.pathname;
+  return base+'?book='+encodeURIComponent((typeof authUser!=='undefined'&&authUser&&authUser.id)||'')+'&n='+encodeURIComponent((perfil&&perfil.nombre)||'')+'&p='+encodeURIComponent(cap((perfil&&perfil.profesion)||''));
+}
+let pendientes=[];
+function reservasCardInner(){
+  if(!pendientes.length)return '';
+  return `<div class="card" style="border:1px solid var(--violet)"><div class="hd">${hd('useradd','Reservas nuevas')} <span class="hint">${pendientes.length} pendiente(s) · confirmá para agregarlas a tu agenda</span></div><div class="bd" style="padding-top:8px">${pendientes.map(r=>`
+    <div class="slot" style="margin-bottom:8px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px"><div class="nm" style="font-weight:700">${esc(r.nombre)}</div><div class="hint">${esc(r.dia||'')} ${esc(r.hora||'')} · ${esc(r.telefono||'sin teléfono')}${r.nota?' · '+esc(r.nota):''}</div></div>
+      <button class="btn sm primary" onclick="confirmarReserva('${esc(String(r.id))}')"><span class="ico">${ic('check',14)}</span> Confirmar</button>
+      <button class="btn sm" onclick="rechazarReserva('${esc(String(r.id))}')">Descartar</button>
+    </div>`).join('')}</div></div>`;
+}
+async function loadReservas(){
+  if(!REAL||!authUser){pendientes=[];return;}
+  try{const {data}=await sb.from('reservas').select('*').eq('prof_id',authUser.id).eq('estado','pendiente').order('created_at',{ascending:true});pendientes=data||[];}catch(e){pendientes=[];}
+  const el=$('reservasCard');if(el)el.innerHTML=reservasCardInner();
+}
+async function confirmarReserva(id){
+  const r=pendientes.find(x=>String(x.id)===String(id));if(!r)return;
+  const c=COLORS[patients.length%COLORS.length][0];
+  const nuevo={id:++seq,c,nombre:r.nombre,edad:'—',esc:'—',col:'—',mut:'—',esp:perfil.profesion,publico:'ninos',motivo:r.nota||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj:[],ses:[],sesCfg:{freq:'semanal',dia:r.dia,hora:r.hora},fee:0,freq:'sesion',pago:false,tel:r.telefono};
+  patients.unshift(nuevo);await savePatient(nuevo);
+  try{await sb.from('reservas').update({estado:'confirmada'}).eq('id',r.id);}catch(e){}
+  pendientes=pendientes.filter(x=>String(x.id)!==String(id));
+  // si tenés Google Calendar conectado, mandamos el turno a TU calendario
+  if(gcalOn()&&r.dia&&r.hora){gcalEnsure(async()=>{const wd=weekDates();const gid=await gcalCreate(nuevo,r.dia,r.hora,'semanal',wd);if(gid){nuevo.sesCfg.gcalId=gid;savePatient(nuevo);}gcalNote(gid?('Reserva de '+first(nuevo.nombre)+' agregada a tu Google Calendar.'):'Quedó en Hilo. No se pudo enviar a Google Calendar; reconectá y probá de nuevo.');});}
+  renderAgenda();
+}
+async function rechazarReserva(id){
+  try{await sb.from('reservas').update({estado:'descartada'}).eq('id',id);}catch(e){}
+  pendientes=pendientes.filter(x=>String(x.id)!==String(id));
+  const el=$('reservasCard');if(el)el.innerHTML=reservasCardInner();
+}
+function renderPublicBooking(profId,n,p){
+  const app=document.querySelector('.app');if(app)app.style.display='none';
+  const auth=$('authScreen');if(auth)auth.style.display='none';
+  const nombre=(n||'').trim()||'tu profesional',prof=(p||'').trim();
+  const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const el=$('bookScreen');if(!el)return;el.style.display='block';
+  el.innerHTML=`<div style="max-width:460px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:10px;margin:2px 4px 18px"><span class="brandmark"></span><span style="font-weight:800;font-size:20px">Hilo</span></div>
+    <div class="card"><div class="bd" style="padding:22px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><div class="av" style="background:var(--violet);width:46px;height:46px">${esc((nombre[0]||'H').toUpperCase())}</div><div><div style="font-weight:800;font-size:17px">${esc(nombre)}</div><div class="hint">${prof?esc(prof)+' · ':''}sesiones de 45 min</div></div></div>
+      <div id="bkForm">
+        <label>Nombre del niño/a o paciente</label><input class="f" id="bk_nom" placeholder="Nombre y apellido">
+        <label>Teléfono de contacto</label><input class="f" id="bk_tel" placeholder="Ej: 099 123 456" inputmode="tel">
+        <div class="row"><div><label>Día preferido</label><select class="f" id="bk_dia">${dias.map(d=>`<option>${d}</option>`).join('')}</select></div><div><label>Hora preferida</label><input class="f" id="bk_hora" type="time" value="09:00"></div></div>
+        <label>Comentario <span class="hint">· opcional</span></label><textarea class="f" id="bk_nota" placeholder="Motivo de la consulta, edad, disponibilidad…"></textarea>
+        <div class="hint" id="bkErr" style="color:#c0392b;margin-top:8px;display:none"></div>
+        <button class="btn primary" id="bk_btn" style="width:100%;margin-top:16px;padding:13px" onclick="enviarReserva('${esc(String(profId||''))}')">Solicitar reserva</button>
+        <div class="hint" style="text-align:center;margin-top:12px">${esc(nombre)} recibe tu pedido y te confirma el horario.</div>
+      </div>
+    </div></div>
+    <div class="hint" style="text-align:center;margin-top:14px">Hecho con Hilo · tus datos se comparten solo con ${esc(nombre)}.</div>
+  </div>`;
+}
+async function enviarReserva(profId){
+  const g=id=>$(id)?$(id).value:'';
+  const nom=g('bk_nom').trim(),tel=g('bk_tel').trim(),dia=g('bk_dia'),hora=g('bk_hora'),nota=g('bk_nota').trim();
+  const err=$('bkErr');const setErr=m=>{if(err){err.textContent=m||'';err.style.display=m?'block':'none';}};
+  if(!nom){setErr('Poné el nombre.');return;}
+  if(!tel){setErr('Dejá un teléfono de contacto.');return;}
+  if(!profId){setErr('El link no es válido. Pedile el link de nuevo a tu profesional.');return;}
+  if(!(REAL&&sb)){setErr('No se puede reservar desde acá. Escribile directo a tu profesional.');return;}
+  setErr('');const btn=$('bk_btn');if(btn){btn.disabled=true;btn.textContent='Enviando…';}
+  try{
+    const {error}=await sb.from('reservas').insert({prof_id:profId,nombre:nom,telefono:tel,dia,hora,nota,estado:'pendiente'});
+    if(error){if(btn){btn.disabled=false;btn.textContent='Solicitar reserva';}setErr('No se pudo enviar. Probá de nuevo en un momento.');return;}
+    $('bkForm').innerHTML=`<div style="text-align:center;padding:22px 6px"><div style="width:56px;height:56px;border-radius:50%;background:var(--green-s);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic('check',30)}</div><div style="font-weight:800;margin-top:12px;font-size:17px">¡Pedido enviado!</div><div class="hint" style="margin-top:6px">Tu profesional lo recibe y te confirma el horario. ¡Gracias!</div></div>`;
+  }catch(e){if(btn){btn.disabled=false;btn.textContent='Solicitar reserva';}setErr('No se pudo enviar. Revisá tu conexión y probá de nuevo.');}
+}
 function previewBooking(){
   opn('ovBooking');
   $('bookingBody').innerHTML=`<div class="banner v">Así lo ve la familia cuando entra a tu link. (Vista previa del demo.)</div>
@@ -1081,15 +1308,16 @@ function verEvalGuardada(pid,i){
   const p=P(pid);const e=p&&p.evals&&p.evals[i];if(!e||!e.html)return;
   _evalP=p;opn('ovEval');
   $('evPick').style.display='none';$('evOut').style.display='block';
-  $('evDoc').innerHTML=`<div class="banner t noprint">${ic('file',15)} Evaluación guardada · ${esc(e.f)}. Tocá el texto para editar y volvé a Guardar.</div><div class="editcue noprint">${ic('edit',14)} Editable</div><div class="doc" contenteditable="true" style="outline:none">${e.html}</div>`;
+  $('evIter').style.display='none';$('evActions').style.display='flex';
+  $('evDoc').innerHTML=`<div class="editcue noprint">${ic('file',14)} Evaluación guardada · ${esc(e.f)} · tocá el texto para editar y volvé a Guardar</div><div class="doc" contenteditable="true" style="outline:none">${e.html}</div>`;
 }
 function guardarEval(){
   const doc=document.querySelector('#evDoc .doc');if(!doc||!_evalP)return;
   _evalP.evals=_evalP.evals||[];
   if(_evalP.evals[0])_evalP.evals[0].html=doc.innerHTML;
   savePatient(_evalP);
-  const badge=document.querySelector('#evDoc .banner.t');
-  if(badge){badge.innerHTML=ic('check',15)+' Guardada en la ficha de '+esc(first(_evalP.nombre))+'.';badge.style.background='var(--green-s)';badge.style.color='#1a8f57';}
+  const el=$('evIaNote');
+  if(el)el.innerHTML=ic('check',13)+' Guardada en la ficha de '+esc(first(_evalP.nombre))+'. Podés seguir editándola.';
 }
 function interpretar(){
   const p=P(+$('ev_pac').value)||patients[0];_evalP=p;
@@ -1114,33 +1342,51 @@ function interpretar(){
   if(!pares.length&&res)sec+=`<h3>Análisis</h3><p>${esc(cap(res))}.</p>`;
   const orient=bajos.length?`Se sugiere priorizar la intervención en ${esc(names(bajos))}, con actividades graduadas y apoyándose en las fortalezas detectadas.`:`Se sugiere sostener los logros alcanzados y monitorear la evolución.`;
   sec+=`<h3>Orientaciones para la intervención</h3><p>${orient}</p>`;
-  $('evDoc').innerHTML=`<div class="banner t noprint">${ic('shine',15)} Borrador generado por Hilo. El criterio clínico y la firma son tuyos.</div>
+  $('evDoc').innerHTML=`
     <div class="editcue noprint">${ic('edit',14)} Tocá cualquier parte del texto para editarla</div>
-    <div class="doc" contenteditable="true" style="outline:none"><h2>Interpretación de evaluación</h2><div class="subt">${esc(test)} · ${esc(p.nombre)} · Montevideo, ${hoy}</div><div id="evBody">${sec}</div>
-    <div class="firma"><div class="line"></div>Firma y aclaración<br><span style="color:#7a839a">Profesional ${esc(perfil.profesion)}</span></div></div>`;
+    <div class="doc" contenteditable="true" style="outline:none">
+      <h2>Interpretación de evaluación</h2>
+      <div class="subt">${esc(test)} · ${esc(p.nombre)} · Montevideo, ${hoy}</div>
+      <div id="evIaNote" class="ianote noprint" contenteditable="false"></div>
+      <div id="evBody">${IA_ON?spinHtml('Interpretando la evaluación con IA…'):sec}</div>
+      <div class="firma"><div class="line"></div><span class="fnm">${esc(perfil.nombre||'Firma y aclaración')}</span><br><span style="color:#7a839a">${esc(cap(perfil.profesion||''))}</span></div>
+    </div>`;
   let props=(bajos.length?bajos:medios.concat(altos)).slice(0,3).map(x=>'Mejorar '+x.a.toLowerCase());
   if(!props.length&&res)props=['Trabajar sobre lo detectado en '+test.split(' (')[0]];
-  if(props.length){window._propObj={pid:p.id,list:props};$('evDoc').innerHTML+=`<div class="banner v" style="margin-top:14px"><b>Objetivos sugeridos</b> a partir de esta evaluación:${props.map(o=>`<div style="margin-top:5px">• ${esc(cap(o))}</div>`).join('')}<button class="btn primary" style="margin-top:12px" onclick="cargarObjetivos()">Cargar objetivos a la ficha de ${esc(first(p.nombre))}</button></div>`;}
+  if(props.length){window._propObj={pid:p.id,list:props};$('evDoc').insertAdjacentHTML('beforeend',`<div id="evObjWrap" class="banner v noprint" style="margin-top:14px"><b>Objetivos sugeridos</b> a partir de esta evaluación:${props.map(o=>`<div style="margin-top:5px">• ${esc(cap(o))}</div>`).join('')}<button class="btn primary" style="margin-top:12px" onclick="cargarObjetivos()">Cargar objetivos a la ficha de ${esc(first(p.nombre))}</button></div>`);}
   const fdate=new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short',year:'numeric'});
   if(!evals.find(e=>e.p===p.nombre&&e.test===test))evals.unshift({p:p.nombre,test,f:fdate,c:p.c});
   (p.evals=p.evals||[]).unshift({test,f:fdate});
   savePatient(p);
-  $('evPick').style.display='none';$('evOut').style.display='block';
   const _resumenIA=(pares.length?('Resultados: '+pares.map(x=>x.a+' '+x.v).join('; ')):('Observaciones: '+res))+(obs?('. Conducta: '+obs):'');
-  iaUpgradeEval(p,test,_resumenIA);
+  window._evCtx={p,test,resumen:_resumenIA,sec};
+  $('evPick').style.display='none';$('evOut').style.display='block';
+  $('evIter').style.display='none';
+  if(IA_ON){runEvalIA();}else{setEvNote('');$('evActions').style.display='flex';snapEval();}
 }
-async function iaUpgradeEval(p,test,resumen){
-  if(!IA_ON)return;
-  const body=$('evBody');const badge=document.querySelector('#evDoc .banner.t');if(!body)return;
-  if(badge)badge.innerHTML=ic('shine',15)+' Interpretando con IA…';
-  const sys=`Sos asistente de un/a profesional de ${perfil.profesion} en Uruguay. Redactás la interpretación de una evaluación en español rioplatense, claro y profesional, usando solo los datos aportados (no inventás puntajes). Estructurá en secciones con título corto y dos puntos: Síntesis general, Fortalezas, Áreas descendidas, Orientaciones para la intervención. Sé prudente clínicamente.`;
-  const usr=`Prueba: ${test}. Paciente: ${p.nombre} (${p.edad||'sin edad'}).\nDatos cargados: ${resumen}\nRedactá la interpretación (sin encabezado ni firma).`;
+function spinHtml(t){return '<div class="ldr"><div class="spin"></div><div>'+esc(t||'Generando con IA…')+'</div></div>';}
+function setEvNote(state){const el=$('evIaNote');if(!el)return;
+  if(state==='ok')el.innerHTML=ic('shine',13)+' Interpretación asistida por IA. Revisá y editá lo que corresponda; la firma y el criterio clínico son tuyos.';
+  else if(state==='fail')el.innerHTML=ic('warning',13)+' La IA no respondió esta vez: te dejé un borrador base. Revisalo y firmá.';
+  else if(state==='saved')el.innerHTML=ic('check',13)+' Guardada en la ficha. Podés seguir editándola.';
+  else el.innerHTML='';}
+function evLoading(on){const iter=$('evIter'),act=$('evActions'),obj=$('evObjWrap');
+  if(on){const b=$('evBody');if(b)b.innerHTML=spinHtml('Interpretando la evaluación con IA…');
+    if(iter)iter.style.display='none';if(act)act.style.display='none';if(obj)obj.style.display='none';}
+  else{if(iter)iter.style.display=IA_ON?'flex':'none';if(act)act.style.display='flex';if(obj)obj.style.display='';}}
+async function runEvalIA(ajuste){const c=window._evCtx;if(!c)return;if(!$('evBody'))return;
+  evLoading(true);
+  const sys=`Sos asistente de un/a profesional de ${perfil.profesion} en Uruguay. Redactás la interpretación de una evaluación en español rioplatense, claro y profesional, usando SOLO los datos aportados (no inventás puntajes). INTERPRETÁS los resultados: qué implica cada área, qué es fortaleza y qué está descendido y a fortalecer; no repetís los números sueltos. Estructurá en secciones: Síntesis general, Fortalezas, Áreas descendidas, Orientaciones para la intervención. Poné cada subtítulo en su propia línea, corto y terminado en dos puntos, seguido de un párrafo en prosa. No uses viñetas, guiones ni asteriscos de markdown. Sé prudente clínicamente.`;
+  let usr=`Prueba: ${c.test}. Paciente: ${c.p.nombre} (${c.p.edad||'sin edad'}).\nDatos cargados: ${c.resumen}\nRedactá la interpretación (sin encabezado ni firma).`;
+  if(ajuste)usr+=`\n\nAjuste solicitado por el/la profesional (respetalo): ${ajuste}`;
   const out=await iaText(sys,usr);
-  if(out){body.innerHTML=iaHtmlBody(out);
-    if(badge)badge.innerHTML=ic('shine',15)+' Interpretación con IA de Hilo. Editala y firmá; el criterio clínico es tuyo.';}
-  else if(badge)badge.innerHTML=ic('warning',15)+' La IA no respondió esta vez: te dejé un borrador base. Editalo y firmá.';
-}
-function cargarObjetivos(){const d=window._propObj;if(!d)return;const p=P(d.pid);d.list.forEach(t=>{if(!p.obj.find(o=>o.t.toLowerCase()===t.toLowerCase()))p.obj.push({t:cap(t),p:10,h:[10,10,10,10,10]});});savePatient(p);cls('ovEval');abrir(p.id);}
+  const b2=$('evBody');if(!b2)return;
+  if(out){b2.innerHTML=iaHtmlBody(out);setEvNote('ok');}
+  else{b2.innerHTML=c.sec;setEvNote('fail');}
+  evLoading(false);snapEval();}
+function snapEval(){if(!_evalP||!_evalP.evals||!_evalP.evals[0])return;const doc=document.querySelector('#evDoc .doc');if(doc){_evalP.evals[0].html=doc.innerHTML;savePatient(_evalP);}}
+function iterarEval(){const el=$('evAjuste');const a=el?el.value.trim():'';runEvalIA(a);if(el)el.value='';}
+function cargarObjetivos(){const d=window._propObj;if(!d)return;const p=P(d.pid);d.list.forEach(t=>{if(!p.obj.find(o=>o.t.toLowerCase()===t.toLowerCase()))p.obj.push({t:cap(t),p:0,h:[0]});});savePatient(p);cls('ovEval');abrir(p.id);}
 function consentToggle(id){const p=P(id);p.consent=true;savePatient(p);renderFicha();}
 function consultaOnline(){if(!current)return;
   if(!current._room)current._room='Hilo-'+String(current.nombre||'sesion').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,20)+'-'+Math.random().toString(36).slice(2,7);
@@ -1477,7 +1723,7 @@ function descargarMaterial(){
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},120);
 }
 function printHTML(inner){
-  const doc='<!doctype html><html><head><meta charset="utf-8"><title>Hilo</title><style>body{font-family:Arial,Helvetica,sans-serif;line-height:1.6;padding:28px;max-width:720px;margin:auto;color:#20293a}svg{max-width:64px;height:auto}table{border-collapse:collapse}h2{text-align:center}</style></head><body>'+inner+'</body></html>';
+  const doc='<!doctype html><html><head><meta charset="utf-8"><title>Hilo</title><style>body{font-family:Arial,Helvetica,sans-serif;line-height:1.6;padding:28px;max-width:720px;margin:auto;color:#20293a}svg{max-width:64px;height:auto}table{border-collapse:collapse}h2{text-align:center}.noprint,.ianote,.editcue,.ldr{display:none!important}.firma{text-align:center;margin-top:32px}.firma .line{width:220px;border-top:1px solid #333;margin:0 auto 6px}h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.6px;color:#6c5ce7}</style></head><body>'+inner+'</body></html>';
   const w=window.open('','_blank','width=820,height=920');
   if(w){w.document.open();w.document.write(doc);w.document.close();w.focus();setTimeout(()=>{try{w.print();}catch(e){}},350);}
   else{alert('Para imprimir, abrí el archivo directo en tu navegador (no en la vista previa) y permití las ventanas emergentes.');}
@@ -1544,10 +1790,35 @@ function renderFam(){
 let cobros=[];
 const FREQS=[['mensual','por mes'],['quincenal','por quincena'],['semanal','por semana'],['sesion','por sesión']];
 function freqLabel(f){return (FREQS.find(x=>x[0]===f)||FREQS[0])[1];}
-let cobEdit=null;
+let cobEdit=null,cobMes=null;
+function ymNow(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function ymShift(ym,delta){let a=ym.split('-').map(Number),y=a[0],m=a[1]+delta;while(m<1){m+=12;y--;}while(m>12){m-=12;y++;}return y+'-'+String(m).padStart(2,'0');}
+function ymLabel(ym){const a=ym.split('-').map(Number),M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return cap(M[a[1]-1])+' '+a[0];}
+function cobMulti(p){return (p.freq||'mensual')!=='mensual';}       // cobra varias veces por mes (sesión, semana, quincena)
+function defTot(freq){return freq==='quincenal'?2:freq==='semanal'?4:freq==='sesion'?4:1;}
+function recNorm(p,ym){                                             // registro del mes normalizado {n,tot,monto,f} o null
+  const r=p.pagos&&p.pagos[ym];if(!r)return null;
+  if(typeof r.n!=='undefined')return r;
+  return {n:r.paid?1:0,tot:cobMulti(p)?defTot(p.freq):1,monto:Number(r.monto)||Number(p.fee)||0,f:r.f||''};
+}
+function cobRec(p,ym){                                              // asegura y devuelve el registro editable
+  p.pagos=p.pagos||{};let r=p.pagos[ym];
+  if(!r||typeof r.n==='undefined'){r=recNorm(p,ym)||{n:0,tot:cobMulti(p)?defTot(p.freq):1,monto:Number(p.fee)||0,f:''};p.pagos[ym]=r;}
+  return r;
+}
+function unit(p,r){return Number((r&&r.monto)||p.fee)||0;}
+function montoMes(p,ym){const r=recNorm(p,ym);return r?(Number(r.n)||0)*unit(p,r):0;}
+function pendMes(p,ym){const r=recNorm(p,ym);const fee=Number(p.fee)||0;
+  if(cobMulti(p)){const tot=r?Number(r.tot)||0:defTot(p.freq);const n=r?Number(r.n)||0:0;return Math.max(0,tot-n)*fee;}
+  return (r&&r.n>=1)?0:fee;}
+function pagadoEn(p,ym){const r=recNorm(p,ym);if(!r)return false;return cobMulti(p)?(r.tot>0&&r.n>=r.tot):(r.n>=1);}
+function pagadoActual(p){return pagadoEn(p,ymNow());}
 function renderCob(){
-  const cobrado=patients.filter(p=>p.pago).reduce((s,p)=>s+(Number(p.fee)||0),0);
-  const pend=patients.filter(p=>!p.pago).reduce((s,p)=>s+(Number(p.fee)||0),0);
+  patients.forEach(p=>{if(!p.pagos)p.pagos={};});
+  const ym=cobMes||ymNow();const esActual=ym===ymNow();
+  const cobrado=patients.reduce((s,p)=>s+montoMes(p,ym),0);
+  const pend=patients.reduce((s,p)=>s+pendMes(p,ym),0);
+  const nPag=patients.filter(p=>pagadoEn(p,ym)).length;
   const opts=f=>FREQS.map(([v,l])=>`<option value="${v}" ${f===v?'selected':''}>${l}</option>`).join('');
   const row=p=>{
     const editing=cobEdit===p.id;
@@ -1566,30 +1837,58 @@ function renderCob(){
         <button class="btn sm" onclick="cobCancel()">Cancelar</button>
       </div>`;
     }
-    return `<div class="slot" style="align-items:center">
+    let estado;
+    if(cobMulti(p)){
+      const r=recNorm(p,ym)||{n:0,tot:defTot(p.freq),monto:Number(p.fee)||0,f:''};
+      const n=Number(r.n)||0,tot=Number(r.tot)||0,rc=n*unit(p,r);
+      estado=`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn sm" onclick="cobUnit(${p.id},'${ym}',-1)" title="Quitar una cobrada">−</button>
+        <span style="font-weight:700;min-width:24px;text-align:center">${n}</span>
+        <button class="btn sm" onclick="cobUnit(${p.id},'${ym}',1)" title="Sumar una cobrada">+</button>
+        <span class="hint">de</span>
+        <input type="number" min="0" value="${tot}" onchange="cobTot(${p.id},'${ym}',this.value)" title="Sesiones esperadas este mes" style="width:44px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;text-align:center;font:inherit">
+        <span style="font-weight:700;min-width:64px;text-align:right;color:${n>0?'#1a8f57':'var(--muted)'}">$${rc.toLocaleString('es-UY')}</span>
+      </div>`;
+    }else{
+      const r=recNorm(p,ym),pagado=r&&r.n>=1;
+      estado=pagado
+        ? `<button class="chip" style="background:var(--green-s);color:#1a8f57;border:0;cursor:pointer" onclick="cobSetPago(${p.id},'${ym}',false)" title="Quitar pago">Al día${r.f?' · '+r.f:''}</button>`
+        : `<button class="btn sm" onclick="cobSetPago(${p.id},'${ym}',true)">Marcar pago</button>`;
+    }
+    return `<div class="slot" style="align-items:center;flex-wrap:wrap">
       <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
-      <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div><div class="ti" style="margin-top:2px">${feeTxt}</div></div>
-      ${p.pago?`<button class="chip" style="background:var(--green-s);color:#1a8f57;border:0;cursor:pointer" onclick="setPago(${p.id},false)">Al día</button>`:`<button class="btn sm" onclick="setPago(${p.id},true)">Marcar pago</button>`}
+      <div style="flex:1;min-width:120px"><div class="nm">${esc(p.nombre)}</div><div class="ti" style="margin-top:2px">${feeTxt}</div></div>
+      ${estado}
       <button class="iconbtn" title="Editar" onclick="cobEditar(${p.id})">${ic('dots',18)}</button>
     </div>`;
   };
-  $('cobBox').innerHTML=`
+  let cur=ymNow();const meses6=[];for(let i=0;i<6;i++){meses6.push(cur);cur=ymShift(cur,-1);}
+  const hist=meses6.map(m=>{const tot=patients.reduce((s,p)=>s+montoMes(p,m),0);const selm=m===ym;const nm=ymLabel(m).replace(/ \d{4}$/,'');return `<button class="qchip" style="${selm?'border-color:var(--violet);color:var(--violet)':''}" onclick="cobIr('${m}')">${nm} · $${tot.toLocaleString('es-UY')}</button>`;}).join('');
+  const nav=`<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px">
+    <button class="iconbtn" title="Mes anterior" onclick="cobNav(-1)" style="font-size:20px">‹</button>
+    <div style="font-weight:800;font-size:15px;min-width:180px;text-align:center">${ymLabel(ym)}${esActual?' <span class="chip" style="background:var(--violet-s);color:var(--violet);vertical-align:middle">actual</span>':''}</div>
+    <button class="iconbtn" title="Mes siguiente" onclick="cobNav(1)" style="font-size:20px;${esActual?'opacity:.3;pointer-events:none':''}">›</button>
+  </div>`;
+  $('cobBox').innerHTML=`${nav}
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('dollar',23)}</div><div class="n">$${cobrado.toLocaleString('es-UY')}</div><div class="l">Cobrado este mes</div></div>
-      <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('clock',23)}</div><div class="n">$${pend.toLocaleString('es-UY')}</div><div class="l">Pendiente este mes</div></div>
-      <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('group',23)}</div><div class="n">${patients.length}</div><div class="l">Pacientes</div></div>
+      <div class="kpi"><div class="ic i-green" style="color:var(--green)">${ic('dollar',23)}</div><div class="n">$${cobrado.toLocaleString('es-UY')}</div><div class="l">Cobrado</div></div>
+      <div class="kpi"><div class="ic i-amber" style="color:var(--amber)">${ic('clock',23)}</div><div class="n">$${pend.toLocaleString('es-UY')}</div><div class="l">Pendiente</div></div>
+      <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('group',23)}</div><div class="n">${nPag}/${patients.length}</div><div class="l">Pagaron</div></div>
     </div>
-    <div class="card"><div class="hd">Pagos <span class="hint">tocá ⋯ para editar el honorario o la frecuencia</span></div><div class="bd" style="padding-top:10px">
+    <div class="card"><div class="hd">Pagos de ${ymLabel(ym)} <span class="hint">tocá ⋯ para editar honorario o frecuencia</span></div><div class="bd" style="padding-top:10px">
       ${patients.length?patients.map(row).join(''):'<div class="empty" style="padding:26px"><div class="hint">Cargá pacientes para gestionar los cobros.</div></div>'}
-    </div></div>`;
+    </div></div>
+    <div class="card"><div class="hd">Historial <span class="hint">tocá un mes para verlo</span></div><div class="bd" style="padding-top:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">${hist}</div></div></div>`;
 }
+function cobNav(delta){const ym=cobMes||ymNow();if(delta>0&&ym===ymNow())return;const next=ymShift(ym,delta);cobMes=(next===ymNow())?null:next;renderCob();}
+function cobIr(m){cobMes=(m===ymNow())?null:m;renderCob();}
 function cobEditar(id){cobEdit=id;renderCob();}
 function cobCancel(){cobEdit=null;renderCob();}
 function cobGuardar(id){const p=P(id);if(!p)return;const f=$('cf_'+id),q=$('cq_'+id);p.fee=Number(f&&f.value)||0;p.freq=(q&&q.value)||'mensual';savePatient(p);cobEdit=null;renderCob();}
-function setPago(id,val){const p=P(id);if(!p)return;p.pago=!!val;savePatient(p);renderCob();}
-function setFee(id,v){const p=P(id);if(!p)return;p.fee=Number(v)||0;savePatient(p);}
-function setFreq(id,v){const p=P(id);if(!p)return;p.freq=v;savePatient(p);}
-function marcarPago(id){setPago(id,true);}
+function _hoyStr(){return new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function cobSetPago(id,ym,val){const p=P(id);if(!p)return;if(val){const r=cobRec(p,ym);r.n=1;r.tot=1;r.monto=Number(p.fee)||0;r.f=_hoyStr();}else{if(p.pagos)delete p.pagos[ym];}p.pago=pagadoActual(p);savePatient(p);renderCob();}
+function cobUnit(id,ym,delta){const p=P(id);if(!p)return;const r=cobRec(p,ym);r.n=Math.max(0,(Number(r.n)||0)+delta);if(delta>0){r.monto=Number(p.fee)||r.monto||0;r.f=_hoyStr();}if(r.n===0&&(Number(r.tot)||0)===defTot(p.freq)){/* dejamos el registro para conservar el tot ajustado */}p.pago=pagadoActual(p);savePatient(p);renderCob();}
+function cobTot(id,ym,val){const p=P(id);if(!p)return;const r=cobRec(p,ym);r.tot=Math.max(0,parseInt(val,10)||0);p.pago=pagadoActual(p);savePatient(p);renderCob();}
 
 /* ---------- chat con Hilo ---------- */
 let chatLog=[{r:'ai',t:'¡Hola! Soy Hilo. Puedo contarte cómo viene cada paciente, qué trabajar en la próxima sesión, sugerirte materiales o darte una mano con un informe. ¿Con qué arrancamos?'}];
@@ -1608,11 +1907,25 @@ async function iaText(system,user){try{
     window.__ia={ok:false,empty:true};return null;
   }catch(e){window.__ia={ok:false,ex:String(e&&e.message||e)};return null;}}
 function escBr(t){return esc(t).replace(/\n/g,'<br>');}
-function iaHtmlBody(t){/* pasa texto plano de IA a HTML simple con h3/p */
-  return t.split(/\n{2,}/).map(bloque=>{const b=bloque.trim();if(!b)return '';
-    const m=b.match(/^(.{2,40}):\s*$/);if(m)return '<h3>'+esc(m[1])+'</h3>';
-    const m2=b.match(/^([A-ZÁÉÍÓÚÑ][^\n:]{2,40}):\s*(.+)$/s);if(m2&&m2[1].length<40&&m2[2].length>0)return '<h3>'+esc(m2[1])+'</h3><p>'+escBr(m2[2].trim())+'</p>';
-    return '<p>'+escBr(b)+'</p>';}).join('');
+function mdBold(s){return esc(s).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');}
+function iaHtmlBody(t){/* texto de IA → HTML limpio: subtítulos como h3, párrafos en prosa, sin asteriscos ni viñetas */
+  return String(t).replace(/\r/g,'').split(/\n{2,}/).map(block=>{
+    let b=block.trim();if(!b)return '';
+    const nl=b.indexOf('\n');
+    const firstLine=(nl<0?b:b.slice(0,nl)).trim();
+    const restRaw=(nl<0?'':b.slice(nl+1)).trim();
+    let head=null,inlineRest='';
+    const mb=firstLine.match(/^\*\*\s*([^*]{2,46}?)\s*:?\s*\*\*\s*:?\s*(.*)$/); // **Título** o **Título:** [texto]
+    const mc=firstLine.match(/^([^\n]{2,42}):$/);                              // Título:
+    if(mb){head=mb[1].trim();inlineRest=mb[2].trim();}
+    else if(mc&&!/[.,;]/.test(mc[1])){head=mc[1].trim();}
+    if(head){
+      const bt=[inlineRest,restRaw].filter(Boolean).join('\n');
+      const p=bt?'<p>'+bt.split('\n').map(l=>mdBold(l.replace(/^\s*[-*•·]\s+/,''))).join('<br>')+'</p>':'';
+      return '<h3>'+esc(cap(head))+'</h3>'+p;
+    }
+    return '<p>'+b.split('\n').map(l=>mdBold(l.replace(/^\s*[-*•·]\s+/,''))).join('<br>')+'</p>';
+  }).join('');
 }
 function chatReply(q){
   const nq=norm(q);
@@ -1673,7 +1986,7 @@ function renderEst(){
 function openNuevo(){opn('ovNuevo');}
 function crearPaciente(){
   const nombre=$('n_nombre').value.trim();if(!nombre){alert('Poné al menos el nombre.');return;}
-  const obj=$('n_obj').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,p:12,h:[12,12,12,12,12]}));
+  const obj=$('n_obj').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,p:0,h:[0]}));
   const c=COLORS[patients.length%COLORS.length][0];
   const edadN=parseInt($('n_edad').value,10);
   const edad=isNaN(edadN)?'—':(edadN+' años');
@@ -1719,6 +2032,7 @@ function openInforme(preId,presetDest){
   $('inf_pac').innerHTML=patients.map(p=>`<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
   const pid=preId||(current&&current.id)||patients[0].id;
   $('inf_pac').value=pid;
+  if($('inf_notas'))$('inf_notas').value='';
   const ds=DESTINOS_BY_PROF[perfil.profesion]||['colegio','familia','mutualista'];
   $('destSeg').innerHTML=ds.map((d,i)=>`<button data-v="${d}" class="${i===0?'on':''}">${DEST_LABELS[d]}</button>`).join('');
   $('destSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setDestino(b.dataset.v));
@@ -1744,34 +2058,54 @@ function hacerInforme(){
   const reco=()=>destino==='adecuacion'?`En el aula se sugiere: dar consignas cortas y de a una, ofrecer más tiempo en las tareas, permitir apoyos visuales y valorar el proceso de ${first(n)}, no solo el resultado.`:destino==='colegio'?`Se sugiere en el aula dar consignas cortas y de a una, contemplando apoyos según el ritmo de ${first(n)}.`:destino==='familia'?`Sugerimos sostener las actividades de la terapia en casa con juegos breves y cotidianos.`:`Se recomienda la continuidad de la intervención con la frecuencia actual.`;
   let sec='';if(p.motivo)sec+=`<h3>Motivo de consulta</h3><p>${esc(cap(p.motivo))}.</p>`;if(objTxt())sec+=`<h3>Objetivos del período</h3><p>${esc(objTxt())}</p>`;if(av())sec+=`<h3>Avances observados</h3><p>${esc(av())}</p>`;if(dif())sec+=`<h3>Aspectos a continuar</h3><p>${esc(dif())}</p>`;sec+=`<h3>Recomendaciones</h3><p>${esc(reco())}</p>`;
   const titulo=({familia:'Informe de avance',mutualista:`Informe ${perfil.profesion}`,adecuacion:'Sugerencias de adecuaciones curriculares (ANEP)',colegio:'Informe de avance para el centro educativo',medico:'Informe de derivación',obrasocial:'Constancia de tratamiento',paciente:'Resumen de tu proceso'})[destino]||'Informe de avance';
-  $('infDoc').innerHTML=`<div class="banner t noprint">${ic('shine',15)} Generado por Hilo desde la ficha de ${esc(first(n))}. Revisalo y firmá.</div>
+  const _infFallback=`<p>${esc(t.s)}:</p><p>${esc(t.i)}</p>${sec}<p>${esc(t.c)}</p>`;
+  $('infDoc').innerHTML=`
     <div class="editcue noprint">${ic('edit',14)} Tocá cualquier parte del texto para editarla</div>
-    <div class="doc" contenteditable="true" style="outline:none"><h2>${esc(titulo)}</h2><div class="subt">${esc(cap(perfil.profesion))} · Montevideo, ${hoy}</div>
-    <div class="meta"><div><b>${pub(p).c}:</b> ${esc(n)}</div><div><b>Edad:</b> ${esc(p.edad)}</div><div><b>${pub(p).s==='paciente'?'Ocupación':'Escolaridad'}:</b> ${esc(p.esc)}</div><div><b>Período:</b> desde ${esc(p.inicio)}</div></div>
-    <div id="infBody"><p>${esc(t.s)}:</p><p>${esc(t.i)}</p>${sec}<p>${esc(t.c)}</p></div>
-    <div class="firma"><div class="line"></div>Firma y aclaración<br><span style="color:#7a839a">Profesional ${esc(perfil.profesion)}</span></div></div>`;
+    <div class="doc" contenteditable="true" style="outline:none">
+      <h2>${esc(titulo)}</h2>
+      <div class="subt">${esc(cap(perfil.profesion))} · Montevideo, ${hoy}</div>
+      <div id="infIaNote" class="ianote noprint" contenteditable="false"></div>
+      <div class="meta"><div><b>${pub(p).c}:</b> ${esc(n)}</div><div><b>Edad:</b> ${esc(p.edad)}</div><div><b>${pub(p).s==='paciente'?'Ocupación':'Escolaridad'}:</b> ${esc(p.esc)}</div><div><b>Período:</b> desde ${esc(p.inicio)}</div></div>
+      <div id="infBody">${IA_ON?spinHtml('Redactando el informe con IA…'):_infFallback}</div>
+      <div class="firma"><div class="line"></div><span class="fnm">${esc(perfil.nombre||'Firma y aclaración')}</span><br><span style="color:#7a839a">${esc(cap(perfil.profesion||''))}</span></div>
+    </div>`;
   const _tipo=({colegio:'Colegio',familia:'Familia',mutualista:'Mutualista',adecuacion:'Adecuación ANEP',medico:'Médico',obrasocial:'Obra social',paciente:'Paciente'})[destino]||'Informe',_fd=new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short',year:'numeric'});
   informes.unshift({p:n,tipo:_tipo,f:_fd,c:p.c});
-  (p.informes=p.informes||[]).unshift({tipo:_tipo,f:_fd});
+  (p.informes=p.informes||[]).unshift({tipo:_tipo,f:_fd});_infIdx=0;
   savePatient(p);
   const wa=$('infWa');if(wa)wa.style.display=(destino==='familia'||destino==='paciente')?'inline-flex':'none';
   infMes++;
-  if(planActual==='free'&&infMes>infFree){$('infDoc').insertAdjacentHTML('afterbegin',`<div class="banner" style="background:var(--amber-s);color:#8a5a12;margin-bottom:12px" class="noprint">Con el plan Free ya usaste tus ${infFree} informes del mes. Este lo generaste igual (demo); en la versión real, acá te sugerimos <b>Mejorar plan</b>. <button class="btn sm" style="margin-left:6px" onclick="mejorarPlan()">Mejorar ↗</button></div>`);}
+  if(planActual==='free'&&infMes>infFree){$('infDoc').insertAdjacentHTML('afterbegin',`<div class="banner noprint" style="background:var(--amber-s);color:#8a5a12;margin-bottom:12px">Con el plan Free ya usaste tus ${infFree} informes del mes. Este lo generaste igual (demo); en la versión real, acá te sugerimos <b>Mejorar plan</b>. <button class="btn sm" style="margin-left:6px" onclick="mejorarPlan()">Mejorar ↗</button></div>`);}
+  const _notas=($('inf_notas')&&$('inf_notas').value.trim())||'';
+  window._infCtx={p,titulo,t,sec,fallback:_infFallback,notas:_notas};
   $('infPick').style.display='none';$('infOut').style.display='block';
-  iaUpgradeInforme(p,titulo,t);
+  $('infIter').style.display='none';
+  if(IA_ON){runInformeIA();}else{setInfNote('');$('infActions').style.display='flex';snapInforme();}
 }
-async function iaUpgradeInforme(p,titulo,t){
-  if(!IA_ON)return;
-  const body=$('infBody');const badge=document.querySelector('#infDoc .banner.t');if(!body)return;
-  if(badge)badge.innerHTML=ic('shine',15)+' Redactando con IA…';
+function setInfNote(state){const el=$('infIaNote');if(!el)return;
+  if(state==='ok')el.innerHTML=ic('shine',13)+' Informe asistido por IA. Revisá y editá lo que corresponda; la firma y el criterio clínico son tuyos.';
+  else if(state==='fail')el.innerHTML=ic('warning',13)+' La IA no respondió esta vez: te dejé un borrador base. Revisalo y firmá.';
+  else if(state==='saved')el.innerHTML=ic('check',13)+' Guardado en la ficha. Podés seguir editándolo.';
+  else el.innerHTML='';}
+function infLoading(on){const iter=$('infIter'),act=$('infActions');
+  if(on){const b=$('infBody');if(b)b.innerHTML=spinHtml('Redactando el informe con IA…');
+    if(iter)iter.style.display='none';if(act)act.style.display='none';}
+  else{if(iter)iter.style.display=IA_ON?'flex':'none';if(act)act.style.display='flex';}}
+async function runInformeIA(ajuste){const c=window._infCtx;if(!c)return;if(!$('infBody'))return;
+  infLoading(true);
+  const p=c.p,t=c.t;
   const ctx=`Paciente: ${p.nombre} (${p.edad||'sin edad'}). Motivo de consulta: ${p.motivo||'no consignado'}. Inicio: ${p.inicio||'—'}. Objetivos y avance: ${p.obj.map(o=>o.t+' ('+o.p+'%)').join('; ')||'sin objetivos cargados'}. Notas de sesiones: ${p.ses.slice(0,6).map(s=>s.evo).filter(Boolean).join(' | ')||'sin sesiones'}.`;
-  const sys=`Sos asistente de un/a profesional de ${perfil.profesion} en Uruguay. Escribís el CUERPO de un informe clínico en español rioplatense: claro, cálido y profesional. Usás solo la información del contexto; no inventás resultados ni datos. Estructurás en secciones con títulos cortos seguidos de dos puntos y un párrafo cada uno (Motivo de consulta, Objetivos del período, Avances observados, Aspectos a continuar, Recomendaciones). No pongas encabezado, datos del paciente ni firma.`;
-  const usr=`Redactá el cuerpo de un "${titulo}" dirigido a: ${destino}. Empezá con una línea de saludo tipo "${t.s}:" y una apertura como "${t.i}". Cerrá con algo como "${t.c}". Contexto del paciente:\n${ctx}`;
+  const sys=`Sos asistente de un/a profesional de ${perfil.profesion} en Uruguay. Escribís el CUERPO de un informe clínico en español rioplatense: claro, cálido y profesional. Usás SOLO la información del contexto; no inventás resultados ni datos. Interpretás los avances, no repetís datos sueltos. Estructurá en secciones (Motivo de consulta, Objetivos del período, Avances observados, Aspectos a continuar, Recomendaciones): cada subtítulo en su propia línea, corto y terminado en dos puntos, seguido de un párrafo en prosa. No uses viñetas, guiones ni asteriscos de markdown. No pongas encabezado, datos del paciente ni firma.`;
+  let usr=`Redactá el cuerpo de un "${c.titulo}" dirigido a: ${destino}. Empezá con una línea de saludo tipo "${t.s}:" y una apertura como "${t.i}". Cerrá con algo como "${t.c}". Contexto del paciente:\n${ctx}`;
+  if(c.notas)usr+=`\n\nNotas de la profesional para este informe (tenelas muy en cuenta): ${c.notas}`;
+  if(ajuste)usr+=`\n\nAjuste solicitado por el/la profesional (respetalo): ${ajuste}`;
   const out=await iaText(sys,usr);
-  if(out){body.innerHTML='<p>'+esc(t.s)+':</p>'+iaHtmlBody(out.replace(new RegExp('^\\s*'+t.s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*:?','i'),''));
-    if(badge)badge.innerHTML=ic('shine',15)+' Redactado con IA de Hilo desde la ficha de '+esc(first(p.nombre))+'. Editalo y firmá.';}
-  else if(badge)badge.innerHTML=ic('warning',15)+' La IA no respondió esta vez: te dejé un borrador base desde la ficha de '+esc(first(p.nombre))+'. Editalo y firmá.';
-}
+  const b2=$('infBody');if(!b2)return;
+  if(out){b2.innerHTML='<p>'+esc(t.s)+':</p>'+iaHtmlBody(out.replace(new RegExp('^\\s*'+t.s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*:?','i'),''));setInfNote('ok');}
+  else{b2.innerHTML=c.fallback;setInfNote('fail');}
+  infLoading(false);snapInforme();}
+function snapInforme(){if(!current||!current.informes||!current.informes[_infIdx])return;const doc=document.querySelector('#infDoc .doc');if(doc){current.informes[_infIdx].html=doc.innerHTML;savePatient(current);}}
+function iterarInforme(){const el=$('infAjuste');const a=el?el.value.trim():'';runInformeIA(a);if(el)el.value='';}
 function copiarInforme(){const el=document.querySelector('#infDoc .doc');const r=document.createRange();r.selectNode(el);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');alert('Informe copiado.');}catch(e){}s.removeAllRanges();}
 let _infIdx=0;
 function guardarInforme(){
@@ -1781,14 +2115,15 @@ function guardarInforme(){
   if(current.informes[_infIdx])current.informes[_infIdx].html=html;
   else current.informes.unshift({tipo:'Informe',f:new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short',year:'numeric'}),html});
   savePatient(current);
-  const badge=document.querySelector('#infDoc .banner.t');
-  if(badge){badge.innerHTML=ic('check',15)+' Guardado en la ficha de '+esc(first(current.nombre))+'. Lo encontrás en su ficha.';badge.style.background='var(--green-s)';badge.style.color='#1a8f57';}
+  const el=$('infIaNote');
+  if(el)el.innerHTML=ic('check',13)+' Guardado en la ficha de '+esc(first(current.nombre))+'. Lo encontrás en su ficha.';
 }
 function verInformeGuardado(pid,i){
   const p=P(pid);const r=p&&p.informes&&p.informes[i];if(!r||!r.html)return;
   current=p;_infIdx=i;
   opn('ovInforme');$('infPick').style.display='none';$('infOut').style.display='block';
-  $('infDoc').innerHTML=`<div class="banner t noprint">${ic('file',15)} Informe guardado · ${esc(r.f)}. Tocá el texto para editarlo y volvé a Guardar.</div><div class="doc" contenteditable="true" style="outline:none">${r.html}</div>`;
+  $('infIter').style.display='none';$('infActions').style.display='flex';
+  $('infDoc').innerHTML=`<div class="editcue noprint">${ic('file',14)} Informe guardado · ${esc(r.f)} · tocá el texto para editarlo y volvé a Guardar</div><div class="doc" contenteditable="true" style="outline:none">${r.html}</div>`;
   const wa=$('infWa');if(wa)wa.style.display='none';
 }
 
@@ -1959,17 +2294,22 @@ document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.
    ============================================================ */
 const SB_URL='https://uepyfqibtocrekvnliyk.supabase.co';   // ← Project URL
 const SB_KEY='sb_publishable_s72ugu6GfbslnC6pC7oteA_pG6YOoJr';   // ← publishable key
+// Google Calendar: UN solo Client ID para toda la app. Cada profesional conecta SU
+// propia cuenta de Google (su propio calendario). Es público, va acá sin problema.
+const GCAL_CLIENT_ID='607968506173-89ai28jv0caih75ta75u84j91rac5vb0.apps.googleusercontent.com';   // ← Client ID de la app (Google Calendar)
 const REAL=!!(SB_URL&&SB_KEY&&window.supabase);
 let sb=REAL?window.supabase.createClient(SB_URL,SB_KEY):null;
 let authUser=null;
 
 /* --- pantalla de registro / login --- */
 function authTab(t){const reg=t==='reg';$('authReg').style.display=reg?'block':'none';$('authLog').style.display=reg?'none':'block';$('authTitle').textContent=reg?'Creá tu cuenta':'Entrá a tu cuenta';$('authSubtitle').textContent=reg?'Tu espacio de trabajo, con tus pacientes guardados y seguros.':'Qué bueno tenerte de vuelta.';document.querySelectorAll('#authSeg button').forEach((b,i)=>b.classList.toggle('on',reg?i===0:i===1));authErr('');}
-function mostrarAuth(){$('au_prof').innerHTML=PROFS.map(p=>`<option value="${p[0]}">${p[1]}</option>`).join('');authTab('reg');$('authScreen').style.display='flex';document.querySelector('.app').style.display='none';}
+function mostrarAuth(){$('au_prof').innerHTML=PROFS.map(p=>`<option value="${p[0]}">${p[1]}</option>`).join('');authTab('reg');
+  try{const rm=localStorage.getItem('hilo_email');if(rm){const e=$('al_email');if(e)e.value=rm;const c=$('al_remember');if(c)c.checked=true;}}catch(e){}
+  $('authScreen').style.display='flex';document.querySelector('.app').style.display='none';}
 function ocultarAuth(){$('authScreen').style.display='none';document.querySelector('.app').style.display='';}
 function authErr(m){const el=$('authErr');if(!el)return;if(m){el.textContent=m;el.style.display='block';}else{el.style.display='none';el.textContent='';}}
 function togglePass(id,btn){const el=$(id);if(!el)return;const show=el.type==='password';el.type=show?'text':'password';btn.innerHTML=ic(show?'eyeoff':'eye',19);}
-function passHint(){const el=$('au_passHint'),v=$('au_pass').value;if(!el)return;if(!v){el.textContent='Usá al menos 6 caracteres.';el.style.color='';}else if(v.length<6){el.textContent=`Te faltan ${6-v.length} caracter(es).`;el.style.color='var(--coral)';}else{el.textContent='✓ Contraseña válida.';el.style.color='var(--green)';}}
+function passHint(){const el=$('au_passHint'),v=$('au_pass').value;if(!el)return;if(v&&v.length<6){el.textContent=`Te faltan ${6-v.length} caracter(es).`;el.style.color='var(--coral)';}else{el.textContent='';el.style.color='';}}
 async function registrar(){
   authErr('');
   const nombre=$('au_nombre').value.trim(),email=$('au_email').value.trim().toLowerCase(),pass=$('au_pass').value,profesion=$('au_prof').value;
@@ -1986,6 +2326,7 @@ async function registrar(){
 async function ingresar(){
   authErr('');const email=$('al_email').value.trim().toLowerCase(),pass=$('al_pass').value;
   if(!email||!pass){authErr('Completá email y contraseña.');return;}
+  try{if($('al_remember')&&$('al_remember').checked)localStorage.setItem('hilo_email',email);else localStorage.removeItem('hilo_email');}catch(e){}
   const btn=$('al_btn');btn.disabled=true;btn.textContent='Entrando…';
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   btn.disabled=false;btn.textContent='Entrar';
@@ -2021,9 +2362,9 @@ async function loadPacientes(){
   const {data,error}=await sb.from('pacientes').select('*').order('created_at',{ascending:true});
   if(error){console.error('loadPacientes',error);patients=[];return;}
   seq=20;
-  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],fee:Number(d.fee)||0,freq:d.freq||'mensual',pago:!!d.pago,sesCfg:d.sesCfg||null,extraSes:d.extraSes||[]};});
+  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],fee:Number(d.fee)||0,freq:d.freq||'mensual',pago:!!d.pago,pagos:d.pagos||(d.pago?{[ymNow()]:{paid:true,f:'',monto:Number(d.fee)||0}}:{}),sesCfg:d.sesCfg||null,extraSes:d.extraSes||[]};});
 }
-function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],fee:Number(p.fee)||0,freq:p.freq||'mensual',pago:!!p.pago,sesCfg:p.sesCfg||null,extraSes:p.extraSes||[]},updated_at:new Date().toISOString()};}
+function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],fee:Number(p.fee)||0,freq:p.freq||'mensual',pago:!!p.pago,pagos:p.pagos||{},sesCfg:p.sesCfg||null,extraSes:p.extraSes||[]},updated_at:new Date().toISOString()};}
 async function savePatient(p){
   if(!REAL||!authUser||!p)return;
   try{
@@ -2050,6 +2391,9 @@ async function entrarApp(){
 }
 async function boot(){
   paintIcons();
+  const _params=new URLSearchParams(location.search);
+  const _bookId=_params.get('book');
+  if(_bookId){renderPublicBooking(_bookId,_params.get('n')||'',_params.get('p')||'');return;}
   if(REAL){
     document.querySelector('.app').style.display='none';
     try{
