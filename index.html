@@ -15,6 +15,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236c5ce7'/%3E%3Crect x='9' y='10.5' width='14' height='2.6' rx='1.3' fill='white'/%3E%3Crect x='9' y='15.4' width='14' height='2.6' rx='1.3' fill='white'/%3E%3Crect x='9' y='20.3' width='9.5' height='2.6' rx='1.3' fill='white'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -39,6 +40,8 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 .nav:hover{background:rgba(255,255,255,.12)}
 .nav.on{background:#fff;color:var(--violet);box-shadow:0 6px 16px rgba(0,0,0,.12)}
 .nav .ic{font-size:17px;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px}
+.navbadge{margin-left:auto;background:#ff4757;color:#fff;font-size:11px;font-weight:800;min-width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+.nav.on .navbadge{background:var(--violet);color:#fff}
 .ico{display:inline-block;vertical-align:middle;flex:0 0 auto}
 .btn.ib{display:inline-flex;align-items:center;gap:6px}
 .fchip{display:inline-block;font-size:12px;font-weight:700;padding:6px 13px;border-radius:999px;cursor:pointer;border:1px solid var(--line);background:#fff;color:#586074;transition:.13s;user-select:none}
@@ -252,6 +255,15 @@ textarea.f{resize:vertical;min-height:66px}
 .doc b,.doc strong{font-weight:700}
 .ianote{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-family:-apple-system,Segoe UI,sans-serif;font-size:11.5px;line-height:1.4;margin:0 0 16px;padding:0 6px;text-align:center}
 .ianote svg{color:var(--violet);flex:none}
+.recbox{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px;background:#fbfbfe}
+.recbox .btn.rec{background:#fdecec!important;border-color:#f3b4b4!important;color:#c0392b!important}
+.rectxt{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:64px;max-height:220px;overflow:auto;font-size:13.5px;line-height:1.55;background:#fff;outline:none}
+.rectxt:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-s)}
+.rectxt:empty:before{content:attr(data-ph);color:var(--muted)}
+.recdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#c0392b;margin-right:6px;animation:recpulse 1s infinite;vertical-align:middle}
+.doc.pdfmode{border:0!important;box-shadow:none!important;border-radius:0!important}
+.doc.pdfmode .noprint,.doc.pdfmode .ianote,.doc.pdfmode .editcue,.doc.pdfmode .iarow{display:none!important}
+@keyframes recpulse{50%{opacity:.25}}
 .ldr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:46px 0;color:var(--muted);font-family:-apple-system,Segoe UI,sans-serif;font-size:13px}
 .spin{width:30px;height:30px;border-radius:50%;border:3px solid var(--violet-s);border-top-color:var(--violet);animation:hspin .7s linear infinite}
 @keyframes hspin{to{transform:rotate(360deg)}}
@@ -284,7 +296,8 @@ textarea.f{resize:vertical;min-height:66px}
       <div style="position:relative"><input class="f" id="au_pass" type="password" placeholder="Usá al menos 6 caracteres" autocomplete="new-password" style="padding-right:46px" oninput="passHint()"><button type="button" aria-label="Mostrar contraseña" onclick="togglePass('au_pass',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span class="ic" data-ic="eye" data-sz="19"></span></button></div>
       <div class="hint" id="au_passHint" style="margin-top:6px;min-height:4px"></div>
       <label>Tu profesión</label><select class="f" id="au_prof"></select>
-      <button class="btn primary" id="au_btn" style="width:100%;margin-top:20px;padding:13px" onclick="registrar()">Crear cuenta</button>
+      <label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;font-size:12.5px;color:#3a4256;margin-top:16px;cursor:pointer;line-height:1.5"><input type="checkbox" id="au_terms" style="width:16px;height:16px;margin-top:1px;accent-color:var(--violet);flex:none"> <span>Leí y acepto los <a onclick="verLegal('terms')" style="color:var(--violet);cursor:pointer;text-decoration:underline">Términos y Condiciones</a> y la <a onclick="verLegal('priv')" style="color:var(--violet);cursor:pointer;text-decoration:underline">Política de Privacidad</a>.</span></label>
+      <button class="btn primary" id="au_btn" style="width:100%;margin-top:16px;padding:13px" onclick="registrar()">Crear cuenta</button>
     </div>
     <!-- LOGIN -->
     <div id="authLog" style="display:none">
@@ -320,6 +333,7 @@ textarea.f{resize:vertical;min-height:66px}
         <div><h1 id="dashHola">¡Hola! 👋</h1><div class="sub" id="dashSub">Esto es lo que tenés hoy. Empezá por acá.</div></div>
         <button class="btn primary" onclick="openNuevo()" style="display:inline-flex;align-items:center;gap:7px"><span class="ic" data-ic="useradd" data-sz="18"></span> Nuevo paciente</button>
       </div>
+      <div id="resHomeBanner"></div>
       <div id="onbBox"></div>
       <div class="homecounts" id="homecounts"></div>
       <div class="card" id="hoyCard"><div class="hd"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic" data-ic="calendar" data-sz="18"></span>Hoy</span> <span class="hint" id="hoyN"></span></div><div class="bd" id="hoy" style="padding-top:14px"></div></div>
@@ -425,6 +439,7 @@ textarea.f{resize:vertical;min-height:66px}
 <div class="ov" id="ovNuevo"><div class="modal"><div class="mh">Nuevo paciente <button class="x" onclick="cls('ovNuevo')">×</button></div><div class="mb">
   <div class="row"><div><label>Nombre y apellido</label><input class="f" id="n_nombre"></div><div><label>Edad</label><input class="f" id="n_edad" type="number" min="0" inputmode="numeric"></div></div>
   <div class="row"><div><label>Colegio / escuela <span class="hint">· opcional</span></label><input class="f" id="n_col"></div><div><label>Mutualista <span class="hint">· opcional</span></label><input class="f" id="n_mut"></div></div>
+  <label>Teléfono de la familia <span class="hint">· opcional, para recordatorios y cobros</span></label><input class="f" id="n_tel" inputmode="tel" placeholder="Ej: 099 123 456">
   <label>Motivo de consulta</label><textarea class="f" id="n_motivo" placeholder="¿Por qué llega a la consulta?"></textarea>
   <label>Objetivos iniciales <span class="hint">· uno por línea</span></label><textarea class="f" id="n_obj" placeholder="Producción del fonema /r/&#10;Ampliación de vocabulario"></textarea>
   <div class="nsub">Sesiones</div>
@@ -445,7 +460,19 @@ textarea.f{resize:vertical;min-height:66px}
   <button class="btn primary" style="width:100%;margin-top:16px" onclick="guardarPerfil()">Guardar perfil</button>
 </div></div></div>
 
-<div class="ov" id="ovSesion"><div class="modal"><div class="mh">Registrar sesión <button class="x" onclick="cls('ovSesion')">×</button></div><div class="mb">
+<div class="ov" id="ovSesion"><div class="modal"><div class="mh">Registrar sesión <button class="x" onclick="if(typeof recStop==='function')recStop();cls('ovSesion')">×</button></div><div class="mb">
+  <div class="recbox">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn" id="s_recbtn" onclick="recToggle()"><span class="ic" data-ic="mic" data-sz="16"></span> Grabar sesión</button>
+      <span class="hint" id="s_recstate">Grabá y la IA arma el registro solo. Funciona en Chrome, con permiso del micrófono.</span>
+    </div>
+    <div id="s_rectxt" class="rectxt" contenteditable="true" style="display:none" data-ph="Acá va apareciendo lo que se habla…"></div>
+    <div id="s_recacts" style="display:none;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn primary" onclick="recToNota()"><span class="ic" data-ic="shine" data-sz="15"></span> Armar registro con IA</button>
+      <button class="btn" onclick="recToggle()">Seguir grabando</button>
+      <button class="btn" onclick="recClear()">Descartar</button>
+    </div>
+  </div>
   <label>Objetivos trabajados</label><div id="s_objs"></div>
   <label>Evolución de la sesión <span class="hint">· escribí o dictá por voz</span></label>
   <div style="display:flex;gap:8px;align-items:stretch"><textarea class="f" id="s_evo" style="flex:1" placeholder="Logró la /r/ en posición inicial, muy conectado."></textarea><button class="btn" style="white-space:nowrap;align-self:flex-start" onclick="dictar('s_evo',this)"><span class="ic" data-ic="mic" data-sz="15"></span> Dictar</button></div>
@@ -474,7 +501,8 @@ textarea.f{resize:vertical;min-height:66px}
       <button class="btn" onclick="infReset()">← Otro destino</button>
       <button class="btn" id="infWa" style="display:none;background:#25d366;color:#fff;border-color:#25d366" onclick="compartirInformeWa()"><span class="ic" data-ic="whatsapp" data-sz="15"></span> Enviar por WhatsApp</button>
       <button class="btn" onclick="copiarInforme()">Copiar</button>
-      <button class="btn" onclick="printInforme()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir / PDF</button>
+      <button class="btn" onclick="pdfInforme()"><span class="ic" data-ic="download" data-sz="15"></span> Descargar PDF</button>
+      <button class="btn" onclick="printInforme()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir</button>
       <button class="btn primary" onclick="guardarInforme()"><span class="ic" data-ic="check" data-sz="15"></span> Guardar en la ficha</button>
     </div>
   </div>
@@ -504,7 +532,8 @@ textarea.f{resize:vertical;min-height:66px}
     </div>
     <div id="evActions" class="docactions noprint">
       <button class="btn" onclick="evReset()">← Otra evaluación</button>
-      <button class="btn" onclick="printEval()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir / PDF</button>
+      <button class="btn" onclick="pdfEval()"><span class="ic" data-ic="download" data-sz="15"></span> Descargar PDF</button>
+      <button class="btn" onclick="printEval()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir</button>
       <button class="btn primary" onclick="guardarEval()"><span class="ic" data-ic="check" data-sz="15"></span> Guardar en la ficha</button>
     </div>
   </div>
@@ -548,8 +577,10 @@ textarea.f{resize:vertical;min-height:66px}
 <div class="ov" id="ovConsulta"><div class="modal"><div class="mh">Consulta online <button class="x" onclick="cls('ovConsulta')">×</button></div>
 <div class="mb" id="consultaBody"></div></div></div>
 
-<div class="ov" id="ovBooking"><div class="modal"><div class="mh">Reservá tu sesión <button class="x" onclick="cls('ovBooking')">×</button></div>
-<div class="mb" id="bookingBody"></div></div></div>
+<div class="ov" id="ovLegal"><div class="modal" style="max-width:680px"><div class="mh"><span id="legalTitle">Términos</span> <button class="x" onclick="cls('ovLegal')">×</button></div><div class="mb" id="legalBody" style="max-height:70vh;overflow:auto"></div></div></div>
+
+<div class="ov" id="ovConsent"><div class="modal" style="max-width:620px"><div class="mh">Consentimiento de la familia <button class="x" onclick="cls('ovConsent')">×</button></div><div class="mb" id="consentBody"></div></div></div>
+
 
 <div class="ov" id="ovAgendar"><div class="modal" style="max-width:480px"><div class="mh">Agendar sesión <button class="x" onclick="cls('ovAgendar')">×</button></div><div class="mb">
   <label>Paciente</label><select class="f" id="ag_pac"></select>
@@ -718,7 +749,7 @@ function onbSesion(){
   abrir(p.id);openSesion();
 }
 function renderDash(){
-  rebuildAgenda();
+  rebuildAgenda();updateResBadge();
   const ao=$('askOut');if(ao)ao.innerHTML='';
   const nom=first(perfil.nombre||'');
   const hola=$('dashHola');if(hola)hola.innerHTML='¡Hola'+(nom?', '+esc(nom):'')+'! 👋';
@@ -757,26 +788,12 @@ function renderDash(){
       ${al.length?`<div class="hoyalerts">${al.map(a=>`<span class="alrt" style="background:${a.bg};color:${a.fg}">${a.ic} ${a.t}</span>`).join('')}</div>`:''}
     </div>`}).join('');
 }
-function renderTriage(){
-  const items=[];
-  patients.forEach(p=>{
-    const est=p.obj.find(o=>o.p<45);
-    if(est)items.push({ic:ic('warning',18),bg:'var(--amber-s)',t:`${first(p.nombre)}: "${est.t}" viene lento (${est.p}%)`,s:'Puede convenir cambiar de estrategia.',id:p.id});
-    if(!p.ses.length)items.push({ic:ic('clock',18),bg:'var(--coral-s)',t:`${first(p.nombre)} sin sesiones registradas`,s:'Registrá la primera para arrancar el seguimiento.',id:p.id});
-  });
-  patients.forEach(p=>{if((p.freq||'mensual')==='mensual'&&!pagadoActual(p)&&Number(p.fee)>0)items.push({ic:ic('wallet',18),bg:'var(--violet-s)',t:`${first(p.nombre)}: pago pendiente`,s:'Figura como no abonado este mes.',id:p.id});});
-  const box=$('triage'),card=$('triageCard');if(!box)return;
-  if(!items.length){card.style.display='none';return;}
-  card.style.display='';
-  box.innerHTML=items.slice(0,5).map(i=>`<div class="insight"><div class="tag" style="background:${i.bg}">${i.ic}</div><div style="flex:1"><div class="t">${esc(i.t)}</div><div class="s">${esc(i.s)}</div></div><button class="btn sm" onclick="abrir(${i.id})">Ver</button></div>`).join('');
-}
 function askHilo(){
   const q=$('askInput').value.trim();if(!q)return;
   $('askOut').innerHTML=`<div class="membox" style="margin-top:12px">${chatReply(q)}</div>`;
 }
 const P=id=>patients.find(p=>p.id===id);
 const norm=s=>(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
-const ringColor=v=>v<40?'var(--coral)':v<70?'var(--amber)':'var(--green)';
 function matchMaterial(objText){let best=null,bs=0;const words=norm(objText).split(/\s+/).filter(w=>w.length>3);materialData.forEach(m=>{if(m.prof&&m.prof!==perfil.profesion)return;const hay=norm(m.sub+' '+m.t+' '+m.area);let s=0;words.forEach(w=>{if(hay.includes(w))s++;});if(s>bs){bs=s;best=m;}});return bs>0?best:null;}
 function recoHTML(objText){const m=matchMaterial(objText);return `${esc(sugeActividad(objText))}${m?` <button class="btn sm" style="margin-left:2px" onclick="event.stopPropagation();openMaterial(${m.id})">Ver material →</button>`:''}`;}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.ov.on').forEach(o=>o.classList.remove('on'));});
@@ -863,9 +880,16 @@ function renderFicha(){
          <div class="k">Nombre</div><div>${esc(p.nombre)}</div><div class="k">Edad</div><div>${esc(p.edad)}</div>
          <div class="k">Escolaridad</div><div>${esc(p.esc)}</div><div class="k">Colegio</div><div>${esc(p.col)}</div>
          <div class="k">Mutualista</div><div>${esc(p.mut)}</div><div class="k">Abordaje</div><div>${esc(cap(perfil.profesion))}</div>
+         <div class="k">Teléfono</div><div>${p.tel?esc(p.tel):'<span style="color:var(--muted)">—</span>'} <button class="btn sm" style="margin-left:6px" onclick="editarTel(${p.id})">${p.tel?'Cambiar':'Agregar'}</button></div>
          <div class="k">Motivo</div><div>${esc(p.motivo)}</div><div class="k">Inicio</div><div>${esc(p.inicio)}</div>
-         <div class="k">Consentimiento</div><div>${p.consent?`<span style="display:inline-flex;align-items:center;gap:5px;color:var(--green)">${ic('check',15)}Registrado (Ley 18.331)</span>`:`<button class="btn sm" onclick="consentToggle(${p.id})">Registrar</button>`}</div>
-       </div></div></div>
+         <div class="k">Consentimiento</div><div>${p.consent?`<span style="display:inline-flex;align-items:center;gap:5px;color:var(--green)">${ic('check',15)}Registrado</span> <button class="btn sm" onclick="verConsent(${p.id})">Ver</button>`:`<button class="btn sm" onclick="openConsent(${p.id})">Registrar</button>`}</div>
+       </div>
+       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+         <button class="btn sm" onclick="exportarPaciente(${p.id})"><span class="ico">${ic('download',14)}</span> Exportar datos</button>
+         <button class="btn sm" style="color:#c0392b;border-color:#f3b4b4" onclick="borrarPaciente(${p.id})">Borrar paciente y sus datos</button>
+       </div>
+       <div class="hint" style="margin-top:8px">Podés exportar todos los datos del paciente o eliminarlos (derechos de la Ley 18.331).</div>
+       </div></div>
        <div class="card"><div class="hd">${hd('shine','Memoria de Hilo')}</div><div class="bd"><div class="membox">
          ${(p.ses.length||p.obj.length)?`Hilo va guardando todo lo de ${esc(first(p.nombre))}: por ahora <b>${p.ses.length} ${p.ses.length===1?'sesión':'sesiones'}</b> y <b>${p.obj.length} ${p.obj.length===1?'objetivo':'objetivos'}</b>. Con esto arma los informes sin que escribas de cero.`:`Todavía no cargaste nada de ${esc(first(p.nombre))}. A medida que registres sesiones y evaluaciones, todo se guarda acá — y después Hilo lo usa para armar los informes por vos.`}</div></div></div>
        <div class="card"><div class="hd">${hd('shine','Qué hacer en la próxima sesión')}</div><div class="bd">${sugeHTML(p)}</div></div>
@@ -912,12 +936,33 @@ const AGLINK='hilo.uy/lucia';
 function planKey(d,s){return d+'|'+s.h+'|'+s.id;}
 function lowestIdx(p){if(!p.obj.length)return 0;let idx=0,min=1e9;p.obj.forEach((o,i)=>{if(o.p<min){min=o.p;idx=i;}});return idx;}
 const DIAS_SEM=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-function weekDates(){
+let agWk=0;
+function weekDates(offset){
+  offset=offset||0;
   const now=new Date();const dow=now.getDay();
-  const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-((dow+6)%7));
+  const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-((dow+6)%7)+offset*7);
   const names=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
   const map={};for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);map[names[i]]=d;}
   return map;
+}
+function agNav(delta){agWk+=delta;renderAgenda();}
+function agHoy(){agWk=0;renderAgenda();}
+function waNum(tel){let d=(tel||'').replace(/\D/g,'');if(d.startsWith('0'))d=d.slice(1);if(d&&!d.startsWith('598'))d='598'+d;return d;}
+function recordCardInner(){
+  const manNombre=DIAS_SEM[(new Date().getDay()+1)%7];
+  const wd=weekDates((new Date().getDay()===6)?1:0);   // si hoy es sábado, mañana cae en la semana que viene
+  const dt=wd[manNombre];const fecha=dt?dt.getDate()+'/'+(dt.getMonth()+1):'';
+  const evs=(semana[manNombre]||[]).slice().sort((a,b)=>String(a.h).localeCompare(String(b.h)));
+  if(!evs.length)return '';
+  const rows=evs.map(s=>{const p=P(s.id);if(!p)return '';
+    const msg='Hola! Te recuerdo la sesión de '+first(p.nombre)+' mañana '+manNombre.toLowerCase()+' '+fecha+' a las '+s.h+'. Cualquier cosa avisame. Saludos!';
+    const num=waNum(p.tel);
+    return `<div class="slot" style="margin-bottom:8px">
+      <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
+      <div style="flex:1;min-width:0"><div class="nm">${esc(first(p.nombre))} <span class="hint">· ${esc(s.h)}</span></div><div class="ti" style="margin-top:2px">${p.tel?esc(p.tel):'<span style="color:var(--muted)">sin teléfono cargado</span>'}</div></div>
+      <a class="btn sm" style="text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" rel="noopener" href="https://wa.me/${num}?text=${encodeURIComponent(msg)}"><span class="ico">${ic('whatsapp',14)}</span> Recordar</a>
+    </div>`;}).join('');
+  return `<div class="card"><div class="hd">${hd('clock','Recordá los turnos de mañana')} <span class="hint">${manNombre} ${fecha} · un toque y va por WhatsApp</span></div><div class="bd" style="padding-top:12px">${rows}</div></div>`;
 }
 function gcalLink(dt,hhmm,title,details){
   if(!dt||!hhmm)return '';
@@ -959,7 +1004,6 @@ function guardarAgendar(){
 /* ---------- Google Calendar (Google Identity Services, sin backend) ---------- */
 let _gcalTC=null,gcalToken='',gcalTokenExp=0,_gcalAfter=null;
 function gcalCid(){const c=(typeof GCAL_CLIENT_ID!=='undefined'&&GCAL_CLIENT_ID)?String(GCAL_CLIENT_ID).trim():'';if(c)return c;try{return localStorage.getItem('hilo_gcal_cid')||'';}catch(e){return '';}}
-function gcalAppConfigured(){return !!((typeof GCAL_CLIENT_ID!=='undefined'&&GCAL_CLIENT_ID)&&String(GCAL_CLIENT_ID).trim());}
 function gcalOn(){try{return localStorage.getItem('hilo_gcal_on')==='1';}catch(e){return false;}}
 function gcalNote(m){const el=$('gcalNote');if(el)el.textContent=m||'';}
 function gcalSaveCid(){const el=$('gcalCid');if(!el)return;const v=el.value.trim();try{localStorage.setItem('hilo_gcal_cid',v);}catch(e){}_gcalTC=null;gcalNote(v?'Client ID guardado. Ahora tocá "Conectar".':'');renderAgenda();}
@@ -1066,9 +1110,10 @@ function renderAgenda(){
       <a class="btn" target="_blank" rel="noopener" style="text-decoration:none" href="${esc(bkurl)}">Vista previa</a>
     </div>
     <div class="hint" style="margin-top:9px">Compartilo con las familias. Cada reserva te aparece como <b>pendiente</b> arriba, para confirmar.</div>
+    ${(REAL&&('Notification' in window)&&Notification.permission!=='granted')?`<div class="hint" style="margin-top:8px">¿Querés que te avise cuando entra una reserva? <button class="btn sm" onclick="pedirAvisos()">Activar avisos</button></div>`:''}
   </div></div>`;
   // grilla semanal — fechas reales de esta semana y rango horario dinámico
-  const wd=weekDates();const hoyN=DIAS_SEM[new Date().getDay()];
+  const wd=weekDates(agWk);const hoyN=agWk===0?DIAS_SEM[new Date().getDay()]:null;
   const fmtDM=dt=>dt?dt.getDate()+'/'+(dt.getMonth()+1):'';
   const allH=dias.flatMap(d=>(semana[d]||[]).map(s=>parseInt(String(s.h).slice(0,2),10))).filter(n=>!isNaN(n));
   let hMin=8,hMax=20;if(allH.length){hMin=Math.min(hMin,...allH);hMax=Math.max(hMax,...allH);}
@@ -1083,7 +1128,13 @@ function renderAgenda(){
     });
   });
   const emptyHint=totalSes===0?`<div class="banner" style="margin:0 0 12px">Todavía no tenés sesiones agendadas. Tocá <b>Agendar sesión</b> (o cargá el día y la hora al crear el paciente) y aparecen acá.</div>`:'';
-  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} <span class="hint">Semana del ${fmtDM(wd['Lunes'])} al ${fmtDM(wd['Viernes'])} · tocá una sesión para abrir la ficha</span></div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div></div></div>`;
+  const wknav=`<span class="hint" style="display:inline-flex;align-items:center;gap:9px">
+    <button class="iconbtn" onclick="agNav(-1)" title="Semana anterior" style="font-size:18px">‹</button>
+    <span style="min-width:118px;text-align:center">Semana del ${fmtDM(wd['Lunes'])} al ${fmtDM(wd['Viernes'])}</span>
+    <button class="iconbtn" onclick="agNav(1)" title="Semana siguiente" style="font-size:18px">›</button>
+    ${agWk!==0?`<button class="btn sm" onclick="agHoy()">Hoy</button>`:''}
+  </span>`;
+  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} ${wknav}</div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div></div></div>`;
   // plan de la semana
   let planRows='';
   dias.forEach(d=>{
@@ -1108,7 +1159,7 @@ function renderAgenda(){
   });
   const done=Object.values(plan).filter(x=>x.done).length,tot=Object.keys(plan).length;
   const planPanel=`<div class="card"><div class="hd">${hd('target','Plan de la semana')} <span class="hint">${done}/${tot} listas · elegí el objetivo de cada sesión y marcá cuando la des</span></div><div class="bd" style="padding-top:10px">${planRows||'<div class="hint">Sin sesiones esta semana.</div>'}</div></div>`;
-  $('agenda').innerHTML='<div id="reservasCard">'+reservasCardInner()+'</div>'+grid+planPanel+gcalCardHtml()+booking;
+  $('agenda').innerHTML='<div id="reservasCard">'+reservasCardInner()+'</div>'+recordCardInner()+grid+planPanel+gcalCardHtml()+booking;
   loadReservas();
 }
 function setPlanObj(key,v){if(plan[key]){plan[key].objIdx=+v;renderAgenda();}}
@@ -1132,8 +1183,33 @@ function reservasCardInner(){
 async function loadReservas(){
   if(!REAL||!authUser){pendientes=[];return;}
   try{const {data}=await sb.from('reservas').select('*').eq('prof_id',authUser.id).eq('estado','pendiente').order('created_at',{ascending:true});pendientes=data||[];}catch(e){pendientes=[];}
+  resCount=pendientes.length;_resInit=true;updateResBadge();
   const el=$('reservasCard');if(el)el.innerHTML=reservasCardInner();
 }
+let resCount=0,_resInit=false,_resTimer=null;
+function updateResBadge(){
+  const nav=document.querySelector('.nav[data-v="age"]');
+  if(nav){let b=nav.querySelector('.navbadge');
+    if(resCount>0){if(!b){b=document.createElement('span');b.className='navbadge';nav.appendChild(b);}b.textContent=resCount;}
+    else if(b)b.remove();}
+  const hb=$('resHomeBanner');
+  if(hb)hb.innerHTML=resCount>0?`<div class="banner v" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>${ic('useradd',15)} Tenés <b>${resCount}</b> reserva(s) nueva(s) sin confirmar.</span><button class="btn sm primary" onclick="goto('age')">Ver en Agenda</button></div>`:'';
+}
+async function resPoll(){
+  if(!REAL||!authUser)return;
+  try{const {count}=await sb.from('reservas').select('id',{count:'exact',head:true}).eq('prof_id',authUser.id).eq('estado','pendiente');
+    const c=count||0;const changed=(c!==resCount);
+    if(_resInit&&c>resCount)notifyRes(c);
+    resCount=c;_resInit=true;updateResBadge();
+    if(changed){
+      const dv=document.querySelector('[data-view="dash"]');if(dv&&dv.style.display!=='none')renderDash();
+      const av=document.querySelector('[data-view="age"]');if(av&&av.style.display!=='none')loadReservas();
+    }
+  }catch(e){}
+}
+function notifyRes(total){try{if(window.Notification&&Notification.permission==='granted')new Notification('Hilo · nueva reserva',{body:'Tenés '+total+' reserva(s) pendiente(s). Entrá a la Agenda para confirmar.'});}catch(e){}}
+function pedirAvisos(){if(!('Notification' in window)){alert('Tu navegador no soporta avisos.');return;}Notification.requestPermission().then(()=>{renderAgenda();});}
+function startResWatch(){if(!REAL||!authUser)return;resPoll();if(_resTimer)clearInterval(_resTimer);_resTimer=setInterval(resPoll,60000);}
 async function confirmarReserva(id){
   const r=pendientes.find(x=>String(x.id)===String(id));if(!r)return;
   const c=COLORS[patients.length%COLORS.length][0];
@@ -1148,6 +1224,7 @@ async function confirmarReserva(id){
 async function rechazarReserva(id){
   try{await sb.from('reservas').update({estado:'descartada'}).eq('id',id);}catch(e){}
   pendientes=pendientes.filter(x=>String(x.id)!==String(id));
+  resCount=pendientes.length;updateResBadge();
   const el=$('reservasCard');if(el)el.innerHTML=reservasCardInner();
 }
 function renderPublicBooking(profId,n,p){
@@ -1188,18 +1265,6 @@ async function enviarReserva(profId){
     $('bkForm').innerHTML=`<div style="text-align:center;padding:22px 6px"><div style="width:56px;height:56px;border-radius:50%;background:var(--green-s);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic('check',30)}</div><div style="font-weight:800;margin-top:12px;font-size:17px">¡Pedido enviado!</div><div class="hint" style="margin-top:6px">Tu profesional lo recibe y te confirma el horario. ¡Gracias!</div></div>`;
   }catch(e){if(btn){btn.disabled=false;btn.textContent='Solicitar reserva';}setErr('No se pudo enviar. Revisá tu conexión y probá de nuevo.');}
 }
-function previewBooking(){
-  opn('ovBooking');
-  $('bookingBody').innerHTML=`<div class="banner v">Así lo ve la familia cuando entra a tu link. (Vista previa del demo.)</div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div class="av" style="background:var(--violet)">LU</div><div><div style="font-weight:800">Lucía · Fonoaudiología</div><div class="hint">Montevideo · sesiones de 45 min</div></div></div>
-    <label>Elegí un día y horario</label>
-    <div class="seg" id="bkSeg">${['Lun 09:00','Lun 10:00','Mar 14:30','Mié 09:00','Jue 11:00','Vie 10:00'].map((t,i)=>`<button class="${i==0?'on':''}" onclick="bkPick(this)">${t}</button>`).join('')}</div>
-    <label style="margin-top:12px">Datos del niño/a</label><input class="f" placeholder="Nombre">
-    <label>Teléfono de contacto</label><input class="f" placeholder="Ej: 099 123 456">
-    <button class="btn primary" style="width:100%;margin-top:16px" onclick="bkConfirm()">Reservar sesión</button>`;
-}
-function bkPick(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
-function bkConfirm(){$('bookingBody').innerHTML=`<div style="text-align:center;padding:28px 10px"><div style="width:56px;height:56px;border-radius:50%;background:var(--green-s);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto">${ic('check',30)}</div><div style="font-weight:800;margin-top:12px;font-size:17px">¡Sesión reservada!</div><div class="hint" style="margin-top:6px;max-width:340px;margin-left:auto;margin-right:auto">La familia recibe la confirmación y a vos te aparece sola en la agenda. (Demo)</div><button class="btn primary" style="margin-top:18px" onclick="cls('ovBooking')">Listo</button></div>`;}
 
 /* ---------- informes + evaluaciones (sección combinada) ---------- */
 function plantillaAccion(t){
@@ -1212,10 +1277,10 @@ function plantillaAccion(t){
 }
 function renderDocs(){
   const infHTML=informes.length
-    ? informes.map(r=>`<div class="slot"><div class="av" style="background:${r.c}">${ini(r.p)}</div><div style="flex:1"><div class="nm">${esc(r.p)}</div><div class="ti">Informe para ${esc(r.tipo)}</div></div><span class="chip" style="background:var(--green-s);color:#1a8f57">Enviado</span><span class="hint" style="margin-left:10px">${esc(r.f)}</span></div>`).join('')
+    ? informes.map(r=>`<div class="slot"${r.id?` style="cursor:pointer" onclick="abrir(${r.id})"`:''}><div class="av" style="background:${r.c}">${ini(r.p)}</div><div style="flex:1"><div class="nm">${esc(r.p)}</div><div class="ti">Informe para ${esc(r.tipo)}</div></div><span class="chip" style="background:var(--green-s);color:#1a8f57">Enviado</span><span class="hint" style="margin-left:10px">${esc(r.f)}</span></div>`).join('')
     : '<div class="hint">Todavía no generaste informes. Tocá <b>Generar informe</b> y elegí el paciente.</div>';
   const evHTML=evals.length
-    ? evals.map(e=>`<div class="slot"><div class="av" style="background:${e.c}">${ini(e.p)}</div><div style="flex:1"><div class="nm">${esc(e.p)}</div><div class="ti">${esc(e.test)}</div></div><span class="chip" style="background:var(--violet-s);color:var(--violet)">Interpretada</span><span class="hint" style="margin-left:10px">${esc(e.f)}</span></div>`).join('')
+    ? evals.map(e=>`<div class="slot"${e.id?` style="cursor:pointer" onclick="abrir(${e.id})"`:''}><div class="av" style="background:${e.c}">${ini(e.p)}</div><div style="flex:1"><div class="nm">${esc(e.p)}</div><div class="ti">${esc(e.test)}</div></div><span class="chip" style="background:var(--violet-s);color:var(--violet)">Interpretada</span><span class="hint" style="margin-left:10px">${esc(e.f)}</span></div>`).join('')
     : '<div class="hint">Todavía no cargaste evaluaciones. Tocá <b>Nueva evaluación</b> y elegí el paciente.</div>';
   const formatos=plantillas.map(t=>{const a=plantillaAccion(t);const oc=a.ev?'openEval()':`openInforme(null,'${a.dest}')`;
     return `<div class="tcard"><div class="n">${esc(t.n)}</div><div class="s">${esc(t.s)}</div>
@@ -1355,7 +1420,7 @@ function interpretar(){
   if(!props.length&&res)props=['Trabajar sobre lo detectado en '+test.split(' (')[0]];
   if(props.length){window._propObj={pid:p.id,list:props};$('evDoc').insertAdjacentHTML('beforeend',`<div id="evObjWrap" class="banner v noprint" style="margin-top:14px"><b>Objetivos sugeridos</b> a partir de esta evaluación:${props.map(o=>`<div style="margin-top:5px">• ${esc(cap(o))}</div>`).join('')}<button class="btn primary" style="margin-top:12px" onclick="cargarObjetivos()">Cargar objetivos a la ficha de ${esc(first(p.nombre))}</button></div>`);}
   const fdate=new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short',year:'numeric'});
-  if(!evals.find(e=>e.p===p.nombre&&e.test===test))evals.unshift({p:p.nombre,test,f:fdate,c:p.c});
+  if(!evals.find(e=>e.p===p.nombre&&e.test===test))evals.unshift({p:p.nombre,test,f:fdate,c:p.c,id:p.id});
   (p.evals=p.evals||[]).unshift({test,f:fdate});
   savePatient(p);
   const _resumenIA=(pares.length?('Resultados: '+pares.map(x=>x.a+' '+x.v).join('; ')):('Observaciones: '+res))+(obs?('. Conducta: '+obs):'');
@@ -1387,7 +1452,94 @@ async function runEvalIA(ajuste){const c=window._evCtx;if(!c)return;if(!$('evBod
 function snapEval(){if(!_evalP||!_evalP.evals||!_evalP.evals[0])return;const doc=document.querySelector('#evDoc .doc');if(doc){_evalP.evals[0].html=doc.innerHTML;savePatient(_evalP);}}
 function iterarEval(){const el=$('evAjuste');const a=el?el.value.trim():'';runEvalIA(a);if(el)el.value='';}
 function cargarObjetivos(){const d=window._propObj;if(!d)return;const p=P(d.pid);d.list.forEach(t=>{if(!p.obj.find(o=>o.t.toLowerCase()===t.toLowerCase()))p.obj.push({t:cap(t),p:0,h:[0]});});savePatient(p);cls('ovEval');abrir(p.id);}
-function consentToggle(id){const p=P(id);p.consent=true;savePatient(p);renderFicha();}
+function editarTel(id){const p=P(id);if(!p)return;const v=prompt('Teléfono de la familia (para recordatorios y cobros):',p.tel||'');if(v===null)return;p.tel=v.trim();savePatient(p);renderFicha();}
+/* ---------- Legal (términos + privacidad) ---------- */
+const LEGAL_DISCLAIMER='<div class="banner" style="background:var(--amber-s);color:#8a5a12;margin:0 0 14px">Documento modelo, orientativo. Antes de usarse con pacientes reales conviene una revisión legal, sobre todo por tratarse de datos de salud de menores.</div>';
+const LEGAL_TERMS=LEGAL_DISCLAIMER+`
+<h3>Términos y Condiciones de uso</h3>
+<p><b>1. Aceptación.</b> Al crear una cuenta y usar Hilo (“la Herramienta”, operada por Hepic) aceptás estos Términos y la Política de Privacidad. Si no estás de acuerdo, no la uses.</p>
+<p><b>2. Qué es Hilo.</b> Hilo es una herramienta digital de gestión y asistencia para profesionales de la salud y la educación. <b>No reemplaza el juicio profesional, no brinda diagnóstico ni tratamiento, y no constituye asesoramiento médico, psicológico ni legal.</b></p>
+<p><b>3. Rol de las partes.</b> El/la profesional es el/la <b>responsable</b> del tratamiento de los datos de sus pacientes y del contenido clínico. Hilo es únicamente el proveedor de la herramienta. El criterio y la firma de todo documento son siempre del/de la profesional.</p>
+<p><b>4. Inteligencia artificial.</b> Algunas funciones generan borradores con IA. <b>Son borradores para revisar, corregir y firmar por el/la profesional</b>, que es responsable del contenido final. La IA puede cometer errores u omisiones. Para generar los borradores, los textos ingresados pueden procesarse con proveedores de IA (ver Política de Privacidad).</p>
+<p><b>5. Obligaciones del/de la profesional.</b> Usar la Herramienta conforme a la ley y a su ética profesional; contar con la habilitación correspondiente; <b>obtener el consentimiento informado de la familia o del paciente antes de cargar datos</b>; ingresar datos veraces; usar una contraseña segura y no compartir su acceso; revisar y validar todo contenido antes de usarlo.</p>
+<p><b>6. Uso aceptable.</b> No usar la Herramienta para fines ilícitos, ni cargar datos de terceros sin base legal o consentimiento.</p>
+<p><b>7. Sin garantías.</b> La Herramienta se ofrece “tal cual” y “según disponibilidad”, sin garantía de funcionamiento ininterrumpido ni de ausencia de errores.</p>
+<p><b>8. Límite de responsabilidad.</b> En la máxima medida permitida por la ley, Hepic no será responsable por daños indirectos, incidentales, pérdida de datos o lucro cesante, ni por el contenido clínico, las decisiones profesionales o los documentos generados y/o firmados por el/la profesional. La responsabilidad total, de existir, se limita al monto abonado por el servicio en los tres (3) meses previos.</p>
+<p><b>9. Indemnidad.</b> El/la profesional mantendrá indemne a Hepic frente a reclamos de terceros (familias, pacientes, instituciones u organismos) derivados de su uso de la Herramienta, del contenido que carga o genera, o del incumplimiento de sus obligaciones, incluida la falta de consentimiento.</p>
+<p><b>10. Datos personales.</b> El tratamiento de datos se rige por la Política de Privacidad y por la Ley N.º 18.331 (Uruguay).</p>
+<p><b>11. Propiedad intelectual.</b> La Herramienta y su software pertenecen a Hepic. El contenido cargado por el/la profesional es de su titularidad.</p>
+<p><b>12. Pagos.</b> Los cobros a las familias se realizan directamente entre el/la profesional y la familia; Hilo solo facilita el medio (por ejemplo, Mercado Pago) y no es parte de esa relación ni retiene los fondos.</p>
+<p><b>13. Baja y suspensión.</b> Podés darte de baja cuando quieras. Podemos suspender cuentas ante incumplimientos de estos Términos.</p>
+<p><b>14. Cambios.</b> Podemos actualizar estos Términos; los cambios relevantes se comunicarán dentro de la Herramienta.</p>
+<p><b>15. Ley y jurisdicción.</b> Se rigen por las leyes de la República Oriental del Uruguay, ante sus tribunales competentes.</p>
+<p><b>16. Contacto.</b> [correo de contacto de Hepic].</p>`;
+const LEGAL_PRIV=LEGAL_DISCLAIMER+`
+<h3>Política de Privacidad</h3>
+<p><b>Responsable del tratamiento.</b> El/la profesional que usa Hilo es el/la responsable del tratamiento de los datos de sus pacientes. Hilo (Hepic) es la herramienta que utiliza para gestionarlos.</p>
+<p><b>Qué datos se tratan.</b> Datos identificatorios del paciente y su familia (nombre, edad, documento, contacto), datos de salud (motivo, evaluaciones, objetivos, evolución, informes) que son datos sensibles según la Ley N.º 18.331, y datos administrativos (institución, mutualista, honorarios).</p>
+<p><b>Finalidad.</b> Seguimiento clínico del paciente, elaboración de informes y gestión de la práctica profesional. No se usan con fines publicitarios ni se venden a terceros.</p>
+<p><b>Base legal.</b> Consentimiento previo, expreso e informado de la familia (art. 18) y habilitación de los profesionales de la salud a tratar datos de sus pacientes bajo secreto profesional (art. 19).</p>
+<p><b>Uso de inteligencia artificial.</b> Para generar borradores de informes, evaluaciones y notas, los textos ingresados pueden enviarse a un proveedor de IA que los procesa para devolver el borrador. Se recomienda minimizar los datos identificatorios innecesarios. El contenido final siempre lo revisa y valida el/la profesional.</p>
+<p><b>Dónde se guardan y cómo se protegen.</b> Los datos se almacenan en servidores con cifrado en tránsito y en reposo. El acceso es por cuenta y contraseña, y cada profesional accede únicamente a sus propios pacientes (aislamiento por usuario a nivel de base de datos).</p>
+<p><b>Con quién se comparten.</b> Con nadie, salvo autorización expresa de la familia (por ejemplo, enviar un informe al colegio o a la mutualista) o requerimiento legal.</p>
+<p><b>Conservación.</b> Mientras dure el tratamiento y por los plazos que exijan las obligaciones profesionales y legales; luego se suprimen o anonimizan.</p>
+<p><b>Derechos.</b> La familia puede acceder, rectificar, actualizar o solicitar la supresión de los datos. Desde la ficha del paciente, el/la profesional puede <b>exportar</b> todos los datos o <b>borrarlos</b>. Ante reclamos, el organismo de control es la Unidad Reguladora y de Control de Datos Personales (URCDP).</p>
+<p><b>Contacto.</b> [correo de contacto de Hepic].</p>`;
+function verLegal(which){const t=which==='priv'?'Política de Privacidad':'Términos y Condiciones';$('legalTitle').textContent=t;$('legalBody').innerHTML=which==='priv'?LEGAL_PRIV:LEGAL_TERMS;opn('ovLegal');}
+/* ---------- Consentimiento de la familia (firma + registro) ---------- */
+function openConsent(id){
+  const p=P(id);if(!p)return;current=p;
+  $('consentBody').innerHTML=`
+    <div class="banner v" style="margin-bottom:14px">Registrá el consentimiento informado de la familia (Ley 18.331). La familia completa sus datos, firma en el recuadro y queda guardado con fecha.</div>
+    <div class="row"><div><label>Nombre y apellido de quien autoriza</label><input class="f" id="co_nom" placeholder="Madre, padre o tutor/a"></div><div><label>Documento</label><input class="f" id="co_doc" placeholder="CI"></div></div>
+    <label>Vínculo con el paciente</label><select class="f" id="co_vin"><option>Madre</option><option>Padre</option><option>Tutor/a legal</option><option>Otro</option></select>
+    <div style="background:#fbfbfe;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:14px;font-size:13px;line-height:1.6">Autorizo, de forma libre e informada, el abordaje terapéutico de <b>${esc(p.nombre)}</b> y el tratamiento de sus datos personales y de salud en Hilo, conforme a la Ley N.º 18.331. Fui informado/a de la finalidad y de mis derechos de acceso, rectificación y supresión.</div>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin-top:12px"><input type="checkbox" id="co_ok" style="width:auto"> Presto mi consentimiento de forma libre e informada.</label>
+    <label style="margin-top:12px">Firma de la familia</label>
+    <canvas id="co_sig" width="560" height="150" style="width:100%;height:150px;border:1px solid var(--line);border-radius:10px;background:#fff;touch-action:none"></canvas>
+    <div style="text-align:right"><button class="btn sm" onclick="sigClear('co_sig')" style="margin-top:6px">Borrar firma</button></div>
+    <button class="btn primary" style="width:100%;margin-top:14px" onclick="guardarConsent(${p.id})"><span class="ico">${ic('check',15)}</span> Guardar consentimiento</button>`;
+  opn('ovConsent');setTimeout(()=>sigInit('co_sig'),30);
+}
+function sigInit(cid){const c=$(cid);if(!c)return;const ctx=c.getContext('2d');ctx.lineWidth=2.2;ctx.lineCap='round';ctx.strokeStyle='#20293a';let on=false,last=null;
+  const pos=e=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return {x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)};};
+  const start=e=>{on=true;last=pos(e);e.preventDefault();};
+  const move=e=>{if(!on)return;const q=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(q.x,q.y);ctx.stroke();last=q;c._sig=true;e.preventDefault();};
+  const end=()=>{on=false;};
+  c.onmousedown=start;c.onmousemove=move;window.addEventListener('mouseup',end);
+  c.ontouchstart=start;c.ontouchmove=move;c.ontouchend=end;}
+function sigClear(cid){const c=$(cid);if(!c)return;c.getContext('2d').clearRect(0,0,c.width,c.height);c._sig=false;}
+function guardarConsent(id){
+  const p=P(id);if(!p)return;
+  const nom=($('co_nom').value||'').trim();
+  if(!nom){alert('Poné el nombre de quien autoriza.');return;}
+  if(!$('co_ok').checked){alert('Falta tildar el consentimiento.');return;}
+  const c=$('co_sig');if(!c||!c._sig){alert('Falta la firma de la familia.');return;}
+  p.consent=true;
+  p.consentData={nom,doc:($('co_doc').value||'').trim(),vin:$('co_vin').value,fecha:new Date().toLocaleString('es-UY'),firma:c.toDataURL('image/png'),prof:perfil.nombre||''};
+  savePatient(p);cls('ovConsent');renderFicha();
+}
+function verConsent(id){
+  const p=P(id);if(!p||!p.consentData){alert('No hay consentimiento registrado.');return;}current=p;
+  const d=p.consentData;
+  $('consentBody').innerHTML=`<div class="doc" style="font-family:-apple-system,Segoe UI,sans-serif">
+    <h2 style="text-align:center">Consentimiento informado</h2>
+    <div class="subt" style="text-align:center;color:var(--muted);margin-bottom:14px">Ley N.º 18.331 · ${esc(d.fecha)}</div>
+    <p><b>Paciente:</b> ${esc(p.nombre)}</p>
+    <p><b>Autoriza:</b> ${esc(d.nom)}${d.doc?' · Doc: '+esc(d.doc):''} · Vínculo: ${esc(d.vin)}</p>
+    <p style="margin-top:10px">Autorizó, de forma libre e informada, el abordaje terapéutico de ${esc(p.nombre)} y el tratamiento de sus datos personales y de salud en Hilo, conforme a la Ley N.º 18.331.</p>
+    <p style="margin-top:14px"><b>Firma:</b></p><img src="${d.firma}" alt="firma" style="max-width:280px;border:1px solid var(--line);border-radius:8px;background:#fff">
+    <p style="color:var(--muted);font-size:12px;margin-top:10px">Profesional: ${esc(d.prof||'')}</p>
+  </div>
+  <button class="btn" style="width:100%;margin-top:14px" onclick="descargarPDF('#ovConsent .doc','Consentimiento - ${esc(p.nombre)}')"><span class="ico">${ic('download',15)}</span> Descargar PDF</button>`;
+  opn('ovConsent');
+}
+function exportarPaciente(id){
+  const p=P(id);if(!p)return;
+  const data={exportado:new Date().toISOString(),paciente:p};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Hilo - '+String(p.nombre).replace(/[\\/:*?"<>|]/g,'')+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 function consultaOnline(){if(!current)return;
   if(!current._room)current._room='Hilo-'+String(current.nombre||'sesion').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,20)+'-'+Math.random().toString(36).slice(2,7);
   const url='https://meet.jit.si/'+current._room;
@@ -1731,6 +1883,16 @@ function printHTML(inner){
 function printMaterial(){const el=$('matEditable');printHTML(el?el.innerHTML:'');}
 function printInforme(){const el=document.querySelector('#infDoc .doc');printHTML(el?el.outerHTML:'');}
 function printEval(){const el=document.querySelector('#evDoc .doc');printHTML(el?el.outerHTML:'');}
+function descargarPDF(docSel,filename){
+  const el=document.querySelector(docSel);if(!el){alert('No encontré el documento.');return;}
+  if(!window.html2pdf){alert('El generador de PDF todavía está cargando. Esperá unos segundos y probá de nuevo.');return;}
+  el.classList.add('pdfmode');
+  const opt={margin:[10,10,12,10],filename:(filename||'documento')+'.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}};
+  const done=()=>{el.classList.remove('pdfmode');};
+  html2pdf().set(opt).from(el).save().then(done).catch(e=>{done();alert('No se pudo generar el PDF. Probá con Imprimir → Guardar como PDF.');});
+}
+function pdfEval(){const n=((_evalP&&_evalP.nombre)||'paciente').replace(/[\\/:*?"<>|]/g,'');descargarPDF('#evDoc .doc','Evaluación - '+n);}
+function pdfInforme(){const n=((current&&current.nombre)||'paciente').replace(/[\\/:*?"<>|]/g,'');descargarPDF('#infDoc .doc','Informe - '+n);}
 
 /* ---------- generar material con IA ---------- */
 let matSeq=100;
@@ -1772,46 +1934,34 @@ function publicarMaterial(){
 }
 
 /* ---------- portal de familias ---------- */
-function renderFam(){
-  $('famBox').innerHTML=`<div class="banner v" style="max-width:none">Así ven los padres el proceso de su hijo: el avance y los ejercicios de la semana. Ayuda a que la familia acompañe desde casa. La terapeuta decide si lo activa.</div>`+
-    '<div class="pgrid">'+patients.map(p=>{
-      const ord=[...p.obj].sort((a,b)=>a.p-b.p).slice(0,2);
-      const ex=ord.map(o=>`<div class="insight" style="margin-bottom:8px"><div class="tag" style="background:var(--teal-s)">${ic('home',16)}</div><div style="flex:1"><div class="t" style="font-size:13px">${esc(o.t)}</div><div class="s">Practicar en casa 2 veces esta semana</div></div><input type="checkbox" style="width:auto;align-self:center"></div>`).join('');
-      return `<div class="card" style="margin:0"><div class="bd" style="padding:18px">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div class="av" style="background:${p.c}">${ini(p.nombre)}</div><div style="flex:1"><div class="nm" style="font-weight:700">${esc(first(p.nombre))}</div><div style="color:var(--muted);font-size:12.5px">${esc(p.edad)}</div></div><div class="ring" style="--v:${avgP(p)};--rc:${ringColor(avgP(p))}"><i>${avgP(p)}%</i></div></div>
-        <div class="hint" style="margin-bottom:8px">Ejercicios de esta semana:</div>${ex}
-        <div class="membox" style="margin-top:6px">💬 "${esc(first(p.nombre))} viene muy bien, sigan acompañando en casa. Cualquier cosa me escriben." — ${esc(first(perfil.nombre))}</div>
-        <a class="btn sm" style="margin-top:10px;display:inline-flex;text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" href="https://wa.me/?text=${encodeURIComponent('Hola! Les paso los ejercicios de '+first(p.nombre)+' para esta semana: '+ord.map(o=>o.t).join(', ')+'. Cualquier duda me escriben. Saludos, '+first(perfil.nombre)+'.')}">Compartir por WhatsApp</a>
-      </div></div>`;
-    }).join('')+'</div>';
-}
 
 /* ---------- cobros ---------- */
 let cobros=[];
 const FREQS=[['mensual','por mes'],['quincenal','por quincena'],['semanal','por semana'],['sesion','por sesión']];
 function freqLabel(f){return (FREQS.find(x=>x[0]===f)||FREQS[0])[1];}
-let cobEdit=null,cobMes=null;
+let cobEdit=null,cobMes=null,mpOn=false;
 function ymNow(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function ymShift(ym,delta){let a=ym.split('-').map(Number),y=a[0],m=a[1]+delta;while(m<1){m+=12;y--;}while(m>12){m-=12;y++;}return y+'-'+String(m).padStart(2,'0');}
 function ymLabel(ym){const a=ym.split('-').map(Number),M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return cap(M[a[1]-1])+' '+a[0];}
 function cobMulti(p){return (p.freq||'mensual')!=='mensual';}       // cobra varias veces por mes (sesión, semana, quincena)
 function defTot(freq){return freq==='quincenal'?2:freq==='semanal'?4:freq==='sesion'?4:1;}
-function recNorm(p,ym){                                             // registro del mes normalizado {n,tot,monto,f} o null
+function sesMes(p){return Number(p.sesMes)||defTot(p.freq||'mensual');}   // sesiones esperadas por mes (por paciente)
+function recNorm(p,ym){                                             // registro del mes {n,monto,f} o null
   const r=p.pagos&&p.pagos[ym];if(!r)return null;
-  if(typeof r.n!=='undefined')return r;
-  return {n:r.paid?1:0,tot:cobMulti(p)?defTot(p.freq):1,monto:Number(r.monto)||Number(p.fee)||0,f:r.f||''};
+  if(typeof r.n!=='undefined')return {n:Number(r.n)||0,monto:Number(r.monto)||Number(p.fee)||0,f:r.f||''};
+  return {n:r.paid?1:0,monto:Number(r.monto)||Number(p.fee)||0,f:r.f||''};
 }
 function cobRec(p,ym){                                              // asegura y devuelve el registro editable
   p.pagos=p.pagos||{};let r=p.pagos[ym];
-  if(!r||typeof r.n==='undefined'){r=recNorm(p,ym)||{n:0,tot:cobMulti(p)?defTot(p.freq):1,monto:Number(p.fee)||0,f:''};p.pagos[ym]=r;}
+  if(!r||typeof r.n==='undefined'){const nr=recNorm(p,ym);r={n:nr?nr.n:0,monto:nr?nr.monto:(Number(p.fee)||0),f:nr?nr.f:''};p.pagos[ym]=r;}
   return r;
 }
 function unit(p,r){return Number((r&&r.monto)||p.fee)||0;}
 function montoMes(p,ym){const r=recNorm(p,ym);return r?(Number(r.n)||0)*unit(p,r):0;}
 function pendMes(p,ym){const r=recNorm(p,ym);const fee=Number(p.fee)||0;
-  if(cobMulti(p)){const tot=r?Number(r.tot)||0:defTot(p.freq);const n=r?Number(r.n)||0:0;return Math.max(0,tot-n)*fee;}
+  if(cobMulti(p)){const n=r?Number(r.n)||0:0;return Math.max(0,sesMes(p)-n)*fee;}
   return (r&&r.n>=1)?0:fee;}
-function pagadoEn(p,ym){const r=recNorm(p,ym);if(!r)return false;return cobMulti(p)?(r.tot>0&&r.n>=r.tot):(r.n>=1);}
+function pagadoEn(p,ym){const r=recNorm(p,ym);if(!r)return false;return cobMulti(p)?(sesMes(p)>0&&r.n>=sesMes(p)):(r.n>=1);}
 function pagadoActual(p){return pagadoEn(p,ymNow());}
 function renderCob(){
   patients.forEach(p=>{if(!p.pagos)p.pagos={};});
@@ -1829,8 +1979,10 @@ function renderCob(){
         <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div>
           <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
             <span style="color:var(--muted);font-size:13px">$</span>
-            <input class="f" id="cf_${p.id}" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto" style="width:96px;padding:7px 10px">
+            <input class="f" id="cf_${p.id}" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto" style="width:92px;padding:7px 10px">
             <select class="f" id="cq_${p.id}" style="width:auto;padding:7px 10px">${opts(p.freq||'mensual')}</select>
+            <span class="hint">·</span><span class="hint">sesiones/mes</span>
+            <input class="f" id="cs_${p.id}" type="number" min="1" value="${sesMes(p)}" title="Cantidad de sesiones al mes (solo aplica a cobro por sesión, semana o quincena)" style="width:56px;padding:7px 10px">
           </div>
         </div>
         <button class="btn sm primary" onclick="cobGuardar(${p.id})">Guardar</button>
@@ -1839,15 +1991,16 @@ function renderCob(){
     }
     let estado;
     if(cobMulti(p)){
-      const r=recNorm(p,ym)||{n:0,tot:defTot(p.freq),monto:Number(p.fee)||0,f:''};
-      const n=Number(r.n)||0,tot=Number(r.tot)||0,rc=n*unit(p,r);
-      estado=`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="btn sm" onclick="cobUnit(${p.id},'${ym}',-1)" title="Quitar una cobrada">−</button>
-        <span style="font-weight:700;min-width:24px;text-align:center">${n}</span>
-        <button class="btn sm" onclick="cobUnit(${p.id},'${ym}',1)" title="Sumar una cobrada">+</button>
-        <span class="hint">de</span>
-        <input type="number" min="0" value="${tot}" onchange="cobTot(${p.id},'${ym}',this.value)" title="Sesiones esperadas este mes" style="width:44px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;text-align:center;font:inherit">
-        <span style="font-weight:700;min-width:64px;text-align:right;color:${n>0?'#1a8f57':'var(--muted)'}">$${rc.toLocaleString('es-UY')}</span>
+      const r=recNorm(p,ym);const n=r?Number(r.n)||0:0;const X=sesMes(p);const rc=n*(Number(p.fee)||0);
+      estado=`<div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;justify-content:flex-end">
+        <div style="text-align:center"><div class="hint" style="margin-bottom:5px">Sesiones cobradas</div>
+          <div style="display:inline-flex;align-items:center;gap:9px">
+            <button class="btn sm" onclick="cobUnit(${p.id},'${ym}',-1)" title="Quitar una">−</button>
+            <span style="font-weight:800;font-size:15px;min-width:46px;text-align:center">${n} <span style="color:var(--muted);font-weight:600">/ ${X}</span></span>
+            <button class="btn sm" onclick="cobUnit(${p.id},'${ym}',1)" title="Marcar una sesión cobrada">+</button>
+          </div>
+        </div>
+        <div style="text-align:right"><div class="hint" style="margin-bottom:5px">Cobrado</div><div style="font-weight:800;font-size:15px;color:${n>0?'#1a8f57':'var(--muted)'}">$${rc.toLocaleString('es-UY')}</div></div>
       </div>`;
     }else{
       const r=recNorm(p,ym),pagado=r&&r.n>=1;
@@ -1859,14 +2012,18 @@ function renderCob(){
       <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
       <div style="flex:1;min-width:120px"><div class="nm">${esc(p.nombre)}</div><div class="ti" style="margin-top:2px">${feeTxt}</div></div>
       ${estado}
+      ${(mpOn&&Number(p.fee)>0&&esActual)?`<button class="btn sm" onclick="cobrarMP(${p.id})" title="Enviar link de pago por WhatsApp"><span class="ico">${ic('wallet',14)}</span> Cobrar</button>`:''}
       <button class="iconbtn" title="Editar" onclick="cobEditar(${p.id})">${ic('dots',18)}</button>
     </div>`;
   };
   let cur=ymNow();const meses6=[];for(let i=0;i<6;i++){meses6.push(cur);cur=ymShift(cur,-1);}
   const hist=meses6.map(m=>{const tot=patients.reduce((s,p)=>s+montoMes(p,m),0);const selm=m===ym;const nm=ymLabel(m).replace(/ \d{4}$/,'');return `<button class="qchip" style="${selm?'border-color:var(--violet);color:var(--violet)':''}" onclick="cobIr('${m}')">${nm} · $${tot.toLocaleString('es-UY')}</button>`;}).join('');
-  const nav=`<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px">
+  const nav=`<div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:16px">
     <button class="iconbtn" title="Mes anterior" onclick="cobNav(-1)" style="font-size:20px">‹</button>
-    <div style="font-weight:800;font-size:15px;min-width:180px;text-align:center">${ymLabel(ym)}${esActual?' <span class="chip" style="background:var(--violet-s);color:var(--violet);vertical-align:middle">actual</span>':''}</div>
+    <div style="text-align:center;min-width:150px">
+      <div style="font-weight:800;font-size:15px;line-height:1.1">${ymLabel(ym)}</div>
+      ${esActual?'<div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--violet);text-transform:uppercase;margin-top:2px">Mes actual</div>':''}
+    </div>
     <button class="iconbtn" title="Mes siguiente" onclick="cobNav(1)" style="font-size:20px;${esActual?'opacity:.3;pointer-events:none':''}">›</button>
   </div>`;
   $('cobBox').innerHTML=`${nav}
@@ -1878,17 +2035,73 @@ function renderCob(){
     <div class="card"><div class="hd">Pagos de ${ymLabel(ym)} <span class="hint">tocá ⋯ para editar honorario o frecuencia</span></div><div class="bd" style="padding-top:10px">
       ${patients.length?patients.map(row).join(''):'<div class="empty" style="padding:26px"><div class="hint">Cargá pacientes para gestionar los cobros.</div></div>'}
     </div></div>
-    <div class="card"><div class="hd">Historial <span class="hint">tocá un mes para verlo</span></div><div class="bd" style="padding-top:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">${hist}</div></div></div>`;
+    <div class="card"><div class="hd">Historial <span class="hint">tocá un mes para verlo</span></div><div class="bd" style="padding-top:12px"><div style="display:flex;gap:8px;flex-wrap:wrap">${hist}</div></div></div>
+    <div id="mpCard">${mpCardInner()}</div>`;
 }
 function cobNav(delta){const ym=cobMes||ymNow();if(delta>0&&ym===ymNow())return;const next=ymShift(ym,delta);cobMes=(next===ymNow())?null:next;renderCob();}
 function cobIr(m){cobMes=(m===ymNow())?null:m;renderCob();}
 function cobEditar(id){cobEdit=id;renderCob();}
 function cobCancel(){cobEdit=null;renderCob();}
-function cobGuardar(id){const p=P(id);if(!p)return;const f=$('cf_'+id),q=$('cq_'+id);p.fee=Number(f&&f.value)||0;p.freq=(q&&q.value)||'mensual';savePatient(p);cobEdit=null;renderCob();}
+function cobGuardar(id){const p=P(id);if(!p)return;const f=$('cf_'+id),q=$('cq_'+id),s=$('cs_'+id);p.fee=Number(f&&f.value)||0;p.freq=(q&&q.value)||'mensual';const sv=s?parseInt(s.value,10):0;if(sv>0)p.sesMes=sv;savePatient(p);cobEdit=null;renderCob();}
 function _hoyStr(){return new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric'});}
-function cobSetPago(id,ym,val){const p=P(id);if(!p)return;if(val){const r=cobRec(p,ym);r.n=1;r.tot=1;r.monto=Number(p.fee)||0;r.f=_hoyStr();}else{if(p.pagos)delete p.pagos[ym];}p.pago=pagadoActual(p);savePatient(p);renderCob();}
-function cobUnit(id,ym,delta){const p=P(id);if(!p)return;const r=cobRec(p,ym);r.n=Math.max(0,(Number(r.n)||0)+delta);if(delta>0){r.monto=Number(p.fee)||r.monto||0;r.f=_hoyStr();}if(r.n===0&&(Number(r.tot)||0)===defTot(p.freq)){/* dejamos el registro para conservar el tot ajustado */}p.pago=pagadoActual(p);savePatient(p);renderCob();}
-function cobTot(id,ym,val){const p=P(id);if(!p)return;const r=cobRec(p,ym);r.tot=Math.max(0,parseInt(val,10)||0);p.pago=pagadoActual(p);savePatient(p);renderCob();}
+function cobSetPago(id,ym,val){const p=P(id);if(!p)return;if(val){const r=cobRec(p,ym);r.n=1;r.monto=Number(p.fee)||0;r.f=_hoyStr();}else{if(p.pagos)delete p.pagos[ym];}p.pago=pagadoActual(p);savePatient(p);renderCob();}
+function cobUnit(id,ym,delta){const p=P(id);if(!p)return;const r=cobRec(p,ym);r.n=Math.max(0,(Number(r.n)||0)+delta);if(delta>0){r.monto=Number(p.fee)||r.monto||0;r.f=_hoyStr();}if(r.n===0&&p.pagos)delete p.pagos[ym];p.pago=pagadoActual(p);savePatient(p);renderCob();}
+/* ---------- Mercado Pago (cada profesional cobra a su cuenta) ---------- */
+function mpNote(m){const el=$('mpNote');if(el)el.textContent=m||'';}
+function mpCardInner(){
+  if(!REAL)return '';
+  if(mpOn){
+    return `<div class="card"><div class="hd">${hd('wallet','Mercado Pago')} <span class="hint">conectado</span></div><div class="bd" style="padding-top:14px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span class="chip" style="background:var(--green-s);color:#1a8f57">${ic('check',14)} Tu cuenta está conectada</span>
+        <button class="btn" onclick="mpDesconectar()">Desconectar</button>
+      </div>
+      <div class="hint" id="mpNote" style="margin-top:10px;min-height:16px"></div>
+      <div class="hint" style="margin-top:2px">En cada paciente con honorario aparece el botón <b>Cobrar</b>: le manda a la familia un link de pago que cae en tu cuenta.</div>
+    </div></div>`;
+  }
+  return `<div class="card"><div class="hd">${hd('wallet','Mercado Pago')} <span class="hint">cobrá a tu propia cuenta</span></div><div class="bd" style="padding-top:14px">
+    <div class="hint" style="margin-bottom:8px">Pegá tu <b>Access Token</b> de Mercado Pago y vas a poder mandarle a las familias un link de pago que cae en tu cuenta.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input class="f" id="mpTok" style="flex:1;min-width:220px" placeholder="APP_USR-..." autocomplete="off"><button class="btn primary" onclick="mpGuardarToken()">Conectar</button></div>
+    <div class="hint" id="mpNote" style="margin-top:10px;min-height:16px"></div>
+    <details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px;color:var(--violet);font-weight:600">¿De dónde saco el Access Token?</summary>
+      <div class="hint" style="margin-top:8px;line-height:1.7">1. Entrá a <b>mercadopago.com.uy</b> con tu cuenta.<br>2. Andá a <b>Tu negocio → Configuración → Credenciales</b> (o a mercadopago.com.uy/developers → Tus integraciones → Credenciales).<br>3. Copiá el <b>Access Token de producción</b> (empieza con APP_USR).<br>4. Pegalo acá arriba y tocá Conectar. Queda guardado y protegido: solo lo usa tu cuenta.</div>
+    </details>
+  </div></div>`;
+}
+async function loadMP(){
+  if(!REAL||!authUser){mpOn=false;return;}
+  try{const {data}=await sb.from('mp_cuentas').select('prof_id').limit(1);mpOn=!!(data&&data.length);}catch(e){mpOn=false;}
+  const el=$('mpCard');if(el)el.innerHTML=mpCardInner();
+}
+async function mpGuardarToken(){
+  const el=$('mpTok');const t=el?el.value.trim():'';
+  if(!t){mpNote('Pegá tu Access Token.');return;}
+  if(!REAL||!authUser){mpNote('Iniciá sesión con tu cuenta.');return;}
+  try{const {error}=await sb.from('mp_cuentas').upsert({prof_id:authUser.id,token:t,updated_at:new Date().toISOString()});if(error){mpNote('No se pudo guardar. Probá de nuevo.');return;}mpOn=true;renderCob();}catch(e){mpNote('No se pudo guardar. Probá de nuevo.');}
+}
+async function mpDesconectar(){
+  if(!REAL||!authUser)return;
+  try{await sb.from('mp_cuentas').delete().eq('prof_id',authUser.id);}catch(e){}
+  mpOn=false;renderCob();
+}
+async function cobrarMP(id){
+  const p=P(id);if(!p)return;const monto=Number(p.fee)||0;
+  if(!(monto>0)){alert('Poné primero el honorario del paciente (tocá ⋯).');return;}
+  mpNote('Generando el link de pago…');
+  let jwt='';try{const {data}=await sb.auth.getSession();jwt=data&&data.session?data.session.access_token:'';}catch(e){}
+  if(!jwt){mpNote('Iniciá sesión de nuevo y reintentá.');return;}
+  try{
+    const r=await fetch('/api/mp-pago',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jwt,monto,titulo:'Sesión · '+first(p.nombre),back:location.origin})});
+    const j=await r.json();
+    if(j.error==='sin_cuenta'){mpNote('Conectá tu Mercado Pago primero.');return;}
+    if(!j.link){mpNote('No se pudo generar el link. Revisá tu Access Token.');return;}
+    mpNote('Link listo. Se abre WhatsApp para enviárselo a la familia.');
+    let d=(p.tel||'').replace(/\D/g,'');if(d.startsWith('0'))d=d.slice(1);if(d&&!d.startsWith('598'))d='598'+d;
+    const msg='Hola! Te paso el link para abonar la sesión de '+first(p.nombre)+': '+j.link;
+    window.open('https://wa.me/'+d+'?text='+encodeURIComponent(msg),'_blank');
+  }catch(e){mpNote('No se pudo generar el link. Probá de nuevo.');}
+}
 
 /* ---------- chat con Hilo ---------- */
 let chatLog=[{r:'ai',t:'¡Hola! Soy Hilo. Puedo contarte cómo viene cada paciente, qué trabajar en la próxima sesión, sugerirte materiales o darte una mano con un informe. ¿Con qué arrancamos?'}];
@@ -1992,15 +2205,16 @@ function crearPaciente(){
   const edad=isNaN(edadN)?'—':(edadN+' años');
   const publico=isNaN(edadN)?'ninos':(edadN>=18?'adultos':edadN>=13?'adolescentes':'ninos');
   const ses={freq:$('n_sfreq').value||'',dia:$('n_sdia').value||'',hora:$('n_shora').value||''};
-  patients.unshift({id:++seq,c,nombre,edad,esc:'—',col:$('n_col').value.trim()||'—',mut:$('n_mut').value.trim()||'—',esp:perfil.profesion,publico,motivo:$('n_motivo').value.trim()||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj,ses:[],sesCfg:ses,fee:Number($('n_fee').value)||0,freq:$('n_freq').value||'sesion',pago:false});
+  patients.unshift({id:++seq,c,nombre,edad,esc:'—',col:$('n_col').value.trim()||'—',mut:$('n_mut').value.trim()||'—',tel:$('n_tel').value.trim()||'',esp:perfil.profesion,publico,motivo:$('n_motivo').value.trim()||'en evaluación',inicio:new Date().toLocaleDateString('es-UY',{month:'long',year:'numeric'}).replace(' de ',' '),obj,ses:[],sesCfg:ses,fee:Number($('n_fee').value)||0,freq:$('n_freq').value||'sesion',pago:false});
   savePatient(patients[0]);
-  ['n_nombre','n_edad','n_col','n_mut','n_motivo','n_obj','n_fee','n_shora'].forEach(i=>{if($(i))$(i).value='';});
+  ['n_nombre','n_edad','n_col','n_mut','n_tel','n_motivo','n_obj','n_fee','n_shora'].forEach(i=>{if($(i))$(i).value='';});
   if($('q'))$('q').value='';cls('ovNuevo');goto('pac');
 }
 
 /* ---------- sesion ---------- */
-function openSesion(){$('s_objs').innerHTML=current.obj.length?current.obj.map((o,i)=>`<label style="font-weight:500;margin:7px 0;display:flex;align-items:center"><input type="checkbox" style="width:auto;margin-right:9px" value="${i}">${esc(o.t)}</label>`).join(''):'<div class="hint">Sin objetivos todavía. Podés registrar la sesión igual.</div>';$('s_evo').value='';$('s_nota').value='';if($('s_evid'))$('s_evid').checked=false;opn('ovSesion');}
+function openSesion(){if(_recSR)recStop();recClear();$('s_objs').innerHTML=current.obj.length?current.obj.map((o,i)=>`<label style="font-weight:500;margin:7px 0;display:flex;align-items:center"><input type="checkbox" style="width:auto;margin-right:9px" value="${i}">${esc(o.t)}</label>`).join(''):'<div class="hint">Sin objetivos todavía. Podés registrar la sesión igual.</div>';$('s_evo').value='';$('s_nota').value='';if($('s_evid'))$('s_evid').checked=false;opn('ovSesion');}
 function guardarSesion(){
+  if(typeof recStop==='function')recStop();
   const ch=[...document.querySelectorAll('#s_objs input:checked')].map(c=>+c.value);
   const evo=$('s_evo').value.trim();if(!evo){alert('Contá cómo salió.');return;}
   ch.forEach(i=>{const o=current.obj[i];o.p=Math.min(100,o.p+8);o.h.push(o.p);});
@@ -2022,6 +2236,50 @@ function dictar(id,btn){
   r.onend=stop;
   r.onerror=ev=>{stop();if(ev&&ev.error==='not-allowed')alert('Necesito permiso del micrófono. Habilitalo en el navegador y probá de nuevo.');};
   try{r.start();}catch(e){stop();}
+}
+/* ---------- grabar sesión → registro con IA ---------- */
+let _recSR=null,_recText='',_recStart=0,_recTimer=null;
+function recFmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
+function recToggle(){
+  const btn=$('s_recbtn'),txt=$('s_rectxt'),acts=$('s_recacts'),st=$('s_recstate');
+  if(_recSR){recStop();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('La grabación por voz funciona en Chrome. Abrí Hilo en Chrome para usarla.');return;}
+  if(_rec){try{_rec.stop();}catch(e){}}   // por las dudas, cortar un dictado suelto
+  // arrancamos desde lo que ya haya escrito (para "seguir grabando")
+  _recText=(txt.innerText||'').trim();if(_recText)_recText+=' ';
+  const r=new SR();_recSR=r;r.lang='es-UY';r.interimResults=true;r.continuous=true;
+  txt.style.display='block';acts.style.display='none';
+  btn.innerHTML=ic('mic',16)+' Detener grabación';btn.classList.add('rec');
+  _recStart=(_recStart&&false)||new Date().getTime();
+  const base=new Date().getTime();
+  st.innerHTML='<span class="recdot"></span> Grabando… <span id="s_rectime">0:00</span>';
+  _recTimer=setInterval(()=>{const t=$('s_rectime');if(t)t.textContent=recFmt(new Date().getTime()-base);},1000);
+  r.onresult=e=>{let fin='',intr='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t+' ';else intr+=t;}if(fin)_recText+=fin;txt.innerText=(_recText+intr).replace(/\s{2,}/g,' ').trim();txt.scrollTop=txt.scrollHeight;};
+  r.onend=()=>{if(_recSR)recStop();};
+  r.onerror=ev=>{recStop();if(ev&&ev.error==='not-allowed')alert('Necesito permiso del micrófono. Habilitalo y probá de nuevo.');};
+  try{r.start();}catch(e){recStop();}
+}
+function recStop(){
+  if(_recSR){try{_recSR.stop();}catch(e){}}_recSR=null;
+  if(_recTimer){clearInterval(_recTimer);_recTimer=null;}
+  const btn=$('s_recbtn'),acts=$('s_recacts'),st=$('s_recstate'),txt=$('s_rectxt');
+  if(btn){btn.innerHTML=ic('mic',16)+' Grabar sesión';btn.classList.remove('rec');}
+  if(st)st.textContent=(txt&&txt.innerText.trim())?'Listo. Revisá el texto y armá el registro, o seguí grabando.':'Grabá y la IA arma el registro solo. Funciona en Chrome, con permiso del micrófono.';
+  if(acts)acts.style.display=(txt&&txt.innerText.trim())?'flex':'none';
+}
+function recClear(){_recText='';const txt=$('s_rectxt'),acts=$('s_recacts'),st=$('s_recstate');if(txt){txt.innerText='';txt.style.display='none';}if(acts)acts.style.display='none';if(st)st.textContent='Grabá y la IA arma el registro solo. Funciona en Chrome, con permiso del micrófono.';}
+async function recToNota(){
+  const txt=$('s_rectxt');const t=(txt&&txt.innerText||'').trim();
+  if(!t){alert('Todavía no hay nada grabado.');return;}
+  const evo=$('s_evo');const st=$('s_recstate');
+  if(!IA_ON){evo.value=(evo.value?evo.value.trim()+'\n':'')+t;st.textContent='Puse la transcripción en la evolución. Editala si hace falta.';return;}
+  st.innerHTML=ic('shine',13)+' Armando el registro con IA…';
+  const sys=`Sos asistente de un/a profesional de ${perfil.profesion} en Uruguay. A partir de la transcripción de una sesión (puede tener errores de dictado), redactá un registro clínico breve y claro en español rioplatense, en tercera persona: qué se trabajó, cómo respondió el paciente y observaciones relevantes; si surge, qué conviene seguir la próxima. Conciso y profesional. No inventes datos que no estén en la transcripción. Sin viñetas ni markdown.`;
+  const nom=(current&&current.nombre)||'el paciente';
+  const out=await iaText(sys,`Paciente: ${nom}.\nTranscripción de la sesión:\n${t}\n\nRedactá el registro de la sesión.`);
+  if(out){evo.value=out.trim();st.innerHTML=ic('check',13)+' Registro armado. Revisalo abajo y guardá la sesión.';}
+  else{evo.value=(evo.value?evo.value.trim()+'\n':'')+t;st.textContent='La IA no respondió; dejé la transcripción en la evolución para que la edites.';}
 }
 
 /* ---------- informe ---------- */
@@ -2070,7 +2328,7 @@ function hacerInforme(){
       <div class="firma"><div class="line"></div><span class="fnm">${esc(perfil.nombre||'Firma y aclaración')}</span><br><span style="color:#7a839a">${esc(cap(perfil.profesion||''))}</span></div>
     </div>`;
   const _tipo=({colegio:'Colegio',familia:'Familia',mutualista:'Mutualista',adecuacion:'Adecuación ANEP',medico:'Médico',obrasocial:'Obra social',paciente:'Paciente'})[destino]||'Informe',_fd=new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short',year:'numeric'});
-  informes.unshift({p:n,tipo:_tipo,f:_fd,c:p.c});
+  informes.unshift({p:n,tipo:_tipo,f:_fd,c:p.c,id:p.id});
   (p.informes=p.informes||[]).unshift({tipo:_tipo,f:_fd});_infIdx=0;
   savePatient(p);
   const wa=$('infWa');if(wa)wa.style.display=(destino==='familia'||destino==='paciente')?'inline-flex':'none';
@@ -2228,12 +2486,6 @@ function planPrintBlock(p){
   return s;
 }
 function printPlanPac(pid){const p=P(pid);if(!p||!planItems(p.id).length)return;printHTML(planPrintBlock(p));}
-function printHoy(){
-  const seen={},blocks=[];
-  agendaHoy.forEach(s=>{if(seen[s.id])return;seen[s.id]=1;const p=P(s.id);if(p&&planItems(p.id).length)blocks.push(planPrintBlock(p));});
-  if(!blocks.length){alert('Todavía no planificaste ninguna sesión de hoy. Agregá actividades a un paciente y volvé a intentar.');return;}
-  printHTML(blocks.join('<div style="page-break-after:always"></div>'));
-}
 
 /* ---------- clínica (vista coordinador) ---------- */
 const clinica={nombre:'Centro Crecer',asientos:8,precioAsiento:15};
@@ -2317,8 +2569,9 @@ async function registrar(){
   if(!email){authErr('Escribí tu email.');return;}
   if(!email.includes('@')||email.indexOf('@')<1||email.endsWith('@')){authErr('Revisá el email: le falta la @ o algo después.');return;}
   if(pass.length<6){authErr('La contraseña necesita al menos 6 caracteres.');return;}
+  if(!($('au_terms')&&$('au_terms').checked)){authErr('Para crear la cuenta tenés que aceptar los Términos y la Política de Privacidad.');return;}
   const btn=$('au_btn');btn.disabled=true;btn.textContent='Creando cuenta…';
-  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{nombre,profesion}}});
+  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{nombre,profesion,terms_accepted_at:new Date().toISOString()}}});
   btn.disabled=false;btn.textContent='Crear cuenta';
   if(error){authErr(error.message);return;}
   if(!data.session){authTab('login');authErr('Te enviamos un mail para confirmar la cuenta. Confirmalo y entrá.');}
@@ -2362,9 +2615,16 @@ async function loadPacientes(){
   const {data,error}=await sb.from('pacientes').select('*').order('created_at',{ascending:true});
   if(error){console.error('loadPacientes',error);patients=[];return;}
   seq=20;
-  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],fee:Number(d.fee)||0,freq:d.freq||'mensual',pago:!!d.pago,pagos:d.pagos||(d.pago?{[ymNow()]:{paid:true,f:'',monto:Number(d.fee)||0}}:{}),sesCfg:d.sesCfg||null,extraSes:d.extraSes||[]};});
+  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],tel:d.tel||'',consentData:d.consentData||null,fee:Number(d.fee)||0,freq:d.freq||'mensual',sesMes:Number(d.sesMes)||0,pago:!!d.pago,pagos:d.pagos||(d.pago?{[ymNow()]:{paid:true,f:'',monto:Number(d.fee)||0}}:{}),sesCfg:d.sesCfg||null,extraSes:d.extraSes||[]};});
 }
-function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],fee:Number(p.fee)||0,freq:p.freq||'mensual',pago:!!p.pago,pagos:p.pagos||{},sesCfg:p.sesCfg||null,extraSes:p.extraSes||[]},updated_at:new Date().toISOString()};}
+function rebuildDocsLists(){
+  evals.length=0;informes.length=0;
+  patients.forEach(p=>{
+    (p.evals||[]).forEach(e=>evals.push({p:p.nombre,test:e.test,f:e.f,c:p.c,id:p.id}));
+    (p.informes||[]).forEach(r=>informes.push({p:p.nombre,tipo:r.tipo,f:r.f,c:p.c,id:p.id}));
+  });
+}
+function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],tel:p.tel||'',consentData:p.consentData||null,fee:Number(p.fee)||0,freq:p.freq||'mensual',sesMes:Number(p.sesMes)||0,pago:!!p.pago,pagos:p.pagos||{},sesCfg:p.sesCfg||null,extraSes:p.extraSes||[]},updated_at:new Date().toISOString()};}
 async function savePatient(p){
   if(!REAL||!authUser||!p)return;
   try{
@@ -2377,7 +2637,7 @@ async function borrarPaciente(id){
   const p=P(id)||current;if(!p)return;
   if(!confirm(`¿Borrar a ${p.nombre} y toda su información? No se puede deshacer.`))return;
   if(REAL&&p.dbid){try{await sb.from('pacientes').delete().eq('id',p.dbid);}catch(e){console.error(e);}}
-  patients=patients.filter(x=>x!==p);goto('pac');
+  patients=patients.filter(x=>x!==p);rebuildDocsLists();goto('pac');
 }
 
 /* --- arranque --- */
@@ -2386,8 +2646,8 @@ async function entrarApp(){
   const lr=$('logoutRow');if(lr)lr.style.display='';
   /* limpiar datos de ejemplo de la demo (agenda, informes, etc.) */
   agendaHoy.length=0;Object.keys(semana).forEach(k=>delete semana[k]);informes.length=0;evals.length=0;cobros.length=0;
-  await loadPerfil();await loadPacientes();
-  updateWho();goto('dash');
+  await loadPerfil();await loadPacientes();rebuildDocsLists();await loadMP();
+  updateWho();goto('dash');startResWatch();
 }
 async function boot(){
   paintIcons();
