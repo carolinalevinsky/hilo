@@ -55,7 +55,28 @@ body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Ro
 /* main */
 .main{padding:44px 34px 70px;overflow:auto;display:flex;flex-direction:column;min-height:0}
 section[data-view="chat"]{flex:1;min-height:0;flex-direction:column}
-@media(max-width:760px){.app{grid-template-columns:1fr;height:auto;min-height:100vh}.main{display:block}section[data-view="chat"]{display:flex}.chatwrap{height:calc(100vh - 150px)!important}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:5px;padding:12px}.side .brand{width:100%;margin-bottom:6px}.side .who,.side .sp{display:none}.nav{padding:8px 11px;font-size:13px}.main{padding:26px 16px 60px}.topbar h1{font-size:21px}}
+/* ===== barra inferior mobile (oculta en desktop) ===== */
+.mobnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(255,255,255,.96);backdrop-filter:saturate(1.2) blur(8px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;box-shadow:0 -4px 22px rgba(30,36,54,.07)}
+.mobnav button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px 4px;color:#8b90a3;font:inherit;font-size:10.5px;font-weight:600;cursor:pointer;position:relative;border-radius:12px;transition:color .12s}
+.mobnav button .ic{display:inline-flex;align-items:center;justify-content:center}
+.mobnav button.on{color:var(--violet)}
+.mobnav button.on .ic{filter:drop-shadow(0 3px 6px rgba(108,92,231,.35))}
+.mobnav .mbadge{position:absolute;top:3px;left:calc(50% + 5px);background:#ff4757;color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;line-height:1;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+/* ===== hoja inferior "Más" ===== */
+.msheet-ov{position:fixed;inset:0;background:rgba(28,26,54,.5);z-index:80;display:none;align-items:flex-end;backdrop-filter:blur(2px)}
+.msheet-ov.on{display:flex}
+.msheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:6px 12px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -12px 44px rgba(0,0,0,.22);animation:sheetup .24s cubic-bezier(.22,1,.36,1)}
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.msheet .grab{width:40px;height:4px;border-radius:3px;background:#d7dae6;margin:8px auto 8px}
+.msheet .mstit{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:6px 12px 2px}
+.msheet .mitem{display:flex;align-items:center;gap:14px;padding:14px 12px;border-radius:13px;font-weight:600;font-size:15px;color:#33384a;cursor:pointer;position:relative}
+.msheet .mitem:active{background:var(--violet-s)}
+.msheet .mitem.on{color:var(--violet);background:var(--violet-s)}
+.msheet .mitem .ic{color:var(--violet);display:inline-flex;width:22px;justify-content:center}
+.msheet .mitem.danger{color:#c0392b;border-top:1px solid var(--line);border-radius:0;margin-top:4px}
+.msheet .mitem.danger .ic{color:#c0392b}
+.msheet .mbadge2{margin-left:auto;background:#ff4757;color:#fff;font-size:11px;font-weight:800;min-width:19px;height:19px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+/* nota: el overhaul responsivo mobile vive al final del <style> para ganar por orden de fuente */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .topbar h1{margin:0;font-size:25px;letter-spacing:-.6px}
 .topbar .sub{color:var(--muted);font-size:13.5px;margin-top:3px}
@@ -272,7 +293,190 @@ textarea.f{resize:vertical;min-height:66px}
 .iarow .f{flex:1;margin:0}
 .iarow .btn{flex:none;white-space:nowrap}
 .empty{padding:44px 20px;text-align:center;color:var(--muted)}.empty .b{font-size:40px}
+/* toggle de filtros de pacientes (solo se muestra en mobile) */
+.pacfilt-toggle{display:none;width:100%;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 15px;font:inherit;font-weight:700;font-size:14px;color:#33384a;cursor:pointer;margin-bottom:14px;box-shadow:var(--shadow)}
+.pacfilt-toggle .ico{color:var(--violet)}
+.pacfilt-sum{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap}
+.pacfilt-chev{transition:transform .2s;color:var(--muted);flex:none}
+.pacfilt-toggle.open .pacfilt-chev{transform:rotate(180deg)}
+/* agenda: lista vertical por día (solo mobile) */
+.agmob{display:none}
+.agday{margin-bottom:14px}
+.agday:last-child{margin-bottom:0}
+.agday-h{display:flex;align-items:baseline;gap:8px;padding:0 2px 8px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.agday-n{font-weight:800;font-size:14px;color:#20293a}
+.agday-d{font-size:12px;color:var(--muted);font-weight:600}
+.agday.today .agday-n{color:var(--violet)}
+.agday.today .agday-h{border-bottom-color:var(--violet-s)}
+.agitem{display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:12px;cursor:pointer}
+.agitem:active{background:var(--violet-s)}
+.agh{font-weight:800;font-size:13px;color:var(--violet);width:44px;flex:0 0 auto}
+.agav{display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex:0 0 auto}
+.aginfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.aginfo .nm{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aginfo .ti{color:var(--muted);font-size:12px}
+.agchev{font-size:20px;font-weight:700;flex:0 0 auto;line-height:1}
+.agempty{color:var(--muted);font-size:12.5px;padding:4px 8px 6px}
+/* cobros: panel de edición con etiquetas + acciones agrupadas */
+.cobactions{display:contents}
+.cobeditf{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.cobfld{display:flex;flex-direction:column;gap:4px}
+.cobfld>span{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.cobfld input.f,.cobfld select.f{width:132px;padding:8px 10px}
+.cobinp{position:relative;display:flex;align-items:center}
+.cobinp i{position:absolute;left:11px;font-style:normal;color:var(--muted);font-size:13px}
+.cobinp input.f{padding-left:22px;width:118px}
+.cobeditbtns{display:flex;gap:8px;flex:0 0 auto}
+/* materiales: filtros como dropdown (se muestran solo en mobile) */
+.matfilt-dd{display:none;gap:10px}
+.matdd{display:flex;flex-direction:column;gap:4px;flex:1;margin:0}
+.matdd>span{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.matdd select.f{width:100%}
+/* modal de material: acciones */
+.matacts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.matadd{display:flex;gap:8px;align-items:center}
+.matadd select.f{width:auto;padding:9px 11px}
+.btn.iconbtn{width:40px;height:40px;padding:0;flex:0 0 auto}
+/* clínica: equipo (desktop igual que antes) */
+.clininfo{flex:1;min-width:0}
+.clinnums{display:flex;gap:16px}
+.clinstat{text-align:center;min-width:64px}
+.clinstat .cn{font-weight:800}
 @media print{body *{visibility:hidden}.ov.on,.ov.on *{visibility:visible}.ov.on{position:absolute;inset:0;background:#fff;padding:0;display:block;overflow:visible}.ov.on .modal{box-shadow:none;max-width:none;border-radius:0}.ov.on .mh,.ov.on .noprint{display:none!important}.doc{border:0}}
+/* =========================================================
+   OVERHAUL RESPONSIVO MOBILE  ·  va al final a propósito
+   (las media queries no suman especificidad: gana el orden
+   de fuente, así que debe ir DESPUÉS de las reglas base)
+   No modifica desktop: todo vive dentro de @media <=760px.
+   ========================================================= */
+@media(max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);height:auto;min-height:100vh}
+  .side{display:none}
+  .main{display:block;min-width:0;padding:18px 14px calc(80px + env(safe-area-inset-bottom));overflow:visible;min-height:100vh}
+  html,body{overflow-x:hidden}
+  .calwrap{max-width:100%}
+  section[data-view]{min-width:0}
+  .mobnav{display:flex}
+  /* topbar */
+  .topbar{gap:12px;margin-bottom:16px}
+  .topbar h1{font-size:22px}
+  .topbar .sub{font-size:12.5px}
+  .topbar>div{min-width:0}
+  .topbar>.btn,.topbar>button{flex:1 1 100%;justify-content:center}
+  /* hero */
+  .hero{flex-direction:column;align-items:flex-start;gap:14px;padding:20px;border-radius:20px}
+  .hero h1{font-size:20px}
+  .hero .btn{width:100%;justify-content:center}
+  /* kpis y contadores */
+  .kpis{grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px}
+  .kpi{padding:15px}
+  .kpi .ic{width:38px;height:38px;font-size:18px;margin-bottom:9px}
+  .kpi .n{font-size:22px}
+  .homecounts{grid-template-columns:1fr 1fr;gap:11px}
+  /* cards */
+  .card{border-radius:18px;margin-bottom:15px}
+  .card .hd{padding:14px 16px;font-size:14.5px}
+  .card .bd{padding:6px 16px 16px}
+  /* formularios: apilan en una columna */
+  .row,.row3{grid-template-columns:1fr;gap:0}
+  .mb .row,.mb .row3,.mb .row .row,.mb .row .row3{margin-top:0}
+  .planobj select{max-width:none;width:100%}
+  /* segmentos */
+  .seg{gap:6px}
+  .seg button{min-width:0;flex:1 1 calc(50% - 3px);padding:11px 8px;font-size:13px}
+  /* cols apilan */
+  .cols{grid-template-columns:1fr;gap:0}
+  /* pacientes grid una columna */
+  .pgrid{grid-template-columns:1fr;gap:12px}
+  /* ficha: header apila */
+  .phdr{flex-direction:column;align-items:flex-start;gap:14px;padding:18px 18px 16px}
+  .phdr .av{width:52px;height:52px;font-size:19px}
+  .phdr h2{font-size:20px}
+  .phdr .acts{margin-left:0;width:100%;flex-wrap:wrap;gap:8px}
+  .phdr .acts .btn{flex:1 1 auto;justify-content:center}
+  .kv{grid-template-columns:104px 1fr;gap:8px 10px}
+  /* agenda: en mobile ocultamos la grilla horizontal y mostramos la lista por día */
+  .calwrap{display:none}
+  .agmob{display:block}
+  /* documentos (informes/eval) */
+  .doc{padding:20px 16px}
+  .doc .meta{grid-template-columns:1fr;gap:5px}
+  .docactions{gap:8px}
+  .docactions .btn{flex:1 1 calc(50% - 4px);min-width:0;justify-content:center}
+  .iarow{flex-wrap:wrap}
+  .iarow .f{flex:1 1 100%}
+  .iarow .btn{flex:1 1 auto;justify-content:center;white-space:normal}
+  /* modal como hoja inferior a pantalla completa */
+  .ov{padding:0;align-items:flex-end;backdrop-filter:blur(2px)}
+  .modal{max-width:none;width:100%;border-radius:22px 22px 0 0;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  .modal .mh{padding:16px 18px;font-size:15.5px;position:sticky;top:0;background:#fff;z-index:2}
+  .modal .mb{padding:16px 18px calc(22px + env(safe-area-inset-bottom));overflow:auto;-webkit-overflow-scrolling:touch}
+  /* chat ocupa el alto disponible sobre la barra */
+  section[data-view="chat"]{display:flex;flex-direction:column;height:calc(100vh - 98px)}
+  .chatwrap{height:auto!important;flex:1;min-height:0}
+  .chatlog{padding:16px 14px 8px}
+  .msg{max-width:88%}
+  .chatquick{padding:2px 12px 10px}
+  .chatbar{padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+  /* fab de chat por encima de la barra inferior */
+  .fab{bottom:calc(76px + env(safe-area-inset-bottom));right:14px;height:46px;padding:0 15px;font-size:13px}
+  /* auth y detalles */
+  #authScreen>div{padding:26px 20px 22px}
+  .insight .go{align-self:center;margin-left:auto}
+  .slot{gap:10px;padding:11px}
+  /* pacientes: filtros colapsables */
+  .pacfilt-toggle{display:flex}
+  .pac-controls{display:none}
+  .pac-controls.open{display:block}
+  .pac-controls .bd{flex-direction:column!important;align-items:stretch!important;gap:14px!important;padding:15px 16px!important}
+  .pacord{margin-left:0!important}
+  .pacord select{flex:1;width:100%!important;padding:10px 12px!important}
+  /* pacientes: filas finas de una sola línea */
+  .pacrow{padding:11px 6px!important;gap:11px!important}
+  .pacrow .pinfo{display:flex;flex-direction:column;gap:1px}
+  .pacrow .pinfo .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14.5px}
+  .pacrow .pinfo .ti{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pacrow .pchip,.pacrow .pses{display:none}
+  .pacrow .ppct{min-width:auto!important;font-size:13.5px}
+  /* cobros: navegador de mes alineado a la izquierda */
+  .cobnav{justify-content:flex-start!important;gap:14px!important;padding:0 2px 2px}
+  /* cobros: acciones (marcar pago + ⋯) juntas en una línea */
+  .cobactions{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+  /* cobros: panel de edición apilado y prolijo */
+  .cobedit{align-items:flex-start}
+  .cobedit .cobfld{flex:1 1 100%}
+  .cobedit .cobfld input.f,.cobedit .cobfld select.f,.cobedit .cobinp input.f{width:100%}
+  .cobeditbtns{width:100%;margin-top:12px}
+  .cobeditbtns .btn{flex:1}
+  /* los modales deben quedar por encima de la barra inferior */
+  .ov{z-index:90}
+  /* planificación: tabs y acciones prolijas (dos filas de a dos) */
+  .planihead{flex-direction:column;align-items:stretch;gap:10px}
+  .planihead #planiTabs{max-width:none!important;width:100%}
+  .planihead #planiActions{margin-left:0!important;width:100%}
+  .planihead #planiActions .btn{flex:1;justify-content:center}
+  /* materiales: dropdowns en la misma línea, ocultamos los chips */
+  .matfilt-chips{display:none}
+  .matfilt-dd{display:flex}
+  /* modal material: selector de paciente a lo ancho */
+  .matadd{flex:1 1 100%}
+  .matadd select.f{flex:1;width:auto}
+  /* home: "Nuevo paciente" más chico y secundario, no full width */
+  section[data-view="dash"] .topbar>.btn{flex:0 0 auto;font-size:13px;padding:9px 15px}
+  section[data-view="dash"] .topbar>.btn.primary{background:#fff;color:var(--violet);border:1px solid var(--line);box-shadow:none}
+  /* clínica: KPIs 2x2 y filas del equipo sin apretar */
+  .clinkpis{grid-template-columns:1fr 1fr!important}
+  .clinrow{flex-wrap:wrap;row-gap:9px}
+  .clininfo{flex:1 1 auto}
+  .clinstatus{order:2;align-self:flex-start}
+  .clinnums{order:3;flex:1 1 100%;justify-content:flex-start;gap:24px;padding-left:58px}
+  .clinstat{min-width:0;text-align:left;display:flex;align-items:baseline;gap:6px}
+  .clinstat .ti{font-size:12px}
+  /* mercado pago: token y botón apilados */
+  .mprow{flex-direction:column}
+  .mprow #mpTok{min-width:0!important;width:100%}
+  .mprow .btn{width:100%}
+}
 </style>
 </head>
 <body>
@@ -385,7 +589,7 @@ textarea.f{resize:vertical;min-height:66px}
     <!-- PLANIFICACIÓN -->
     <section data-view="plani" style="display:none">
       <div class="topbar"><div><h1>Planificación</h1><div class="sub">Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar.</div></div></div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+      <div class="planihead" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
         <div class="seg" id="planiTabs" style="max-width:470px;flex:0 0 auto">
           <button class="on" data-t="mat" onclick="planiTab('mat')"><span class="ic" data-ic="book" data-sz="17"></span> Materiales</button>
           <button data-t="ses" onclick="planiTab('ses')"><span class="ic" data-ic="clipboard" data-sz="17"></span> Planificar sesión</button>
@@ -433,6 +637,30 @@ textarea.f{resize:vertical;min-height:66px}
       <div id="estBox"></div>
     </section>
   </main>
+</div>
+
+<!-- BARRA INFERIOR MOBILE -->
+<nav class="mobnav noprint" id="mobnav">
+  <button data-v="dash" onclick="mgo('dash')"><span class="ic" data-ic="home" data-sz="21"></span>Inicio</button>
+  <button data-v="pac" onclick="mgo('pac')"><span class="ic" data-ic="user" data-sz="21"></span>Pacientes</button>
+  <button data-v="age" onclick="mgo('age')"><span class="ic" data-ic="calendar" data-sz="21"></span>Agenda</button>
+  <button data-v="cob" onclick="mgo('cob')"><span class="ic" data-ic="wallet" data-sz="21"></span>Cobros</button>
+  <button data-v="_mas" onclick="openMore()"><span class="ic" data-ic="dots" data-sz="21"></span>Más</button>
+</nav>
+<!-- HOJA "MÁS" -->
+<div class="msheet-ov" id="msheetOv" onclick="if(event.target===this)closeMore()">
+  <div class="msheet">
+    <div class="grab"></div>
+    <div class="mstit">Secciones</div>
+    <div class="mitem" data-v="plani" onclick="mgo('plani')"><span class="ic" data-ic="list" data-sz="20"></span> Planificación</div>
+    <div class="mitem" data-v="docs" onclick="mgo('docs')"><span class="ic" data-ic="file" data-sz="20"></span> Informes y evaluaciones</div>
+    <div class="mitem" data-v="clinica" onclick="mgo('clinica')"><span class="ic" data-ic="group" data-sz="20"></span> Clínica</div>
+    <div class="mitem" data-v="est" onclick="mgo('est')"><span class="ic" data-ic="pie" data-sz="20"></span> Estadísticas</div>
+    <div class="mitem" data-v="chat" onclick="mgo('chat')"><span class="ic" data-ic="chat" data-sz="20"></span> Preguntá a Hilo</div>
+    <div class="mstit">Cuenta</div>
+    <div class="mitem" onclick="closeMore();openPerfil()"><span class="ic" data-ic="edit" data-sz="20"></span> Editar perfil</div>
+    <div class="mitem danger" id="mSalir" style="display:none" onclick="closeMore();salir()"><span class="ic" data-ic="lock" data-sz="20"></span> Cerrar sesión</div>
+  </div>
 </div>
 
 <!-- MODALS -->
@@ -544,13 +772,13 @@ textarea.f{resize:vertical;min-height:66px}
   <div id="matIA" style="display:none;margin-top:12px" class="noprint">
     <div style="display:flex;gap:8px"><input class="f" id="matIAin" placeholder="¿Qué querés cambiar? más fácil · con temática de animales · para 4º" style="flex:1" onkeydown="if(event.key==='Enter')modificarIA()"><button class="btn primary" onclick="modificarIA()">Aplicar</button></div>
   </div>
-  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center" class="noprint">
-    <button class="btn primary" onclick="matAPlan()"><span class="ic" data-ic="add" data-sz="15"></span> Sumar a una sesión</button>
+  <div class="matacts noprint">
+    <div class="matadd"><select class="f" id="matPacSel"></select><button class="btn primary" onclick="matAPlan()"><span class="ic" data-ic="add" data-sz="15"></span> Sumar a la sesión</button></div>
     <button class="btn" onclick="toggleMatIA()"><span class="ic" data-ic="shine" data-sz="15"></span> Modificar con IA</button>
-    <button class="btn" onclick="descargarMaterial()"><span class="ic" data-ic="download" data-sz="15"></span> Descargar (.rtf)</button>
-    <button class="btn" onclick="printMaterial()"><span class="ic" data-ic="print" data-sz="15"></span> Imprimir</button>
-    <span class="hint">También podés editar el texto tocándolo directamente.</span>
+    <button class="btn iconbtn" title="Descargar (.rtf)" onclick="descargarMaterial()"><span class="ic" data-ic="download" data-sz="17"></span></button>
+    <button class="btn iconbtn" title="Imprimir" onclick="printMaterial()"><span class="ic" data-ic="print" data-sz="17"></span></button>
   </div>
+  <div class="hint noprint" style="margin-top:8px">Elegís a qué paciente sumás este material; queda en su próxima sesión. También podés editar el texto tocándolo.</div>
 </div></div></div>
 
 <div class="ov" id="ovGen"><div class="modal"><div class="mh">Generar material con IA <button class="x" onclick="cls('ovGen')">×</button></div><div class="mb">
@@ -697,10 +925,27 @@ let current=null,destino="colegio";
 
 /* ---------- router ---------- */
 function nav(el){document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));el.classList.add('on');goto(el.dataset.v);}
+/* barra inferior mobile: en la barra están dash/pac/age/cob; el resto vive en "Más" */
+const MOBTOP=['dash','pac','age','cob'];
+const MOBPARENT={ficha:'pac'};   /* la ficha del paciente pertenece a "Pacientes" */
+function mgo(v){closeMore();goto(v);}
+function openMore(){const o=$('msheetOv');if(o){o.classList.add('on');document.body.style.overflow='hidden';syncMobNav('_mas');}}
+function closeMore(){const o=$('msheetOv');if(o&&o.classList.contains('on')){o.classList.remove('on');document.body.style.overflow='';syncMobNav(_view);}}
+function syncMobNav(v){
+  const pv=MOBPARENT[v]||v;
+  document.querySelectorAll('.mobnav button').forEach(b=>{
+    const dv=b.dataset.v;
+    b.classList.toggle('on', dv==='_mas' ? (pv==='_mas'||!MOBTOP.includes(pv)) : dv===pv);
+  });
+  document.querySelectorAll('.msheet .mitem').forEach(m=>m.classList.toggle('on',m.dataset.v===v));
+}
+let _view='dash';
 function goto(v){
+  _view=v;
   document.querySelectorAll('[data-view]').forEach(s=>s.style.display='none');
   document.querySelector(`[data-view="${v}"]`).style.display=(v==='chat')?'flex':'block';
   document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.v===v));
+  syncMobNav(v);closeMore();
   if(v==='dash')renderDash();if(v==='pac')renderPac();if(v==='age')renderAgenda();if(v==='docs')renderDocs();if(v==='plani')renderPlani();if(v==='cob')renderCob();if(v==='clinica')renderClinica();if(v==='chat')renderChat();if(v==='est')renderEst();
   const fab=document.querySelector('.fab');if(fab)fab.style.display=(v==='chat')?'none':'';
   window.scrollTo(0,0);
@@ -799,9 +1044,11 @@ function recoHTML(objText){const m=matchMaterial(objText);return `${esc(sugeActi
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.ov.on').forEach(o=>o.classList.remove('on'));});
 
 /* ---------- pacientes ---------- */
-let pacVista='lista',pacPub='todos',pacSort='nombre';
+let pacVista='lista',pacPub='todos',pacSort='nombre',pacFiltOpen=false;
 function setPacVista(v){pacVista=v;renderPac();}
 function setPacPub(v){pacPub=v;renderPac();}
+function togglePacFilt(){pacFiltOpen=!pacFiltOpen;renderPac();}
+const PACORD={nombre:'Nombre A-Z',sesiones:'Más sesiones','avance-':'Menos avance','avance+':'Más avance'};
 function renderPac(){
   const q=norm($('q')?.value||'');
   let list=patients.filter(p=>norm(p.nombre).includes(q));
@@ -815,10 +1062,15 @@ function renderPac(){
   const ec=espColor[perfil.profesion]||espColor['psicopedagógico'];
   const pubs=[['todos','Todos'],['ninos','Niños'],['adolescentes','Adolescentes'],['adultos','Adultos']];
   const fc=(on,label,onclick)=>`<span class="fchip${on?' on':''}" onclick="${onclick}">${label}</span>`;
-  const controls=`<div class="card"><div class="bd" style="padding:14px 16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-     <div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Vista</span><div class="fchips">${fc(pacVista==='lista','Lista',"setPacVista('lista')")}${fc(pacVista==='tarjetas','Tarjetas',"setPacVista('tarjetas')")}</div></div>
-     <div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Edad</span><div class="fchips">${pubs.map(([v,l])=>fc(pacPub===v,l,`setPacPub('${v}')`)).join('')}</div></div>
-     <div style="display:flex;gap:6px;align-items:center;margin-left:auto"><span style="font-size:12px;font-weight:700;color:var(--muted)">Orden</span>
+  const filtChevron=`<svg class="pacfilt-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+  const filtToggle=`<button class="pacfilt-toggle${pacFiltOpen?' open':''}" onclick="togglePacFilt()">
+     <span style="display:inline-flex;align-items:center;gap:9px">${ic('settings',17)} <span>Filtros y orden</span></span>
+     <span class="pacfilt-sum">${pubs.find(x=>x[0]===pacPub)[1]} · ${PACORD[pacSort]} ${filtChevron}</span>
+   </button>`;
+  const controls=filtToggle+`<div class="card pac-controls${pacFiltOpen?' open':''}"><div class="bd" style="padding:14px 16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+     <div class="pacfg" style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Vista</span><div class="fchips">${fc(pacVista==='lista','Lista',"setPacVista('lista')")}${fc(pacVista==='tarjetas','Tarjetas',"setPacVista('tarjetas')")}</div></div>
+     <div class="pacfg" style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Edad</span><div class="fchips">${pubs.map(([v,l])=>fc(pacPub===v,l,`setPacPub('${v}')`)).join('')}</div></div>
+     <div class="pacfg pacord" style="display:flex;gap:6px;align-items:center;margin-left:auto"><span style="font-size:12px;font-weight:700;color:var(--muted)">Orden</span>
        <select class="f" style="width:auto;padding:8px 11px" onchange="pacSort=this.value;renderPac()">
          <option value="nombre" ${pacSort==='nombre'?'selected':''}>Nombre A-Z</option>
          <option value="sesiones" ${pacSort==='sesiones'?'selected':''}>Más sesiones</option>
@@ -834,12 +1086,12 @@ function renderPac(){
   }
   else if(pacVista==='lista'){
     body=`<div class="card"><div class="bd" style="padding:6px 10px">`+list.map((p,i)=>`
-      <div class="slot" style="cursor:pointer;border:0;${i<list.length-1?'border-bottom:1px solid var(--line)':''};border-radius:0;margin:0" onclick="abrir(${p.id})">
+      <div class="slot pacrow" style="cursor:pointer;border:0;${i<list.length-1?'border-bottom:1px solid var(--line)':''};border-radius:0;margin:0" onclick="abrir(${p.id})">
         <div class="av" style="background:${p.c};width:38px;height:38px;border-radius:11px;font-size:14px">${ini(p.nombre)}</div>
-        <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div><div class="ti">${esc(p.edad)} · ${esc(p.esc)} · ${esc(p.col)}</div></div>
-        <span class="chip" style="background:${ec[1]};color:${ec[2]}">${pub(p).c}</span>
-        <span class="hint" style="min-width:78px;text-align:right">${p.ses.length} ${p.ses.length===1?'sesión':'sesiones'}</span>
-        <span style="font-weight:800;color:${p.c};min-width:52px;text-align:right">${avgP(p)}%</span>
+        <div class="pinfo" style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div><div class="ti">${esc(p.edad)} · ${esc(p.esc)} · ${esc(p.col)}</div></div>
+        <span class="chip pchip" style="background:${ec[1]};color:${ec[2]}">${pub(p).c}</span>
+        <span class="hint pses" style="min-width:78px;text-align:right">${p.ses.length} ${p.ses.length===1?'sesión':'sesiones'}</span>
+        <span class="ppct" style="font-weight:800;color:${p.c};min-width:52px;text-align:right">${avgP(p)}%</span>
       </div>`).join('')+`</div></div>`;
   } else {
     body=`<div class="pgrid">`+list.map(p=>`
@@ -892,7 +1144,7 @@ function renderFicha(){
        </div></div>
        <div class="card"><div class="hd">${hd('shine','Memoria de Hilo')}</div><div class="bd"><div class="membox">
          ${(p.ses.length||p.obj.length)?`Hilo va guardando todo lo de ${esc(first(p.nombre))}: por ahora <b>${p.ses.length} ${p.ses.length===1?'sesión':'sesiones'}</b> y <b>${p.obj.length} ${p.obj.length===1?'objetivo':'objetivos'}</b>. Con esto arma los informes sin que escribas de cero.`:`Todavía no cargaste nada de ${esc(first(p.nombre))}. A medida que registres sesiones y evaluaciones, todo se guarda acá — y después Hilo lo usa para armar los informes por vos.`}</div></div></div>
-       <div class="card"><div class="hd">${hd('shine','Qué hacer en la próxima sesión')}</div><div class="bd">${sugeHTML(p)}</div></div>
+       <div class="card"><div class="hd">${hd('clipboard','Próxima sesión')}</div><div class="bd">${proxSesionHTML(p)}</div></div>
        <div class="card"><div class="hd">${hd('file','Evaluaciones e informes')}</div><div class="bd">${docsHTML(p)}</div></div>
      </div>
    </div>
@@ -962,7 +1214,7 @@ function recordCardInner(){
       <div style="flex:1;min-width:0"><div class="nm">${esc(first(p.nombre))} <span class="hint">· ${esc(s.h)}</span></div><div class="ti" style="margin-top:2px">${p.tel?esc(p.tel):'<span style="color:var(--muted)">sin teléfono cargado</span>'}</div></div>
       <a class="btn sm" style="text-decoration:none;background:#25d366;color:#fff;border-color:#25d366" target="_blank" rel="noopener" href="https://wa.me/${num}?text=${encodeURIComponent(msg)}"><span class="ico">${ic('whatsapp',14)}</span> Recordar</a>
     </div>`;}).join('');
-  return `<div class="card"><div class="hd">${hd('clock','Recordá los turnos de mañana')} <span class="hint">${manNombre} ${fecha} · un toque y va por WhatsApp</span></div><div class="bd" style="padding-top:12px">${rows}</div></div>`;
+  return `<div class="card"><div class="hd">${hd('clock','Recordá los turnos de mañana')} <span class="hint">${manNombre} ${fecha}</span></div><div class="bd" style="padding-top:12px">${rows}</div></div>`;
 }
 function gcalLink(dt,hhmm,title,details){
   if(!dt||!hhmm)return '';
@@ -1128,13 +1380,26 @@ function renderAgenda(){
     });
   });
   const emptyHint=totalSes===0?`<div class="banner" style="margin:0 0 12px">Todavía no tenés sesiones agendadas. Tocá <b>Agendar sesión</b> (o cargá el día y la hora al crear el paciente) y aparecen acá.</div>`:'';
-  const wknav=`<span class="hint" style="display:inline-flex;align-items:center;gap:9px">
+  const wknav=`<span style="display:inline-flex;align-items:center;gap:9px">
     <button class="iconbtn" onclick="agNav(-1)" title="Semana anterior" style="font-size:18px">‹</button>
-    <span style="min-width:118px;text-align:center">Semana del ${fmtDM(wd['Lunes'])} al ${fmtDM(wd['Viernes'])}</span>
+    <span style="min-width:118px;text-align:center;font-weight:700;color:var(--ink)">Semana del ${fmtDM(wd['Lunes'])} al ${fmtDM(wd['Viernes'])}</span>
     <button class="iconbtn" onclick="agNav(1)" title="Semana siguiente" style="font-size:18px">›</button>
     ${agWk!==0?`<button class="btn sm" onclick="agHoy()">Hoy</button>`:''}
   </span>`;
-  const grid=`<div class="card"><div class="hd">${hd('calendar','Tu semana')} ${wknav}</div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div></div></div>`;
+  // vista mobile: lista vertical por día (así se ve la semana completa sin scroll lateral)
+  const agMob=`<div class="agmob">`+dias.map(d=>{
+    const ses=(semana[d]||[]).slice().sort((a,b)=>String(a.h).localeCompare(String(b.h)));
+    return `<div class="agday${d===hoyN?' today':''}">
+      <div class="agday-h"><span class="agday-n">${d}</span><span class="agday-d">${fmtDM(wd[d])}</span></div>
+      ${ses.length?ses.map(s=>{const p=P(s.id);if(!p)return '';const pl=plan[planKey(d,s)];const done=pl&&pl.done;
+        return `<div class="agitem" onclick="abrir(${p.id})">
+          <span class="agh">${s.h}</span>
+          <span class="av agav" style="background:${p.c};width:34px;height:34px;border-radius:10px;font-size:13px">${ini(p.nombre)}</span>
+          <span class="aginfo"><span class="nm"${done?' style="text-decoration:line-through;opacity:.55"':''}>${esc(first(p.nombre))}</span><span class="ti">${esc(p.edad)}</span></span>
+          <span class="agchev">›</span>
+        </div>`;}).join(''):`<div class="agempty">Sin sesiones</div>`}
+    </div>`;}).join('')+`</div>`;
+  const grid=`<div class="card"><div class="hd" style="justify-content:flex-start">${wknav}</div><div class="bd" style="padding-top:14px">${emptyHint}<div class="calwrap"><div class="cal"><div class="grid" style="grid-template-columns:52px repeat(${dias.length},minmax(96px,1fr))">${head}${rows}</div></div></div>${agMob}</div></div>`;
   // plan de la semana
   let planRows='';
   dias.forEach(d=>{
@@ -1192,6 +1457,10 @@ function updateResBadge(){
   if(nav){let b=nav.querySelector('.navbadge');
     if(resCount>0){if(!b){b=document.createElement('span');b.className='navbadge';nav.appendChild(b);}b.textContent=resCount;}
     else if(b)b.remove();}
+  const mnav=document.querySelector('.mobnav button[data-v="age"]');
+  if(mnav){let mb=mnav.querySelector('.mbadge');
+    if(resCount>0){if(!mb){mb=document.createElement('span');mb.className='mbadge';mnav.appendChild(mb);}mb.textContent=resCount;}
+    else if(mb)mb.remove();}
   const hb=$('resHomeBanner');
   if(hb)hb.innerHTML=resCount>0?`<div class="banner v" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>${ic('useradd',15)} Tenés <b>${resCount}</b> reserva(s) nueva(s) sin confirmar.</span><button class="btn sm primary" onclick="goto('age')">Ver en Agenda</button></div>`:'';
 }
@@ -1303,6 +1572,20 @@ function docsHTML(p){
 }
 
 /* ---------- sugerencia proactiva (próxima sesión) ---------- */
+/* bloque "próxima sesión" en la ficha: si hay algo preparado lo muestra con opción de registrar; si no, sugiere */
+function proxSesionHTML(p){
+  const items=Array.isArray(p.plan)?p.plan:[];
+  if(!items.length){
+    return sugeHTML(p)+`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><button class="btn sm primary" onclick="planPac=${p.id};planiTab('ses');goto('plani')"><span class="ico">${ic('add',14)}</span> Preparar la próxima sesión</button></div>`;
+  }
+  const list=items.map((it,i)=>{const m=it.mid?materialData.find(x=>x.id===it.mid):null;const title=it.t?esc(cap(it.t)):(m?esc(m.t):'Actividad');const subt=it.t?(m?'Material: '+esc(m.t):'Actividad'):(m?esc(m.area)+' · '+esc(m.sub):'');
+    return `<div class="planrow" style="padding:9px 2px"><div style="width:28px;height:28px;border-radius:8px;background:var(--teal-s);color:#12706a;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto">${i+1}</div><div style="flex:1;min-width:0"><div class="nm" style="font-weight:700;font-size:14px">${title}</div><div class="ti">${subt}</div></div></div>`;}).join('');
+  return `<div class="banner t" style="margin-bottom:12px">Dejaste preparada la próxima sesión con <b>${items.length}</b> actividad(es). Cuando la tengas, registrala y pasa al historial.</div>${list}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <button class="btn primary" onclick="registrarSesionPreparada(${p.id})"><span class="ico">${ic('check',15)}</span> Registrar esta sesión</button>
+      <button class="btn" onclick="planPac=${p.id};planiTab('ses');goto('plani')"><span class="ico">${ic('edit',15)}</span> Editar</button>
+    </div>`;
+}
 function sugeHTML(p){
   if(!p.obj.length)return '<div class="hint">Todavía no hay objetivos. Cargalos desde una evaluación y Hilo te arma el plan.</div>';
   const ord=[...p.obj].sort((a,b)=>a.p-b.p).slice(0,3);
@@ -1836,8 +2119,14 @@ function renderMat(){
   $('matBox').innerHTML=`
     <div class="banner" style="max-width:none">Biblioteca de <b>${profLabel(perfil.profesion)}</b> · ${mine.length} materiales.</div>
     <div class="card"><div class="bd" style="padding:14px 16px">
-      <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;${showGrados?'margin-bottom:12px':''}"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Área</span><div class="fchips">${areas.map(a=>`<span class="fchip${a===matArea?' on':''}" onclick="matArea='${esc(a)}';renderMat()">${esc(a)}</span>`).join('')}</div></div>
-      ${showGrados?`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Edad</span><div class="fchips">${grados.map(g=>`<span class="fchip${g===matGrado?' on':''}" onclick="matGrado='${g}';renderMat()">${g}</span>`).join('')}</div></div>`:''}
+      <div class="matfilt-chips">
+        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;${showGrados?'margin-bottom:12px':''}"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Área</span><div class="fchips">${areas.map(a=>`<span class="fchip${a===matArea?' on':''}" onclick="matArea='${esc(a)}';renderMat()">${esc(a)}</span>`).join('')}</div></div>
+        ${showGrados?`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:var(--muted);padding-top:4px">Edad</span><div class="fchips">${grados.map(g=>`<span class="fchip${g===matGrado?' on':''}" onclick="matGrado='${g}';renderMat()">${g}</span>`).join('')}</div></div>`:''}
+      </div>
+      <div class="matfilt-dd">
+        <label class="matdd"><span>Área</span><select class="f" onchange="matArea=this.value;renderMat()">${areas.map(a=>`<option value="${esc(a)}" ${a===matArea?'selected':''}>${esc(a)}</option>`).join('')}</select></label>
+        ${showGrados?`<label class="matdd"><span>Edad</span><select class="f" onchange="matGrado=this.value;renderMat()">${grados.map(g=>`<option value="${esc(g)}" ${g===matGrado?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:''}
+      </div>
     </div></div>
     <div class="pgrid">
       ${list.map(m=>`<div class="pcard" onclick="openMaterial(${m.id})">
@@ -1851,7 +2140,9 @@ function renderMat(){
 }
 let curMat=null;
 function renderMatDoc(body,m){$('matDoc').innerHTML=`<div class="doc" id="matEditable" contenteditable="true" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:left;outline:none"><h2 style="text-align:left;margin-bottom:2px">${esc(m.t)}</h2><div style="color:#7a839a;font-size:12.5px;margin-bottom:16px">${esc(m.area)} › ${esc(m.sub)}${matEdades(m).length?' · '+esc(matEdades(m).join(', ')):''} · ${esc(m.tipo)}</div><div style="line-height:1.6">${body}</div></div>`;}
-function openMaterial(id){const m=materialData.find(x=>x.id===id);curMat=m;renderMatDoc(m.c,m);$('matIA').style.display='none';opn('ovMat');}
+function openMaterial(id){const m=materialData.find(x=>x.id===id);curMat=m;renderMatDoc(m.c,m);$('matIA').style.display='none';
+  const sel=$('matPacSel');if(sel){const def=(planPac&&P(planPac))?planPac:(patients[0]&&patients[0].id);sel.innerHTML=patients.length?patients.map(x=>`<option value="${x.id}" ${x.id===def?'selected':''}>${esc(x.nombre)}</option>`).join(''):'<option value="">Sin pacientes</option>';}
+  opn('ovMat');}
 function toggleMatIA(){const el=$('matIA');el.style.display=el.style.display==='none'?'block':'none';if(el.style.display==='block')$('matIAin').focus();}
 function variar(m,ins){return `${m.obj}. Adaptalo a: ${ins.toLowerCase()}. Empezá por lo más simple y subí la dificultad según cómo responda el niño; registrá los aciertos.`;}
 function modificarIA(){
@@ -1974,19 +2265,17 @@ function renderCob(){
     const editing=cobEdit===p.id;
     const feeTxt=Number(p.fee)>0?`$${Number(p.fee).toLocaleString('es-UY')} · ${freqLabel(p.freq||'mensual')}`:'<span style="color:var(--muted)">Sin monto definido</span>';
     if(editing){
-      return `<div class="slot" style="align-items:center">
+      return `<div class="slot cobedit" style="align-items:flex-start;flex-wrap:wrap">
         <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
-        <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div>
-          <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
-            <span style="color:var(--muted);font-size:13px">$</span>
-            <input class="f" id="cf_${p.id}" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto" style="width:92px;padding:7px 10px">
-            <select class="f" id="cq_${p.id}" style="width:auto;padding:7px 10px">${opts(p.freq||'mensual')}</select>
-            <span class="hint">·</span><span class="hint">sesiones/mes</span>
-            <input class="f" id="cs_${p.id}" type="number" min="1" value="${sesMes(p)}" title="Cantidad de sesiones al mes (solo aplica a cobro por sesión, semana o quincena)" style="width:56px;padding:7px 10px">
+        <div class="cobeditbody" style="flex:1;min-width:0">
+          <div class="nm">${esc(p.nombre)}</div>
+          <div class="cobeditf">
+            <label class="cobfld"><span>Honorario</span><span class="cobinp"><i>$</i><input class="f" id="cf_${p.id}" type="number" min="0" inputmode="numeric" value="${Number(p.fee)||''}" placeholder="monto"></span></label>
+            <label class="cobfld"><span>Frecuencia</span><select class="f" id="cq_${p.id}">${opts(p.freq||'mensual')}</select></label>
+            <label class="cobfld"><span>Sesiones/mes</span><input class="f" id="cs_${p.id}" type="number" min="1" value="${sesMes(p)}" title="Cantidad de sesiones al mes (solo aplica a cobro por sesión, semana o quincena)"></label>
           </div>
         </div>
-        <button class="btn sm primary" onclick="cobGuardar(${p.id})">Guardar</button>
-        <button class="btn sm" onclick="cobCancel()">Cancelar</button>
+        <div class="cobeditbtns"><button class="btn sm primary" onclick="cobGuardar(${p.id})">Guardar</button><button class="btn sm" onclick="cobCancel()">Cancelar</button></div>
       </div>`;
     }
     let estado;
@@ -2008,17 +2297,15 @@ function renderCob(){
         ? `<button class="chip" style="background:var(--green-s);color:#1a8f57;border:0;cursor:pointer" onclick="cobSetPago(${p.id},'${ym}',false)" title="Quitar pago">Al día${r.f?' · '+r.f:''}</button>`
         : `<button class="btn sm" onclick="cobSetPago(${p.id},'${ym}',true)">Marcar pago</button>`;
     }
-    return `<div class="slot" style="align-items:center;flex-wrap:wrap">
+    return `<div class="slot cobrow" style="align-items:center;flex-wrap:wrap">
       <div class="av" style="background:${p.c}">${ini(p.nombre)}</div>
-      <div style="flex:1;min-width:120px"><div class="nm">${esc(p.nombre)}</div><div class="ti" style="margin-top:2px">${feeTxt}</div></div>
-      ${estado}
-      ${(mpOn&&Number(p.fee)>0&&esActual)?`<button class="btn sm" onclick="cobrarMP(${p.id})" title="Enviar link de pago por WhatsApp"><span class="ico">${ic('wallet',14)}</span> Cobrar</button>`:''}
-      <button class="iconbtn" title="Editar" onclick="cobEditar(${p.id})">${ic('dots',18)}</button>
+      <div class="cobinfo" style="flex:1;min-width:120px"><div class="nm">${esc(p.nombre)}</div><div class="ti" style="margin-top:2px">${feeTxt}</div></div>
+      <div class="cobactions">${estado}${(mpOn&&Number(p.fee)>0&&esActual)?`<button class="btn sm" onclick="cobrarMP(${p.id})" title="Enviar link de pago por WhatsApp"><span class="ico">${ic('wallet',14)}</span> Cobrar</button>`:''}<button class="iconbtn" title="Editar honorario o frecuencia" onclick="cobEditar(${p.id})">${ic('dots',18)}</button></div>
     </div>`;
   };
   let cur=ymNow();const meses6=[];for(let i=0;i<6;i++){meses6.push(cur);cur=ymShift(cur,-1);}
   const hist=meses6.map(m=>{const tot=patients.reduce((s,p)=>s+montoMes(p,m),0);const selm=m===ym;const nm=ymLabel(m).replace(/ \d{4}$/,'');return `<button class="qchip" style="${selm?'border-color:var(--violet);color:var(--violet)':''}" onclick="cobIr('${m}')">${nm} · $${tot.toLocaleString('es-UY')}</button>`;}).join('');
-  const nav=`<div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:16px">
+  const nav=`<div class="cobnav" style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:16px">
     <button class="iconbtn" title="Mes anterior" onclick="cobNav(-1)" style="font-size:20px">‹</button>
     <div style="text-align:center;min-width:150px">
       <div style="font-weight:800;font-size:15px;line-height:1.1">${ymLabel(ym)}</div>
@@ -2062,7 +2349,7 @@ function mpCardInner(){
   }
   return `<div class="card"><div class="hd">${hd('wallet','Mercado Pago')} <span class="hint">cobrá a tu propia cuenta</span></div><div class="bd" style="padding-top:14px">
     <div class="hint" style="margin-bottom:8px">Pegá tu <b>Access Token</b> de Mercado Pago y vas a poder mandarle a las familias un link de pago que cae en tu cuenta.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><input class="f" id="mpTok" style="flex:1;min-width:220px" placeholder="APP_USR-..." autocomplete="off"><button class="btn primary" onclick="mpGuardarToken()">Conectar</button></div>
+    <div class="mprow" style="display:flex;gap:8px;flex-wrap:wrap"><input class="f" id="mpTok" style="flex:1;min-width:220px" placeholder="APP_USR-..." autocomplete="off"><button class="btn primary" onclick="mpGuardarToken()">Conectar</button></div>
     <div class="hint" id="mpNote" style="margin-top:10px;min-height:16px"></div>
     <details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px;color:var(--violet);font-weight:600">¿De dónde saco el Access Token?</summary>
       <div class="hint" style="margin-top:8px;line-height:1.7">1. Entrá a <b>mercadopago.com.uy</b> con tu cuenta.<br>2. Andá a <b>Tu negocio → Configuración → Credenciales</b> (o a mercadopago.com.uy/developers → Tus integraciones → Credenciales).<br>3. Copiá el <b>Access Token de producción</b> (empieza con APP_USR).<br>4. Pegalo acá arriba y tocá Conectar. Queda guardado y protegido: solo lo usa tu cuenta.</div>
@@ -2396,13 +2683,14 @@ function planiTab(t){
   const pa=$('planiActions');if(pa)pa.style.display=t==='mat'?'flex':'none';
   if(t==='mat')renderMat();else renderPlanner();
 }
-function planItems(pid){return sesionPlan[pid]||(sesionPlan[pid]=[]);}
+/* el plan vive en el paciente (p.plan): queda preparado como la PRÓXIMA sesión y persiste */
+function planItems(pid){const p=P(pid);if(!p)return [];if(!Array.isArray(p.plan))p.plan=[];return p.plan;}
 function planHas(pid,t,mid){return planItems(pid).some(x=>x.t===t&&x.mid===mid);}
-function planAdd(pid,t,mid){if(!planHas(pid,t,mid))planItems(pid).push({t:t||'',mid:mid||null});renderPlanner();}
+function planAdd(pid,t,mid){if(!planHas(pid,t,mid)){planItems(pid).push({t:t||'',mid:mid||null});const p=P(pid);if(p)savePatient(p);}renderPlanner();}
 function planAddObj(pid,i){const p=P(pid);const o=p&&p.obj[i];if(!o)return;const m=matchMaterial(o.t);planAdd(pid,o.t,m?m.id:null);}
 function planAddMat(pid,mid){planAdd(pid,'',mid);}
-function planRemove(pid,i){planItems(pid).splice(i,1);renderPlanner();}
-function planClear(pid){sesionPlan[pid]=[];renderPlanner();}
+function planRemove(pid,i){planItems(pid).splice(i,1);const p=P(pid);if(p)savePatient(p);renderPlanner();}
+function planClear(pid){const p=P(pid);if(p){p.plan=[];savePatient(p);}renderPlanner();}
 function setPlanPac(id){planPac=+id;renderPlanner();}
 function resultsHTML(pid,q){
   const nq=norm(q);
@@ -2443,20 +2731,21 @@ function renderPlanner(){
         </div></div>
       </div>
       <div>
-        <div class="card"><div class="hd">${hd('clipboard','Planificación de '+first(p.nombre))} <span class="hint">${items.length}</span></div><div class="bd" style="padding-top:12px">${chosen}
+        <div class="card"><div class="hd">${hd('clipboard','Próxima sesión de '+first(p.nombre))} <span class="hint">${items.length}</span></div><div class="bd" style="padding-top:12px">${chosen}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-            <button class="btn primary" onclick="guardarPlanSesion(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('check',15)}</span> Registrar sesión</button>
+            <button class="btn primary" onclick="abrir(${p.id})"><span class="ico">${ic('user',15)}</span> Ver ficha de ${esc(first(p.nombre))}</button>
             <button class="btn" onclick="printPlanPac(${p.id})" ${items.length?'':'disabled'}><span class="ico">${ic('print',15)}</span> Imprimir</button>
             ${items.length?`<button class="btn" onclick="planClear(${p.id})">Vaciar</button>`:''}
           </div>
-          <div class="hint" style="margin-top:10px">Al guardar, queda registrada como una sesión en la ficha de ${esc(first(p.nombre))} (con lo que trabajaron) y suma avance a los objetivos incluidos.</div>
+          <div class="hint" style="margin-top:10px">Esto queda guardado como la <b>próxima sesión</b> de ${esc(first(p.nombre))}. Cuando la tengas, la registrás desde su ficha (recién ahí pasa al historial y suma avance).</div>
         </div></div>
       </div>
     </div>`;
 }
-function guardarPlanSesion(pid){
+/* registrar la sesión PREPARADA: recién acá pasa al historial y suma avance */
+function registrarSesionPreparada(pid){
   const p=P(pid);if(!p)return;const items=planItems(p.id);
-  if(!items.length){alert('Agregá al menos una actividad al plan.');return;}
+  if(!items.length){alert('No hay una sesión preparada todavía.');return;}
   const trabajados=[];
   items.forEach(it=>{
     const m=it.mid?materialData.find(x=>x.id===it.mid):null;
@@ -2465,15 +2754,14 @@ function guardarPlanSesion(pid){
   });
   const resumen='Se trabajó: '+trabajados.map(t=>t.toLowerCase()).join(', ')+'.';
   p.ses.unshift({d:new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'short'}),trab:trabajados,evo:resumen,nota:'Registrada desde la planificación',evid:false});
-  savePatient(p);
-  sesionPlan[p.id]=[];
-  current=p;abrir(p.id);
+  p.plan=[];savePatient(p);current=p;renderFicha();
 }
 function matAPlan(){
   if(!curMat)return;
   if(!patients.length){alert('Creá un paciente primero.');return;}
-  if(!planPac||!P(planPac))planPac=patients[0].id;
-  planAdd(planPac,'',curMat.id);
+  const sel=$('matPacSel');const pid=(sel&&+sel.value&&P(+sel.value))?+sel.value:((planPac&&P(planPac))?planPac:patients[0].id);
+  planPac=pid;
+  planAdd(pid,'',curMat.id);
   cls('ovMat');planiTab('ses');goto('plani');
 }
 function planPrintBlock(p){
@@ -2500,13 +2788,15 @@ function renderClinica(){
   const activos=equipo.filter(e=>e.estado==='activa'),usados=activos.length;
   const pacTot=activos.reduce((a,e)=>a+e.pac,0),infMesTot=activos.reduce((a,e)=>a+e.inf,0),factura=usados*clinica.precioAsiento;
   const rows=equipo.map(e=>{const col=(espColor[e.esp]||['#6c5ce7'])[0],inv=e.estado!=='activa';
-    return `<div class="slot"><div class="av" style="background:${col}">${ini(e.n)}</div>
-      <div style="flex:1"><div class="nm">${esc(e.n)}${e.vos?' <span class="chip" style="background:var(--violet-s);color:var(--violet)">vos</span>':''}</div><div class="ti">${espShort(e.esp)}</div></div>
-      <div style="text-align:center;min-width:64px"><div style="font-weight:800">${inv?'—':e.pac}</div><div class="ti">pacientes</div></div>
-      <div style="text-align:center;min-width:64px"><div style="font-weight:800">${inv?'—':e.inf}</div><div class="ti">informes/mes</div></div>
-      ${inv?'<span class="chip" style="background:var(--amber-s);color:#8a5a12">Invitación pendiente</span>':'<span class="chip" style="background:var(--green-s);color:#1a8f57">Activa</span>'}</div>`;}).join('');
+    return `<div class="slot clinrow"><div class="av" style="background:${col}">${ini(e.n)}</div>
+      <div class="clininfo"><div class="nm">${esc(e.n)}${e.vos?' <span class="chip" style="background:var(--violet-s);color:var(--violet)">vos</span>':''}</div><div class="ti">${espShort(e.esp)}</div></div>
+      <div class="clinnums">
+        <div class="clinstat"><div class="cn">${inv?'—':e.pac}</div><div class="ti">pacientes</div></div>
+        <div class="clinstat"><div class="cn">${inv?'—':e.inf}</div><div class="ti">informes/mes</div></div>
+      </div>
+      ${inv?'<span class="chip clinstatus" style="background:var(--amber-s);color:#8a5a12">Invitación pendiente</span>':'<span class="chip clinstatus" style="background:var(--green-s);color:#1a8f57">Activa</span>'}</div>`;}).join('');
   $('clinicaBox').innerHTML=`
-    <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpis clinkpis" style="grid-template-columns:repeat(4,1fr)">
       <div class="kpi"><div class="ic i-violet" style="color:var(--violet)">${ic('user',23)}</div><div class="n">${usados}/${clinica.asientos}</div><div class="l">Asientos usados</div></div>
       <div class="kpi"><div class="ic i-blue" style="color:var(--blue)">${ic('group',23)}</div><div class="n">${pacTot}</div><div class="l">Pacientes activos</div></div>
       <div class="kpi"><div class="ic i-teal" style="color:var(--teal)">${ic('file',23)}</div><div class="n">${infMesTot}</div><div class="l">Informes este mes</div></div>
@@ -2615,7 +2905,7 @@ async function loadPacientes(){
   const {data,error}=await sb.from('pacientes').select('*').order('created_at',{ascending:true});
   if(error){console.error('loadPacientes',error);patients=[];return;}
   seq=20;
-  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],tel:d.tel||'',consentData:d.consentData||null,fee:Number(d.fee)||0,freq:d.freq||'mensual',sesMes:Number(d.sesMes)||0,pago:!!d.pago,pagos:d.pagos||(d.pago?{[ymNow()]:{paid:true,f:'',monto:Number(d.fee)||0}}:{}),sesCfg:d.sesCfg||null,extraSes:d.extraSes||[]};});
+  patients=(data||[]).map(row=>{const d=row.data||{};return {id:++seq,dbid:row.id,c:row.color||'#6c5ce7',nombre:row.nombre,edad:row.edad||'—',esc:row.escolaridad||'—',col:row.colegio||'—',mut:row.mutualista||'—',publico:row.publico||'ninos',motivo:row.motivo||'',inicio:row.inicio||'',consent:!!row.consentimiento,obj:d.obj||[],ses:d.ses||[],evals:d.evals||[],informes:d.informes||[],tel:d.tel||'',consentData:d.consentData||null,fee:Number(d.fee)||0,freq:d.freq||'mensual',sesMes:Number(d.sesMes)||0,pago:!!d.pago,pagos:d.pagos||(d.pago?{[ymNow()]:{paid:true,f:'',monto:Number(d.fee)||0}}:{}),sesCfg:d.sesCfg||null,extraSes:d.extraSes||[],plan:Array.isArray(d.plan)?d.plan:[]};});
 }
 function rebuildDocsLists(){
   evals.length=0;informes.length=0;
@@ -2624,7 +2914,7 @@ function rebuildDocsLists(){
     (p.informes||[]).forEach(r=>informes.push({p:p.nombre,tipo:r.tipo,f:r.f,c:p.c,id:p.id}));
   });
 }
-function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],tel:p.tel||'',consentData:p.consentData||null,fee:Number(p.fee)||0,freq:p.freq||'mensual',sesMes:Number(p.sesMes)||0,pago:!!p.pago,pagos:p.pagos||{},sesCfg:p.sesCfg||null,extraSes:p.extraSes||[]},updated_at:new Date().toISOString()};}
+function pacientePayload(p){return {profesional_id:authUser.id,nombre:p.nombre,edad:p.edad,publico:p.publico||'ninos',escolaridad:p.esc,colegio:p.col,mutualista:p.mut,motivo:p.motivo,inicio:p.inicio,consentimiento:!!p.consent,color:p.c,data:{obj:p.obj||[],ses:p.ses||[],evals:p.evals||[],informes:p.informes||[],tel:p.tel||'',consentData:p.consentData||null,fee:Number(p.fee)||0,freq:p.freq||'mensual',sesMes:Number(p.sesMes)||0,pago:!!p.pago,pagos:p.pagos||{},sesCfg:p.sesCfg||null,extraSes:p.extraSes||[],plan:Array.isArray(p.plan)?p.plan:[]},updated_at:new Date().toISOString()};}
 async function savePatient(p){
   if(!REAL||!authUser||!p)return;
   try{
@@ -2644,6 +2934,7 @@ async function borrarPaciente(id){
 async function entrarApp(){
   ocultarAuth();
   const lr=$('logoutRow');if(lr)lr.style.display='';
+  const ms=$('mSalir');if(ms)ms.style.display='';
   /* limpiar datos de ejemplo de la demo (agenda, informes, etc.) */
   agendaHoy.length=0;Object.keys(semana).forEach(k=>delete semana[k]);informes.length=0;evals.length=0;cobros.length=0;
   await loadPerfil();await loadPacientes();rebuildDocsLists();await loadMP();
@@ -2662,7 +2953,7 @@ async function boot(){
       sb.auth.onAuthStateChange(async (_e,s)=>{if(s&&s.user){if(!authUser||authUser.id!==s.user.id){authUser=s.user;await entrarApp();}}else{authUser=null;mostrarAuth();}});
     }catch(e){console.error('boot',e);mostrarAuth();}
   }else{
-    updateWho();renderDash();
+    updateWho();renderDash();syncMobNav('dash');
   }
 }
 boot();
