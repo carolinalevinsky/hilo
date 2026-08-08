@@ -1,6 +1,52 @@
 {
   "name": "hilo",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:rls": "node scripts/check-rls.mjs",
+    "check:migration": "node scripts/check-migration.mjs",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.30.0",
+    "next": "16.3.0",
+    "radix-ui": "^1.6.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "resend": "^6.18.1",
+    "shadcn": "^4.16.2",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "supabase": "^2.113.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
 }

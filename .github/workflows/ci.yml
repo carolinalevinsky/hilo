@@ -1,0 +1,71 @@
+name: CI
+
+# There is no human reviewer on this project. This workflow is the only gate
+# between a change and production, so every check here replaces a judgement call
+# a reviewer would otherwise make by reading the diff.
+#
+# No `paths:` filter, deliberately. A filtered workflow *skips* rather than
+# passes, and in branch protection a skipped required check is indistinguishable
+# from a green one.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    env:
+      # Placeholder values so src/lib/env.ts parses during the build. They are
+      # not secrets and they reach nothing real — CI never talks to production.
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+      SUPABASE_SERVICE_ROLE_KEY: ci-placeholder
+      ANTHROPIC_API_KEY: ci-placeholder
+      RESEND_API_KEY: ci-placeholder
+      MAIL_FROM: Hilo <ci@example.com>
+      CRON_SECRET: ci-placeholder
+      MP_WEBHOOK_SECRET: ci-placeholder
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # ── Architecture ────────────────────────────────────────────────────
+      - name: Lint (the three architectural rules)
+        run: npm run lint
+
+      - name: Prove the architectural rules still fire
+        run: npm run check:boundaries
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # ── Security ────────────────────────────────────────────────────────
+      - name: No secrets exposed to the browser
+        run: npm run check:secrets
+
+      - name: Destructive SQL must be declared
+        run: npm run check:migration
+
+      # ── Database ────────────────────────────────────────────────────────
+      # Needs a real Postgres, so the local Supabase stack comes up here.
+      - name: Start Supabase
+        run: npx supabase start
+
+      - name: Every table has RLS and a policy
+        run: npm run check:rls
+
+      - name: Tests
+        run: npm run test
+
+      # ── Build ───────────────────────────────────────────────────────────
+      - name: Build
+        run: npm run build

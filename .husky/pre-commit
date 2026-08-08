@@ -1,0 +1,7 @@
+# Fast checks only. Seconds, not minutes — a slow hook gets bypassed with
+# --no-verify, and a hook that gets bypassed protects nothing.
+#
+# The full suite (tests, RLS, build) runs in CI.
+
+npx lint-staged
+npm run typecheck

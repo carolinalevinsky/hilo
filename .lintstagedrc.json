@@ -1,0 +1,5 @@
+{
+  "*.{ts,tsx}": "eslint --max-warnings=0 --no-warn-ignored",
+  "*.sql": "node scripts/check-migration.mjs",
+  "*.{ts,tsx,js,mjs,json,yml,yaml}": "node scripts/check-secrets.mjs"
+}
