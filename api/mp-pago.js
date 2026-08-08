@@ -21,6 +21,7 @@ export default async function handler(req, res) {
   if (!jwt) { res.status(200).json({ error: 'sin_sesion' }); return; }
   if (!(monto > 0)) { res.status(200).json({ error: 'monto_invalido' }); return; }
 
+  // 1) leer el token de Mercado Pago del profesional (RLS devuelve solo su fila)
   let token = '';
   try {
     const r = await fetch(`${SB_URL}/rest/v1/mp_cuentas?select=token&limit=1`, {
@@ -30,6 +31,7 @@ export default async function handler(req, res) {
   } catch (e) { /* sigue sin token */ }
   if (!token) { res.status(200).json({ error: 'sin_cuenta' }); return; }
 
+  // 2) crear la preferencia de pago en la cuenta del profesional
   try {
     const r = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
