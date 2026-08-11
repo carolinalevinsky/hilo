@@ -1,0 +1,45 @@
+# Entorno de desarrollo — Node 22 corriendo en Docker.
+#
+# Existe porque esta máquina no tiene Node instalado. El proyecto en sí no
+# depende de esto: si algún día instalás Node en el host, `npm run dev` y
+# compañía funcionan igual y esta carpeta se puede borrar.
+#
+# Se agregan dos cosas sobre la imagen oficial de Node:
+#
+#   socat        Reenvía 127.0.0.1:5432x de adentro del contenedor hacia los
+#                puertos de Supabase publicados en el host. Sin esto habría que
+#                usar dos URLs distintas para la misma base — una para el
+#                servidor (que corre acá adentro) y otra para el navegador (que
+#                corre en tu Mac). Ver docker/entrypoint.sh.
+#
+#   docker-cli   El CLI de Supabase levanta la base creando contenedores. Como
+#                corre acá adentro, necesita hablarle al Docker de tu Mac a
+#                través del socket montado.
+#
+#   psql 17      `npm run check:rls` consulta el catálogo de Postgres para
+#                verificar que ninguna tabla quede sin RLS, y lo hace con psql.
+#                La versión 17 es la misma que declara supabase/config.toml.
+FROM node:22
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends socat ca-certificates curl gnupg \
+ && install -m 0755 -d /etc/apt/keyrings \
+ && curl -fsSL https://download.docker.com/linux/debian/gpg \
+      -o /etc/apt/keyrings/docker.asc \
+ && chmod a+r /etc/apt/keyrings/docker.asc \
+ && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+      > /etc/apt/sources.list.d/docker.list \
+ && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      -o /etc/apt/keyrings/pgdg.asc \
+ && chmod a+r /etc/apt/keyrings/pgdg.asc \
+ && echo "deb [signed-by=/etc/apt/keyrings/pgdg.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo "$VERSION_CODENAME")-pgdg main" \
+      > /etc/apt/sources.list.d/pgdg.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends docker-ce-cli postgresql-client-17 \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["bash"]

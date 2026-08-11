@@ -20,6 +20,22 @@ npm run dev                    # http://localhost:3000
 
 Las claves que `npm run db:start` imprime al final van en `.env.local`.
 
+### Si no tenés Node instalado
+
+Poné `./dx` adelante de cualquiera de esos comandos y corren dentro de un
+contenedor con Node 22:
+
+```bash
+./dx npm install
+./dx npm run db:start
+./dx npm run dev
+```
+
+Es un andamio para máquinas sin Node, no una decisión de arquitectura. El día
+que instales Node en el host, los comandos de arriba funcionan tal cual sin el
+`./dx` y `docker/` se puede borrar. El detalle de por qué funciona está
+comentado en [`dx`](dx) y [`docker/entrypoint.sh`](docker/entrypoint.sh).
+
 ---
 
 ## Comandos

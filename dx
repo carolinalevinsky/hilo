@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# Corre cualquier comando del proyecto dentro del contenedor de Node.
+#
+#   ./dx npm run dev          servidor local  → http://localhost:3000
+#   ./dx npm run db:start     levanta Postgres
+#   ./dx npm run typecheck    tipos
+#   ./dx bash                 una shell adentro, para curiosear
+#
+# Existe porque esta Mac no tiene Node instalado. Es un andamio, no una
+# decisión de arquitectura: el día que instales Node en el host, los mismos
+# comandos funcionan sin el `./dx` adelante y esto se puede borrar entero.
+#
+# Dos detalles que hacen que funcione, y que son la parte no obvia:
+#
+#   El repo se monta en la MISMA ruta que tiene en tu Mac. No es capricho: el
+#   CLI de Supabase levanta la base creando contenedores hermanos en el Docker
+#   del host, y les pasa rutas de archivos. Si adentro el repo viviera en /app,
+#   esas rutas no existirían del lado del host y los contenedores no arrancarían.
+#
+#   El socket de Docker se monta para que ese mismo CLI pueda crear los
+#   contenedores. El contenedor no corre un Docker propio — le habla al tuyo.
+#
+set -euo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IMAGE="hilo-dev:latest"
+
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  echo "Falta la imagen $IMAGE. La construyo..." >&2
+  docker build -f "$REPO/docker/Dockerfile.dev" -t "$IMAGE" "$REPO/docker"
+fi
+
+args=(
+  --rm
+  --volume "$REPO:$REPO"
+  --volume /var/run/docker.sock:/var/run/docker.sock
+  --workdir "$REPO"
+  --add-host host.docker.internal:host-gateway
+  --env HOSTNAME=0.0.0.0
+)
+
+# Una TTY sólo si la hay — así `./dx` también sirve desde un script o CI.
+[ -t 0 ] && args+=(--interactive --tty)
+
+# Publicar el 3000 sólo si está libre. Si ya hay un dev server corriendo,
+# publicarlo de nuevo sería un error; pero un `./dx npm run typecheck` en otra
+# terminal no tiene por qué fallar por eso.
+if ! lsof -nP -iTCP:3000 -sTCP:LISTEN >/dev/null 2>&1; then
+  args+=(--publish 3000:3000)
+fi
+
+exec docker run "${args[@]}" "$IMAGE" "$@"
