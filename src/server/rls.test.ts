@@ -220,6 +220,45 @@ describe('the clinical tables', () => {
   })
 })
 
+describe('the Mercado Pago access token', () => {
+  // Defect #1. v1 read this credential straight from the browser
+  // (legacy/index.html:2477) — a token that can move money, in a JavaScript
+  // variable on a page. These two tests are the proof that it is now
+  // structurally unreachable rather than carefully handled.
+
+  beforeAll(async () => {
+    await service
+      .from('mp_accounts')
+      .insert({ practitioner_id: idA, access_token: 'APP_USR-token-secretisimo' })
+  })
+
+  it('cannot be read by the practitioner it belongs to', async () => {
+    const { data, error } = await asA.from('mp_accounts').select('*')
+
+    // Either shape is a pass: `mp_accounts` has no grant and no permissive
+    // policy, so the request is refused rather than filtered. What must never
+    // happen is a row coming back.
+    expect(data ?? []).toEqual([])
+    if (!error) expect(data).toEqual([])
+  })
+
+  it('cannot be written by a practitioner either', async () => {
+    const { error } = await asA
+      .from('mp_accounts')
+      .update({ access_token: 'reemplazado' })
+      .eq('practitioner_id', idA)
+
+    const { data: stored } = await service
+      .from('mp_accounts')
+      .select('access_token')
+      .eq('practitioner_id', idA)
+      .single()
+
+    expect(stored?.access_token).toBe('APP_USR-token-secretisimo')
+    expect(error ?? true).toBeTruthy()
+  })
+})
+
 describe('the audit log', () => {
   it('can be read by its owner and not by anyone else', async () => {
     const { error: insertError } = await service.from('audit_log').insert([

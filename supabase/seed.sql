@@ -205,6 +205,28 @@ values
    'Identificó los principales disparadores en el trabajo y practicó una técnica de respiración.',
    'Viene motivado.');
 
+-- ─── Payments ──────────────────────────────────────────────────────────────
+--
+-- One paid up, one half paid, one not yet — so the ledger shows all three
+-- states rather than a column of green ticks.
+
+insert into payments (practitioner_id, patient_id, paid_on, period, amount, method)
+values
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000001',
+   date_trunc('month', current_date)::date + 4, to_char(current_date, 'YYYY-MM'),
+   1500, 'transfer'),
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000002',
+   date_trunc('month', current_date)::date + 2, to_char(current_date, 'YYYY-MM'),
+   750, 'cash'),
+  -- Last month, settled, so stepping back a month is not an empty screen.
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000001',
+   (date_trunc('month', current_date) - interval '1 month')::date + 5,
+   to_char(current_date - interval '1 month', 'YYYY-MM'), 1500, 'transfer'),
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000002',
+   (date_trunc('month', current_date) - interval '1 month')::date + 3,
+   to_char(current_date - interval '1 month', 'YYYY-MM'), 1500, 'cash');
+
+
 -- ─── Standing slots ────────────────────────────────────────────────────────
 --
 -- The rules only. The occurrences are materialised by the app the first time

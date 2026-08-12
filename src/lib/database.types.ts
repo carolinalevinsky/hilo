@@ -302,6 +302,38 @@ export type Database = {
           },
         ]
       }
+      mp_accounts: {
+        Row: {
+          access_token: string
+          connected_at: string
+          payment_link: string | null
+          practitioner_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          payment_link?: string | null
+          practitioner_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          payment_link?: string | null
+          practitioner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mp_accounts_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: true
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           age_group: string
@@ -375,6 +407,66 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "patients_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          mp_payment_id: string | null
+          note: string | null
+          paid_on: string
+          patient_id: string
+          period: string
+          practitioner_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string
+          mp_payment_id?: string | null
+          note?: string | null
+          paid_on?: string
+          patient_id: string
+          period: string
+          practitioner_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          mp_payment_id?: string | null
+          note?: string | null
+          paid_on?: string
+          patient_id?: string
+          period?: string
+          practitioner_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_practitioner_id_fkey"
             columns: ["practitioner_id"]
             isOneToOne: false
             referencedRelation: "practitioners"
