@@ -69,6 +69,86 @@ export type Database = {
           },
         ]
       }
+      patients: {
+        Row: {
+          age_group: string
+          archived_at: string | null
+          billing_frequency: string
+          color: string | null
+          consent_signed_at: string | null
+          created_at: string
+          date_of_birth: string | null
+          deleted_at: string | null
+          expected_sessions_per_month: number | null
+          full_name: string
+          health_insurer: string | null
+          id: string
+          phone: string | null
+          photo_path: string | null
+          practitioner_id: string
+          referral_reason: string | null
+          school: string | null
+          school_level: string | null
+          session_fee: number | null
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_group?: string
+          archived_at?: string | null
+          billing_frequency?: string
+          color?: string | null
+          consent_signed_at?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          deleted_at?: string | null
+          expected_sessions_per_month?: number | null
+          full_name: string
+          health_insurer?: string | null
+          id?: string
+          phone?: string | null
+          photo_path?: string | null
+          practitioner_id: string
+          referral_reason?: string | null
+          school?: string | null
+          school_level?: string | null
+          session_fee?: number | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_group?: string
+          archived_at?: string | null
+          billing_frequency?: string
+          color?: string | null
+          consent_signed_at?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          deleted_at?: string | null
+          expected_sessions_per_month?: number | null
+          full_name?: string
+          health_insurer?: string | null
+          id?: string
+          phone?: string | null
+          photo_path?: string | null
+          practitioner_id?: string
+          referral_reason?: string | null
+          school?: string | null
+          school_level?: string | null
+          session_fee?: number | null
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practitioners: {
         Row: {
           created_at: string
