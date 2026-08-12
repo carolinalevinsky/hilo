@@ -205,6 +205,25 @@ values
    'Identificó los principales disparadores en el trabajo y practicó una técnica de respiración.',
    'Viene motivado.');
 
+-- ─── Standing slots ────────────────────────────────────────────────────────
+--
+-- The rules only. The occurrences are materialised by the app the first time
+-- the agenda loads, which means the seed also exercises that code path rather
+-- than working around it.
+
+insert into schedules (
+  practitioner_id, patient_id, weekday, start_time, duration_minutes, frequency, starts_on
+)
+values
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000001',
+   1, '09:00', 45, 'weekly', current_date - interval '5 months'),
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000001',
+   3, '09:00', 45, 'weekly', current_date - interval '5 months'),
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000002',
+   2, '14:30', 45, 'weekly', current_date - interval '4 months'),
+  ('11111111-1111-4111-8111-111111111111', '22222222-0000-4000-8000-000000000003',
+   4, '18:00', 60, 'biweekly', current_date - interval '2 months');
+
 insert into session_goals (practitioner_id, session_id, goal_id)
 values
   ('11111111-1111-4111-8111-111111111111', '44444444-0000-4000-8000-000000000001',

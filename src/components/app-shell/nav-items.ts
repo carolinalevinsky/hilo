@@ -1,4 +1,4 @@
-import { Home, Users, type LucideIcon } from 'lucide-react'
+import { CalendarDays, Home, Users, type LucideIcon } from 'lucide-react'
 
 /**
  * The navigation, in one place, used by both the desktop sidebar and the mobile
@@ -25,6 +25,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: '/inicio', label: 'Inicio', icon: Home, onMobileBar: true },
   { href: '/pacientes', label: 'Pacientes', icon: Users, onMobileBar: true },
+  { href: '/agenda', label: 'Agenda', icon: CalendarDays, onMobileBar: true },
 ]
 
 export const MOBILE_BAR_ITEMS = NAV_ITEMS.filter((item) => item.onMobileBar)

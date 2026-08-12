@@ -34,6 +34,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          gcal_event_id: string | null
+          id: string
+          note: string | null
+          patient_id: string
+          practitioner_id: string
+          schedule_id: string | null
+          scheduled_on: string
+          source: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          gcal_event_id?: string | null
+          id?: string
+          note?: string | null
+          patient_id: string
+          practitioner_id: string
+          schedule_id?: string | null
+          scheduled_on: string
+          source?: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          gcal_event_id?: string | null
+          id?: string
+          note?: string | null
+          patient_id?: string
+          practitioner_id?: string
+          schedule_id?: string | null
+          scheduled_on?: string
+          source?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -291,6 +361,66 @@ export type Database = {
         }
         Relationships: []
       }
+      schedules: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          ends_on: string | null
+          frequency: string
+          id: string
+          is_active: boolean
+          patient_id: string
+          practitioner_id: string
+          start_time: string
+          starts_on: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          ends_on?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          patient_id: string
+          practitioner_id: string
+          start_time: string
+          starts_on?: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          ends_on?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          patient_id?: string
+          practitioner_id?: string
+          start_time?: string
+          starts_on?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedules_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_goals: {
         Row: {
           goal_id: string
@@ -333,6 +463,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          appointment_id: string | null
           created_at: string
           held_on: string
           id: string
@@ -343,6 +474,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           held_on?: string
           id?: string
@@ -353,6 +485,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           held_on?: string
           id?: string
@@ -363,6 +496,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sessions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sessions_patient_id_fkey"
             columns: ["patient_id"]
