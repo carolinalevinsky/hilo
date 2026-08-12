@@ -164,6 +164,14 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* The sign-in screen's background. Ported from legacy/index.html:503 — it is
+   the only non-white surface in the product and the first thing anyone sees. */
+.hilo-auth-bg {
+  background:
+    radial-gradient(900px 500px at 18% -10%, rgb(169 77 240 / 90%), transparent 60%),
+    linear-gradient(140deg, #5a4bd4, #6c5ce7 55%, #7d6ef0);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

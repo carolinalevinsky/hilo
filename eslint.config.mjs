@@ -100,8 +100,9 @@ const eslintConfig = defineConfig([
   // read the practitioner's Mercado Pago access token straight from the browser,
   // despite a comment in legacy/api/mp-pago.js claiming it never left the server.
   //
-  // src/middleware.ts is outside this glob on purpose — it needs @supabase/ssr
-  // to refresh the auth cookie, and it is the only file that does.
+  // src/proxy.ts is outside this glob on purpose — it needs @supabase/ssr to
+  // refresh the auth cookie, and it is the only file that does. (`proxy` is what
+  // Next.js 16 calls the file convention that used to be `middleware`.)
   {
     files: ['src/app/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}'],
     rules: restrict({ patterns: [SUPABASE_IMPORTS], paths: [SERVICE_DB_IMPORT] }),

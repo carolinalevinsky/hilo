@@ -34,13 +34,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          practitioner_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          practitioner_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          practitioner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practitioners: {
+        Row: {
+          created_at: string
+          discipline: string
+          email: string
+          full_name: string
+          id: string
+          onboarded_at: string | null
+          phone: string | null
+          plan: string
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discipline: string
+          email: string
+          full_name: string
+          id: string
+          onboarded_at?: string | null
+          phone?: string | null
+          plan?: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discipline?: string
+          email?: string
+          full_name?: string
+          id?: string
+          onboarded_at?: string | null
+          phone?: string | null
+          plan?: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      slugify: { Args: { input: string }; Returns: string }
+      unaccent_fallback: { Args: { input: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
