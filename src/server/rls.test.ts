@@ -81,6 +81,35 @@ beforeAll(async () => {
   await service
     .from('session_goals')
     .insert({ practitioner_id: idB, session_id: sessionB, goal_id: goalB })
+
+  await service.from('schedules').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    weekday: 1,
+    start_time: '09:00',
+  })
+
+  await service.from('appointments').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    scheduled_on: '2026-08-17',
+    start_time: '09:00',
+  })
+
+  await service.from('assessments').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    instrument: 'WISC-V (inteligencia)',
+    analysis: 'Interpretación clínica de Bruno',
+  })
+
+  await service.from('reports').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    recipient: 'family',
+    title: 'Informe de avance',
+    content: 'Cuerpo del informe de Bruno',
+  })
 }, 60_000)
 
 afterAll(async () => {
@@ -151,7 +180,17 @@ describe('row level security on practitioners', () => {
 
 describe('the clinical tables', () => {
   it('return nothing from another practitioner, on an unfiltered read', async () => {
-    for (const table of ['patients', 'goals', 'goal_progress', 'sessions', 'session_goals'] as const) {
+    for (const table of [
+      'patients',
+      'goals',
+      'goal_progress',
+      'sessions',
+      'session_goals',
+      'schedules',
+      'appointments',
+      'assessments',
+      'reports',
+    ] as const) {
       const { data, error } = await asA.from(table).select('practitioner_id')
       expect(error, `${table} should read cleanly`).toBeNull()
       expect(data, `${table} leaked rows to the wrong practitioner`).toEqual([])

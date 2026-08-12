@@ -104,6 +104,66 @@ export type Database = {
           },
         ]
       }
+      assessments: {
+        Row: {
+          ai_generated: boolean
+          ai_model: string | null
+          analysis: string | null
+          assessed_on: string
+          created_at: string
+          id: string
+          instrument: string
+          observations: string | null
+          patient_id: string
+          practitioner_id: string
+          results: Json
+          updated_at: string
+        }
+        Insert: {
+          ai_generated?: boolean
+          ai_model?: string | null
+          analysis?: string | null
+          assessed_on?: string
+          created_at?: string
+          id?: string
+          instrument: string
+          observations?: string | null
+          patient_id: string
+          practitioner_id: string
+          results?: Json
+          updated_at?: string
+        }
+        Update: {
+          ai_generated?: boolean
+          ai_model?: string | null
+          analysis?: string | null
+          assessed_on?: string
+          created_at?: string
+          id?: string
+          instrument?: string
+          observations?: string | null
+          patient_id?: string
+          practitioner_id?: string
+          results?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessments_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -360,6 +420,66 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          ai_generated: boolean
+          ai_model: string | null
+          content: string | null
+          created_at: string
+          id: string
+          input_notes: string | null
+          issued_on: string
+          patient_id: string
+          practitioner_id: string
+          recipient: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_generated?: boolean
+          ai_model?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          input_notes?: string | null
+          issued_on?: string
+          patient_id: string
+          practitioner_id: string
+          recipient: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_generated?: boolean
+          ai_model?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          input_notes?: string | null
+          issued_on?: string
+          patient_id?: string
+          practitioner_id?: string
+          recipient?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       schedules: {
         Row: {

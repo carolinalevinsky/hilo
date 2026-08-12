@@ -210,6 +210,29 @@
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--range-color), transparent 70%);
 }
 
+/* Printing a clinical document.
+   Practitioners print these and hand them over, or "print to PDF" and email
+   them, so the printed page is a real output of this product and not an
+   afterthought. Everything that is interface disappears; the document keeps its
+   margins and loses its card. */
+@media print {
+  .no-print,
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .hilo-doc {
+    max-width: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
