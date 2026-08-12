@@ -1,9 +1,13 @@
-import { execFileSync } from 'node:child_process'
-
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import type { Database } from '@/lib/database.types'
+import {
+  createTestPractitioner,
+  deleteTestPractitioner,
+  serviceClient,
+  signedInAs,
+  testEmail,
+  type Db,
+} from '@/test/supabase'
 
 /**
  * The RLS isolation test. **This one is non-negotiable.**
@@ -14,86 +18,74 @@ import type { Database } from '@/lib/database.types'
  * and an assertion that one cannot reach the other's rows.
  *
  * The distinction matters because the data is clinical and protected by Ley
- * N.º 18.331. A policy that is enabled but subtly wrong ("using (true)" while
+ * N.º 18.331. A policy that is enabled but subtly wrong (`using (true)` while
  * someone was debugging) passes every other check in the repository and passes
  * nothing here.
  *
- * It runs against the local stack, so `npm run db:start` must be up. In CI that
- * is the `npx supabase start` step.
+ * **Every new table gets a case in `the clinical tables` below.** A table that
+ * holds patient data and is not listed here is protected by a policy nobody has
+ * ever watched work.
  *
- * The keys come from `supabase status` rather than the environment because CI
- * fills the environment with placeholders so that `src/lib/env.ts` parses during
- * the build. Asking the running stack is both more accurate and impossible to
- * get subtly out of sync.
+ * Runs against the local stack, so `npm run db:start` must be up. In CI that is
+ * the `npx supabase start` step.
  */
 
-type Db = SupabaseClient<Database>
+const service = serviceClient()
 
-function localSupabaseConfig() {
-  const output = execFileSync('npx', ['supabase', 'status', '-o', 'env'], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-
-  const read = (key: string) => {
-    const match = output.match(new RegExp(`^${key}="(.*)"$`, 'm'))
-    if (!match?.[1]) throw new Error(`supabase status did not report ${key}`)
-    return match[1]
-  }
-
-  return {
-    url: read('API_URL'),
-    anonKey: read('ANON_KEY'),
-    serviceKey: read('SERVICE_ROLE_KEY'),
-  }
-}
-
-const config = localSupabaseConfig()
-
-const service: Db = createClient<Database>(config.url, config.serviceKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
-})
-
-/** A client carrying one practitioner's session — the same thing `getDb()` builds. */
-async function signedInAs(email: string, password: string): Promise<Db> {
-  const client = createClient<Database>(config.url, config.anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-  const { error } = await client.auth.signInWithPassword({ email, password })
-  if (error) throw error
-  return client
-}
-
-async function createPractitioner(email: string, fullName: string, discipline: string) {
-  const { data, error } = await service.auth.admin.createUser({
-    email,
-    password: PASSWORD,
-    email_confirm: true,
-    user_metadata: { full_name: fullName, discipline },
-  })
-  if (error) throw error
-  return data.user.id
-}
-
-const PASSWORD = 'una-clave-de-prueba'
-const stamp = Date.now()
-const emailA = `rls-a-${stamp}@hilo.test`
-const emailB = `rls-b-${stamp}@hilo.test`
+const emailA = testEmail('rls-a')
+const emailB = testEmail('rls-b')
 
 let idA = ''
 let idB = ''
 let asA: Db
+let patientB = ''
+let goalB = ''
+let sessionB = ''
 
 beforeAll(async () => {
-  idA = await createPractitioner(emailA, 'Ana Prueba', 'psychopedagogy')
-  idB = await createPractitioner(emailB, 'Bruno Prueba', 'speech_therapy')
-  asA = await signedInAs(emailA, PASSWORD)
+  idA = await createTestPractitioner(emailA, 'Ana Prueba', 'psychopedagogy')
+  idB = await createTestPractitioner(emailB, 'Bruno Prueba', 'speech_therapy')
+  asA = await signedInAs(emailA)
+
+  // A full clinical record belonging to B, for A to fail to reach.
+  const { data: patient } = await service
+    .from('patients')
+    .insert({ practitioner_id: idB, full_name: 'Paciente de Bruno' })
+    .select()
+    .single()
+  patientB = patient!.id
+
+  const { data: goal } = await service
+    .from('goals')
+    .insert({
+      practitioner_id: idB,
+      patient_id: patientB,
+      title: 'Objetivo de Bruno',
+      progress: 30,
+    })
+    .select()
+    .single()
+  goalB = goal!.id
+
+  const { data: session } = await service
+    .from('sessions')
+    .insert({
+      practitioner_id: idB,
+      patient_id: patientB,
+      progress_note: 'Nota clínica de Bruno',
+    })
+    .select()
+    .single()
+  sessionB = session!.id
+
+  await service
+    .from('session_goals')
+    .insert({ practitioner_id: idB, session_id: sessionB, goal_id: goalB })
 }, 60_000)
 
 afterAll(async () => {
-  // Deleting the auth user cascades to `practitioners` and everything under it.
-  if (idA) await service.auth.admin.deleteUser(idA)
-  if (idB) await service.auth.admin.deleteUser(idB)
+  await deleteTestPractitioner(idA)
+  await deleteTestPractitioner(idB)
 })
 
 describe('the sign-up trigger', () => {
@@ -114,7 +106,7 @@ describe('the sign-up trigger', () => {
   })
 })
 
-describe('row level security', () => {
+describe('row level security on practitioners', () => {
   it('lets a practitioner read their own row', async () => {
     const { data, error } = await asA.from('practitioners').select('*').eq('id', idA)
 
@@ -154,6 +146,38 @@ describe('row level security', () => {
       .eq('id', idB)
       .single()
     expect(victim?.full_name).toBe('Bruno Prueba')
+  })
+})
+
+describe('the clinical tables', () => {
+  it('return nothing from another practitioner, on an unfiltered read', async () => {
+    for (const table of ['patients', 'goals', 'goal_progress', 'sessions', 'session_goals'] as const) {
+      const { data, error } = await asA.from(table).select('practitioner_id')
+      expect(error, `${table} should read cleanly`).toBeNull()
+      expect(data, `${table} leaked rows to the wrong practitioner`).toEqual([])
+    }
+  })
+
+  it('refuse a write aimed at another practitioner', async () => {
+    const { data, error } = await asA
+      .from('patients')
+      .update({ full_name: 'Renombrado' })
+      .eq('id', patientB)
+      .select()
+
+    expect(error).toBeNull()
+    expect(data).toHaveLength(0)
+  })
+
+  it('refuse a row stamped with another practitioner_id', async () => {
+    // The `with check` half of the policy. Without it a practitioner could
+    // insert rows *into* someone else's record — invisible to them, and signed
+    // with their name.
+    const { error } = await asA
+      .from('patients')
+      .insert({ practitioner_id: idB, full_name: 'Paciente plantado' })
+
+    expect(error).not.toBeNull()
   })
 })
 

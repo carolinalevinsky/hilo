@@ -1,10 +1,13 @@
-import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { GoalList } from '@/components/goals/goal-list'
+import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { PatientHeader } from '@/components/patients/patient-header'
+import { SessionTimeline } from '@/components/sessions/session-timeline'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
@@ -12,8 +15,10 @@ import { formatDate } from '@/lib/dates'
 import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
+import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { getPractitioner } from '@/server/practitioners'
+import { listSessions } from '@/server/sessions'
 
 export const metadata: Metadata = { title: 'Paciente · Hilo' }
 
@@ -24,9 +29,12 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()
 
-  const [photoUrl, practitioner] = await Promise.all([
+  const [photoUrl, practitioner, goals, progress, sessions] = await Promise.all([
     getPhotoUrl(patient.photo_path),
     getPractitioner(user.id),
+    listGoals(user.id, patient.id),
+    listGoalProgress(user.id, patient.id),
+    listSessions(user.id, patient.id),
   ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
@@ -47,73 +55,120 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
         patient={patient}
         photoUrl={photoUrl}
         actions={
-          <Button
-            asChild
-            variant="outline"
-            className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
-          >
-            <a
-              href={whatsappLink(patient.phone, shareText)}
-              target="_blank"
-              rel="noopener noreferrer"
+          <>
+            <Button asChild className="bg-white text-violet hover:bg-white/90 max-sm:flex-1">
+              <Link href={`/pacientes/${patient.id}/sesiones/nueva`}>
+                <Plus className="size-4" />
+                Registrar sesión
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
             >
-              <MessageCircle className="size-4" />
-              Escribir a la familia
-            </a>
-          </Button>
+              <a
+                href={whatsappLink(patient.phone, shareText)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="size-4" />
+                Escribir a la familia
+              </a>
+            </Button>
+          </>
         }
       />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Motivo de consulta</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {patient.referral_reason ? (
-              <p className="text-[14px] leading-relaxed">{patient.referral_reason}</p>
-            ) : (
-              <p className="text-[13px] text-muted-foreground">
-                Todavía no cargaste el motivo.{' '}
-                <Link
-                  href={`/pacientes/${patient.id}/editar`}
-                  className="font-semibold text-violet underline"
-                >
-                  Agregalo acá
-                </Link>
-                .
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Evolución</CardTitle>
+              <p className="text-[12.5px] text-muted-foreground">
+                {goals.length > 0
+                  ? `Avance promedio: ${averageProgress(goals)}%`
+                  : 'Avance por objetivo en el tiempo'}
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <ProgressChart goals={goals} points={progress} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Ficha</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-[13px]">
-              <Row label="Edad">{ageLabel(patient.date_of_birth)}</Row>
-              <Row label="Población">{ageGroupLabel(patient.age_group)}</Row>
-              <Row label="Escolaridad">{patient.school_level}</Row>
-              <Row label="Colegio">{patient.school}</Row>
-              <Row label="Mutualista">{patient.health_insurer}</Row>
-              <Row label="Teléfono">{patient.phone}</Row>
-              <Row label="Inicio">{formatDate(patient.start_date)}</Row>
-              <Row label="Honorario">
-                {patient.session_fee
-                  ? `$ ${patient.session_fee} · ${billingFrequencyLabel(patient.billing_frequency).toLowerCase()}`
-                  : null}
-              </Row>
-            </dl>
+          <Card>
+            <CardHeader>
+              <CardTitle>Objetivos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GoalList patientId={patient.id} goals={goals} />
+            </CardContent>
+          </Card>
 
-            <PatientDangerZone
-              patientId={patient.id}
-              fullName={patient.full_name}
-              archived={Boolean(patient.archived_at)}
-            />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Historial de sesiones</CardTitle>
+              <p className="text-[12.5px] text-muted-foreground">
+                {sessions.length === 1 ? '1 sesión' : `${sessions.length} sesiones`}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <SessionTimeline patientId={patient.id} sessions={sessions} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Motivo de consulta</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {patient.referral_reason ? (
+                <p className="text-[13.5px] leading-relaxed">{patient.referral_reason}</p>
+              ) : (
+                <p className="text-[13px] text-muted-foreground">
+                  Todavía no cargaste el motivo.{' '}
+                  <Link
+                    href={`/pacientes/${patient.id}/editar`}
+                    className="font-semibold text-violet underline"
+                  >
+                    Agregalo acá
+                  </Link>
+                  .
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ficha</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-[13px]">
+                <Row label="Edad">{ageLabel(patient.date_of_birth)}</Row>
+                <Row label="Población">{ageGroupLabel(patient.age_group)}</Row>
+                <Row label="Escolaridad">{patient.school_level}</Row>
+                <Row label="Colegio">{patient.school}</Row>
+                <Row label="Mutualista">{patient.health_insurer}</Row>
+                <Row label="Teléfono">{patient.phone}</Row>
+                <Row label="Inicio">{formatDate(patient.start_date)}</Row>
+                <Row label="Honorario">
+                  {patient.session_fee
+                    ? `$ ${patient.session_fee} · ${billingFrequencyLabel(patient.billing_frequency).toLowerCase()}`
+                    : null}
+                </Row>
+              </dl>
+
+              <PatientDangerZone
+                patientId={patient.id}
+                fullName={patient.full_name}
+                archived={Boolean(patient.archived_at)}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </>
   )

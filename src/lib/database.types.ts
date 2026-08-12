@@ -69,6 +69,109 @@ export type Database = {
           },
         ]
       }
+      goal_progress: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          patient_id: string
+          practitioner_id: string
+          recorded_on: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          patient_id: string
+          practitioner_id: string
+          recorded_on?: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          patient_id?: string
+          practitioner_id?: string
+          recorded_on?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_progress_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_progress_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_progress_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          patient_id: string
+          position: number
+          practitioner_id: string
+          progress: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          patient_id: string
+          position?: number
+          practitioner_id: string
+          progress?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          patient_id?: string
+          position?: number
+          practitioner_id?: string
+          progress?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           age_group: string
@@ -187,6 +290,94 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      session_goals: {
+        Row: {
+          goal_id: string
+          practitioner_id: string
+          session_id: string
+        }
+        Insert: {
+          goal_id: string
+          practitioner_id: string
+          session_id: string
+        }
+        Update: {
+          goal_id?: string
+          practitioner_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_goals_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_goals_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_goals_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          held_on: string
+          id: string
+          patient_id: string
+          practitioner_id: string
+          private_note: string | null
+          progress_note: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          held_on?: string
+          id?: string
+          patient_id: string
+          practitioner_id: string
+          private_note?: string | null
+          progress_note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          held_on?: string
+          id?: string
+          patient_id?: string
+          practitioner_id?: string
+          private_note?: string | null
+          progress_note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
