@@ -1,4 +1,12 @@
-import { CalendarDays, FileText, Home, Users, Wallet, type LucideIcon } from 'lucide-react'
+import {
+  CalendarDays,
+  FileText,
+  Home,
+  Inbox,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react'
 
 /**
  * The navigation, in one place, used by both the desktop sidebar and the mobile
@@ -28,6 +36,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/agenda', label: 'Agenda', icon: CalendarDays, onMobileBar: true },
   { href: '/informes', label: 'Informes', icon: FileText },
   { href: '/cobros', label: 'Cobros', icon: Wallet, onMobileBar: true },
+  { href: '/reservas', label: 'Reservas', icon: Inbox },
 ]
 
 export const MOBILE_BAR_ITEMS = NAV_ITEMS.filter((item) => item.onMobileBar)

@@ -199,6 +199,66 @@ export type Database = {
           },
         ]
       }
+      booking_requests: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          patient_id: string | null
+          phone: string
+          practitioner_id: string
+          preferred_time: string | null
+          preferred_weekday: number | null
+          status: string
+          submitter_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          patient_id?: string | null
+          phone: string
+          practitioner_id: string
+          preferred_time?: string | null
+          preferred_weekday?: number | null
+          status?: string
+          submitter_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          patient_id?: string | null
+          phone?: string
+          practitioner_id?: string
+          preferred_time?: string | null
+          preferred_weekday?: number | null
+          status?: string
+          submitter_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_requests_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_progress: {
         Row: {
           created_at: string
@@ -736,6 +796,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      practitioner_by_slug: {
+        Args: { lookup_slug: string }
+        Returns: {
+          discipline: string
+          full_name: string
+          id: string
+        }[]
+      }
       slugify: { Args: { input: string }; Returns: string }
       unaccent_fallback: { Args: { input: string }; Returns: string }
     }

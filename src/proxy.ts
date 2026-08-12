@@ -41,9 +41,26 @@ const PUBLIC_PREFIXES = [
   '/privacidad',
 ]
 
+/**
+ * Route handlers are never redirected.
+ *
+ * Each one decides its own answer: the AI routes return a 401 as JSON, the
+ * public booking route is open by design, and the Mercado Pago webhook
+ * authenticates with a signature rather than a session. Redirecting them to the
+ * sign-in page turns "unauthorised" into a 200 with an HTML body — which is
+ * exactly what happened here, and the booking form read it as success and told a
+ * family their request had arrived when nothing had been saved.
+ */
+function isApi(pathname: string) {
+  return pathname === '/api' || pathname.startsWith('/api/')
+}
+
 function isPublic(pathname: string) {
-  return PUBLIC_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  return (
+    isApi(pathname) ||
+    PUBLIC_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    )
   )
 }
 
