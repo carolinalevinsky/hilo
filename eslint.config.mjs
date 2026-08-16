@@ -120,8 +120,13 @@ const eslintConfig = defineConfig([
 
   globalIgnores([
     '.next/**',
+    '.next-e2e/**',              // the end-to-end run's own build (playwright.config.ts)
     'out/**',
     'build/**',
+    'test-results/**',           // playwright traces and screenshots
+    'playwright-report/**',
+    '.claude/**',                // agent scratch, including git worktrees that
+                                 // hold a second copy of this whole repo
     'next-env.d.ts',
     'legacy/**',                 // frozen v1 — not our code, not our standards
     'supabase/**',               // migrations are SQL; .temp/ is Docker scratch

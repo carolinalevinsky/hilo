@@ -100,10 +100,10 @@ the quality of a signed clinical report depended on what that list happened to
 return that day.
 
 **Before inviting anyone, generate one report, one assessment analysis and one
-assistant answer against the real key and read them.** Everything in this
-repository has only ever run with the key absent, which exercises the offline
-fallback on every request — a genuinely useful default, and the reason the
-streamed output has never been seen working.
+assistant answer and read them with a professional's eye.** The plumbing is
+proven — the end-to-end test drives a real report through the real model — but
+whether the writing is good enough to put a signature under is a judgement, and
+it is the one thing in this list that no check can make for you.
 
 ---
 

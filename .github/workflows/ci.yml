@@ -70,3 +70,27 @@ jobs:
       # ── Build ───────────────────────────────────────────────────────────
       - name: Build
         run: npm run build
+
+      # ── The product ─────────────────────────────────────────────────────
+      # Sign up → patient → session → report, in a real browser. Every check
+      # above can pass while the app is unusable end to end; this is the only
+      # one that would notice. It builds and starts its own server on port 3100
+      # (see playwright.config.ts), so it runs last and needs nothing from the
+      # step above.
+      #
+      # `ANTHROPIC_API_KEY` is a placeholder here, so the report arrives as the
+      # offline draft. The test accepts either outcome on purpose — asserting
+      # the fallback would fail the day a real key is added.
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end (the critical path)
+        run: npx playwright test
+
+      - name: Keep the trace when it fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
