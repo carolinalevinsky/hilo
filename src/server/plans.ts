@@ -11,18 +11,21 @@ import { getDb } from './db'
  */
 
 export const PLAN_LIMITS = {
-  free: { label: 'Gratis', reports: 5, assessments: 10 },
-  pro: { label: 'Pro', reports: 200, assessments: 400 },
+  free: { label: 'Gratis', reports: 5, assessments: 10, questions: 40 },
+  pro: { label: 'Pro', reports: 200, assessments: 400, questions: 1000 },
 } as const
 
 export type PlanId = keyof typeof PLAN_LIMITS
 
-/** The two things that cost an Anthropic call. */
-export type QuotaKind = 'reports' | 'assessments'
+/** The three things that cost an Anthropic call. */
+export type QuotaKind = 'reports' | 'assessments' | 'questions'
 
-const TABLE: Record<QuotaKind, 'reports' | 'assessments'> = {
+const TABLE: Record<QuotaKind, 'reports' | 'assessments' | 'assistant_questions'> = {
   reports: 'reports',
   assessments: 'assessments',
+  // A question leaves no document behind, so it is counted by a row that exists
+  // only to be counted. See the migration for why the text is not in it.
+  questions: 'assistant_questions',
 }
 
 export function planLimits(plan: string) {
@@ -118,7 +121,14 @@ export async function assertQuota(
   return status
 }
 
+/** Article and noun together: "los informes", "las evaluaciones". */
+const QUOTA_NOUN: Record<QuotaKind, { article: string; noun: string }> = {
+  reports: { article: 'los', noun: 'informes' },
+  assessments: { article: 'las', noun: 'evaluaciones' },
+  questions: { article: 'las', noun: 'preguntas' },
+}
+
 export function quotaMessage(status: QuotaStatus): string {
-  const what = status.kind === 'reports' ? 'informes' : 'evaluaciones'
-  return `Con tu plan ya usaste los ${status.limit} ${what} de este mes. Se renueva el 1.º.`
+  const { article, noun } = QUOTA_NOUN[status.kind]
+  return `Con tu plan ya usaste ${article} ${status.limit} ${noun} de este mes. Se renueva el 1.º.`
 }

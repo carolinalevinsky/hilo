@@ -103,6 +103,8 @@ beforeAll(async () => {
     analysis: 'Interpretación clínica de Bruno',
   })
 
+  await service.from('assistant_questions').insert({ practitioner_id: idB })
+
   await service.from('reports').insert({
     practitioner_id: idB,
     patient_id: patientB,
@@ -190,6 +192,10 @@ describe('the clinical tables', () => {
       'appointments',
       'assessments',
       'reports',
+      // Holds no clinical text — only a timestamp, so the assistant's monthly
+      // quota has something to count — but it is still one practitioner's
+      // activity, and it gets the same case as everything else.
+      'assistant_questions',
     ] as const) {
       const { data, error } = await asA.from(table).select('practitioner_id')
       expect(error, `${table} should read cleanly`).toBeNull()

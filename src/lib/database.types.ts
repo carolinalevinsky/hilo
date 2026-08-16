@@ -164,6 +164,32 @@ export type Database = {
           },
         ]
       }
+      assistant_questions: {
+        Row: {
+          created_at: string
+          id: string
+          practitioner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          practitioner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          practitioner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_questions_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string

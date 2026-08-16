@@ -7,6 +7,7 @@ import { DocumentBody } from '@/components/documents/clinical-document'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { readSseStream } from '@/lib/sse-client'
 
 /**
  * The body of a clinical document: streams in, gets edited, gets saved.
@@ -87,39 +88,17 @@ export function DocumentEditor({
         return
       }
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-
-        // Events are separated by a blank line; anything after the last one is
-        // a partial event and stays in the buffer for the next read.
-        const events = buffer.split('\n\n')
-        buffer = events.pop() ?? ''
-
-        for (const raw of events) {
-          const name = raw.match(/^event: (.+)$/m)?.[1]
-          const data = raw
-            .split('\n')
-            .filter((line) => line.startsWith('data: '))
-            .map((line) => line.slice(6))
-            .join('\n')
-
-          if (name === 'delta') {
-            received += data
-            setText(received)
-          } else if (name === 'error') {
-            failed = true
-            setAiNote('failed')
-            setAiError(data)
-          }
-        }
-      }
+      await readSseStream(response.body, {
+        onDelta: (chunk) => {
+          received += chunk
+          setText(received)
+        },
+        onError: (message) => {
+          failed = true
+          setAiNote('failed')
+          setAiError(message)
+        },
+      })
     } catch {
       failed = true
       setAiNote('failed')

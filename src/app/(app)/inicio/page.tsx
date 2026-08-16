@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { AppointmentCard } from '@/components/agenda/appointment-card'
+import { AskHilo } from '@/components/assistant/ask-hilo'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
@@ -132,6 +133,13 @@ export default async function HomePage() {
               ) : null}
             </CardContent>
           </Card>
+
+          {/* Last, not first. v1 put the box above the patient list and it
+              competed with the work; the question someone has here is about a
+              session they have just seen listed above it. */}
+          <div className="mt-4">
+            <AskHilo />
+          </div>
         </>
       )}
     </>
