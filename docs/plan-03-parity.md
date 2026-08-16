@@ -19,18 +19,15 @@ When re-checking any row below, do that again rather than reasoning about the
 source. Several of these differences are invisible in the markup and only show
 up rendered.
 
-## Cross-cutting — fix these once and many screens land at the same time
+## Cross-cutting — **all done**
 
-| # | What v1 does | What v2 does | Where |
+| # | What v1 does | What v2 had | |
 |---|---|---|---|
-| C1 | Stat card: white, icon in a tinted rounded square, big bold number, muted label under it | Two unrelated styles — Cobros uses tinted cards with the label *above*; Inicio has no stat cards at all | Inicio, Cobros, Estadísticas |
-| C2 | Period switcher: centred, `‹  Agosto 2026  ›`, with a "MES ACTUAL" caption | Left-aligned pill buttons, "← Mes anterior / Este mes / Agosto 2026" | Agenda, Cobros |
-| C3 | Patient avatar: solid patient colour, white initials, 11px radius | Soft tint background, coloured initials | everywhere |
-| C4 | "Preguntá a Hilo" floats on every screen, bottom right | Only a card on Inicio | everywhere |
-| C5 | Brandmark: rounded square with three lines | A plain white circle | sidebar |
-
-C1 and C3 are the two that make the difference at a glance, because they repeat
-on every screen.
+| C1 | Stat card: white, icon in a tinted rounded square, big bold number, muted label under it | Two unrelated styles; none at all on Inicio | done — `src/components/stat-card.tsx` |
+| C2 | Period switcher: centred, `‹  Agosto 2026  ›`, with a "MES ACTUAL" caption | Left-aligned pill buttons | done — `src/components/period-switcher.tsx` |
+| C3 | Patient avatar: solid patient colour, white initials | Soft tint, coloured initials | done — `patientSolidClasses` |
+| C4 | "Preguntá a Hilo" floats on every screen | Only a card on Inicio | done — `ask-hilo-fab.tsx` |
+| C5 | Brandmark: rounded square with three lines | A plain white circle | done — `sidebar.tsx` |
 
 ## Screen by screen
 
@@ -46,102 +43,132 @@ one. They are back where they were, and each keeps its own route:
 - Reservas → a card at the top of Agenda, shown only when something is pending
 - Estadísticas → a link at the foot of Inicio
 
-### Inicio
+### Inicio — **done**
 
-- **Missing:** the two stat cards (Pacientes activos, Sesiones hoy).
-- **Missing:** the rich "Hoy" row. v1 gives each session `ÚLTIMA VEZ …` and
-  `PARA HOY priorizar <objetivo> (55%) — …`, plus amber warning chips
-  ("Lenguaje expresivo viene lento"). v2 lists a name and a time. This is the
-  single biggest content loss in the app — it is the reason to open Hilo
-  between sessions.
-- **Extra:** a "Tus pacientes" card v1 does not have.
-- Subtitle drifted: "Esto es lo que tenés hoy." → "… Empezá por acá."
+The two stat cards are back, and so is the rich "Hoy" row: `ÚLTIMA VEZ …` and
+`PARA HOY priorizar <objetivo> (55%) — <material>`, with the amber and coral
+warning chips under it. `todayBriefing` in `src/server/planning.ts` assembles
+it, reusing `planUpcoming` so "lo que menos se movió" means the same thing here
+and in Planificación.
 
-### Pacientes
+The "Tus pacientes" card v1 did not have is gone; it repeated the screen next
+door. So is `listToday`, which nothing called any more.
 
-- **Missing:** the Lista / Tarjetas view toggle.
-- **Missing:** the sort control (Nombre A-Z, Más sesiones, Menos/Más avance).
-- **Missing:** on each row — the population chip, the session count, and the
-  progress percentage in the patient's own colour.
-- **Missing:** the collapsible "Filtros y orden" header that holds all of the
-  above.
-- **Extra:** an "Archivados" filter.
-- v2 renders cards where v1's default is a list.
+### Pacientes — **done**
 
-### Ficha del paciente
+Lista (the default, as in v1) and Tarjetas, four sort orders, and the three
+fields each row had lost: the population chip, the session count and the average
+progress in the patient's own colour. Everything lives in the URL. The controls
+sit behind a collapsed "Filtros y orden" that summarises what is applied.
 
-- **Missing:** the header gradient (`linear-gradient(120deg, c, c+cc)`) — v2
-  fills it flat.
-- **Missing actions:** Evaluar, Consulta online, and Generar informe. v2 has
-  Registrar sesión, Escribir a la familia, Editar ficha.
-- **Missing fields:** Abordaje, Consentimiento, and the Exportar datos button.
-- **Missing:** the photo upload badge on the avatar.
-- Objetivos render as range sliders; v1 uses a thin bar with a pencil.
+`patientSummaries` does two aggregate queries for the whole list and averages
+only active goals — the same rule as `progressByPatient`, so a patient cannot be
+at 67% on one screen and 54% on another.
 
-### Agenda
+### Ficha del paciente — **mostly done**
 
-The largest structural gap.
+The action row is back and in v1's order: Sesión, Evaluar, Compartir con
+familia, Generar informe. "Abordaje" is back on the ficha. The header gradient
+was already correct — the earlier note here was wrong.
 
-- **Missing:** the weekly time grid — day columns, hour rows, coloured blocks
-  positioned by time. v2 shows seven day cards with a list inside each.
-- **Missing:** "Recordá los turnos de mañana", with a WhatsApp button per
-  patient.
-- **Missing:** the Google Calendar card. See "Needs a decision" below.
-- Reservas is back as a card but only links out; v1 confirms or discards each
-  request inline.
+Still open, and each one is more than a component edit:
 
-### Informes y evaluaciones
+- **Consentimiento.** v1 recorded that the family consented, which its own terms
+  require before any data is loaded (Ley N.º 18.331 art. 18). v2 has nothing —
+  no column, no screen. This is a migration and it is a legal record, so it
+  wants deciding rather than copying: what is stored, who recorded it, and
+  whether a patient without it should be flagged.
+- **Exportar datos.** The right of access, and v1 had a button for it. Needs a
+  server function that assembles everything about one patient and a route that
+  streams it. No schema change.
+- **La foto del paciente.** Needs a Storage bucket with its own policies.
+- Objetivos render as range sliders where v1 used a bar and a pencil. Left as
+  is: the slider is the better control for the thing it does.
 
-- **Missing:** the whole "Formatos disponibles" grid — six format cards
-  (Avance · Colegio, Derivación · Mutualista, Para la familia, Adecuaciones
-  curriculares · ANEP, Fonoaudiológico inicial, Psicopedagógico), each with its
-  chip and a "Crear →" button. In v1 this *is* the screen; v2 opens on two
-  mostly empty lists.
-- **Missing:** the explanatory banner above it.
+### Agenda — **mostly done**
 
-### Planificación
+The weekly hour grid is back (`week-calendar.tsx`), with the day cards kept as
+the phone view exactly as v1 split them. "Recordá los turnos de mañana" is back
+with its WhatsApp button. Reservas is a card at the top again.
 
-- Tabs restored. Still **missing:** "Publicar material" and "Generar con IA" in
-  the header.
-- v1 opens on the Materiales tab. v2 opens on Planificar sesión — see below.
+Still open:
 
-### Cobros
+- **Google Calendar.** See below.
+- Reservas links out to `/reservas` instead of confirming or discarding each
+  request inline the way v1 did.
 
-- **Missing:** the "Pagaron 0/5" stat (v2 shows "Esperado" instead).
-- **Missing:** the per-row `···` menu for editing fee and frequency.
-- Row action is a text link, not a button.
+### Informes y evaluaciones — **done**
 
-## Needs a decision, or cannot be ported as-is
+"Formatos disponibles" is back, with the banner above it, and the chosen format
+now arrives preselected in the form. The list is built from
+`recipientsFor(discipline)` rather than v1's fixed six, so a kinesióloga is not
+offered ANEP adecuaciones.
 
-1. **Google Calendar.** v1 holds a public OAuth client id and connects each
-   practitioner's own calendar. v2 has no Google integration anywhere — no
-   tokens, no table, no refresh path. This is a feature to build, not a screen
-   to restyle, and it should be scoped on its own.
-2. **Patient photo.** Needs a Supabase Storage bucket with its own policies.
-   Doable and worth doing, but it is a schema and RLS change, so it goes through
-   `docs/plan-02-migration.md`'s rules, not through a component edit.
-3. **Which tab Planificación opens on.** v1 lands on Materiales. Keeping
-   `/planificacion` as the landing route is one line either way; it changes what
-   the nav item means.
-4. **"Consulta online."** What v1's button did needs reading before it is
-   copied — if it is a stored meeting link, it is a column; if it is a
-   provider, it is an integration.
-5. **The stat card style (C1).** v2 has two inconsistent versions. Picking v1's
-   is the obvious move, but it touches every screen that has numbers, so it is
-   worth doing deliberately and in one pass.
+### Planificación — **mostly done**
 
-## Order of work
+Tabs restored, both routes sharing one title. Still open:
 
-1. C1 and C3 — the stat card and the avatar. One pass, visible everywhere.
-2. Inicio's "Hoy" rows and the two stat cards.
-3. The Informes "Formatos disponibles" grid.
-4. Pacientes: view toggle, sort, and the three row fields.
-5. Agenda's weekly time grid.
-6. Ficha: gradient, the missing actions and fields.
-7. C2, C4, C5 and the remaining small items.
-8. The items under "Needs a decision", one at a time.
+- **"Publicar material" and "Generar con IA"** in the header. The first is a
+  rename away — `/materiales/nuevo` exists. The second does not exist in v2 at
+  all: there is no AI path that writes a material, so it is a feature, not a
+  button.
+- v1 opens on the Materiales tab; v2 opens on Planificar sesión. One line
+  either way, and it changes what the nav item means.
 
-Nothing here changes `src/server/`. Every item is a component or a page, and the
-architecture rules in `CLAUDE.md` hold throughout: reads stay in Server
-Components, writes stay in Server Actions, and no screen grows a database query
-of its own.
+### Cobros — **mostly done**
+
+The three v1 stats are back with v1's icons and colours, and the month switcher
+is v1's. Still open: the per-row `···` menu for editing fee and frequency —
+today that is done from the patient's ficha.
+
+## Not ported, and why
+
+### "Consulta online" — **do not copy v1's**
+
+v1's button built a Jitsi room from the patient's own name:
+
+```
+https://meet.jit.si/Hilo-tomas-perez-x7k2p
+```
+
+`meet.jit.si` rooms are public to anyone holding the URL. That link puts a
+patient's full name into an unauthenticated third-party address that gets pasted
+into WhatsApp threads — it is the same class of mistake as putting clinical
+content in an email, and it is exactly what Ley N.º 18.331 is about. v1 also kept
+the room id in memory only, so it changed on every reload and a link already
+shared with a family stopped working.
+
+The version worth building stores a random room id on the appointment — no name
+in the URL — so the link is stable and says nothing. That is a migration plus a
+button, and it should be a deliberate decision rather than a port.
+
+### Google Calendar
+
+v1 holds a public OAuth client id and connects each practitioner's own calendar.
+v2 has no Google integration anywhere — no tokens, no table, no refresh path.
+A feature to build, scoped on its own. Note that v2 does already put "Agregar a
+Google Calendar" on every appointment menu, which covers the common case without
+any OAuth at all.
+
+### Consentimiento, exportar datos, foto del paciente
+
+All three are listed under Ficha above. They are schema or server work, not
+component work.
+
+## What is left
+
+In rough order of how much they are missed:
+
+1. Consentimiento de la familia — the one with a legal weight behind it.
+2. Exportar los datos de un paciente.
+3. Reservas confirmed inline on the Agenda instead of a link out.
+4. "Publicar material" in Planificación's header (a rename), and the `···` menu
+   on a Cobros row.
+5. The foto del paciente, "Consulta online", and Google Calendar — each its own
+   piece of work, in that order of value.
+
+Everything above the line was component and page work, plus two additions to
+`src/server/` (`todayBriefing`, `patientSummaries`) because the pages must not
+query. The architecture rules in `CLAUDE.md` held throughout: reads in Server
+Components, writes in Server Actions, and no screen grew a database query of its
+own.
