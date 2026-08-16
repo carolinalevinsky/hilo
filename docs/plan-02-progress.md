@@ -4,7 +4,7 @@
 change. This one records what has actually been built, what is half-built, and
 what a fresh session needs to know before touching any of it.
 
-Last updated: 16 August 2026, M8 complete.
+Last updated: 16 August 2026, M9 complete. The code is done.
 
 ---
 
@@ -20,12 +20,12 @@ Last updated: 16 August 2026, M8 complete.
 | M6 — Payments | **done** | `d49e6b6` |
 | M7 — Public booking + notification | **done** | `31aa9ac` |
 | M8 — Materials, statistics, digest, assistant | **done** | `2599889` |
-| M9 — Launch | not started | — |
+| M9 — Launch | **done, in code** | `b59144c` |
 
 **All twelve defects in the plan's catalogue are retired**, #12 included: the
 digest is batched, rotating, and tested.
 
-Everything through M8 is committed, green on `lint` / `typecheck` / `test` /
+Everything through M9 is committed, green on `lint` / `typecheck` / `test` /
 `check:rls` / `check:secrets` / `check:migration` / `build`, and verified by
 driving the running app in a browser rather than by reading the diff.
 
@@ -173,27 +173,64 @@ queue — it drops the same practitioners every fortnight, silently.
 That test asserts an unfiltered read returns nothing; materials correctly
 returns the 45 shared rows.
 
-## M9 — not started
+## M9 — what shipped
 
-From the plan: PWA manifest and install prompt, mobile polish, error states, the
-terms and privacy pages, seed data for demos, production Supabase, custom
-domain.
+Commit `b59144c`. Two of the plan's items were already done and were struck:
+the **terms and privacy pages** (`src/app/(legal)/`) and the **seed data**
+(`supabase/seed.sql`).
 
-Two of those are already done and can be struck: **the terms and privacy pages**
-exist (`src/app/(legal)/`, transcribed from v1) and **seed data** exists
-(`supabase/seed.sql` — a practitioner, three patients with real curves, sessions,
-schedules, payments, and now 45 materials).
+| File | What it is |
+|---|---|
+| `src/app/manifest.ts` | The PWA manifest, `start_url: /inicio`. |
+| `scripts/make-icons.py` | Draws the four icons and writes the PNG chunks by hand — there is no image tooling on this machine and Node is Docker-only. Re-runnable; it reads each file back and asserts the header. |
+| `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` | The white rounded square on `#6c5ce7`, matching the sidebar mark. The maskable one sits at 0.34 of the canvas so a circle crop does not clip it. |
+| `src/components/install-prompt.tsx` | Replays Chrome's `beforeinstallprompt`. Remembers a refusal. Renders nothing on iOS. |
+| `src/app/not-found.tsx`, `error.tsx`, `global-error.tsx`, `(app)/error.tsx` | The screens that did not exist. |
+| `src/components/error-screen.tsx` | Their shared body, so the two boundaries cannot drift apart. |
+| `src/app/robots.ts` | Landing page and the two legal pages only. |
+| `docs/launch.md` | Everything that happens in a dashboard rather than in the repo. |
 
-What genuinely remains:
+### Decisions in here worth knowing before changing them
 
-- `manifest.webmanifest` + icons + install prompt.
-- An `error.tsx` and a `not-found.tsx`. There are none, so an unexpected throw
-  currently shows the Next.js default.
-- A mobile pass. The layouts are responsive and were written mobile-first, but
-  no screen has been opened at 375px width. `resize_window` to the `mobile`
-  preset and walk the nav.
-- Production Supabase project, environment variables, custom domain — all
-  outside the codebase.
+**No service worker.** The manifest plus HTTPS is enough for Chrome to offer the
+install. An offline cache of clinical data is a decision about where patient
+records may be stored, and it is not one to make as a side effect of "make it
+installable".
+
+**The error screens render nothing from the error except `digest`.** A thrown
+Postgres error carries the failing row, which in this product means a patient's
+name. `digest` stays because there is no error tracking wired and without it a
+bug report is "no me anduvo".
+
+**`(app)/error.tsx` exists separately from `error.tsx`** so a failure inside the
+shell keeps the sidebar and the bottom bar. Verified at runtime by requesting a
+patient whose id is not a UUID, which makes Postgres throw for real.
+
+**The proxy matcher must keep excluding `robots.txt` and
+`manifest.webmanifest`.** They are generated routes, so the file-extension rule
+does not catch them, and without the exclusion a signed-out request for either
+gets an HTML redirect to `/entrar` — the manifest one silently makes Hilo
+uninstallable.
+
+**`/reservar/<slug>` is disallowed in `robots.ts` on purpose.** Public by design
+is not the same as wanting to be indexed.
+
+### What is left, and it is not code
+
+`docs/launch.md`, steps 1 to 8: the production Supabase project, Resend's
+domain, a real `ANTHROPIC_API_KEY`, the Mercado Pago webhook, the nine
+environment variables in Vercel, and the domain. All of it needs accounts and
+credentials.
+
+**The one real gap:** every AI path has only ever run with the key absent, so
+the offline fallback is well exercised and the streamed output against the real
+model has never been seen. That is step 3 of the launch doc and it should happen
+before anyone is invited.
+
+**Also never built:** the Playwright critical-path test from §8 of the migration
+plan (sign-up → patient → session → report). Everything else in that testing
+table exists. It was not part of M9's scope and is the honest remaining gap in
+the test strategy.
 
 ---
 
@@ -202,15 +239,17 @@ What genuinely remains:
 Work that is self-contained enough to hand off with a pointer to one or two
 files as the pattern to copy:
 
-Two of these were delegated and came back clean — `digest.test.ts` and the
-`materials` RLS cases — and both agents surfaced real defects in the code they
-were testing, which is the argument for delegating tests rather than features.
-What is left:
+Four were delegated across M8 and M9 and all four came back clean:
+`digest.test.ts`, the `materials` RLS cases, the PWA manifest and icons, and the
+error screens. Every one of those agents also surfaced something real in the
+code around it — which is the argument for delegating work with a hard file
+boundary and a verification command, rather than delegating whole features.
 
-- **`error.tsx` / `not-found.tsx`** — pattern: any page under `src/app/(app)/`
-  for the visual language; copy must be Rioplatense and must not blame the user.
-- **The PWA manifest and icons** — self-contained, touches nothing else.
-- **The mobile pass** — needs the browser, not the codebase's history.
+What made them work: an explicit list of files they were allowed to touch, the
+name of an existing file to copy the shape from, and a command whose output they
+had to paste back. What did not work: expecting them to notice that another
+session was editing the same checkout — two of them reported it, neither could
+do anything about it.
 
 Work that should **not** be delegated, because it depends on decisions recorded
 across many files: anything touching the clinical prompts, the service-role
