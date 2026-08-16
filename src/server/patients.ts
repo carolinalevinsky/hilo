@@ -176,6 +176,74 @@ export async function listPatients(
   return data
 }
 
+export type PatientSummary = {
+  /** How many sessions have been recorded, ever. */
+  sessions: number
+  /** Mean progress across the active goals. Zero when there are none. */
+  averageProgress: number
+}
+
+/**
+ * The two numbers the patient list shows beside each name.
+ *
+ * v1 had them for free — every patient carried their sessions and goals in the
+ * same object — and losing them is what turned that screen from a caseload into
+ * an address book. "3 sesiones · 67%" is the difference between a list you read
+ * and a list you scroll past.
+ *
+ * Two aggregate queries for the whole list rather than two per patient. The
+ * average counts only active goals, the same rule `progressByPatient` uses in
+ * Estadísticas — the same patient must not be at 67% on one screen and 54% on
+ * another.
+ */
+export async function patientSummaries(
+  practitionerId: string,
+  patientIds: string[],
+): Promise<Map<string, PatientSummary>> {
+  const summaries = new Map<string, PatientSummary>()
+  if (patientIds.length === 0) return summaries
+
+  const db = await getDb()
+  const [{ data: goals }, { data: sessions }] = await Promise.all([
+    db
+      .from('goals')
+      .select('patient_id, progress')
+      .eq('practitioner_id', practitionerId)
+      .eq('is_active', true)
+      .in('patient_id', patientIds),
+    db
+      .from('sessions')
+      .select('patient_id')
+      .eq('practitioner_id', practitionerId)
+      .in('patient_id', patientIds),
+  ])
+
+  const progressOf = new Map<string, number[]>()
+  for (const goal of goals ?? []) {
+    const list = progressOf.get(goal.patient_id)
+    if (list) list.push(goal.progress)
+    else progressOf.set(goal.patient_id, [goal.progress])
+  }
+
+  const sessionCount = new Map<string, number>()
+  for (const session of sessions ?? []) {
+    sessionCount.set(session.patient_id, (sessionCount.get(session.patient_id) ?? 0) + 1)
+  }
+
+  for (const id of patientIds) {
+    const own = progressOf.get(id) ?? []
+    summaries.set(id, {
+      sessions: sessionCount.get(id) ?? 0,
+      averageProgress:
+        own.length === 0
+          ? 0
+          : Math.round(own.reduce((sum, value) => sum + value, 0) / own.length),
+    })
+  }
+
+  return summaries
+}
+
 export async function getPatient(practitionerId: string, patientId: string) {
   const db = await getDb()
 
