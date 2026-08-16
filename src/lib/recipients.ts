@@ -31,6 +31,44 @@ export const RECIPIENT_LABELS: Record<RecipientId, string> = {
   patient: 'Paciente',
 }
 
+/**
+ * How each recipient is offered on the Informes screen: the name of the format
+ * and one line saying what it is for.
+ *
+ * v1 listed six of these as fixed cards (`legacy/index.html:912-919`) and they
+ * were the whole entry point of that screen — you do not start from "new
+ * report", you start from "informe para la familia". The wording of the four
+ * that overlap is v1's, verbatim. The other two did not exist there because v1
+ * only ever offered psychopedagogy's and speech therapy's, and this list is
+ * built per discipline.
+ */
+export const RECIPIENT_FORMATS: Record<RecipientId, { title: string; blurb: string }> = {
+  school: {
+    title: 'Informe de avance · Colegio',
+    blurb: 'Formato general para centros educativos',
+  },
+  health_insurer: {
+    title: 'Informe de derivación · Mutualista',
+    blurb: 'Para continuidad de tratamiento (CASMU, MUCAM…)',
+  },
+  family: {
+    title: 'Informe para la familia',
+    blurb: 'Lenguaje claro, con sugerencias para casa',
+  },
+  anep: {
+    title: 'Adecuaciones curriculares · ANEP',
+    blurb: 'Apoyo para inclusión en primaria',
+  },
+  physician: {
+    title: 'Informe de derivación · Médico',
+    blurb: 'Para el profesional que derivó, con la evolución del período',
+  },
+  patient: {
+    title: 'Resumen del proceso',
+    blurb: 'Escrito para la persona misma, en lenguaje claro',
+  },
+}
+
 /** Which recipients each discipline is offered, in the order v1 offered them. */
 export const RECIPIENTS_BY_DISCIPLINE: Record<DisciplineId, RecipientId[]> = {
   psychopedagogy: ['school', 'family', 'health_insurer', 'anep'],

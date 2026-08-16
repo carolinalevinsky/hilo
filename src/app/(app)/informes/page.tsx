@@ -8,7 +8,12 @@ import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/dates'
-import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
+import {
+  RECIPIENT_FORMATS,
+  RECIPIENT_LABELS,
+  recipientsFor,
+  type RecipientId,
+} from '@/lib/recipients'
 import { listAssessments } from '@/server/assessments'
 import { requireUser } from '@/server/auth'
 import { countPatients } from '@/server/patients'
@@ -30,6 +35,7 @@ export default async function DocumentsPage() {
   ])
 
   const hasPatients = patients > 0
+  const recipients = recipientsFor(practitioner.discipline)
 
   return (
     <>
@@ -71,6 +77,46 @@ export default async function DocumentsPage() {
         </Card>
       ) : (
         <>
+          <p className="mb-3.5 rounded-lg bg-violet-soft px-4 py-3 text-[13px] leading-relaxed text-violet">
+            Empezá por un formato: elegís el paciente y Hilo arma el borrador. Cada
+            informe y evaluación queda vinculado al paciente y disponible en su ficha.
+          </p>
+
+          {/* "Formatos disponibles" is how v1 opened this screen
+              (`legacy/index.html:1656`), and it is the right way round: nobody
+              sets out to write "a report", they set out to write the one for the
+              colegio. The list comes from the practitioner's own discipline
+              rather than v1's fixed six, so a kinesióloga is not offered ANEP
+              adecuaciones. */}
+          <Card className="mb-5">
+            <CardHeader>
+              <CardTitle>Formatos disponibles</CardTitle>
+              <p className="text-[12.5px] text-muted-foreground">
+                Tocá Crear y elegí el paciente.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+                {recipients.map((recipient) => (
+                  <FormatCard
+                    key={recipient}
+                    title={RECIPIENT_FORMATS[recipient].title}
+                    blurb={RECIPIENT_FORMATS[recipient].blurb}
+                    chip={RECIPIENT_LABELS[recipient]}
+                    href={`/informes/nuevo?para=${recipient}`}
+                  />
+                ))}
+
+                <FormatCard
+                  title="Evaluación con instrumento"
+                  blurb="Cargás los puntajes y Hilo los interpreta y arma los objetivos"
+                  chip="Evaluación"
+                  href="/evaluaciones/nueva"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           <p className="mb-4 text-[12.5px] text-muted-foreground">
             Plan {planLimits(practitioner.plan).label} · {reportQuota.used} de{' '}
             {reportQuota.limit} informes usados este mes.
@@ -157,5 +203,43 @@ export default async function DocumentsPage() {
         </>
       )}
     </>
+  )
+}
+
+/**
+ * One format on the Informes screen — v1's `.tcard` (`legacy/index.html:120`).
+ *
+ * The whole card is the link, not just the button: the button is what says
+ * "Crear →", but somebody reading "Informe para la familia" and reaching for it
+ * will hit the title first.
+ */
+function FormatCard({
+  title,
+  blurb,
+  chip,
+  href,
+}: {
+  title: string
+  blurb: string
+  chip: string
+  href: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-violet"
+    >
+      <span className="text-[14.5px] font-bold">{title}</span>
+      <span className="mt-1 mb-2.5 text-[12.5px] text-muted-foreground">{blurb}</span>
+
+      <span className="mt-auto flex items-center justify-between gap-2">
+        <span className="rounded-full bg-violet-soft px-2.5 py-1 text-[11px] font-bold text-violet">
+          {chip}
+        </span>
+        <span className="rounded-full bg-violet px-3 py-1.5 text-[12px] font-bold text-white">
+          Crear →
+        </span>
+      </span>
+    </Link>
   )
 }

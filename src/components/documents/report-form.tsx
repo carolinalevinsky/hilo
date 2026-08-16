@@ -14,11 +14,19 @@ export function ReportForm({
   patients,
   recipients,
   defaultPatientId,
+  defaultRecipient,
 }: {
   patients: { id: string; full_name: string }[]
   recipients: RecipientId[]
   defaultPatientId?: string
+  /** Preselected when you arrive from a format card on /informes. */
+  defaultRecipient?: RecipientId
 }) {
+  const checkedRecipient =
+    defaultRecipient && recipients.includes(defaultRecipient)
+      ? defaultRecipient
+      : recipients[0]
+
   const [state, formAction, pending] = useActionState(createReportAction, EMPTY_FORM_STATE)
 
   return (
@@ -51,7 +59,7 @@ export function ReportForm({
           Cambia el tono, la estructura y hasta el título del informe.
         </p>
         <div className="flex flex-wrap gap-1.5 pt-1">
-          {recipients.map((recipient, index) => (
+          {recipients.map((recipient) => (
             <label
               key={recipient}
               className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground has-checked:border-violet has-checked:bg-violet has-checked:text-white"
@@ -60,7 +68,7 @@ export function ReportForm({
                 type="radio"
                 name="recipient"
                 value={recipient}
-                defaultChecked={index === 0}
+                defaultChecked={recipient === checkedRecipient}
                 className="sr-only"
                 required
               />

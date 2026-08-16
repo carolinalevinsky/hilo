@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ReportForm } from '@/components/documents/report-form'
 import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
-import { recipientsFor } from '@/lib/recipients'
+import { recipientsFor, type RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { listPatients } from '@/server/patients'
 import { getPractitioner } from '@/server/practitioners'
@@ -46,6 +46,9 @@ export default async function NewReportPage({ searchParams }: PageProps<'/inform
             recipients={recipientsFor(practitioner.discipline)}
             defaultPatientId={
               typeof params.paciente === 'string' ? params.paciente : undefined
+            }
+            defaultRecipient={
+              typeof params.para === 'string' ? (params.para as RecipientId) : undefined
             }
           />
         </CardContent>
