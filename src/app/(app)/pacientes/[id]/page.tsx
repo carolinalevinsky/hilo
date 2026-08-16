@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageCircle, Plus } from 'lucide-react'
+import { ArrowLeft, ChartPie, FileText, MessageCircle, Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { formatDate } from '@/lib/dates'
+import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
@@ -56,12 +57,32 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
         photoUrl={photoUrl}
         actions={
           <>
-            <Button asChild className="bg-white text-violet hover:bg-white/90 max-sm:flex-1">
+            {/* v1's row, in v1's order (`legacy/index.html:1188`): what you do
+                during the session, what you do to measure, what you send out.
+                "Generar informe" is the white one because it is the errand
+                somebody comes to this screen specifically to run. */}
+            <Button
+              asChild
+              variant="outline"
+              className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+            >
               <Link href={`/pacientes/${patient.id}/sesiones/nueva`}>
                 <Plus className="size-4" />
-                Registrar sesión
+                Sesión
               </Link>
             </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+            >
+              <Link href={`/evaluaciones/nueva?paciente=${patient.id}`}>
+                <ChartPie className="size-4" />
+                Evaluar
+              </Link>
+            </Button>
+
             <Button
               asChild
               variant="outline"
@@ -73,8 +94,15 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
                 rel="noopener noreferrer"
               >
                 <MessageCircle className="size-4" />
-                Escribir a la familia
+                Compartir con familia
               </a>
+            </Button>
+
+            <Button asChild className="bg-white text-violet hover:bg-white/90 max-sm:flex-1">
+              <Link href={`/informes/nuevo?paciente=${patient.id}`}>
+                <FileText className="size-4" />
+                Generar informe
+              </Link>
             </Button>
           </>
         }
@@ -152,6 +180,12 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
                 <Row label="Escolaridad">{patient.school_level}</Row>
                 <Row label="Colegio">{patient.school}</Row>
                 <Row label="Mutualista">{patient.health_insurer}</Row>
+                {/* v1 stored the abordaje on the patient; here it is the
+                    practitioner's own discipline, because a practitioner has
+                    exactly one and every patient of theirs is being seen under
+                    it. It stays on the ficha because it is what the report says
+                    and what the mutualista reads. */}
+                <Row label="Abordaje">{disciplineLabel(practitioner.discipline)}</Row>
                 <Row label="Teléfono">{patient.phone}</Row>
                 <Row label="Inicio">{formatDate(patient.start_date)}</Row>
                 <Row label="Honorario">

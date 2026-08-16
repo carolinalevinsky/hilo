@@ -43,11 +43,23 @@ args=(
 # Una TTY sólo si la hay — así `./dx` también sirve desde un script o CI.
 [ -t 0 ] && args+=(--interactive --tty)
 
-# Publicar el 3000 sólo si está libre. Si ya hay un dev server corriendo,
+# Publicar el puerto sólo si está libre. Si ya hay un dev server corriendo,
 # publicarlo de nuevo sería un error; pero un `./dx npm run typecheck` en otra
 # terminal no tiene por qué fallar por eso.
-if ! lsof -nP -iTCP:3000 -sTCP:LISTEN >/dev/null 2>&1; then
-  args+=(--publish 3000:3000)
+#
+# PORT existe para cuando hay dos copias del repo abiertas a la vez — un
+# worktree al lado del checkout principal. Sin esto la segunda arranca sin
+# ningún puerto publicado y el navegador termina mirando la primera, que es un
+# rato perdido buscando por qué "no se aplican los cambios":
+#
+#   PORT=3001 ./dx npm run dev
+#
+# Next lee PORT solo, así que alcanza con pasárselo al contenedor.
+PORT="${PORT:-3000}"
+args+=(--env "PORT=$PORT")
+
+if ! lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  args+=(--publish "$PORT:$PORT")
 fi
 
 exec docker run "${args[@]}" "$IMAGE" "$@"

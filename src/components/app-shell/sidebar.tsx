@@ -27,7 +27,11 @@ export function Sidebar({
         href="/inicio"
         className="mb-6 flex items-center gap-2.5 text-[22px] font-extrabold tracking-[-0.4px] text-white"
       >
-        <span className="size-[18px] rounded-[6px] bg-white/90" />
+        {/* v1's brandmark (`legacy/index.html:.brand .dot`): a white rounded
+            square with three violet lines, fading downwards — the threads of the
+            name. The lines are one pseudo-element plus two box-shadows, which is
+            how v1 drew them and means the mark needs no image file. */}
+        <span className="relative size-[30px] shrink-0 rounded-[9px] bg-white shadow-[0_4px_12px_rgb(0_0_0_/_15%)] after:absolute after:inset-x-2 after:top-2 after:h-[2.5px] after:rounded-[3px] after:bg-violet after:shadow-[0_6px_0_#a99cff,0_12px_0_#c9c1ff] after:content-['']" />
         Hilo
       </Link>
 

@@ -1,5 +1,6 @@
 import { MobileNav } from '@/components/app-shell/mobile-nav'
 import { Sidebar } from '@/components/app-shell/sidebar'
+import { AskHiloFab } from '@/components/assistant/ask-hilo-fab'
 import { InstallPrompt } from '@/components/install-prompt'
 import { Toaster } from '@/components/ui/sonner'
 import { disciplineLabel } from '@/lib/disciplines'
@@ -33,6 +34,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
         {children}
       </main>
 
+      <AskHiloFab />
       <MobileNav />
       <Toaster position="top-center" />
     </div>
