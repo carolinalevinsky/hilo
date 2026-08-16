@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
+import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
 import { EmptyState } from '@/components/empty-state'
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { frequencyLabel } from '@/lib/appointment-labels'
-import { today as todayString } from '@/lib/dates'
+import { toDateInput, today as todayString } from '@/lib/dates'
 import { formatTime, weekDates, weekLabel, weekdayName } from '@/lib/week'
 import {
   listAppointments,
@@ -55,18 +56,27 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     horizon[horizon.length - 1]!,
   )
 
-  const [appointments, schedules, patients, pendingBookings] = await Promise.all([
-    listAppointments(user.id, first, last),
-    listSchedules(user.id),
-    listPatients(user.id),
-    countPendingBookings(user.id),
-  ])
+  // Tomorrow, whichever week is on screen. The reminder is about the phone
+  // calls tonight, not about the week you happen to be paging through.
+  const tomorrowDate = new Date()
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  const tomorrow = toDateInput(tomorrowDate)
+
+  const [appointments, schedules, patients, pendingBookings, tomorrowAppointments] =
+    await Promise.all([
+      listAppointments(user.id, first, last),
+      listSchedules(user.id),
+      listPatients(user.id),
+      countPendingBookings(user.id),
+      listAppointments(user.id, tomorrow, tomorrow),
+    ])
 
   // The appointment row carries the patient's name and colour but not their
   // birthday, and the list is already loaded for the "Agendar" dialog.
   const ageOf = new Map(
     patients.map((patient) => [patient.id, ageLabel(patient.date_of_birth)]),
   )
+  const phoneOf = new Map(patients.map((patient) => [patient.id, patient.phone]))
 
   return (
     <>
@@ -119,6 +129,12 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
               </CardContent>
             </Card>
           ) : null}
+
+          <TomorrowReminders
+            date={tomorrow}
+            appointments={tomorrowAppointments}
+            phoneOf={phoneOf}
+          />
 
           <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5">
             <PeriodSwitcher
