@@ -112,7 +112,14 @@ export function AskHilo() {
             aria-label="Tu pregunta"
             className="min-w-[200px] flex-1"
           />
-          <Button type="submit" disabled={asking || !question.trim()}>
+          {/* Full width once it has wrapped onto its own line, which it always
+              does on a phone — a small button alone at the left edge reads as
+              an afterthought rather than as the way to send. */}
+          <Button
+            type="submit"
+            disabled={asking || !question.trim()}
+            className="max-sm:w-full"
+          >
             <Send className="size-4" />
             {asking ? 'Pensando…' : 'Preguntar'}
           </Button>

@@ -117,7 +117,15 @@ export const config = {
     /*
      * Everything except static assets and image files. Running on those would
      * cost a Supabase round trip per icon.
+     *
+     * `robots.txt` and `manifest.webmanifest` are generated routes, not files in
+     * `public/`, so the extension rule above does not catch them — and being
+     * caught here meant a signed-out request for either got an HTML redirect to
+     * `/entrar`. A crawler read that instead of the disallow rules, and the
+     * browser read it instead of the manifest, so Hilo was not installable from
+     * the landing page. Same shape as the `/api/*` bug: a redirect turning a
+     * machine-readable answer into a page for a human.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

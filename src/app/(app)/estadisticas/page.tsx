@@ -52,7 +52,10 @@ export default async function StatisticsPage() {
     <>
       <PageHeader title="Estadísticas" subtitle="Cómo viene tu práctica." />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Two across even on the narrowest phone. One per row pushed the actual
+          content — the per-patient progress, which is the reason to open this
+          screen — below four scrolls of headline numbers. */}
+      <div className="mb-4 grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         <Stat label="Pacientes activos" value={String(stats.activePatients)} />
         <Stat
           label="Sesiones este mes"
@@ -179,9 +182,11 @@ export default async function StatisticsPage() {
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-lg bg-card px-4 py-3 shadow-card">
-      <p className="text-[12px] font-bold text-muted-foreground uppercase">{label}</p>
-      <p className="text-[24px] font-extrabold tracking-[-0.6px]">{value}</p>
+    <div className="rounded-lg bg-card px-3.5 py-3 shadow-card sm:px-4">
+      <p className="text-[11px] font-bold text-muted-foreground uppercase sm:text-[12px]">
+        {label}
+      </p>
+      <p className="text-[22px] font-extrabold tracking-[-0.6px] sm:text-[24px]">{value}</p>
       {hint ? <p className="text-[11.5px] text-muted-foreground">{hint}</p> : null}
     </div>
   )

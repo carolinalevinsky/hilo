@@ -1,5 +1,6 @@
 import { MobileNav } from '@/components/app-shell/mobile-nav'
 import { Sidebar } from '@/components/app-shell/sidebar'
+import { InstallPrompt } from '@/components/install-prompt'
 import { Toaster } from '@/components/ui/sonner'
 import { disciplineLabel } from '@/lib/disciplines'
 import { requireUser } from '@/server/auth'
@@ -26,6 +27,9 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
       />
 
       <main className="min-w-0 px-3.5 pt-4.5 pb-[calc(80px+env(safe-area-inset-bottom))] lg:px-8.5 lg:pt-11 lg:pb-16">
+        {/* Signed-in screens only. Offering to install the app to someone who
+            has not signed in yet is asking for a commitment before the value. */}
+        <InstallPrompt />
         {children}
       </main>
 
