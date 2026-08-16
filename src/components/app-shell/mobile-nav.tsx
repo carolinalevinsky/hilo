@@ -5,7 +5,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
-import { MOBILE_BAR_ITEMS, MOBILE_SHEET_ITEMS } from '@/components/app-shell/nav-items'
+import {
+  MOBILE_BAR_ITEMS,
+  MOBILE_SHEET_ITEMS,
+  isNavItemActive,
+} from '@/components/app-shell/nav-items'
 import { cn } from '@/lib/utils'
 
 /**
@@ -20,7 +24,7 @@ export function MobileNav() {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
-  const sheetHasActive = MOBILE_SHEET_ITEMS.some((item) => isActive(item.href))
+  const sheetHasActive = MOBILE_SHEET_ITEMS.some((item) => isNavItemActive(item, pathname))
 
   return (
     <>
@@ -52,7 +56,7 @@ export function MobileNav() {
                   onClick={() => setSheetOpen(false)}
                   className={cn(
                     'flex flex-col items-center gap-1.5 rounded-2xl border border-border px-2 py-3.5 text-center text-[11.5px] font-semibold',
-                    isActive(item.href) && 'border-violet bg-violet-soft text-violet',
+                    isNavItemActive(item, pathname) && 'border-violet bg-violet-soft text-violet',
                   )}
                 >
                   <item.icon className="size-5" />
@@ -82,7 +86,7 @@ export function MobileNav() {
             href={item.href}
             className={cn(
               'flex flex-1 flex-col items-center gap-[3px] rounded-xl px-0.5 py-1.5 text-[10.5px] font-semibold',
-              isActive(item.href) ? 'text-violet' : 'text-[#8b90a3]',
+              isNavItemActive(item, pathname) ? 'text-violet' : 'text-[#8b90a3]',
             )}
           >
             <item.icon className="size-5" />

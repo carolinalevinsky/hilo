@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
+import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { areasFor, materialKindLabel } from '@/lib/material-areas'
@@ -36,9 +37,12 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
 
   return (
     <>
+      {/* Same title and subtitle as /planificacion on purpose: to a practitioner
+          these are one screen with two tabs, as they were in v1. The URL
+          changes; the place you are does not. */}
       <PageHeader
-        title="Materiales"
-        subtitle="Actividades listas para usar, filtradas por tu profesión."
+        title="Planificación"
+        subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
         action={
           <Button asChild size="lg">
             <Link href="/materiales/nuevo">
@@ -48,6 +52,8 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
           </Button>
         }
       />
+
+      <PlanningTabs />
 
       <div className="mb-4 flex flex-wrap gap-1.5">
         <Chip href="/materiales" active={!area && !onlyMine}>

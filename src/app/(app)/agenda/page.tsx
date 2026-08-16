@@ -17,6 +17,7 @@ import {
   materialiseAppointments,
 } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
+import { countPendingBookings } from '@/server/booking'
 import { listPatients } from '@/server/patients'
 
 import { deactivateScheduleAction } from './actions'
@@ -51,10 +52,11 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     horizon[horizon.length - 1]!,
   )
 
-  const [appointments, schedules, patients] = await Promise.all([
+  const [appointments, schedules, patients, pendingBookings] = await Promise.all([
     listAppointments(user.id, first, last),
     listSchedules(user.id),
     listPatients(user.id),
+    countPendingBookings(user.id),
   ])
 
   return (
@@ -84,6 +86,31 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
         </Card>
       ) : (
         <>
+          {/* Reservas sits at the top of the Agenda, as in v1
+              (`legacy/index.html:1499`), and only when there is something to
+              do about it. A family asking for a time is an interruption to the
+              week you are looking at — that is why it belongs above the week
+              and not behind a sidebar item you would have to remember to open.
+              With nothing pending it disappears entirely, and the link inside
+              is now the only way into /reservas. */}
+          {pendingBookings > 0 ? (
+            <Card className="mb-3.5 border-violet">
+              <CardHeader>
+                <CardTitle>Reservas nuevas</CardTitle>
+                <p className="text-[12.5px] text-muted-foreground">
+                  {pendingBookings === 1
+                    ? '1 pendiente · confirmala para agregarla a tu agenda'
+                    : `${pendingBookings} pendientes · confirmalas para agregarlas a tu agenda`}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Button asChild size="sm">
+                  <Link href="/reservas">Ver las reservas →</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+
           <div className="mb-3.5 flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
               <Link href={`/agenda?semana=${offset - 1}`}>← Anterior</Link>

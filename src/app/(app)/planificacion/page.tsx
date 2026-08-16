@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
+import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatLongDate } from '@/lib/dates'
@@ -33,8 +34,10 @@ export default async function PlanningPage() {
     <>
       <PageHeader
         title="Planificación"
-        subtitle="Tus próximas sesiones, con el objetivo que menos se movió."
+        subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
       />
+
+      <PlanningTabs />
 
       {sessions.length === 0 ? (
         <Card>

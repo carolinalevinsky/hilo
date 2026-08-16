@@ -140,6 +140,16 @@ export default async function HomePage() {
           <div className="mt-4">
             <AskHilo />
           </div>
+
+          {/* Estadísticas hangs off the foot of Inicio, exactly as in v1
+              (`legacy/index.html:568`). It is a place you go once in a while
+              after seeing the day, not a destination that deserves a permanent
+              seat in the sidebar — and this link is now its only way in. */}
+          <div className="mt-4 text-center">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/estadisticas">Ver estadísticas completas →</Link>
+            </Button>
+          </div>
         </>
       )}
     </>

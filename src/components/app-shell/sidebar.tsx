@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { NAV_ITEMS } from '@/components/app-shell/nav-items'
+import { NAV_ITEMS, isNavItemActive } from '@/components/app-shell/nav-items'
 import { cn } from '@/lib/utils'
 
 /**
@@ -33,7 +33,7 @@ export function Sidebar({
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
+          const active = isNavItemActive(item, pathname)
           return (
             <Link
               key={item.href}
