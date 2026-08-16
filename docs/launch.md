@@ -103,9 +103,10 @@ return that day.
 assistant answer against the real key and read them with a professional's eye.**
 
 The plumbing is no longer the unknown it used to be: `.env.local` now carries a
-real key, and a session draft has been generated against the real model and read
-(August 2026). What remains is a judgement, not a check — whether the writing is
-good enough to put a signature under — and no test can make it for you.
+real key, a session draft has been generated against the real model and read
+(August 2026), and the end-to-end test drives a real report through it. What
+remains is a judgement, not a check — whether the writing is good enough to put
+a signature under — and no test can make it for you.
 
 If you are reading an older note in this repository that says the key is absent
 and the streamed output has never been seen, it is out of date.

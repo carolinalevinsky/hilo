@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-e2e/
 /out/
 
 # production
@@ -43,6 +44,15 @@ yarn-error.log*
 __probe*.ts
 __probe*.tsx
 /src/__boundary_probe__/
+
+# git worktrees que crean los agentes. .claude/ está versionado (skills,
+# launch.json), pero un worktree es una copia entera del repo adentro del repo.
+/.claude/worktrees/
+
+# playwright — el navegador vive en un volumen de Docker, no acá (ver ./dx).
+# Esto es el ruido de cada corrida.
+/test-results/
+/playwright-report/
 
 # vercel
 .vercel

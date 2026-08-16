@@ -35,6 +35,15 @@ args=(
   --rm
   --volume "$REPO:$REPO"
   --volume /var/run/docker.sock:/var/run/docker.sock
+  # El navegador de Playwright, en un volumen con nombre.
+  #
+  # No va dentro del repo aunque sería lo obvio: el bind mount de macOS no le
+  # da a Playwright el bloqueo de directorio que usa al instalar, y la descarga
+  # muere con "Unable to update lock within the stale threshold". Y no va en la
+  # imagen porque entonces subir @playwright/test obligaría a reconstruirla.
+  # Un volumen sobrevive al --rm, es rápido, y se borra con
+  # `docker volume rm hilo-playwright` si algo queda raro.
+  --volume hilo-playwright:/root/.cache/ms-playwright
   --workdir "$REPO"
   --add-host host.docker.internal:host-gateway
   --env HOSTNAME=0.0.0.0

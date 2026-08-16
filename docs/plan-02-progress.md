@@ -75,13 +75,16 @@ A fresh session — or a subagent — must know these. Each one cost real debugg
    non-nullable fields and a NULL makes every sign-in fail with "invalid
    credentials" — a password error that has nothing to do with the password.
 
-10. **Check `git status` before every commit, and read what it says.** Twice
-    during M8, `src/server/booking.ts` — 233 committed lines of M7 — was found
-    replaced by a seven-line `export {}` stub in the working tree. Both times a
-    second Claude Code session was running against this same checkout. The
-    build is what caught it (`The module has no exports at all`); `git checkout
-    HEAD -- src/server/booking.ts` is the fix. **Do not run two sessions in this
-    directory at once.**
+10. **Check `git status` before every commit, and read what it says.** Four
+    times across M8 and M9, `src/server/booking.ts` — 233 committed lines of M7
+    — was found replaced by a seven-line `export {}` stub in the working tree.
+    Every time, a second Claude Code session was live against this checkout;
+    `git worktree list` eventually showed it, on a branch called
+    `trabajo-nuevo` under `.claude/worktrees/`. The build is what caught it
+    each time (`The module has no exports at all`), and `git checkout HEAD --
+    src/server/booking.ts` is the fix. **Do not run two sessions in this
+    directory at once**, and if one is running, build before every commit
+    rather than trusting a green run from ten minutes ago.
 
 11. **Never `dangerouslySetInnerHTML`.** Reports, assessments and materials store
     **plain text**, rendered by `DocumentBody` (a short line ending in a colon is
@@ -227,10 +230,9 @@ credentials.
 read. What is left of step 3 is reading the output as a professional, which is a
 judgement and not a check.
 
-**Also never built:** the Playwright critical-path test from §8 of the migration
-plan (sign-up → patient → session → report). Everything else in that testing
-table exists. It was not part of M9's scope and is the honest remaining gap in
-the test strategy.
+**The Playwright critical-path test from §8 now exists** — `e2e/critical-path.spec.ts`,
+one story in six steps, run by `./dx npm run test:e2e` and by CI. Every line of
+the plan's testing table is now covered.
 
 ---
 
@@ -276,3 +278,9 @@ The dev server is already running on port 3000 in a container. Sign in as
 costs money and calls `claude-opus-5`. The offline fallbacks still run whenever
 the call fails or the monthly quota is spent, and they are still worth keeping
 exercised — pull the key out of `.env.local` for a run if you want to see them.
+The end-to-end test accepts either path on purpose, which is how it stays
+runnable in CI with a placeholder key.
+
+If the AI ever appears dead in development, **restart the dev server before
+believing it**: a long-running server holds a stale environment, and every
+generation in it falls back to the offline draft until it is restarted.

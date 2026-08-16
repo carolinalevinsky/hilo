@@ -19,6 +19,14 @@
 #   psql 17      `npm run check:rls` consulta el catálogo de Postgres para
 #                verificar que ninguna tabla quede sin RLS, y lo hace con psql.
 #                La versión 17 es la misma que declara supabase/config.toml.
+#
+#   libs de      Chromium necesita un montón de bibliotecas del sistema que la
+#   Chromium     imagen de Node no trae. Se instalan acá, pero el navegador en
+#                sí NO: se baja a .playwright/ dentro del repo (ver
+#                playwright.config.ts). Así el binario sobrevive a --rm y no
+#                hay que reconstruir la imagen cada vez que sube la versión de
+#                Playwright — que es exactamente donde aparece el error
+#                "Executable doesn't exist" que no dice nada.
 FROM node:22
 
 RUN apt-get update \
@@ -37,6 +45,13 @@ RUN apt-get update \
  && apt-get update \
  && apt-get install -y --no-install-recommends docker-ce-cli postgresql-client-17 \
  && rm -rf /var/lib/apt/lists/*
+
+# Las dependencias de sistema de Chromium. `playwright install-deps` las conoce
+# mejor que cualquier lista escrita a mano. La versión está fijada para que la
+# imagen sea reproducible; sólo hay que tocarla si una versión nueva de Chromium
+# pide una biblioteca que antes no existía, cosa que pasa muy de vez en cuando.
+RUN npx --yes playwright@1.62.1 install-deps chromium \
+ && rm -rf /var/lib/apt/lists/* /root/.npm
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
