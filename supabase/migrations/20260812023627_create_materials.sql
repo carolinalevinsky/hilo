@@ -2,9 +2,14 @@
 --
 -- Two kinds of row in one table, told apart by `practitioner_id`:
 --
---   NULL      shipped with Hilo, visible to every practitioner of that
---             discipline. Curated content, not user data.
+--   NULL      shipped with Hilo, visible to every practitioner. Curated
+--             content, not user data.
 --   a uuid    written by that practitioner, visible only to them.
+--
+-- The read policy is deliberately discipline-blind. Filtering the library down
+-- to a psychopedagogist's areas is a *product* decision and it lives in
+-- `listMaterials`; writing it into the policy would read like a privacy boundary
+-- and it is not one — there is nothing private about a shared worksheet.
 --
 -- That NULL is why this table's policy is the only one in the schema that is not
 -- the standard one-liner, and it is worth being explicit about: the read policy

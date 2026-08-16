@@ -183,8 +183,11 @@ export async function monthlyLedger(
  * right kind — a practitioner setting a fee "per session" wants a sensible
  * default to compare against, not an exact count of the Mondays in February. The
  * expected number of sessions on the patient's record overrides it when set.
+ *
+ * Exported because the digest computes the same figure for every practitioner at
+ * once and must not answer a different number than the Cobros screen does.
  */
-function expectedForMonth(patient: {
+export function expectedForMonth(patient: {
   session_fee: number | null
   billing_frequency: string
   expected_sessions_per_month: number | null

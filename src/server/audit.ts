@@ -36,6 +36,7 @@ type Entity =
   | 'report'
   | 'payment'
   | 'booking_request'
+  | 'material'
 
 export async function logAction(
   practitionerId: string,

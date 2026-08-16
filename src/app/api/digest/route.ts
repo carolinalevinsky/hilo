@@ -1,5 +1,5 @@
 import { publicConfig, env } from '@/lib/env'
-import { DIGEST_BATCH_SIZE, digestRecipients } from '@/server/digest'
+import { DIGEST_BATCH_SIZE, digestRecipients, markDigestSent } from '@/server/digest'
 import { sendDigest } from '@/server/notifications'
 
 /**
@@ -21,7 +21,8 @@ import { sendDigest } from '@/server/notifications'
  * At most `DIGEST_BATCH_SIZE` emails per invocation. v1's serial loop over every
  * practitioner works at five and times out well before five hundred; this run
  * finishes in a knowable time regardless, and the ones it did not reach go out
- * on the next run.
+ * on the next run — which is true because the batch is stamped below and the
+ * next run orders by that stamp, not because a cap implies a queue.
  */
 export async function GET(request: Request) {
   const authorization = request.headers.get('authorization')
@@ -42,6 +43,11 @@ export async function GET(request: Request) {
     })
     if (ok) sent += 1
   }
+
+  // The whole batch, not only the successful ones. A bad address that fails
+  // every time would otherwise sit at the head of the queue forever and starve
+  // everyone behind it.
+  await markDigestSent(recipients.map((recipient) => recipient.practitionerId))
 
   return Response.json({
     considered: recipients.length,

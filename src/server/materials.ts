@@ -132,7 +132,7 @@ export async function deleteMaterial(practitionerId: string, materialId: string)
     .eq('practitioner_id', practitionerId)
 
   if (error) throw error
-  await logAction(practitionerId, 'delete', 'patient', materialId)
+  await logAction(practitionerId, 'delete', 'material', materialId)
 }
 
 /**

@@ -590,6 +590,7 @@ export type Database = {
       practitioners: {
         Row: {
           created_at: string
+          digest_sent_at: string | null
           discipline: string
           email: string
           full_name: string
@@ -602,6 +603,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          digest_sent_at?: string | null
           discipline: string
           email: string
           full_name: string
@@ -614,6 +616,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          digest_sent_at?: string | null
           discipline?: string
           email?: string
           full_name?: string

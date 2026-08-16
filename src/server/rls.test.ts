@@ -220,6 +220,128 @@ describe('the clinical tables', () => {
   })
 })
 
+describe('the materials library', () => {
+  // `materials` is the only table in the schema whose policies are not the
+  // standard one-liner, so it cannot ride along in `the clinical tables` above:
+  // an unfiltered read correctly returns every row Hilo ships. The split is read
+  // shared-or-own, write own-only, and both halves need watching — one of them
+  // guards clinical privacy, the other guards everyone else's library.
+
+  let materialB = ''
+  let sharedMaterial = ''
+
+  beforeAll(async () => {
+    const { data: own } = await service
+      .from('materials')
+      .insert({
+        practitioner_id: idB,
+        title: 'Secuencias temporales de Bruno',
+        area: 'Lenguaje',
+        content: 'Actividad escrita por Bruno',
+      })
+      .select()
+      .single()
+    materialB = own!.id
+
+    const { data: shared } = await service
+      .from('materials')
+      .insert({
+        practitioner_id: null,
+        title: 'Juego de rimas de la biblioteca de Hilo',
+        area: 'Lectura',
+        content: 'Actividad que viene con Hilo',
+      })
+      .select()
+      .single()
+    sharedMaterial = shared!.id
+  })
+
+  afterAll(async () => {
+    // A row with a NULL practitioner_id belongs to nobody, so deleting the test
+    // practitioners does not cascade to it. Left behind, it accumulates in every
+    // later run of the suite and in anyone's local library.
+    await service.from('materials').delete().eq('id', sharedMaterial)
+  })
+
+  it('does not show a practitioner what another one wrote', async () => {
+    const { data, error } = await asA.from('materials').select('id')
+
+    expect(error).toBeNull()
+    expect(data?.map((row) => row.id)).not.toContain(materialB)
+  })
+
+  it('does show a practitioner the materials that ship with Hilo', async () => {
+    const { data, error } = await asA.from('materials').select('id')
+
+    // The half that would break silently if someone "simplified" the read policy
+    // into the one-liner every other table uses: no error, no leak, and an empty
+    // library on every screen.
+    expect(error).toBeNull()
+    expect(data?.map((row) => row.id)).toContain(sharedMaterial)
+  })
+
+  it('does not let a practitioner publish a material to everyone', async () => {
+    // The `with check` on `write_own`. A NULL practitioner_id means "shipped with
+    // Hilo", so without this any user could plant a row in every other
+    // practitioner's library.
+    const { error } = await asA.from('materials').insert({
+      practitioner_id: null,
+      title: 'Material colado en la biblioteca',
+      area: 'Lectura',
+      content: 'No debería existir',
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('does not let a practitioner sign a material with another practitioner_id', async () => {
+    const { error } = await asA.from('materials').insert({
+      practitioner_id: idB,
+      title: 'Material plantado',
+      area: 'Lectura',
+      content: 'No debería existir',
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('does not let a practitioner edit a material belonging to another one', async () => {
+    const { data, error } = await asA
+      .from('materials')
+      .update({ title: 'Reescrito' })
+      .eq('id', materialB)
+      .select()
+
+    // Filtered, not rejected — same shape as every other table's update.
+    expect(error).toBeNull()
+    expect(data).toHaveLength(0)
+
+    const { data: stored } = await service
+      .from('materials')
+      .select('title')
+      .eq('id', materialB)
+      .single()
+    expect(stored?.title).toBe('Secuencias temporales de Bruno')
+  })
+
+  it('does not let a practitioner delete a material belonging to another one', async () => {
+    const { data, error } = await asA
+      .from('materials')
+      .delete()
+      .eq('id', materialB)
+      .select()
+
+    expect(error).toBeNull()
+    expect(data).toHaveLength(0)
+
+    const { count } = await service
+      .from('materials')
+      .select('id', { count: 'exact', head: true })
+      .eq('id', materialB)
+    expect(count).toBe(1)
+  })
+})
+
 describe('the Mercado Pago access token', () => {
   // Defect #1. v1 read this credential straight from the browser
   // (legacy/index.html:2477) — a token that can move money, in a JavaScript
