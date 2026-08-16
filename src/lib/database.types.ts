@@ -362,6 +362,59 @@ export type Database = {
           },
         ]
       }
+      materials: {
+        Row: {
+          age_range: string | null
+          area: string
+          content: string
+          created_at: string
+          discipline: string | null
+          focus: string | null
+          id: string
+          kind: string
+          objective: string | null
+          practitioner_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          age_range?: string | null
+          area: string
+          content: string
+          created_at?: string
+          discipline?: string | null
+          focus?: string | null
+          id?: string
+          kind?: string
+          objective?: string | null
+          practitioner_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string | null
+          area?: string
+          content?: string
+          created_at?: string
+          discipline?: string | null
+          focus?: string | null
+          id?: string
+          kind?: string
+          objective?: string | null
+          practitioner_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mp_accounts: {
         Row: {
           access_token: string

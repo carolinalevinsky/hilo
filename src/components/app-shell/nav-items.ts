@@ -1,5 +1,8 @@
 import {
+  BookOpen,
   CalendarDays,
+  ChartColumn,
+  ClipboardList,
   FileText,
   Home,
   Inbox,
@@ -36,6 +39,9 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/agenda', label: 'Agenda', icon: CalendarDays, onMobileBar: true },
   { href: '/informes', label: 'Informes', icon: FileText },
   { href: '/cobros', label: 'Cobros', icon: Wallet, onMobileBar: true },
+  { href: '/planificacion', label: 'Planificación', icon: ClipboardList },
+  { href: '/materiales', label: 'Materiales', icon: BookOpen },
+  { href: '/estadisticas', label: 'Estadísticas', icon: ChartColumn },
   { href: '/reservas', label: 'Reservas', icon: Inbox },
 ]
 

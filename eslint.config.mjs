@@ -44,19 +44,29 @@ const SERVICE_DB_IMPORT = {
   name: '@/server/db',
   importNames: ['getServiceDb'],
   message:
-    'The service-role client bypasses RLS entirely. It belongs in exactly four ' +
-    'places (MP token read, MP webhook, public booking insert, audit log). ' +
-    'Use getDb() instead — it carries the user session, and RLS protects the data. ' +
-    'If you genuinely need a fifth, add the file to SERVICE_DB_ALLOWED in ' +
-    'eslint.config.mjs and say why in the commit message.',
+    'The service-role client bypasses RLS entirely. It belongs in the short list ' +
+    'in SERVICE_DB_ALLOWED and nowhere else. Use getDb() instead — it carries the ' +
+    'user session, and RLS protects the data. If you genuinely need another, add ' +
+    'the file to SERVICE_DB_ALLOWED in eslint.config.mjs and say why in the ' +
+    'commit message.',
 }
 
-/** The only files allowed to bypass Row Level Security. */
+/**
+ * The only files allowed to bypass Row Level Security.
+ *
+ * Every entry needs a reason of the same shape: **there is no user session for
+ * RLS to check against.** Not "it was easier", not "the policy was in the way".
+ *
+ * Adding to this list is meant to be a visible act, which is why the rule exists
+ * at all — the risk is not one considered exception, it is the tenth unnoticed
+ * one.
+ */
 const SERVICE_DB_ALLOWED = [
   'src/server/db.ts',          // defines it
-  'src/server/mercadopago.ts', // MP token read + payment webhook
-  'src/server/booking.ts',     // anonymous public booking insert
-  'src/server/audit.ts',       // audit log writes
+  'src/server/mercadopago.ts', // MP token read (no policy) + webhook (no session)
+  'src/server/booking.ts',     // a family filling in a public form has no session
+  'src/server/audit.ts',       // a log the user can write is not a log
+  'src/server/digest.ts',      // a cron run acts for every practitioner, as none
 ]
 
 const restrict = (options) => ({
