@@ -4,12 +4,14 @@ import { cn } from '@/lib/utils'
 import type { AppointmentWithPatient } from '@/server/appointments'
 
 /**
- * The week, Monday to Sunday, with real dates on every column.
+ * The week as one card per day — what a phone gets, where the hour grid in
+ * `week-calendar.tsx` would be eight columns of forty pixels. v1 made the same
+ * split (`.agmob`, `legacy/index.html:1459`).
  *
- * That is the change from v1, and it is not cosmetic. v1's agenda was
- * `{"Lunes": [...]}` — weekday names and nothing else — so there was exactly one
- * week, forever, and looking at what happened last Tuesday was not a feature
- * that could be added without redoing the data.
+ * Real dates on every column is the change from v1, and it is not cosmetic. v1's
+ * agenda was `{"Lunes": [...]}` — weekday names and nothing else — so there was
+ * exactly one week, forever, and looking at what happened last Tuesday was not a
+ * feature that could be added without redoing the data.
  *
  * Sunday is rendered even when empty. A week with a hole where Sunday should be
  * reads as a bug, and some practitioners do work Saturdays.
@@ -31,9 +33,7 @@ export function WeekGrid({
   }
 
   return (
-    // Seven columns only where seven columns actually fit. Below that the days
-    // wrap in reading order, which is a better week than seven slivers.
-    <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
+    <div className="grid gap-2.5 sm:grid-cols-2 lg:hidden">
       {dates.map((date, index) => {
         const weekday = WEEK_ORDER[index]!
         const dayAppointments = byDate.get(date) ?? []

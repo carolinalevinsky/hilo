@@ -3,11 +3,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
+import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
+import { PeriodSwitcher } from '@/components/period-switcher'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ageLabel } from '@/lib/age'
 import { frequencyLabel } from '@/lib/appointment-labels'
 import { today as todayString } from '@/lib/dates'
 import { formatTime, weekDates, weekLabel, weekdayName } from '@/lib/week'
@@ -58,6 +61,12 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     listPatients(user.id),
     countPendingBookings(user.id),
   ])
+
+  // The appointment row carries the patient's name and colour but not their
+  // birthday, and the list is already loaded for the "Agendar" dialog.
+  const ageOf = new Map(
+    patients.map((patient) => [patient.id, ageLabel(patient.date_of_birth)]),
+  )
 
   return (
     <>
@@ -111,21 +120,27 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             </Card>
           ) : null}
 
-          <div className="mb-3.5 flex items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/agenda?semana=${offset - 1}`}>← Anterior</Link>
-            </Button>
-            <Button asChild variant={offset === 0 ? 'secondary' : 'outline'} size="sm">
-              <Link href="/agenda">Esta semana</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/agenda?semana=${offset + 1}`}>Siguiente →</Link>
-            </Button>
-            <span className="ml-1 text-[12.5px] text-muted-foreground max-sm:hidden">
-              {weekLabel(dates)}
-            </span>
+          <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5">
+            <PeriodSwitcher
+              prevHref={`/agenda?semana=${offset - 1}`}
+              nextHref={`/agenda?semana=${offset + 1}`}
+              label={weekLabel(dates)}
+              caption={offset === 0 ? 'Esta semana' : undefined}
+              className="min-w-0"
+            />
+            {offset !== 0 ? (
+              <Button asChild variant="outline" size="sm">
+                <Link href="/agenda">Hoy</Link>
+              </Button>
+            ) : null}
           </div>
 
+          <WeekCalendar
+            dates={dates}
+            appointments={appointments}
+            today={todayString()}
+            ageOf={ageOf}
+          />
           <WeekGrid dates={dates} appointments={appointments} today={todayString()} />
 
           <Card className="mt-5">
