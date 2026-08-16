@@ -1,36 +1,42 @@
-import { UserPlus, Users } from 'lucide-react'
+import { CalendarDays, UserPlus, Users } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { AppointmentCard } from '@/components/agenda/appointment-card'
+import { TodaySessionCard } from '@/components/agenda/today-session-card'
 import { AskHilo } from '@/components/assistant/ask-hilo'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
-import { PatientAvatar } from '@/components/patients/patient-avatar'
+import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { firstName } from '@/lib/whatsapp'
-import { listToday } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
 import { listPatients } from '@/server/patients'
+import { todayBriefing } from '@/server/planning'
 import { getPractitioner } from '@/server/practitioners'
 
 export const metadata: Metadata = { title: 'Inicio · Hilo' }
 
 export default async function HomePage() {
   const user = await requireUser()
-  const [practitioner, patients, todayAppointments] = await Promise.all([
-    getPractitioner(user.id),
+  const practitioner = await getPractitioner(user.id)
+  const [patients, todaySessions] = await Promise.all([
     listPatients(user.id, { sort: 'recent' }),
-    listToday(user.id),
+    todayBriefing(user.id, practitioner.discipline),
   ])
+
+  // The briefing carries the patient's name and colour but not their birthday,
+  // and the list is already here — no reason to ask the database twice.
+  const ageOf = new Map(
+    patients.map((patient) => [patient.id, ageLabel(patient.date_of_birth)]),
+  )
 
   return (
     <>
       <PageHeader
         title={`¡Hola, ${firstName(practitioner.full_name)}! 👋`}
-        subtitle="Esto es lo que tenés hoy. Empezá por acá."
+        subtitle="Esto es lo que tenés hoy."
         action={
           patients.length > 0 ? (
             <Button asChild size="lg">
@@ -58,19 +64,34 @@ export default async function HomePage() {
         </Card>
       ) : (
         <>
+          <StatCardGrid className="lg:grid-cols-2">
+            <StatCard
+              icon={Users}
+              tone="violet"
+              value={patients.length}
+              label="Pacientes activos"
+            />
+            <StatCard
+              icon={CalendarDays}
+              tone="amber"
+              value={todaySessions.length}
+              label="Sesiones hoy"
+            />
+          </StatCardGrid>
+
           <Card className="mb-4">
             <CardHeader>
               <CardTitle>Hoy</CardTitle>
               <p className="text-[12.5px] text-muted-foreground">
-                {todayAppointments.length === 0
+                {todaySessions.length === 0
                   ? 'Sin sesiones agendadas'
-                  : todayAppointments.length === 1
+                  : todaySessions.length === 1
                     ? '1 sesión'
-                    : `${todayAppointments.length} sesiones`}
+                    : `${todaySessions.length} sesiones`}
               </p>
             </CardHeader>
             <CardContent>
-              {todayAppointments.length === 0 ? (
+              {todaySessions.length === 0 ? (
                 <p className="text-[13px] text-muted-foreground">
                   Hoy tenés el día libre.{' '}
                   <Link href="/agenda" className="font-semibold text-violet underline">
@@ -79,67 +100,21 @@ export default async function HomePage() {
                   .
                 </p>
               ) : (
-                <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {todayAppointments.map((appointment) => (
-                    <li key={appointment.id}>
-                      <AppointmentCard appointment={appointment} />
-                    </li>
-                  ))}
-                </ul>
+                todaySessions.map((session) => (
+                  <TodaySessionCard
+                    key={session.appointmentId}
+                    session={session}
+                    ageLabel={ageOf.get(session.patientId)}
+                  />
+                ))
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Tus pacientes</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
-                {patients.length === 1 ? '1 activo' : `${patients.length} activos`}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {patients.slice(0, 6).map((patient) => (
-                  <li key={patient.id}>
-                    <Link
-                      href={`/pacientes/${patient.id}`}
-                      className="flex items-center gap-2.5 rounded-xl border border-border p-2.5 hover:bg-muted"
-                    >
-                      <PatientAvatar
-                        fullName={patient.full_name}
-                        color={patient.color}
-                        size={36}
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-[13.5px] font-bold">
-                          {patient.full_name}
-                        </p>
-                        <p className="truncate text-[12px] text-muted-foreground">
-                          {ageLabel(patient.date_of_birth) ?? 'Sin fecha de nacimiento'}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-
-              {patients.length > 6 ? (
-                <Link
-                  href="/pacientes"
-                  className="mt-3 inline-block text-[13px] font-semibold text-violet underline"
-                >
-                  Ver los {patients.length} →
-                </Link>
-              ) : null}
             </CardContent>
           </Card>
 
           {/* Last, not first. v1 put the box above the patient list and it
               competed with the work; the question someone has here is about a
               session they have just seen listed above it. */}
-          <div className="mt-4">
-            <AskHilo />
-          </div>
+          <AskHilo />
 
           {/* Estadísticas hangs off the foot of Inicio, exactly as in v1
               (`legacy/index.html:568`). It is a place you go once in a while

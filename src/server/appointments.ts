@@ -296,8 +296,3 @@ export async function listAppointments(
   return data
 }
 
-/** Today's appointments, for the dashboard. */
-export async function listToday(practitionerId: string) {
-  const today = toDateInput(new Date())
-  return listAppointments(practitionerId, today, today)
-}
