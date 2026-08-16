@@ -4,7 +4,7 @@
 change. This one records what has actually been built, what is half-built, and
 what a fresh session needs to know before touching any of it.
 
-Last updated: 12 August 2026, mid-M8.
+Last updated: 16 August 2026, M8 complete.
 
 ---
 
@@ -19,13 +19,13 @@ Last updated: 12 August 2026, mid-M8.
 | M5 — Assessments, reports, AI | **done** | `94061ca` |
 | M6 — Payments | **done** | `d49e6b6` |
 | M7 — Public booking + notification | **done** | `31aa9ac` |
-| M8 — Materials, statistics, digest | **in progress, uncommitted** | — |
+| M8 — Materials, statistics, digest, assistant | **done** | `2599889` |
 | M9 — Launch | not started | — |
 
-All twelve defects in the plan's catalogue are retired **except** #12, whose fix
-(the batched digest) is written but not yet committed or tested.
+**All twelve defects in the plan's catalogue are retired**, #12 included: the
+digest is batched, rotating, and tested.
 
-Everything through M7 is committed, green on `lint` / `typecheck` / `test` /
+Everything through M8 is committed, green on `lint` / `typecheck` / `test` /
 `check:rls` / `check:secrets` / `check:migration` / `build`, and verified by
 driving the running app in a browser rather than by reading the diff.
 
@@ -75,7 +75,15 @@ A fresh session — or a subagent — must know these. Each one cost real debugg
    non-nullable fields and a NULL makes every sign-in fail with "invalid
    credentials" — a password error that has nothing to do with the password.
 
-10. **Never `dangerouslySetInnerHTML`.** Reports, assessments and materials store
+10. **Check `git status` before every commit, and read what it says.** Twice
+    during M8, `src/server/booking.ts` — 233 committed lines of M7 — was found
+    replaced by a seven-line `export {}` stub in the working tree. Both times a
+    second Claude Code session was running against this same checkout. The
+    build is what caught it (`The module has no exports at all`); `git checkout
+    HEAD -- src/server/booking.ts` is the fix. **Do not run two sessions in this
+    directory at once.**
+
+11. **Never `dangerouslySetInnerHTML`.** Reports, assessments and materials store
     **plain text**, rendered by `DocumentBody` (a short line ending in a colon is
     a heading; everything else is a paragraph). The one place that concatenates
     markup is `src/server/notifications.ts`, because email HTML has no
@@ -112,66 +120,58 @@ six accent colours, the same colour on every screen. `PageHeader` on every page,
 **Comments.** Explain *why*, especially where the code encodes a decision or a
 v1 defect. Do not narrate what the code does.
 
-**Tests.** 79 passing. The RLS isolation test in `src/server/rls.test.ts` is
+**Tests.** 127 passing. The RLS isolation test in `src/server/rls.test.ts` is
 non-negotiable and **every new table gets a case in its `the clinical tables`
 block.** Fixture helpers are in `src/test/supabase.ts`.
 
 ---
 
-## M8 — exactly where it stands
+## M8 — what shipped
 
-### Written and working (uncommitted)
+Three commits: `48a76f8` (materials, statistics, planning, digest), `7b07a07`
+(the two missing tests, and the digest defects they exposed), `2599889` (the
+assistant).
 
 | File | What it is |
 |---|---|
-| `supabase/migrations/20260812023627_create_materials.sql` | `materials` table. Non-standard policies: read is shared-or-own, write is own-only. |
-| `scripts/extract-materials.mjs` | Transcribes v1's 45 curated materials from `legacy/index.html` into plain text. Re-runnable. |
-| `supabase/seeds/materials.generated.sql` | Its output. Wired into `supabase/config.toml`'s `sql_paths`. |
-| `src/lib/material-areas.ts` | Areas and focuses per discipline, transcribed from `legacy/index.html:2099`. |
-| `src/server/materials.ts` | CRUD + `bestMaterialFor`, the word-overlap matcher ported from v1. |
+| `supabase/migrations/20260812023627_create_materials.sql` | `materials`. **The only non-standard policies in the schema**: read is shared-or-own, write is own-only. |
+| `supabase/migrations/20260816190000_add_digest_sent_at.sql` | `practitioners.digest_sent_at`, so the digest batch rotates. |
+| `supabase/migrations/20260816193000_create_assistant_questions.sql` | A row per question, so the assistant has a monthly quota to count. No question text — see the migration. |
+| `scripts/extract-materials.mjs`, `supabase/seeds/materials.generated.sql` | v1's 45 curated materials, transcribed. Re-runnable, wired into `config.toml`. |
+| `src/lib/material-areas.ts` | Areas and focuses per discipline (`legacy/index.html:2099`). |
+| `src/lib/sse-client.ts` | The SSE reader, used by the report editor and the assistant. |
+| `src/server/materials.ts` | CRUD + `bestMaterialFor`, v1's word-overlap matcher. |
 | `src/server/statistics.ts` | All the numbers, computed. Nothing stored. |
-| `src/server/planning.ts` | Next 7 days of sessions, each with its lowest-progress goal and a matching material. |
-| `src/server/digest.ts` | Fortnightly digest recipients, batched. **Defect #12.** |
-| `src/app/api/digest/route.ts` | The cron route. `CRON_SECRET` compared with no `if (SECRET)` branch. |
-| `vercel.json` | `{"crons":[{"path":"/api/digest","schedule":"0 11 1,15 * *"}]}` |
-| `src/app/(app)/materiales/` | List, `nuevo`, `[id]`, `actions.ts`. |
-| `src/app/(app)/estadisticas/page.tsx` | The statistics screen. |
-| `src/app/(app)/planificacion/page.tsx` | The planner. |
-| `src/components/materials/material-form.tsx`, `src/components/print-button.tsx` | Supporting components. |
-| `eslint.config.mjs` | `src/server/digest.ts` added to `SERVICE_DB_ALLOWED` — **a cron run has no user session.** This was the deliberate fifth entry the rule is designed to force. |
-| `src/components/app-shell/nav-items.ts` | Planificación, Materiales, Estadísticas, Reservas added. |
+| `src/server/planning.ts` | Next 7 days, each with its lowest-progress goal and a matching material. |
+| `src/server/digest.ts` | **Defect #12.** Bounded, rotating, and it throws rather than reading a failed query as a quiet fortnight. |
+| `src/server/assistant.ts` | "Preguntale a Hilo": context, prompt, and v1's offline `chatReply` kept as the fallback. |
+| `src/app/api/digest/route.ts`, `vercel.json` | The cron, 11:00 on the 1st and the 15th. |
+| `src/app/api/ai/asistente/route.ts` | Session, quota, pinned model, streamed — and the quota is *released* when the model produced nothing. |
+| `src/app/(app)/materiales/`, `estadisticas/`, `planificacion/` | The three screens. |
+| `src/components/assistant/ask-hilo.tsx` | The card on `/inicio`. |
+| `eslint.config.mjs` | `src/server/digest.ts` is the fifth `SERVICE_DB_ALLOWED` entry — **a cron run has no user session.** |
 
-`lint` and `typecheck` are green on all of it. `db:reset` applies the migration
-and seeds the 45 materials.
+Tests added: `digest.test.ts` (29), `assistant.test.ts` (13), the `materials`
+block and the `assistant_questions` case in `rls.test.ts`. 127 passing.
 
-### Still to do for M8
+### Decisions in here worth knowing before changing them
 
-1. **`src/server/digest.test.ts`** — no test exists yet. Should cover: a
-   practitioner with nothing to report is skipped entirely (v1's best instinct,
-   `if (!nRes && !atr.length) continue`); the batch is capped at
-   `DIGEST_BATCH_SIZE`; the outstanding-balance arithmetic matches
-   `monthlyLedger`.
-2. **RLS coverage for `materials`** — add it to the `the clinical tables` list in
-   `src/server/rls.test.ts`, plus two cases the other tables do not need: a
-   practitioner **can** read a shared row (`practitioner_id is null`), and
-   **cannot** insert one (the `with check` is what stops someone publishing to
-   every user).
-3. **The in-app assistant** ("Preguntale a Hilo", v1's `askHilo`). Not started.
-   It is the last piece of M8 and the most cuttable thing in the whole plan.
-   Shape: a route handler like the two existing AI ones — session, quota,
-   pinned model, streamed — over the practitioner's own patients and goals.
-4. **Browser verification** of `/materiales`, `/estadisticas`, `/planificacion`.
-   Nothing has been looked at yet. Sign in at `/entrar` with
-   `lucia@hilo.test` / `hilo-de-prueba`.
-5. **Full check run and commit.**
+**The assistant sends the roster, not the session notes.** v1 sent the last
+progress note of every patient on every question. The reports and assessments
+still send notes, for one named patient, because the practitioner asked for a
+document about that patient. `assistant.test.ts` asserts the shape of
+`AssistantPatient` so that adding a note field means arguing with a test.
 
-### Known loose end
+**The digest reports the month containing the day *before* the run.** The cron
+fires on the 1st, when nobody has paid into the new month; reporting "this
+month" told every practitioner that every patient owed them everything.
 
-`src/server/materials.ts`'s `deleteMaterial` logs the audit action with entity
-`'patient'` because the `Entity` union in `src/server/audit.ts` has no
-`'material'` member. Add it to the union and fix the call.
+**The digest batch rotates by `digest_sent_at`.** A cap with no order is not a
+queue — it drops the same practitioners every fortnight, silently.
 
----
+**`materials` must not join the `the clinical tables` list in `rls.test.ts`.**
+That test asserts an unfiltered read returns nothing; materials correctly
+returns the 45 shared rows.
 
 ## M9 — not started
 
@@ -202,11 +202,11 @@ What genuinely remains:
 Work that is self-contained enough to hand off with a pointer to one or two
 files as the pattern to copy:
 
-- **`src/server/digest.test.ts`** — pattern: `src/server/notifications.test.ts`
-  (mocks Resend) and `src/server/goals.progress.test.ts` (real database via
-  `src/test/supabase.ts`).
-- **The `materials` RLS cases** — pattern: the existing blocks in
-  `src/server/rls.test.ts`.
+Two of these were delegated and came back clean — `digest.test.ts` and the
+`materials` RLS cases — and both agents surfaced real defects in the code they
+were testing, which is the argument for delegating tests rather than features.
+What is left:
+
 - **`error.tsx` / `not-found.tsx`** — pattern: any page under `src/app/(app)/`
   for the visual language; copy must be Rioplatense and must not blame the user.
 - **The PWA manifest and icons** — self-contained, touches nothing else.
@@ -234,6 +234,9 @@ The dev server is already running on port 3000 in a container. Sign in as
 `lucia-fernandez`.
 
 There is **no real `ANTHROPIC_API_KEY`** in `.env.local`, so every AI generation
-falls back to the offline draft. That is a useful default — it exercises the
-fallback path on every run — but it means the streamed output has never been seen
-working against the real model.
+falls back to the offline draft and every assistant answer to `offlineAnswer`.
+That is a useful default — it exercises the fallback path on every run — but it
+means the streamed output has never been seen working against the real model.
+**That is the single biggest untested thing in the project.** Before launch, set
+a key and drive one report, one assessment analysis, and one assistant question
+end to end.
