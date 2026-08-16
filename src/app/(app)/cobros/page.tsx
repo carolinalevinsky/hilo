@@ -1,13 +1,15 @@
-import { Wallet } from 'lucide-react'
+import { Clock, DollarSign, Users, Wallet } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
+import { PeriodSwitcher } from '@/components/period-switcher'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { MercadoPagoCard } from '@/components/payments/mercadopago-card'
 import { PaymentDialog } from '@/components/payments/payment-dialog'
 import { PaymentLinkButton } from '@/components/payments/payment-link-button'
+import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDayMonth } from '@/lib/dates'
@@ -39,6 +41,11 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
     listPatients(user.id),
     isMercadoPagoConnected(user.id),
   ])
+
+  // "Pagaron 3/5" counts people, not money: how many patients have paid
+  // something this month, which is the question you actually ask before chasing
+  // anyone. v1 counted it the same way (`legacy/index.html:2380`).
+  const paidCount = ledger.rows.filter((row) => row.paid > 0).length
 
   const patientOptions = patients.map((patient) => ({
     id: patient.id,
@@ -73,26 +80,38 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
         </Card>
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/cobros?mes=${shiftPeriod(period, -1)}`}>← Mes anterior</Link>
-            </Button>
-            <Button asChild variant={period === now ? 'secondary' : 'outline'} size="sm">
-              <Link href="/cobros">Este mes</Link>
-            </Button>
-            {period < now ? (
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/cobros?mes=${shiftPeriod(period, 1)}`}>Mes siguiente →</Link>
-              </Button>
-            ) : null}
-            <span className="ml-1 text-[13px] font-bold">{periodLabel(period)}</span>
-          </div>
+          <PeriodSwitcher
+            className="mb-4"
+            prevHref={`/cobros?mes=${shiftPeriod(period, -1)}`}
+            nextHref={period < now ? `/cobros?mes=${shiftPeriod(period, 1)}` : undefined}
+            label={periodLabel(period)}
+            caption={period === now ? 'Mes actual' : undefined}
+          />
 
-          <div className="mb-4 grid gap-3 sm:grid-cols-3">
-            <Total label="Cobrado" value={money(ledger.totalPaid)} tone="green" />
-            <Total label="Pendiente" value={money(ledger.totalOutstanding)} tone="amber" />
-            <Total label="Esperado" value={money(ledger.totalExpected)} tone="muted" />
-          </div>
+          {/* v1's three, in v1's order (`legacy/index.html:2435-2439`). There is
+              no "Esperado" card because it is just these two added together, and
+              a third number that restates the first two makes the row harder to
+              read, not more informative. */}
+          <StatCardGrid className="lg:grid-cols-3">
+            <StatCard
+              icon={DollarSign}
+              tone="green"
+              value={money(ledger.totalPaid)}
+              label="Cobrado"
+            />
+            <StatCard
+              icon={Clock}
+              tone="amber"
+              value={money(ledger.totalOutstanding)}
+              label="Pendiente"
+            />
+            <StatCard
+              icon={Users}
+              tone="violet"
+              value={`${paidCount}/${patients.length}`}
+              label="Pagaron"
+            />
+          </StatCardGrid>
 
           <Card className="mb-4">
             <CardHeader>
@@ -194,29 +213,6 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
         </>
       )}
     </>
-  )
-}
-
-function Total({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: string
-  tone: 'green' | 'amber' | 'muted'
-}) {
-  const classes = {
-    green: 'bg-green-soft text-[#1a8f57]',
-    amber: 'bg-amber-soft text-[#8a5a12]',
-    muted: 'bg-card text-foreground',
-  }[tone]
-
-  return (
-    <div className={`rounded-lg px-4 py-3 shadow-card ${classes}`}>
-      <p className="text-[12px] font-bold uppercase opacity-75">{label}</p>
-      <p className="text-[22px] font-extrabold tracking-[-0.5px]">{value}</p>
-    </div>
   )
 }
 

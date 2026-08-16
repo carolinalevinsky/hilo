@@ -19,6 +19,25 @@ export const PATIENT_COLOR_HEX: Record<string, string> = {
   green: '#21bf73',
 }
 
+/**
+ * Filled: the colour itself, white on top.
+ *
+ * This is what an avatar wears (`legacy/index.html:.av` — `color:#fff` over the
+ * patient's colour). It is the strongest use of the palette in the product and
+ * it is doing real work: at a glance down a list, the colour *is* how you find
+ * a patient, before you have read a single name. A tinted avatar with coloured
+ * initials reads as a placeholder for a photo that failed to load.
+ */
+export const PATIENT_COLOR_SOLID: Record<string, string> = {
+  violet: 'bg-violet text-white',
+  teal: 'bg-teal text-white',
+  coral: 'bg-coral text-white',
+  blue: 'bg-blue text-white',
+  amber: 'bg-amber text-white',
+  green: 'bg-green text-white',
+}
+
+/** Tinted: for chips and badges, where the colour is a label and not the subject. */
 export const PATIENT_COLOR_CLASSES: Record<string, string> = {
   violet: 'bg-violet-soft text-violet',
   teal: 'bg-teal-soft text-teal',
@@ -34,4 +53,8 @@ export function patientHex(color: string | null) {
 
 export function patientClasses(color: string | null) {
   return PATIENT_COLOR_CLASSES[color ?? 'violet'] ?? PATIENT_COLOR_CLASSES.violet!
+}
+
+export function patientSolidClasses(color: string | null) {
+  return PATIENT_COLOR_SOLID[color ?? 'violet'] ?? PATIENT_COLOR_SOLID.violet!
 }

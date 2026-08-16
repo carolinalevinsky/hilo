@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { patientClasses } from '@/lib/patient-colors'
+import { patientSolidClasses } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
 
 /**
@@ -34,8 +34,8 @@ export function PatientAvatar({
   className?: string
 }) {
   const classes = cn(
-    'flex shrink-0 items-center justify-center overflow-hidden rounded-[30%] font-extrabold',
-    patientClasses(color),
+    'flex shrink-0 items-center justify-center overflow-hidden rounded-[29%] font-extrabold',
+    patientSolidClasses(color),
     className,
   )
 
