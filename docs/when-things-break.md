@@ -95,6 +95,69 @@ información sobre el código, no sobre el check.
 
 ---
 
+## En desarrollo, no en producción
+
+Cuatro cosas que cuestan horas la primera vez y treinta segundos cuando sabés
+que existen. Ninguna afecta a producción ni a CI, que compila desde cero.
+
+### La página se ve pero no anda nada
+
+Ningún diálogo abre, ningún filtro filtra, ningún formulario manda. En la
+consola, una fila de **403 en los archivos de `/_next/static/chunks/`**.
+
+El dev server corre en `0.0.0.0` adentro del contenedor, así que un navegador
+que pide `127.0.0.1` es otro origen para Next, y contesta 403 en todos los
+bundles. La página se ve igual porque eso es HTML del servidor; lo que nunca
+pasa es la hidratación. Lo arregla `allowedDevOrigins` en `next.config.ts`, que
+ya está puesto — si volvés a ver 403 ahí, es que alguien lo sacó.
+
+### Dos copias del repo abiertas a la vez
+
+Con un worktree al lado del checkout principal, el segundo `./dx npm run dev`
+arranca **sin ningún puerto publicado**, porque el 3000 ya está tomado. El
+navegador te muestra el primero y te volvés loca buscando por qué no se aplican
+tus cambios.
+
+```bash
+PORT=3001 ./dx npm run dev
+```
+
+Peor todavía si las dos copias comparten `.next`: los dos Turbopack se traban
+escribiendo el mismo archivo y aparece `Resource deadlock avoided (os error 35)`
+seguido de un panic que se lleva puesto el proceso.
+
+### `npm run typecheck` falla por archivos que no existen
+
+```
+error TS6053: File '.next/types/routes.d 2.ts' not found.
+```
+
+Duplicados con " 2" en el nombre adentro de `.next/`, de los que deja macOS
+cuando algo copia la carpeta. `tsconfig.json` los levanta con su glob y `tsc` se
+queja de archivos que ya no están. Se borran y listo — `.next` está en
+`.gitignore` y se regenera sola:
+
+```bash
+rm -f .next/types/*\ 2*.ts
+```
+
+### Un archivo de `src/server/` aparece vacío
+
+Si un import falla con *"The module has no exports at all"* y el archivo tiene
+cuatro líneas y un `export {}`, **no lo reescribas**. Mirá git primero:
+
+```bash
+git diff --stat src/server/
+git restore src/server/<archivo>.ts
+```
+
+Pasó dos veces con `src/server/booking.ts` en agosto de 2026, con otra sesión de
+Claude corriendo sobre el checkout principal al mismo tiempo. Los commits nunca
+se tocaron; solo el archivo en el directorio de trabajo. Reescribirlo a mano
+habría sido tirar 233 líneas para reemplazarlas por una versión peor.
+
+---
+
 ## Antes de llamar a Tomás
 
 Tené esto a mano, hace la diferencia entre cinco minutos y una hora:

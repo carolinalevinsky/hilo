@@ -100,10 +100,15 @@ the quality of a signed clinical report depended on what that list happened to
 return that day.
 
 **Before inviting anyone, generate one report, one assessment analysis and one
-assistant answer against the real key and read them.** Everything in this
-repository has only ever run with the key absent, which exercises the offline
-fallback on every request — a genuinely useful default, and the reason the
-streamed output has never been seen working.
+assistant answer against the real key and read them with a professional's eye.**
+
+The plumbing is no longer the unknown it used to be: `.env.local` now carries a
+real key, and a session draft has been generated against the real model and read
+(August 2026). What remains is a judgement, not a check — whether the writing is
+good enough to put a signature under — and no test can make it for you.
+
+If you are reading an older note in this repository that says the key is absent
+and the streamed output has never been seen, it is out of date.
 
 ---
 

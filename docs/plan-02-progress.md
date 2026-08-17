@@ -222,10 +222,10 @@ domain, a real `ANTHROPIC_API_KEY`, the Mercado Pago webhook, the nine
 environment variables in Vercel, and the domain. All of it needs accounts and
 credentials.
 
-**The one real gap:** every AI path has only ever run with the key absent, so
-the offline fallback is well exercised and the streamed output against the real
-model has never been seen. That is step 3 of the launch doc and it should happen
-before anyone is invited.
+**No longer a gap, as of August 2026:** `.env.local` carries a real
+`ANTHROPIC_API_KEY` and a draft has been generated against the real model and
+read. What is left of step 3 is reading the output as a professional, which is a
+judgement and not a check.
 
 **Also never built:** the Playwright critical-path test from §8 of the migration
 plan (sign-up → patient → session → report). Everything else in that testing
@@ -272,10 +272,7 @@ The dev server is already running on port 3000 in a container. Sign in as
 `lucia@hilo.test` / `hilo-de-prueba`; the practitioner's booking slug is
 `lucia-fernandez`.
 
-There is **no real `ANTHROPIC_API_KEY`** in `.env.local`, so every AI generation
-falls back to the offline draft and every assistant answer to `offlineAnswer`.
-That is a useful default — it exercises the fallback path on every run — but it
-means the streamed output has never been seen working against the real model.
-**That is the single biggest untested thing in the project.** Before launch, set
-a key and drive one report, one assessment analysis, and one assistant question
-end to end.
+`.env.local` carries a **real `ANTHROPIC_API_KEY`**, so an AI generation here
+costs money and calls `claude-opus-5`. The offline fallbacks still run whenever
+the call fails or the monthly quota is spent, and they are still worth keeping
+exercised — pull the key out of `.env.local` for a run if you want to see them.

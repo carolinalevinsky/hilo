@@ -168,25 +168,51 @@ A feature to build, scoped on its own. Note that v2 does already put "Agregar a
 Google Calendar" on every appointment menu, which covers the common case without
 any OAuth at all.
 
-### Consentimiento, exportar datos, foto del paciente
+### Consentimiento y exportar datos
 
-All three are listed under Ficha above. They are schema or server work, not
-component work.
+Both are listed under Ficha above. They are schema or server work, not component
+work.
+
+## "Grabar sesión" — built
+
+v1's button that promised a session record from a recording
+(`legacy/index.html:1943`), delivered in `src/components/sessions/record-session.tsx`
+and `src/app/api/ai/sesion/route.ts`.
+
+The rule it is built on, and the one to keep if it is ever changed: **the browser
+turns speech into text and only text is posted — no audio is uploaded, stored or
+sent anywhere.** Uploading audio of a session with a child would mean a new
+processor, a retention policy and a new line in the privacy notice. That is a
+decision to take deliberately; `src/server/session-notes.ts` is where the
+consequences would start.
 
 ## What is left
 
 In rough order of how much they are missed:
 
-1. Consentimiento de la familia — the one with a legal weight behind it.
-2. Exportar los datos de un paciente.
+1. **Consentimiento de la familia** — the one with legal weight, and the one
+   that needs a decision before a line of it is written. See Ficha above: v1
+   captured a drawn signature, which is what makes this more than a migration.
+2. **Exportar los datos de un paciente** — the right of access. Server function
+   plus a route, no schema change.
 3. Reservas confirmed inline on the Agenda instead of a link out.
-4. "Publicar material" in Planificación's header (a rename), and the `···` menu
-   on a Cobros row.
-5. The foto del paciente, "Consulta online", and Google Calendar — each its own
-   piece of work, in that order of value.
+4. The `···` menu on a Cobros row, for editing fee and frequency.
+5. **"Generar con IA"** for materials — does not exist in v2 in any form.
+6. **"Consulta online"** — only in the safe shape described above, never v1's.
+7. **Google Calendar** — the largest, and the least missed, since every
+   appointment menu already offers "Agregar a Google Calendar" without any OAuth.
 
-Everything above the line was component and page work, plus two additions to
-`src/server/` (`todayBriefing`, `patientSummaries`) because the pages must not
-query. The architecture rules in `CLAUDE.md` held throughout: reads in Server
-Components, writes in Server Actions, and no screen grew a database query of its
-own.
+## Screens never compared
+
+Honest gap in the sweep. These were never opened side by side, so nothing here
+claims they match: the saved assessment, a saved session's detail page, an open
+material, términos and privacidad, and the mobile pass on everything except
+Agenda.
+
+---
+
+Everything above was component and page work, plus three additions to
+`src/server/` (`todayBriefing`, `patientSummaries`, `session-notes`) because the
+pages must not query. The architecture rules in `CLAUDE.md` held throughout:
+reads in Server Components, writes in Server Actions, no screen grew a database
+query of its own, and `npm run check:boundaries` still passes.
