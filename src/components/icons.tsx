@@ -181,6 +181,16 @@ export const Compass = icon(
   <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3M12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3M12 21C9.4651 18.3899 8 15.3051 8 12C8 8.69488 9.4651 5.61005 12 3M12 21C14.5349 18.3899 16 15.3051 16 12C16 8.69488 14.5349 5.61005 12 3M20 9H4M20 15H4" />,
 )
 
+/**
+ * Same drawing, both of v1's names for it: `globe` on "Público · comunidad" and
+ * `compass` on the public booking page.
+ */
+export const Globe = Compass
+
+export const Lock = icon(
+  <path d="M8 11V7.5C8 5.29 9.79 3.5 12 3.5C14.21 3.5 16 5.29 16 7.5V11M6.8 11H17.2C18.19 11 19 11.81 19 12.8V18.7C19 19.69 18.19 20.5 17.2 20.5H6.8C5.81 20.5 5 19.69 5 18.7V12.8C5 11.81 5.81 11 6.8 11Z" />,
+)
+
 export const Send = icon(<path d="M21 3L3 10L10 14L14 21L21 3ZM10 14L21 3" />)
 
 export const Search = icon(

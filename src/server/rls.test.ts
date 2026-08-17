@@ -105,6 +105,12 @@ beforeAll(async () => {
 
   await service.from('assistant_questions').insert({ practitioner_id: idB })
 
+  await service.from('session_plan_items').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    title: 'Lo que Bruno planificó para la próxima',
+  })
+
   await service.from('reports').insert({
     practitioner_id: idB,
     patient_id: patientB,
@@ -192,6 +198,9 @@ describe('the clinical tables', () => {
       'appointments',
       'assessments',
       'reports',
+      // The prepared next session. It names a patient and quotes their goals,
+      // so it is as clinical as the goals themselves.
+      'session_plan_items',
       // Holds no clinical text — only a timestamp, so the assistant's monthly
       // quota has something to count — but it is still one practitioner's
       // activity, and it gets the same case as everything else.
@@ -345,6 +354,132 @@ describe('the materials library', () => {
       .select('id', { count: 'exact', head: true })
       .eq('id', materialB)
     expect(count).toBe(1)
+  })
+})
+
+describe('a material published to the community', () => {
+  /**
+   * The read policy is the one thing in the whole parity pass that widened who
+   * can read what, so it gets its own block rather than a line in the one above.
+   *
+   * The rule being watched has two halves, and the second is the one that would
+   * be easy to lose: publishing makes a row **readable** by everyone and does
+   * not make it **writable** by anyone but its author. A "simplification" that
+   * added `or visibility = 'public'` to `update_own` as well would pass
+   * `check:rls`, pass the type checker, and hand every practitioner an edit
+   * button on somebody else's work.
+   */
+
+  let publishedByB = ''
+  let privateOfB = ''
+
+  beforeAll(async () => {
+    const { data: published } = await service
+      .from('materials')
+      .insert({
+        practitioner_id: idB,
+        title: 'Tarjetas de sílabas trabadas',
+        area: 'Lectura',
+        content: 'Actividad que Bruno publicó',
+        visibility: 'public',
+        author_name: 'Bruno Prueba',
+      })
+      .select()
+      .single()
+    publishedByB = published!.id
+
+    const { data: kept } = await service
+      .from('materials')
+      .insert({
+        practitioner_id: idB,
+        title: 'Borrador que Bruno no publicó',
+        area: 'Lectura',
+        content: 'Actividad privada de Bruno',
+        visibility: 'private',
+      })
+      .select()
+      .single()
+    privateOfB = kept!.id
+  })
+
+  it('is readable by another practitioner', async () => {
+    const { data, error } = await asA.from('materials').select('id, author_name')
+
+    expect(error).toBeNull()
+    expect(data?.map((row) => row.id)).toContain(publishedByB)
+  })
+
+  it('does not drag the author’s unpublished materials along with it', async () => {
+    // The failure worth fearing: a policy written as "public OR same author as
+    // something public" rather than per row.
+    const { data } = await asA.from('materials').select('id')
+
+    expect(data?.map((row) => row.id)).not.toContain(privateOfB)
+  })
+
+  it('cannot be edited by the practitioner reading it', async () => {
+    const { data, error } = await asA
+      .from('materials')
+      .update({ title: 'Reescrito por Ana' })
+      .eq('id', publishedByB)
+      .select()
+
+    expect(error).toBeNull()
+    expect(data).toHaveLength(0)
+
+    const { data: stored } = await service
+      .from('materials')
+      .select('title')
+      .eq('id', publishedByB)
+      .single()
+    expect(stored?.title).toBe('Tarjetas de sílabas trabadas')
+  })
+
+  it('cannot be unpublished by the practitioner reading it', async () => {
+    const { data, error } = await asA
+      .from('materials')
+      .update({ visibility: 'private' })
+      .eq('id', publishedByB)
+      .select()
+
+    expect(error).toBeNull()
+    expect(data).toHaveLength(0)
+  })
+
+  it('cannot be deleted by the practitioner reading it', async () => {
+    const { data, error } = await asA
+      .from('materials')
+      .delete()
+      .eq('id', publishedByB)
+      .select()
+
+    expect(error).toBeNull()
+    expect(data).toHaveLength(0)
+
+    const { count } = await service
+      .from('materials')
+      .select('id', { count: 'exact', head: true })
+      .eq('id', publishedByB)
+    expect(count).toBe(1)
+  })
+
+  it('can be published by its own author', async () => {
+    // The other direction: the policy must not have become so tight that
+    // publishing your own work fails.
+    const { data, error } = await asA
+      .from('materials')
+      .insert({
+        practitioner_id: idA,
+        title: 'Lo que Ana publica',
+        area: 'Lectura',
+        content: 'Actividad de Ana',
+        visibility: 'public',
+        author_name: 'Ana Prueba',
+      })
+      .select()
+
+    expect(error).toBeNull()
+    expect(data).toHaveLength(1)
   })
 })
 

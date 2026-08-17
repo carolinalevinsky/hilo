@@ -1,16 +1,16 @@
-import { ArrowLeft } from '@/components/icons'
+import { ArrowLeft, Copy, Pencil } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { deleteMaterialAction } from '@/app/(app)/materiales/actions'
+import { copyMaterialAction, deleteMaterialAction } from '@/app/(app)/materiales/actions'
 import { DocumentBody } from '@/components/documents/clinical-document'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
 import { requireUser } from '@/server/auth'
-import { getMaterial } from '@/server/materials'
+import { getMaterial, materialOrigin } from '@/server/materials'
 
 export const metadata: Metadata = { title: 'Material · Hilo' }
 
@@ -30,7 +30,8 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
   const material = await getMaterial(id)
   if (!material) notFound()
 
-  const isMine = material.practitioner_id === user.id
+  const origin = materialOrigin(material, user.id)
+  const isMine = origin === 'mine'
 
   return (
     <>
@@ -43,14 +44,35 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
           Volver a materiales
         </Link>
 
-        {isMine ? (
-          <form action={deleteMaterialAction}>
-            <input type="hidden" name="materialId" value={material.id} />
-            <Button type="submit" variant="ghost" size="sm">
-              Borrar
-            </Button>
-          </form>
-        ) : null}
+        <div className="flex items-center gap-1.5">
+          {isMine ? (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/materiales/${material.id}/editar`}>
+                  <Pencil className="size-4" />
+                  Editar
+                </Link>
+              </Button>
+              <form action={deleteMaterialAction}>
+                <input type="hidden" name="materialId" value={material.id} />
+                <Button type="submit" variant="ghost" size="sm">
+                  Borrar
+                </Button>
+              </form>
+            </>
+          ) : (
+            // Hilo's own materials and other people's published ones: copying is
+            // how you get one you can change. See `copyMaterial` for why it is a
+            // copy and not a reference.
+            <form action={copyMaterialAction}>
+              <input type="hidden" name="materialId" value={material.id} />
+              <Button type="submit" variant="outline" size="sm">
+                <Copy className="size-4" />
+                Copiar a mi biblioteca
+              </Button>
+            </form>
+          )}
+        </div>
       </div>
 
       <Card className="hilo-doc mx-auto max-w-[720px]">
@@ -59,6 +81,16 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
             <span className="rounded-full bg-violet-soft px-2 py-0.5 text-[10.5px] font-bold text-violet">
               {materialKindLabel(material.kind)}
             </span>
+            {origin === 'community' ? (
+              <span className="rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-bold text-[#2f6fd6]">
+                De la comunidad
+              </span>
+            ) : null}
+            {material.source === 'ai' ? (
+              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-[10.5px] font-bold text-[#8a5a12]">
+                Generado con IA
+              </span>
+            ) : null}
             {material.age_range ? (
               <span className="text-[11.5px] text-muted-foreground">
                 {material.age_range}
@@ -73,6 +105,15 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
           </p>
           {material.objective ? (
             <p className="mb-4 text-[13px] text-muted-foreground">{material.objective}</p>
+          ) : null}
+
+          {/* The byline is frozen on the row at publishing time — a practitioner
+              cannot read another practitioner's profile, and should not be able
+              to. See the migration for why it is denormalised. */}
+          {origin === 'community' && material.author_name ? (
+            <p className="mb-4 text-[12.5px] text-muted-foreground">
+              Publicado por <b>{material.author_name}</b> · comunidad Hilo
+            </p>
           ) : null}
 
           <div className="border-t border-border pt-4">

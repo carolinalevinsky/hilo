@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 import { areasFor, materialKindLabel } from '@/lib/material-areas'
 import { cn } from '@/lib/utils'
 import { requireUser } from '@/server/auth'
-import { listMaterials } from '@/server/materials'
+import { listMaterials, materialOrigin } from '@/server/materials'
 import { getPractitioner } from '@/server/practitioners'
 
 export const metadata: Metadata = { title: 'Materiales · Hilo' }
@@ -26,11 +26,13 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
 
   const area = readParam(params.area)
   const onlyMine = readParam(params.mios) === '1'
+  const onlyCommunity = readParam(params.comunidad) === '1'
 
   const materials = await listMaterials(user.id, {
     discipline: practitioner.discipline,
     area,
     onlyMine,
+    onlyCommunity,
   })
 
   const areas = Object.keys(areasFor(practitioner.discipline))
@@ -56,7 +58,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
       <PlanningTabs />
 
       <div className="mb-4 flex flex-wrap gap-1.5">
-        <Chip href="/materiales" active={!area && !onlyMine}>
+        <Chip href="/materiales" active={!area && !onlyMine && !onlyCommunity}>
           Todos
         </Chip>
         {areas.map((name) => (
@@ -71,6 +73,9 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         <span className="mx-1 hidden w-px self-stretch bg-border sm:block" />
         <Chip href="/materiales?mios=1" active={onlyMine}>
           Los míos
+        </Chip>
+        <Chip href="/materiales?comunidad=1" active={onlyCommunity}>
+          De la comunidad
         </Chip>
       </div>
 
@@ -103,9 +108,19 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
                   <span className="rounded-full bg-violet-soft px-2 py-0.5 text-[10.5px] font-bold text-violet">
                     {materialKindLabel(material.kind)}
                   </span>
-                  {material.practitioner_id ? (
+                  {materialOrigin(material, user.id) === 'mine' ? (
                     <span className="rounded-full bg-teal-soft px-2 py-0.5 text-[10.5px] font-bold text-teal">
-                      Tuyo
+                      {material.visibility === 'public' ? 'Tuyo · publicado' : 'Tuyo'}
+                    </span>
+                  ) : null}
+                  {materialOrigin(material, user.id) === 'community' ? (
+                    <span className="rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-bold text-[#2f6fd6]">
+                      De la comunidad
+                    </span>
+                  ) : null}
+                  {material.source === 'ai' ? (
+                    <span className="rounded-full bg-amber-soft px-2 py-0.5 text-[10.5px] font-bold text-[#8a5a12]">
+                      IA
                     </span>
                   ) : null}
                   {material.age_range ? (
