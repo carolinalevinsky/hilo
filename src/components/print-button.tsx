@@ -12,9 +12,16 @@ import { Button } from '@/components/ui/button'
  * The print stylesheet in `globals.css` is what makes the result look like a
  * document instead of a screenshot of an app.
  */
-export function PrintButton({ label = 'Imprimir' }: { label?: string }) {
+export function PrintButton({
+  label = 'Imprimir',
+  size = 'sm',
+}: {
+  label?: string
+  /** Match the row it sits in. On its own under a document, `sm` is right. */
+  size?: 'sm' | 'default'
+}) {
   return (
-    <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
+    <Button type="button" variant="outline" size={size} onClick={() => window.print()}>
       <Printer className="size-4" />
       {label}
     </Button>

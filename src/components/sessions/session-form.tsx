@@ -32,6 +32,8 @@ export function SessionForm({
   goals,
   session,
   selectedGoalIds = [],
+  fromPlan = false,
+  noteDraft = '',
 }: {
   patientId: string
   goals: Goal[]
@@ -42,6 +44,10 @@ export function SessionForm({
     private_note: string | null
   }
   selectedGoalIds?: string[]
+  /** Opened from the planner, so saving retires the prepared session. */
+  fromPlan?: boolean
+  /** A first sentence to edit, built from what was planned. Never saved as-is. */
+  noteDraft?: string
 }) {
   const [state, formAction, pending] = useActionState(saveSessionAction, EMPTY_FORM_STATE)
 
@@ -49,6 +55,7 @@ export function SessionForm({
     <form action={formAction} className="max-w-2xl space-y-5">
       <input type="hidden" name="patientId" value={patientId} />
       {session ? <input type="hidden" name="sessionId" value={session.id} /> : null}
+      {fromPlan ? <input type="hidden" name="clearPlan" value="1" /> : null}
 
       <FormMessage message={state.message} />
 
@@ -113,7 +120,7 @@ export function SessionForm({
           name="progressNote"
           rows={5}
           required
-          defaultValue={session?.progress_note ?? ''}
+          defaultValue={session?.progress_note ?? noteDraft}
           placeholder="Logró la /r/ en posición inicial de forma consistente, muy conectado al juego."
         />
         <p className="text-xs text-muted-foreground">

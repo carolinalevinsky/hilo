@@ -43,6 +43,7 @@ export type Database = {
           note: string | null
           patient_id: string
           practitioner_id: string
+          room_id: string | null
           schedule_id: string | null
           scheduled_on: string
           source: string
@@ -58,6 +59,7 @@ export type Database = {
           note?: string | null
           patient_id: string
           practitioner_id: string
+          room_id?: string | null
           schedule_id?: string | null
           scheduled_on: string
           source?: string
@@ -73,6 +75,7 @@ export type Database = {
           note?: string | null
           patient_id?: string
           practitioner_id?: string
+          room_id?: string | null
           schedule_id?: string | null
           scheduled_on?: string
           source?: string
@@ -392,7 +395,9 @@ export type Database = {
         Row: {
           age_range: string | null
           area: string
+          author_name: string | null
           content: string
+          copied_from: string | null
           created_at: string
           discipline: string | null
           focus: string | null
@@ -400,13 +405,17 @@ export type Database = {
           kind: string
           objective: string | null
           practitioner_id: string | null
+          source: string
           title: string
           updated_at: string
+          visibility: string
         }
         Insert: {
           age_range?: string | null
           area: string
+          author_name?: string | null
           content: string
+          copied_from?: string | null
           created_at?: string
           discipline?: string | null
           focus?: string | null
@@ -414,13 +423,17 @@ export type Database = {
           kind?: string
           objective?: string | null
           practitioner_id?: string | null
+          source?: string
           title: string
           updated_at?: string
+          visibility?: string
         }
         Update: {
           age_range?: string | null
           area?: string
+          author_name?: string | null
           content?: string
+          copied_from?: string | null
           created_at?: string
           discipline?: string | null
           focus?: string | null
@@ -428,10 +441,19 @@ export type Database = {
           kind?: string
           objective?: string | null
           practitioner_id?: string | null
+          source?: string
           title?: string
           updated_at?: string
+          visibility?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "materials_copied_from_fkey"
+            columns: ["copied_from"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "materials_practitioner_id_fkey"
             columns: ["practitioner_id"]
@@ -811,6 +833,68 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_plan_items: {
+        Row: {
+          created_at: string
+          goal_id: string | null
+          id: string
+          material_id: string | null
+          patient_id: string
+          position: number
+          practitioner_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          material_id?: string | null
+          patient_id: string
+          position?: number
+          practitioner_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          material_id?: string | null
+          patient_id?: string
+          position?: number
+          practitioner_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_plan_items_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_plan_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_plan_items_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_plan_items_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
             referencedColumns: ["id"]
           },
         ]
