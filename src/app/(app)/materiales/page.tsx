@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
+import { GenerateMaterial } from '@/components/materials/generate-material'
 import { PageHeader } from '@/components/page-header'
 import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
@@ -28,14 +29,14 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
   const onlyMine = readParam(params.mios) === '1'
   const onlyCommunity = readParam(params.comunidad) === '1'
 
+  const areas = Object.keys(areasFor(practitioner.discipline))
+
   const materials = await listMaterials(user.id, {
     discipline: practitioner.discipline,
     area,
     onlyMine,
     onlyCommunity,
   })
-
-  const areas = Object.keys(areasFor(practitioner.discipline))
 
   return (
     <>
@@ -46,12 +47,16 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         title="Planificación"
         subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
         action={
-          <Button asChild size="lg">
-            <Link href="/materiales/nuevo">
-              <Plus className="size-[18px] max-lg:hidden" />
-              Nuevo material
-            </Link>
-          </Button>
+          // v1 had both here, in this order (`legacy/index.html:615`).
+          <div className="flex flex-wrap gap-2">
+            <GenerateMaterial areas={areas} />
+            <Button asChild size="lg">
+              <Link href="/materiales/nuevo">
+                <Plus className="size-[18px] max-lg:hidden" />
+                Nuevo material
+              </Link>
+            </Button>
+          </div>
         }
       />
 

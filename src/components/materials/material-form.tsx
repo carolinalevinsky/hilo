@@ -1,7 +1,7 @@
 'use client'
 
-import { Globe, Lock } from '@/components/icons'
-import { useActionState, useState } from 'react'
+import { Globe, Lock, Sparkles } from '@/components/icons'
+import { useActionState, useEffect, useRef, useState } from 'react'
 
 import { createMaterialAction, updateMaterialAction } from '@/app/(app)/materiales/actions'
 import { FormMessage } from '@/components/auth/form-message'
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
+import { readSseStream } from '@/lib/sse-client'
 import { cn } from '@/lib/utils'
 import type { Material, MaterialVisibility } from '@/server/materials'
 
@@ -29,9 +30,15 @@ import type { Material, MaterialVisibility } from '@/server/materials'
 export function MaterialForm({
   areas,
   material,
+  generateFor,
 }: {
   areas: Record<string, string[]>
   material?: Material
+  /**
+   * What was asked for, when arriving from "Generar con IA". The model writes
+   * into the activity field as soon as the form is on screen.
+   */
+  generateFor?: string
 }) {
   const [state, formAction, pending] = useActionState(
     material ? updateMaterialAction : createMaterialAction,
@@ -41,6 +48,56 @@ export function MaterialForm({
   const [visibility, setVisibility] = useState<MaterialVisibility>(
     material?.visibility === 'public' ? 'public' : 'private',
   )
+
+  const content = useRef<HTMLTextAreaElement>(null)
+  const [generation, setGeneration] = useState<string | null>(
+    generateFor ? 'Hilo está escribiendo la actividad…' : null,
+  )
+  const started = useRef(false)
+
+  // Streams the generated activity into the field, once.
+  //
+  // It writes through the ref rather than through state, for the same reason the
+  // remembered email does: this is a `defaultValue` textarea the practitioner is
+  // about to edit, and turning it into a controlled input to receive one stream
+  // would fight every keystroke afterwards.
+  useEffect(() => {
+    if (!generateFor || !material || started.current) return
+    started.current = true
+
+    const field = content.current
+    if (field) field.value = ''
+
+    fetch('/api/ai/material', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ materialId: material.id, request: generateFor }),
+    })
+      .then(async (response) => {
+        if (!response.ok || !response.body) {
+          const { error } = (await response.json().catch(() => ({}))) as { error?: string }
+          throw new Error(error ?? 'No pudimos generar la actividad.')
+        }
+
+        await readSseStream(response.body, {
+          onDelta: (text) => {
+            if (content.current) content.current.value += text
+          },
+          onError: (message) => setGeneration(message),
+          onDone: () => setGeneration(null),
+        })
+      })
+      .catch((error: Error) => {
+        setGeneration(`${error.message} Te dejo la actividad base para editar.`)
+        // Whatever the server already saved is still in the row; reloading is
+        // what brings it back, and the practitioner is told rather than left
+        // looking at an empty field.
+        if (content.current && !content.current.value) {
+          content.current.value = material.content
+        }
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <form action={formAction} className="max-w-2xl space-y-4">
@@ -134,7 +191,14 @@ export function MaterialForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="content">La actividad</Label>
+        {generation ? (
+          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] text-violet">
+            <Sparkles className="size-4 shrink-0" />
+            {generation}
+          </p>
+        ) : null}
         <Textarea
+          ref={content}
           id="content"
           name="content"
           rows={12}

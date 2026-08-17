@@ -25,8 +25,10 @@ export const metadata: Metadata = { title: 'Editar material · Hilo' }
  */
 export default async function EditMaterialPage({
   params,
+  searchParams,
 }: PageProps<'/materiales/[id]/editar'>) {
   const { id } = await params
+  const { generar } = await searchParams
   const user = await requireUser()
   const practitioner = await getPractitioner(user.id)
 
@@ -50,7 +52,11 @@ export default async function EditMaterialPage({
 
       <Card>
         <CardContent>
-          <MaterialForm areas={areasFor(practitioner.discipline)} material={material} />
+          <MaterialForm
+            areas={areasFor(practitioner.discipline)}
+            material={material}
+            generateFor={typeof generar === 'string' ? generar : undefined}
+          />
         </CardContent>
       </Card>
     </>

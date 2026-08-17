@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { formError, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
+import { offlineMaterial } from '@/server/material-prompt'
 import {
   copyMaterial,
   createMaterial,
@@ -21,6 +22,22 @@ function toFormError(error: unknown, fallback: string): FormState {
   }
   if (error instanceof Error && error.message) return formError(error.message)
   return formError(fallback)
+}
+
+/**
+ * A placeholder title from the request, cut at a word.
+ *
+ * v1 sliced at a fixed 42 characters and left things like "…de pala" in the
+ * library. Cutting at the last space before the limit costs one line and is the
+ * difference between a placeholder and a typo.
+ */
+function titleFrom(request: string): string {
+  const capitalised = request.charAt(0).toUpperCase() + request.slice(1)
+  if (capitalised.length <= 60) return capitalised
+
+  const cut = capitalised.slice(0, 60)
+  const lastSpace = cut.lastIndexOf(' ')
+  return `${(lastSpace > 30 ? cut.slice(0, lastSpace) : cut).replace(/[\s:,;.]+$/, '')}…`
 }
 
 function readForm(formData: FormData) {
@@ -76,6 +93,56 @@ export async function updateMaterialAction(
   revalidatePath('/materiales')
   revalidatePath(`/materiales/${materialId}`)
   redirect(`/materiales/${materialId}`)
+}
+
+/**
+ * "Generar con IA": creates the row, then hands off to the streaming route.
+ *
+ * Same two-step as a report, and for the same reason. The material is saved
+ * first with an offline activity in it, so a practitioner who asked for
+ * something two minutes before a session gets something usable even if Anthropic
+ * is down — and so the monthly count includes a generation whether or not the
+ * model answered. Counting only what gets saved at the end would let someone
+ * generate fifty activities, keep none, and pay for all of them.
+ */
+export async function generateMaterialAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const practitioner = await getPractitioner(user.id)
+
+  const asked = String(formData.get('request') ?? '').trim()
+  if (asked.length < 5) return formError('Contame qué querés trabajar.')
+
+  const ageRange = String(formData.get('ageRange') ?? '').trim()
+  let material
+  try {
+    material = await createMaterial(
+      user.id,
+      practitioner.discipline,
+      {
+        // v1 titled it with the request itself, trimmed. It is a placeholder
+        // that says what you asked for, and the edit form is one screen away.
+        title: titleFrom(asked),
+        area: formData.get('area'),
+        focus: null,
+        kind: 'activity',
+        objective: asked,
+        content: offlineMaterial({ ageRange: ageRange || 'cualquier edad', request: asked }),
+        ageRange,
+        visibility: 'private',
+      },
+      { source: 'ai' },
+    )
+  } catch (error) {
+    return toFormError(error, 'No pudimos generar el material. Probá de nuevo.')
+  }
+
+  revalidatePath('/materiales')
+  redirect(
+    `/materiales/${material.id}/editar?generar=${encodeURIComponent(asked.slice(0, 300))}`,
+  )
 }
 
 export async function copyMaterialAction(formData: FormData) {

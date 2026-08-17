@@ -11,16 +11,29 @@ import { getDb } from './db'
  */
 
 export const PLAN_LIMITS = {
-  free: { label: 'Gratis', reports: 5, assessments: 10, questions: 40 },
-  pro: { label: 'Pro', reports: 200, assessments: 400, questions: 1000 },
+  free: { label: 'Gratis', reports: 5, assessments: 10, questions: 40, materials: 10 },
+  pro: { label: 'Pro', reports: 200, assessments: 400, questions: 1000, materials: 200 },
 } as const
 
 export type PlanId = keyof typeof PLAN_LIMITS
 
-/** The three things that cost an Anthropic call. */
-export type QuotaKind = 'reports' | 'assessments' | 'questions'
+/** The four things that cost an Anthropic call. */
+export type QuotaKind = 'reports' | 'assessments' | 'questions' | 'materials'
 
-const TABLE: Record<QuotaKind, 'reports' | 'assessments' | 'assistant_questions'> = {
+/**
+ * Three of the four are "every row this practitioner made this month".
+ *
+ * `materials` is not, which is why it is missing here and counted on its own
+ * below: that table also holds materials typed by hand, and writing one must
+ * never consume an allowance that exists to cap spending at Anthropic. It is
+ * also the reason this is a fourth kind rather than a share of `questions` —
+ * generating ten activities on a Sunday should not leave a practitioner without
+ * the assistant on Monday.
+ */
+const TABLE: Record<
+  Exclude<QuotaKind, 'materials'>,
+  'reports' | 'assessments' | 'assistant_questions'
+> = {
   reports: 'reports',
   assessments: 'assessments',
   // A question leaves no document behind, so it is counted by a row that exists
@@ -52,12 +65,26 @@ export async function countThisMonth(
   kind: QuotaKind,
 ): Promise<number> {
   const db = await getDb()
+  const since = startOfMonth()
+
+  if (kind === 'materials') {
+    const { count, error } = await db
+      .from('materials')
+      .select('id', { count: 'exact', head: true })
+      .eq('practitioner_id', practitionerId)
+      // The clause that keeps a hand-written material free.
+      .eq('source', 'ai')
+      .gte('created_at', since)
+
+    if (error) throw error
+    return count ?? 0
+  }
 
   const { count, error } = await db
     .from(TABLE[kind])
     .select('id', { count: 'exact', head: true })
     .eq('practitioner_id', practitionerId)
-    .gte('created_at', startOfMonth())
+    .gte('created_at', since)
 
   if (error) throw error
   return count ?? 0
@@ -126,6 +153,7 @@ const QUOTA_NOUN: Record<QuotaKind, { article: string; noun: string }> = {
   reports: { article: 'los', noun: 'informes' },
   assessments: { article: 'las', noun: 'evaluaciones' },
   questions: { article: 'las', noun: 'preguntas' },
+  materials: { article: 'los', noun: 'materiales generados con IA' },
 }
 
 export function quotaMessage(status: QuotaStatus): string {
