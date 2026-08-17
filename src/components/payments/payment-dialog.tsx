@@ -17,13 +17,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { today } from '@/lib/dates'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { PAYMENT_METHOD_LABELS } from '@/lib/patient-labels'
 import { periodLabel } from '@/lib/periods'
-
-const METHOD_LABELS = {
-  cash: 'Efectivo',
-  transfer: 'Transferencia',
-  mercadopago: 'Mercado Pago',
-} as const
 
 /**
  * Recording a payment that arrived outside Mercado Pago — cash after a session,
@@ -128,7 +123,7 @@ export function PaymentDialog({
             <div className="space-y-1.5">
               <Label htmlFor="payment-method">Medio</Label>
               <Select id="payment-method" name="method" defaultValue="cash">
-                {Object.entries(METHOD_LABELS).map(([value, label]) => (
+                {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>

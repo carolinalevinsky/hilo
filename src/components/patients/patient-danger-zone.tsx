@@ -1,6 +1,7 @@
 'use client'
 
-import { Archive, ArchiveRestore, Trash2 } from '@/components/icons'
+import { Archive, ArchiveRestore, Download, Trash2 } from '@/components/icons'
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { deletePatientAction, setArchivedAction } from '@/app/(app)/pacientes/actions'
@@ -40,6 +41,23 @@ export function PatientDangerZone({
 
   return (
     <div className="space-y-3 border-t border-border pt-4">
+      {/* Beside deletion, as in v1 (`legacy/index.html:1211`), because they are
+          the two halves of the same right: the family can ask to see everything
+          held about them, and can ask for it to go. Putting access next to
+          erasure is what makes the pair obvious. */}
+      <div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/pacientes/${patientId}/datos`}>
+            <Download className="size-4" />
+            Exportar datos
+          </Link>
+        </Button>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          Todo lo que Hilo guarda sobre {expected}, para leer, imprimir o descargar. La
+          familia tiene derecho a pedirlo (Ley N.º 18.331).
+        </p>
+      </div>
+
       <form action={setArchivedAction}>
         <input type="hidden" name="patientId" value={patientId} />
         <input type="hidden" name="archived" value={archived ? 'false' : 'true'} />

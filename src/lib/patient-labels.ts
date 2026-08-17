@@ -29,6 +29,23 @@ export const BILLING_FREQUENCY_LABELS = {
   per_session: 'Por sesión',
 } as const
 
+/**
+ * How a payment arrived. Lived inside the payment dialog until the data export
+ * needed it too — a label map is the same in both places, and two copies drift.
+ */
+export const PAYMENT_METHOD_LABELS = {
+  cash: 'Efectivo',
+  transfer: 'Transferencia',
+  mercadopago: 'Mercado Pago',
+} as const
+
+export function paymentMethodLabel(value: string | null) {
+  if (!value) return null
+  return (
+    PAYMENT_METHOD_LABELS[value as keyof typeof PAYMENT_METHOD_LABELS] ?? value
+  )
+}
+
 export function ageGroupLabel(value: string) {
   return AGE_GROUP_LABELS[value as keyof typeof AGE_GROUP_LABELS] ?? AGE_GROUP_LABELS.children
 }
