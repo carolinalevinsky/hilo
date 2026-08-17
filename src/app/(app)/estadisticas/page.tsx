@@ -1,4 +1,4 @@
-import { ChartColumn, CircleCheck, Target, TrendingUp, Users } from 'lucide-react'
+import { ChartColumn, CircleCheck, Target, TrendingUp, Users } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

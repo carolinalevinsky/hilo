@@ -1,4 +1,4 @@
-import { ClipboardList, Sparkles } from 'lucide-react'
+import { ClipboardList, Sparkles } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

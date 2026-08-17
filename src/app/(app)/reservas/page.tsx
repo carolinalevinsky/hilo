@@ -1,4 +1,4 @@
-import { Inbox, UserPlus } from 'lucide-react'
+import { Inbox, UserPlus } from '@/components/icons'
 import type { Metadata } from 'next'
 
 import { BookingLink } from '@/components/booking/booking-link'

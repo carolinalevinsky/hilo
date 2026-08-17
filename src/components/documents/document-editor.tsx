@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Pencil, Printer, RefreshCw, Sparkles, TriangleAlert } from 'lucide-react'
+import { Check, Pencil, Printer, RefreshCw, Sparkles, TriangleAlert } from '@/components/icons'
 import { useEffect, useRef, useState } from 'react'
 
 import { DocumentBody } from '@/components/documents/clinical-document'

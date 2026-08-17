@@ -1,4 +1,4 @@
-import { Compass } from 'lucide-react'
+import { Compass } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

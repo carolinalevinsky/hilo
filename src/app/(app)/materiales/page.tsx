@@ -1,4 +1,4 @@
-import { BookOpen, Plus } from 'lucide-react'
+import { BookOpen, Plus } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

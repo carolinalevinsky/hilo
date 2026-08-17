@@ -1,6 +1,6 @@
 'use client'
 
-import { Mic, Square } from 'lucide-react'
+import { Mic, Square } from '@/components/icons'
 import { useRef, useState, useSyncExternalStore } from 'react'
 
 import { Button } from '@/components/ui/button'

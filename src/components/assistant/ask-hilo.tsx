@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle, Send, Sparkles, TriangleAlert } from 'lucide-react'
+import { MessageCircle, Send, Sparkles, TriangleAlert } from '@/components/icons'
 import { useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'

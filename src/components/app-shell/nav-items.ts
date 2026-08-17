@@ -6,7 +6,7 @@ import {
   Users,
   Wallet,
   type LucideIcon,
-} from 'lucide-react'
+} from '@/components/icons'
 
 /**
  * The navigation, in one place, used by both the desktop sidebar and the mobile

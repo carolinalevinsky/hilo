@@ -1,4 +1,4 @@
-import { CalendarPlus, Check, MoreHorizontal, Trash2, X } from 'lucide-react'
+import { CalendarPlus, Check, MoreHorizontal, Trash2, X } from '@/components/icons'
 import Link from 'next/link'
 
 import {

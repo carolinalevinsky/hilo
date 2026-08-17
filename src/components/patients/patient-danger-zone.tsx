@@ -1,6 +1,6 @@
 'use client'
 
-import { Archive, ArchiveRestore, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, Trash2 } from '@/components/icons'
 import { useState } from 'react'
 
 import { deletePatientAction, setArchivedAction } from '@/app/(app)/pacientes/actions'

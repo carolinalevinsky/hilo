@@ -1,4 +1,4 @@
-import { ChartPie, FileText, Plus } from 'lucide-react'
+import { ChartPie, FileText, Plus } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

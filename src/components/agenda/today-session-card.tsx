@@ -1,4 +1,4 @@
-import { TriangleAlert, Wallet } from 'lucide-react'
+import { TriangleAlert, Wallet } from '@/components/icons'
 import Link from 'next/link'
 
 import { PatientAvatar } from '@/components/patients/patient-avatar'

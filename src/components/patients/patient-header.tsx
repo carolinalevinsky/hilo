@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react'
+import { Pencil } from '@/components/icons'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 

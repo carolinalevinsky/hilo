@@ -1,4 +1,4 @@
-import { CalendarDays, UserPlus, Users } from 'lucide-react'
+import { CalendarDays, UserPlus, Users } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

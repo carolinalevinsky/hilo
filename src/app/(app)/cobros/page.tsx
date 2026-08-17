@@ -1,4 +1,4 @@
-import { Clock, DollarSign, Users, Wallet } from 'lucide-react'
+import { Clock, DollarSign, Users, Wallet } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 

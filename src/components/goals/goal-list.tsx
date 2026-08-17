@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Pencil, Plus } from 'lucide-react'
+import { Check, Pencil, Plus } from '@/components/icons'
 import { useActionState, useEffect, useState } from 'react'
 
 import {

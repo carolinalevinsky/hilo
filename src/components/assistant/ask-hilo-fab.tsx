@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle } from '@/components/icons'
 import { useState } from 'react'
 
 import { AskHilo } from '@/components/assistant/ask-hilo'

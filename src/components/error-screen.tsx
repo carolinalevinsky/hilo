@@ -1,6 +1,6 @@
 'use client'
 
-import { RotateCw, TriangleAlert } from 'lucide-react'
+import { RotateCw, TriangleAlert } from '@/components/icons'
 import Link from 'next/link'
 import { useEffect } from 'react'
 

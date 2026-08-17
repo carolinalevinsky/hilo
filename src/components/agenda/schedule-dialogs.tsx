@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarClock, Plus } from 'lucide-react'
+import { CalendarClock, Plus } from '@/components/icons'
 import { useActionState, useEffect, useState } from 'react'
 
 import {

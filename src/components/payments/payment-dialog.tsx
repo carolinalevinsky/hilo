@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus } from 'lucide-react'
+import { Plus } from '@/components/icons'
 import { useActionState, useState } from 'react'
 
 import { recordPaymentAction } from '@/app/(app)/cobros/actions'

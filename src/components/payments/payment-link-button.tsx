@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy, Link2 } from 'lucide-react'
+import { Copy, Link2 } from '@/components/icons'
 import { useActionState, useState } from 'react'
 
 import { createPaymentLinkAction } from '@/app/(app)/cobros/actions'

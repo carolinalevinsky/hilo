@@ -1,6 +1,6 @@
 'use client'
 
-import { Camera } from 'lucide-react'
+import { Camera } from '@/components/icons'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'

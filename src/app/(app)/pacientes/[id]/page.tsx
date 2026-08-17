@@ -1,4 +1,4 @@
-import { ArrowLeft, ChartPie, FileText, MessageCircle, Plus } from 'lucide-react'
+import { ArrowLeft, ChartPie, FileText, MessageCircle, Plus } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
