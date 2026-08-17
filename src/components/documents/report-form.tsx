@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 
 import { createReportAction } from '@/app/(app)/informes/actions'
 import { FormMessage } from '@/components/auth/form-message'
+import { DictateButton } from '@/components/dictate-button'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -79,10 +80,13 @@ export function ReportForm({
       </fieldset>
 
       <div className="space-y-1.5">
-        <Label htmlFor="inputNotes">
-          ¿Algo que quieras que diga?
-          <span className="font-normal text-muted-foreground"> · opcional</span>
-        </Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="inputNotes">
+            ¿Algo que quieras que diga?
+            <span className="font-normal text-muted-foreground"> · opcional</span>
+          </Label>
+          <DictateButton targetId="inputNotes" />
+        </div>
         <Textarea
           id="inputNotes"
           name="inputNotes"

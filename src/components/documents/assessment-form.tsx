@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 
 import { createAssessmentAction } from '@/app/(app)/evaluaciones/actions'
 import { FormMessage } from '@/components/auth/form-message'
+import { DictateButton } from '@/components/dictate-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -140,10 +141,16 @@ export function AssessmentForm({
       )}
 
       <div className="space-y-1.5">
-        <Label htmlFor="observations">
-          Observaciones de conducta
-          <span className="font-normal text-muted-foreground"> · opcional</span>
-        </Label>
+        {/* Dictation, as in v1 (`legacy/index.html:1744`). This gets written
+            with the test materials still on the table and the family waiting,
+            which is exactly when typing does not happen. */}
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="observations">
+            Observaciones de conducta
+            <span className="font-normal text-muted-foreground"> · opcional</span>
+          </Label>
+          <DictateButton targetId="observations" />
+        </div>
         <Textarea
           id="observations"
           name="observations"

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
+import { AuthTabs } from '@/components/auth/auth-tabs'
 import { SignUpForm } from '@/components/auth/sign-up-form'
 
 export const metadata: Metadata = { title: 'Creá tu cuenta · Hilo' }
@@ -13,16 +13,11 @@ export default function SignUpPage() {
         Tu espacio de trabajo, con tus pacientes guardados y seguros.
       </p>
 
+      <AuthTabs />
+
       <SignUpForm />
 
-      <p className="mt-5 text-center text-[12.5px] text-muted-foreground">
-        ¿Ya tenés cuenta?{' '}
-        <Link href="/entrar" className="font-semibold text-violet underline">
-          Entrá acá
-        </Link>
-      </p>
-
-      <p className="mt-3 text-center text-[11.5px] text-muted-foreground">
+      <p className="mt-5 text-center text-[11.5px] text-muted-foreground">
         Tus datos están protegidos y encriptados.
       </p>
     </>
