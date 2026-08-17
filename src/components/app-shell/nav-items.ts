@@ -72,10 +72,16 @@ export const NAV_ITEMS: NavItem[] = [
     alsoActiveFor: ['/reservas'],
   },
   {
-    href: '/planificacion',
+    // Lands on the materials library, which is the tab v1 opened
+    // (`legacy/index.html:611` — `planiTab('mat')` is the default). Both halves
+    // sit under one "Planificación" heading with the tabs between them, so this
+    // decides which one you see first, not which ones exist. Materials is the
+    // right first screen: it is the half you browse, and the planner is the half
+    // you go to once you have found something.
+    href: '/materiales',
     label: 'Planificación',
     icon: ClipboardList,
-    alsoActiveFor: ['/materiales'],
+    alsoActiveFor: ['/planificacion'],
   },
   {
     href: '/informes',

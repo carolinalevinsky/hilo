@@ -1,9 +1,10 @@
 'use client'
 
-import { Mic, Square } from '@/components/icons'
 import { useRef, useState, useSyncExternalStore } from 'react'
 
+import { Mic, Square } from '@/components/icons'
 import { Button } from '@/components/ui/button'
+import { newRecognition, speechStore, type SpeechRecognitionLike } from '@/lib/speech'
 
 /**
  * Dictation into a textarea, using the browser's own speech recognition.
@@ -14,56 +15,15 @@ import { Button } from '@/components/ui/button'
  * and one that does not — and the note is what the AI reads when it drafts a
  * report, so an empty one costs more than it looks.
  *
- * Where the API is missing — Firefox, and most iOS browsers — the button is not
- * rendered at all and the practitioner uses the microphone on their phone's own
- * keyboard, which does the same job. An offer that does nothing when tapped is
- * worse than no offer.
+ * The plumbing lives in `src/lib/speech.ts`, shared with the session recorder.
  */
-
-type SpeechRecognitionLike = {
-  lang: string
-  interimResults: boolean
-  continuous: boolean
-  start: () => void
-  stop: () => void
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null
-  onend: (() => void) | null
-  onerror: ((event: { error?: string }) => void) | null
-}
-
-type SpeechRecognitionEventLike = {
-  resultIndex: number
-  results: { isFinal: boolean; 0: { transcript: string }; length: number }[] & {
-    length: number
-  }
-}
-
-function recognitionCtor() {
-  if (typeof window === 'undefined') return undefined
-  const w = window as unknown as {
-    SpeechRecognition?: new () => SpeechRecognitionLike
-    webkitSpeechRecognition?: new () => SpeechRecognitionLike
-  }
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition
-}
-
-/**
- * `useSyncExternalStore` rather than an effect: the server snapshot is `false`,
- * so the button is absent in the HTML and appears on hydration where the API
- * exists. Deciding this in an effect would render one frame with the wrong
- * answer, and deciding it during render would be a hydration mismatch.
- */
-const subscribe = () => () => {}
-const isSupportedOnClient = () => recognitionCtor() !== undefined
-const isSupportedOnServer = () => false
-
 export function DictateButton({ targetId }: { targetId: string }) {
   const [listening, setListening] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const supported = useSyncExternalStore(
-    subscribe,
-    isSupportedOnClient,
-    isSupportedOnServer,
+    speechStore.subscribe,
+    speechStore.isSupportedOnClient,
+    speechStore.isSupportedOnServer,
   )
 
   if (!supported) return null
@@ -76,13 +36,8 @@ export function DictateButton({ targetId }: { targetId: string }) {
 
   function start() {
     const target = document.getElementById(targetId) as HTMLTextAreaElement | null
-    const Ctor = recognitionCtor()
-    if (!target || !Ctor) return
-    const recognition = new Ctor()
-
-    recognition.lang = 'es-UY'
-    recognition.interimResults = true
-    recognition.continuous = true
+    const recognition = newRecognition()
+    if (!target || !recognition) return
 
     let committed = target.value ? `${target.value.trim()} ` : ''
 

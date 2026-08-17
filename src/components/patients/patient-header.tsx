@@ -1,4 +1,4 @@
-import { Pencil } from '@/components/icons'
+import { Camera, Pencil } from '@/components/icons'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -40,13 +40,26 @@ export function PatientHeader({
       style={{ background: `linear-gradient(120deg, ${hex}, ${hex}cc)` }}
     >
       <div className="flex flex-wrap items-center gap-4">
-        <PatientAvatar
-          fullName={patient.full_name}
-          color={patient.color}
-          photoUrl={photoUrl}
-          size={62}
-          className="bg-white/25 text-white"
-        />
+        {/* The camera badge is v1's (`legacy/index.html:1186`) and it is only a
+            shortcut: the upload itself lives in the edit form, where it already
+            worked. Worth having anyway — adding a face to a patient is something
+            you think of while looking at them, not while editing a form. */}
+        <div className="relative">
+          <PatientAvatar
+            fullName={patient.full_name}
+            color={patient.color}
+            photoUrl={photoUrl}
+            size={62}
+            className="bg-white/25 text-white"
+          />
+          <Link
+            href={`/pacientes/${patient.id}/editar`}
+            aria-label={photoUrl ? 'Cambiar la foto' : 'Agregar una foto'}
+            className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-violet text-white ring-2 ring-white/70 hover:brightness-110"
+          >
+            <Camera className="size-3.5" />
+          </Link>
+        </div>
 
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-[24px] font-extrabold tracking-[-0.6px]">

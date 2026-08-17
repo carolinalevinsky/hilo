@@ -27,7 +27,14 @@ up rendered.
 | C2 | Period switcher: centred, `‹  Agosto 2026  ›`, with a "MES ACTUAL" caption | Left-aligned pill buttons | done — `src/components/period-switcher.tsx` |
 | C3 | Patient avatar: solid patient colour, white initials | Soft tint, coloured initials | done — `patientSolidClasses` |
 | C4 | "Preguntá a Hilo" floats on every screen | Only a card on Inicio | done — `ask-hilo-fab.tsx` |
-| C5 | Brandmark: rounded square with three lines | A plain white circle | done — `sidebar.tsx` |
+| C5 | Brandmark: rounded square with three lines | A plain square, drawn differently in four places | done — `src/components/brandmark.tsx` |
+| C6 | v1's own 44 icons | lucide — every icon a different drawing | done — `src/components/icons.tsx` |
+
+C6 was the largest of these and was not in the original list, because it is
+invisible until you put the two side by side: a set of icons has a voice, and
+changing it changes how the whole product reads. Nine icons with no v1 original
+(arrows, chevron, close, bin, hamburger) are still lucide, re-exported from the
+same module so there is one source and the exceptions are in one list.
 
 ## Screen by screen
 
@@ -71,17 +78,24 @@ The action row is back and in v1's order: Sesión, Evaluar, Compartir con
 familia, Generar informe. "Abordaje" is back on the ficha. The header gradient
 was already correct — the earlier note here was wrong.
 
+The camera badge on the avatar is back too. **The photo itself was never
+missing** — v2 has the bucket, its policies, the `photo_path` column and a
+picker in the edit form, all built in M2. An earlier draft of this document said
+otherwise and was wrong; the badge is only the shortcut v1 had, because adding a
+face to a patient is something you think of while looking at them.
+
 Still open, and each one is more than a component edit:
 
 - **Consentimiento.** v1 recorded that the family consented, which its own terms
   require before any data is loaded (Ley N.º 18.331 art. 18). v2 has nothing —
-  no column, no screen. This is a migration and it is a legal record, so it
-  wants deciding rather than copying: what is stored, who recorded it, and
-  whether a patient without it should be flagged.
+  no column, no screen. v1 captured the authoriser's name and document, their
+  relationship to the patient, the text they agreed to, and **a signature drawn
+  on a canvas**. The signature is what makes this more than a migration: it is
+  an image of a person's hand, which changes what the row is and what deleting
+  an account has to delete. It wants deciding, not copying.
 - **Exportar datos.** The right of access, and v1 had a button for it. Needs a
   server function that assembles everything about one patient and a route that
   streams it. No schema change.
-- **La foto del paciente.** Needs a Storage bucket with its own policies.
 - Objetivos render as range sliders where v1 used a bar and a pencil. Left as
   is: the slider is the better control for the thing it does.
 
@@ -106,14 +120,18 @@ offered ANEP adecuaciones.
 
 ### Planificación — **mostly done**
 
-Tabs restored, both routes sharing one title. Still open:
+Tabs restored, both routes sharing one title, and the nav item now lands on
+Materiales as v1 did.
 
-- **"Publicar material" and "Generar con IA"** in the header. The first is a
-  rename away — `/materiales/nuevo` exists. The second does not exist in v2 at
-  all: there is no AI path that writes a material, so it is a feature, not a
-  button.
-- v1 opens on the Materiales tab; v2 opens on Planificar sesión. One line
-  either way, and it changes what the nav item means.
+Still open, and one deliberate refusal:
+
+- **"Generar con IA"** does not exist in v2 at all: there is no path that writes
+  a material with the model, so it is a feature, not a button.
+- **"Publicar material" stays "Nuevo material".** v1's word is wrong here: a
+  material created in v2 is written with the practitioner's own
+  `practitioner_id` and only they can see it. Only the 45 rows shipped with Hilo
+  have a NULL owner and are shared. A button that says "publicar" for something
+  nobody else will ever see is a label that lies about what it does.
 
 ### Cobros — **mostly done**
 

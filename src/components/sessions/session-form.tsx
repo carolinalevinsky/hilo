@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import { saveSessionAction } from '@/app/(app)/pacientes/session-actions'
 import { FormMessage } from '@/components/auth/form-message'
 import { DictateButton } from '@/components/dictate-button'
+import { RecordSession } from '@/components/sessions/record-session'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -50,6 +51,12 @@ export function SessionForm({
       {session ? <input type="hidden" name="sessionId" value={session.id} /> : null}
 
       <FormMessage message={state.message} />
+
+      {/* At the top, as in v1 (`legacy/index.html:1943`): it is the first thing
+          you reach for, before the session starts, not something you find after
+          filling the form in. Only when writing a session up for the first time
+          — a recording cannot be made of a session that already happened. */}
+      {session ? null : <RecordSession patientId={patientId} targetId="progressNote" />}
 
       <div className="max-w-[200px] space-y-1.5">
         <Label htmlFor="heldOn">Fecha de la sesión</Label>
