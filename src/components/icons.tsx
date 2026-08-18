@@ -187,6 +187,10 @@ export const Compass = icon(
  */
 export const Globe = Compass
 
+export const Video = icon(
+  <path d="M15 8.5V7C15 5.9 14.1 5 13 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19H13C14.1 19 15 18.1 15 17V15.5M15 8.5L21 5.75V18.25L15 15.5M15 8.5V15.5" />,
+)
+
 export const Lock = icon(
   <path d="M8 11V7.5C8 5.29 9.79 3.5 12 3.5C14.21 3.5 16 5.29 16 7.5V11M6.8 11H17.2C18.19 11 19 11.81 19 12.8V18.7C19 19.69 18.19 20.5 17.2 20.5H6.8C5.81 20.5 5 19.69 5 18.7V12.8C5 11.81 5.81 11 6.8 11Z" />,
 )

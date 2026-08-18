@@ -1,19 +1,16 @@
-import { Inbox, UserPlus } from '@/components/icons'
+import { Inbox } from '@/components/icons'
 import type { Metadata } from 'next'
 
 import { BookingLink } from '@/components/booking/booking-link'
+import { PendingBookingRequests } from '@/components/booking/pending-requests'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/dates'
 import { publicConfig } from '@/lib/env'
-import { weekdayName } from '@/lib/week'
 import { requireUser } from '@/server/auth'
 import { listBookingRequests } from '@/server/booking'
 import { getPractitioner } from '@/server/practitioners'
-
-import { confirmBookingAction, dismissBookingAction } from './actions'
 
 export const metadata: Metadata = { title: 'Reservas · Hilo' }
 
@@ -72,43 +69,7 @@ export default async function BookingsPage() {
               text="Cuando alguien complete tu link de reserva, va a aparecer acá y te va a llegar un mail."
             />
           ) : (
-            <ul className="divide-y divide-border">
-              {pending.map((request) => (
-                <li key={request.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <div className="min-w-[180px] flex-1">
-                    <p className="text-[14px] font-bold">{request.name}</p>
-                    <p className="text-[12.5px] text-muted-foreground">
-                      {request.phone}
-                      {request.preferred_weekday !== null
-                        ? ` · pidió ${weekdayName(request.preferred_weekday).toLowerCase()}`
-                        : ''}
-                      {request.preferred_time ? ` ${request.preferred_time.slice(0, 5)}` : ''}
-                      {' · '}
-                      {formatDate(request.created_at)}
-                    </p>
-                    {request.note ? (
-                      <p className="mt-1 text-[13px] leading-relaxed">{request.note}</p>
-                    ) : null}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <form action={confirmBookingAction}>
-                      <input type="hidden" name="requestId" value={request.id} />
-                      <Button type="submit" size="sm">
-                        <UserPlus className="size-3.5" />
-                        Convertir en paciente
-                      </Button>
-                    </form>
-                    <form action={dismissBookingAction}>
-                      <input type="hidden" name="requestId" value={request.id} />
-                      <Button type="submit" size="sm" variant="ghost">
-                        Descartar
-                      </Button>
-                    </form>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <PendingBookingRequests requests={pending} />
           )}
         </CardContent>
       </Card>

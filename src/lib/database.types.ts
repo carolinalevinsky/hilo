@@ -43,7 +43,6 @@ export type Database = {
           note: string | null
           patient_id: string
           practitioner_id: string
-          room_id: string | null
           schedule_id: string | null
           scheduled_on: string
           source: string
@@ -59,7 +58,6 @@ export type Database = {
           note?: string | null
           patient_id: string
           practitioner_id: string
-          room_id?: string | null
           schedule_id?: string | null
           scheduled_on: string
           source?: string
@@ -75,7 +73,6 @@ export type Database = {
           note?: string | null
           patient_id?: string
           practitioner_id?: string
-          room_id?: string | null
           schedule_id?: string | null
           scheduled_on?: string
           source?: string
@@ -513,11 +510,13 @@ export type Database = {
           photo_path: string | null
           practitioner_id: string
           referral_reason: string | null
+          room_id: string | null
           school: string | null
           school_level: string | null
           session_fee: number | null
           start_date: string | null
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           age_group?: string
@@ -536,11 +535,13 @@ export type Database = {
           photo_path?: string | null
           practitioner_id: string
           referral_reason?: string | null
+          room_id?: string | null
           school?: string | null
           school_level?: string | null
           session_fee?: number | null
           start_date?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           age_group?: string
@@ -559,11 +560,13 @@ export type Database = {
           photo_path?: string | null
           practitioner_id?: string
           referral_reason?: string | null
+          room_id?: string | null
           school?: string | null
           school_level?: string | null
           session_fee?: number | null
           start_date?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {

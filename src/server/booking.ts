@@ -177,18 +177,10 @@ export async function listBookingRequests(
   return data
 }
 
-export async function countPendingBookings(practitionerId: string): Promise<number> {
-  const db = await getDb()
-
-  const { count, error } = await db
-    .from('booking_requests')
-    .select('id', { count: 'exact', head: true })
-    .eq('practitioner_id', practitionerId)
-    .eq('status', 'pending')
-
-  if (error) throw error
-  return count ?? 0
-}
+// `countPendingBookings` used to live here, for the Agenda card that showed a
+// number and a link to somewhere else. That card now renders the requests and
+// answers them, so the count has no caller — and a query nobody runs is a thing
+// to keep working for no reason.
 
 export async function getBookingRequest(practitionerId: string, requestId: string) {
   const db = await getDb()

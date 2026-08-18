@@ -105,6 +105,16 @@ export type LedgerRow = {
   /** Negative means they have paid ahead. */
   outstanding: number | null
   payments: PaymentWithPatient[]
+  /**
+   * The three billing fields as stored, so the `···` on the row can open them
+   * without a second query per patient. `expected` above is what they add up
+   * to; these are what a practitioner edits.
+   */
+  billing: {
+    sessionFee: number | null
+    frequency: string
+    expectedSessionsPerMonth: number | null
+  }
 }
 
 export type Ledger = {
@@ -162,6 +172,11 @@ export async function monthlyLedger(
       paid,
       outstanding: expected === null ? null : expected - paid,
       payments: own,
+      billing: {
+        sessionFee: patient.session_fee === null ? null : Number(patient.session_fee),
+        frequency: patient.billing_frequency,
+        expectedSessionsPerMonth: patient.expected_sessions_per_month,
+      },
     }
   })
 

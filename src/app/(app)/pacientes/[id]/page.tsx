@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
+import { OnlineConsultation } from '@/components/patients/online-consultation'
 import { PatientHeader } from '@/components/patients/patient-header'
 import { SessionTimeline } from '@/components/sessions/session-timeline'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ import { formatDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
+import { videoRoomUrl } from '@/lib/video'
 import { requireUser } from '@/server/auth'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
@@ -71,6 +73,16 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
                 Sesión
               </Link>
             </Button>
+
+            {/* Second, as in v1 (`legacy/index.html:1188`), right after
+                "Sesión": both are ways of starting one. */}
+            <OnlineConsultation
+              patientId={patient.id}
+              patientName={patient.full_name}
+              patientPhone={patient.phone}
+              roomUrl={patient.room_id ? videoRoomUrl(patient.room_id) : null}
+              videoUrl={patient.video_url}
+            />
 
             <Button
               asChild

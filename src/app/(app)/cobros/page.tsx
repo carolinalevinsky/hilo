@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/page-header'
 import { PeriodSwitcher } from '@/components/period-switcher'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { MercadoPagoCard } from '@/components/payments/mercadopago-card'
+import { BillingDialog } from '@/components/payments/billing-dialog'
 import { PaymentDialog } from '@/components/payments/payment-dialog'
 import { PaymentLinkButton } from '@/components/payments/payment-link-button'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
@@ -169,6 +170,17 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                             Registrar pago
                           </Button>
                         }
+                      />
+
+                      {/* v1's `···` (`legacy/index.html:2421`): the fee and the
+                          frequency, edited from the row you are already
+                          reading. */}
+                      <BillingDialog
+                        patientId={row.patientId}
+                        patientName={row.fullName}
+                        sessionFee={row.billing.sessionFee}
+                        billingFrequency={row.billing.frequency}
+                        expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
                       />
                     </div>
                   </li>

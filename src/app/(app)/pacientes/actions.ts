@@ -3,13 +3,15 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { formError, type FormState } from '@/lib/form-state'
+import { formError, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import {
   createPatient,
+  ensurePatientRoom,
   removePatientPhoto,
   savePatientPhoto,
   setPatientArchived,
+  setPatientVideoUrl,
   softDeletePatient,
   updatePatient,
 } from '@/server/patients'
@@ -125,6 +127,33 @@ export async function deletePatientAction(formData: FormData) {
   await softDeletePatient(user.id, patientId)
   revalidatePath('/pacientes')
   redirect('/pacientes')
+}
+
+/** Makes the room the first time it is asked for, and keeps it after that. */
+export async function openConsultationAction(formData: FormData) {
+  const user = await requireUser()
+  const patientId = String(formData.get('patientId'))
+
+  await ensurePatientRoom(user.id, patientId)
+  revalidatePath(`/pacientes/${patientId}`)
+}
+
+/** The practitioner's own Zoom or Meet, which wins over Hilo's room. */
+export async function saveVideoUrlAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const patientId = String(formData.get('patientId'))
+
+  try {
+    await setPatientVideoUrl(user.id, patientId, formData.get('videoUrl'))
+  } catch (error) {
+    return formError(messageFor(error))
+  }
+
+  revalidatePath(`/pacientes/${patientId}`)
+  return formOk('Guardado.')
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   createPaymentLink,
   disconnectMercadoPago,
 } from '@/server/mercadopago'
+import { updatePatientBilling } from '@/server/patients'
 import { deletePayment, recordPayment } from '@/server/payments'
 
 function messageFor(error: unknown): string {
@@ -20,6 +21,31 @@ function messageFor(error: unknown): string {
     return issues[0]?.message ?? 'Revisá los datos.'
   }
   return 'No pudimos guardar. Probá de nuevo.'
+}
+
+/**
+ * The `···` on a Cobros row. v1 edited these three fields in place; this is the
+ * same three, through a function that can only write those columns.
+ */
+export async function updateBillingAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+
+  try {
+    await updatePatientBilling(user.id, String(formData.get('patientId')), {
+      sessionFee: formData.get('sessionFee'),
+      billingFrequency: formData.get('billingFrequency') ?? 'monthly',
+      expectedSessionsPerMonth: formData.get('expectedSessionsPerMonth'),
+    })
+  } catch (error) {
+    return formError(messageFor(error))
+  }
+
+  revalidatePath('/cobros')
+  revalidatePath('/pacientes')
+  return formOk()
 }
 
 export async function recordPaymentAction(

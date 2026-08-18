@@ -133,6 +133,143 @@ export async function updatePatient(
   return row
 }
 
+/**
+ * Just the money: what a session costs, how often it is charged, and how many
+ * there are in a month.
+ *
+ * Its own input rather than a slice of `PatientInput`, because the whole point
+ * is that it cannot touch anything else. v1's `···` on a Cobros row edited these
+ * three fields and nothing more (`legacy/index.html:2450`), and this is the
+ * version of that which cannot accidentally blank a patient's date of birth
+ * because the form did not include the field.
+ */
+export const BillingInput = z.object({
+  sessionFee: optionalNumber,
+  billingFrequency: z.enum(BILLING_FREQUENCIES).default('monthly'),
+  expectedSessionsPerMonth: optionalNumber,
+})
+
+export async function updatePatientBilling(
+  practitionerId: string,
+  patientId: string,
+  input: unknown,
+) {
+  const data = BillingInput.parse(input)
+  const db = await getDb()
+
+  const { data: row, error } = await db
+    .from('patients')
+    .update({
+      session_fee: data.sessionFee,
+      billing_frequency: data.billingFrequency,
+      expected_sessions_per_month: data.expectedSessionsPerMonth,
+    })
+    .eq('id', patientId)
+    .eq('practitioner_id', practitionerId)
+    .select()
+    .maybeSingle()
+
+  if (error) throw error
+  if (!row) throw new Error('Ese paciente no existe.')
+
+  await logAction(practitionerId, 'update', 'patient', patientId)
+  return row
+}
+
+/**
+ * Where a session happens when it happens online.
+ *
+ * Two ways, and the practitioner's own wins. See the migration for why v1's
+ * version — the patient's name in a public `meet.jit.si` URL — is not ported.
+ */
+
+/** Prefix, then a random id. Never anything derived from the patient. */
+function newRoomId(): string {
+  // 16 hex characters: enough that guessing one is not a thing anybody does,
+  // short enough to read out over the phone if it comes to that.
+  const bytes = new Uint8Array(8)
+  crypto.getRandomValues(bytes)
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * A link is only safe to render if it is one.
+ *
+ * `javascript:alert(1)` is a perfectly valid string and an `href` will run it
+ * with the practitioner's session attached. The allowed protocols are the two
+ * that mean "a web address", and everything else is rejected rather than
+ * cleaned — there is no correct reading of a `data:` video call.
+ */
+export const VideoUrlInput = z
+  .string()
+  .trim()
+  .max(500)
+  .refine(
+    (value) => {
+      if (!value) return true
+      try {
+        const url = new URL(value)
+        return url.protocol === 'https:' || url.protocol === 'http:'
+      } catch {
+        return false
+      }
+    },
+    { message: 'Pegá un link que empiece con https://' },
+  )
+  .transform((value) => (value ? value : null))
+
+export async function setPatientVideoUrl(
+  practitionerId: string,
+  patientId: string,
+  input: unknown,
+) {
+  const videoUrl = VideoUrlInput.parse(input ?? '')
+  const db = await getDb()
+
+  const { error } = await db
+    .from('patients')
+    .update({ video_url: videoUrl })
+    .eq('id', patientId)
+    .eq('practitioner_id', practitionerId)
+
+  if (error) throw error
+  return videoUrl
+}
+
+/**
+ * The room for this patient, made once and kept.
+ *
+ * Kept rather than regenerated because a family saves the link: v1 rebuilt it
+ * on every reload, so a link already sent stopped working.
+ */
+export async function ensurePatientRoom(
+  practitionerId: string,
+  patientId: string,
+): Promise<string | null> {
+  const db = await getDb()
+
+  const { data: patient, error } = await db
+    .from('patients')
+    .select('room_id')
+    .eq('id', patientId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!patient) return null
+  if (patient.room_id) return patient.room_id
+
+  const roomId = newRoomId()
+  const { error: writeError } = await db
+    .from('patients')
+    .update({ room_id: roomId })
+    .eq('id', patientId)
+    .eq('practitioner_id', practitionerId)
+
+  if (writeError) throw writeError
+  return roomId
+}
+
 // ─── Reading ────────────────────────────────────────────────────────────────
 
 export type PatientListOptions = {

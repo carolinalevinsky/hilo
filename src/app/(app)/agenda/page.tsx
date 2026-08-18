@@ -7,6 +7,7 @@ import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
 import { EmptyState } from '@/components/empty-state'
+import { PendingBookingRequests } from '@/components/booking/pending-requests'
 import { PageHeader } from '@/components/page-header'
 import { PeriodSwitcher } from '@/components/period-switcher'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import {
   materialiseAppointments,
 } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
-import { countPendingBookings } from '@/server/booking'
+import { listBookingRequests } from '@/server/booking'
 import { listPatients } from '@/server/patients'
 
 import { deactivateScheduleAction } from './actions'
@@ -67,7 +68,8 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
       listAppointments(user.id, first, last),
       listSchedules(user.id),
       listPatients(user.id),
-      countPendingBookings(user.id),
+      // The requests themselves rather than a count: they are answered here.
+      listBookingRequests(user.id, 'pending'),
       listAppointments(user.id, tomorrow, tomorrow),
     ])
 
@@ -110,22 +112,29 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
               do about it. A family asking for a time is an interruption to the
               week you are looking at — that is why it belongs above the week
               and not behind a sidebar item you would have to remember to open.
-              With nothing pending it disappears entirely, and the link inside
-              is now the only way into /reservas. */}
-          {pendingBookings > 0 ? (
+
+              Answered here, too, and not behind a link. v1 put the two buttons
+              on this card; a family waiting on a reply is what you deal with in
+              the ten seconds you have between patients, and "go to another
+              screen first" is how it becomes tomorrow's job. */}
+          {pendingBookings.length > 0 ? (
             <Card className="mb-3.5 border-violet">
               <CardHeader>
                 <CardTitle>Reservas nuevas</CardTitle>
                 <p className="text-[12.5px] text-muted-foreground">
-                  {pendingBookings === 1
+                  {pendingBookings.length === 1
                     ? '1 pendiente · confirmala para agregarla a tu agenda'
-                    : `${pendingBookings} pendientes · confirmalas para agregarlas a tu agenda`}
+                    : `${pendingBookings.length} pendientes · confirmalas para agregarlas a tu agenda`}
                 </p>
               </CardHeader>
               <CardContent>
-                <Button asChild size="sm">
-                  <Link href="/reservas">Ver las reservas →</Link>
-                </Button>
+                <PendingBookingRequests requests={pendingBookings} />
+                <Link
+                  href="/reservas"
+                  className="mt-2 inline-block text-[12.5px] font-semibold text-violet hover:underline"
+                >
+                  Tu link para reservar y las ya resueltas →
+                </Link>
               </CardContent>
             </Card>
           ) : null}
