@@ -7,6 +7,7 @@ import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { OnlineConsultation } from '@/components/patients/online-consultation'
+import { NextSessionCard } from '@/components/planning/next-session-card'
 import { PatientHeader } from '@/components/patients/patient-header'
 import { SessionTimeline } from '@/components/sessions/session-timeline'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ import { requireUser } from '@/server/auth'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { getPractitioner } from '@/server/practitioners'
+import { listPlanItems } from '@/server/session-plans'
 import { listSessions } from '@/server/sessions'
 
 export const metadata: Metadata = { title: 'Paciente · Hilo' }
@@ -32,12 +34,13 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()
 
-  const [photoUrl, practitioner, goals, progress, sessions] = await Promise.all([
+  const [photoUrl, practitioner, goals, progress, sessions, planItems] = await Promise.all([
     getPhotoUrl(patient.photo_path),
     getPractitioner(user.id),
     listGoals(user.id, patient.id),
     listGoalProgress(user.id, patient.id),
     listSessions(user.id, patient.id),
+    listPlanItems(user.id, patient.id),
   ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
@@ -144,6 +147,15 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               <GoalList patientId={patient.id} goals={goals} />
             </CardContent>
           </Card>
+
+          {/* v1 put what you prepared right here, above the history
+              (`legacy/index.html:1674`). A plan is only worth making if it is on
+              the screen you open with the child already in the room. */}
+          <NextSessionCard
+            patientId={patient.id}
+            patientFirstName={firstName(patient.full_name)}
+            items={planItems}
+          />
 
           <Card>
             <CardHeader>

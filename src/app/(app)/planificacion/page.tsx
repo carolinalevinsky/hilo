@@ -218,11 +218,13 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                 Buscar material
               </PanelTitle>
 
-              <div className="flex gap-2">
-                <div className="flex-1">
+              {/* On a phone the two side by side leave the box too narrow to
+                  read what you typed, so the link drops underneath. */}
+              <div className="flex flex-wrap gap-2">
+                <div className="min-w-[180px] flex-1">
                   <PlanMaterialSearch initial={search} />
                 </div>
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="max-sm:w-full">
                   <Link href="/materiales">Ir a la biblioteca</Link>
                 </Button>
               </div>
