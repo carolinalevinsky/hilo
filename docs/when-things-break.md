@@ -144,26 +144,52 @@ rm -f .next/types/*\ 2*.ts
 ### Un archivo de `src/server/` aparece vacío
 
 Si un import falla con *"The module has no exports at all"* y el archivo tiene
-cuatro líneas y un `export {}`, **no lo reescribas**. Mirá git primero:
+siete líneas y un `export {}`, **no lo reescribas**. Sacalo de git:
 
 ```bash
-git diff --stat src/server/
-git restore src/server/<archivo>.ts
+git log --oneline -- src/server/<archivo>.ts
+git checkout <el último commit bueno> -- src/server/<archivo>.ts
 ```
 
-Pasó **cuatro veces** con `src/server/booking.ts` en agosto de 2026, siempre con
-otra sesión de Claude corriendo sobre el mismo repositorio. Los commits nunca se
-tocaron; solo el archivo en el directorio de trabajo. Reescribirlo a mano habría
-sido tirar 225 líneas para reemplazarlas por una versión peor.
+Pasó **siete veces** con `src/server/booking.ts` en agosto de 2026, y las siete
+fue lo mismo: `npm run check:boundaries`.
 
-Si te vuelve a pasar, buscá quién más está escribiendo:
+Ese script comprueba que la allowlist de `getServiceDb` sigue funcionando. Para
+hacerlo **sobrescribía el `booking.ts` de verdad** con una sonda de dos líneas,
+y al terminar lo "restauraba" escribiendo un texto hardcodeado en el script —
+que era el contenido del archivo en M7, antes de que las reservas existieran.
+Siete líneas terminadas en `export {}`. Cada corrida borraba 224 líneas de
+código que andaba.
+
+Lo difícil fue que no parecía eso. El archivo estaba sano durante `typecheck`,
+los tests y el `build`, y aparecía vacío recién después — porque `check:boundaries`
+es el último de la secuencia. Se lo atribuyó a otra sesión de Claude abierta
+sobre el mismo repositorio, se buscó el proceso, se cerró, y por un rato pareció
+resuelto. No lo estaba: simplemente nadie volvió a correr el chequeo hasta la vez
+siguiente. Terminó saliendo en un commit y pusheado a origin.
+
+Arreglado en la misma sesión que lo encontró. El chequeo ahora linteá el
+`booking.ts` real sin tocarlo — el archivo de verdad importa `getServiceDb`, así
+que es mejor evidencia que una sonda — y falla ruidosamente con `✗ VACUOUS` si
+algún día deja de importarlo, que es cuando el tilde verde pasaría a no
+significar nada. Las sondas que sí se escriben están en `.gitignore`.
+
+**La regla que sale de acá:** un chequeo que necesita que un archivo real tenga
+cierto contenido, lo **lee**. No lo escribe. Y `git add -A` empaqueta lo que haya
+en el árbol, incluido lo que rompió un script hace treinta segundos — en un
+repositorio donde algo puede tocar archivos por su cuenta, se stagea por nombre:
+
+```bash
+git add src/server/materials.ts src/app/…    # sí
+git add -A                                    # no
+```
+
+Si aun así ves un archivo vaciarse y el chequeo ya no es la causa, fijate quién
+más está escribiendo antes de culpar a nadie:
 
 ```bash
 ps aux | grep '[c]laude' | grep -- --output-format
 ```
-
-Una sesión headless sobre el mismo repositorio es la explicación más probable, y
-mientras siga viva va a volver a pasar. Cerrala antes de seguir.
 
 ---
 
