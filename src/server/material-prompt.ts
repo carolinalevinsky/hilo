@@ -66,6 +66,40 @@ Edad: ${input.ageRange}
 Trabajar: ${input.request.trim().slice(0, MAX_REQUEST)}`
 }
 
+/** An activity is long, but not a report. Past this it is not one activity. */
+export const MAX_MATERIAL = 8_000
+
+/**
+ * "Modificar con IA": the same activity, changed the way you asked.
+ *
+ * v1's version (`legacy/index.html:2320`) did not really do this — it appended a
+ * canned paragraph to the bottom of the document based on which words it spotted
+ * in your request, so asking for "más fácil" and "con dinosaurios" produced the
+ * same two sentences with a different label. This one rewrites the activity.
+ *
+ * Rewrites, rather than appending: a practitioner asking for the easier version
+ * wants the easier version, not the harder one with a note underneath about how
+ * to make it easier.
+ */
+export function materialAdjustmentPrompt(input: {
+  area: string
+  ageRange: string
+  content: string
+  adjustment: string
+}): string {
+  return `Área: ${input.area}
+Edad: ${input.ageRange}
+
+Esta es la actividad actual:
+---
+${input.content.trim().slice(0, MAX_MATERIAL)}
+---
+
+Reescribila entera con este cambio: ${input.adjustment.trim().slice(0, MAX_REQUEST)}
+
+Devolvé la actividad completa con la misma estructura de títulos, ya con el cambio aplicado. No expliques qué cambiaste ni agregues notas al final.`
+}
+
 /**
  * What lands in the library when the model cannot be reached.
  *

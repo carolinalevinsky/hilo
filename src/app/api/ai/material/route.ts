@@ -1,6 +1,7 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
 import { getUser } from '@/server/auth'
 import {
+  materialAdjustmentPrompt,
   materialInstructions,
   materialPrompt,
   MAX_REQUEST,
@@ -37,15 +38,20 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as {
     materialId?: string
     request?: string
+    adjustment?: string
   }
 
   const asked = typeof body.request === 'string' ? body.request.trim() : ''
+  const adjustment = typeof body.adjustment === 'string' ? body.adjustment.trim() : ''
 
   if (!body.materialId) {
     return Response.json({ error: 'Falta el material.' }, { status: 400 })
   }
-  if (asked.length < 5) {
+  if (!adjustment && asked.length < 5) {
     return Response.json({ error: 'Contame qué querés trabajar.' }, { status: 400 })
+  }
+  if (adjustment && adjustment.length < 3) {
+    return Response.json({ error: 'Contame qué querés cambiar.' }, { status: 400 })
   }
   if (asked.length > MAX_REQUEST * 2) {
     return Response.json({ error: 'El pedido es demasiado largo.' }, { status: 400 })
@@ -63,16 +69,23 @@ export async function POST(request: Request) {
     return Response.json({ error: 'No encontramos ese material.' }, { status: 404 })
   }
 
-  const fallback = offlineMaterial({
-    ageRange: material.age_range ?? 'la edad que elegiste',
-    request: asked,
-  })
+  // Adjusting keeps what is already there when the model cannot be reached:
+  // replacing an activity the practitioner already has with a generic one
+  // because the network blinked would be a loss, not a fallback.
+  const fallback = adjustment
+    ? material.content
+    : offlineMaterial({
+        ageRange: material.age_range ?? 'la edad que elegiste',
+        request: asked,
+      })
 
   try {
     // `alreadyCounted`: the row exists before this route runs — it was created
     // with an offline activity so that an outage still leaves something usable —
     // so it is already in the month's count. Without this, regenerating the
-    // material that used your last allowance would be refused.
+    // material that used your last allowance would be refused. Adjusting an
+    // existing one rides the same allowance, which is the same trade the report
+    // editor makes: rewriting what you have is not a new document.
     await assertQuota(user.id, practitioner.plan, 'materials', { alreadyCounted: true })
   } catch (error) {
     if (error instanceof QuotaExceededError) {
@@ -84,11 +97,18 @@ export async function POST(request: Request) {
   return sseResponse(
     generate(
       materialInstructions(practitioner.discipline),
-      materialPrompt({
-        area: material.area,
-        ageRange: material.age_range ?? 'sin especificar',
-        request: asked,
-      }),
+      adjustment
+        ? materialAdjustmentPrompt({
+            area: material.area,
+            ageRange: material.age_range ?? 'sin especificar',
+            content: material.content,
+            adjustment,
+          })
+        : materialPrompt({
+            area: material.area,
+            ageRange: material.age_range ?? 'sin especificar',
+            request: asked,
+          }),
       fallback,
     ),
   )

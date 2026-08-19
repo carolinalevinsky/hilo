@@ -5,12 +5,14 @@ import { notFound } from 'next/navigation'
 
 import { copyMaterialAction, deleteMaterialAction } from '@/app/(app)/materiales/actions'
 import { DocumentBody } from '@/components/documents/clinical-document'
+import { AddMaterialToSession } from '@/components/materials/add-to-session'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
 import { requireUser } from '@/server/auth'
 import { getMaterial, materialOrigin } from '@/server/materials'
+import { listPatients } from '@/server/patients'
 
 export const metadata: Metadata = { title: 'Material · Hilo' }
 
@@ -27,7 +29,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
   const user = await requireUser()
 
   // RLS decides what is visible: Hilo's materials, plus this practitioner's own.
-  const material = await getMaterial(id)
+  const [material, patients] = await Promise.all([getMaterial(id), listPatients(user.id)])
   if (!material) notFound()
 
   const origin = materialOrigin(material, user.id)
@@ -122,9 +124,19 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
         </CardContent>
       </Card>
 
-      <div className="no-print mx-auto mt-3 max-w-[720px]">
+      {/* v1 put this under the open material (`legacy/index.html:812`), and it
+          is what closes the loop: you open a material because you are looking
+          for something to do with somebody. */}
+      <div className="no-print mx-auto mt-3 flex max-w-[720px] flex-wrap items-center justify-between gap-3">
+        <AddMaterialToSession
+          materialId={material.id}
+          patients={patients.map((row) => ({ id: row.id, full_name: row.full_name }))}
+        />
         <PrintButton label="Imprimir el material" />
       </div>
+      <p className="no-print mx-auto mt-2 max-w-[720px] text-xs text-muted-foreground">
+        Elegís a qué paciente se lo sumás y queda en su próxima sesión.
+      </p>
     </>
   )
 }

@@ -151,10 +151,19 @@ git diff --stat src/server/
 git restore src/server/<archivo>.ts
 ```
 
-Pasó dos veces con `src/server/booking.ts` en agosto de 2026, con otra sesión de
-Claude corriendo sobre el checkout principal al mismo tiempo. Los commits nunca
-se tocaron; solo el archivo en el directorio de trabajo. Reescribirlo a mano
-habría sido tirar 233 líneas para reemplazarlas por una versión peor.
+Pasó **cuatro veces** con `src/server/booking.ts` en agosto de 2026, siempre con
+otra sesión de Claude corriendo sobre el mismo repositorio. Los commits nunca se
+tocaron; solo el archivo en el directorio de trabajo. Reescribirlo a mano habría
+sido tirar 225 líneas para reemplazarlas por una versión peor.
+
+Si te vuelve a pasar, buscá quién más está escribiendo:
+
+```bash
+ps aux | grep '[c]laude' | grep -- --output-format
+```
+
+Una sesión headless sobre el mismo repositorio es la explicación más probable, y
+mientras siga viva va a volver a pasar. Cerrala antes de seguir.
 
 ---
 

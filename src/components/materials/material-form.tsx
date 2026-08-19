@@ -54,6 +54,55 @@ export function MaterialForm({
     generateFor ? 'Hilo está escribiendo la actividad…' : null,
   )
   const started = useRef(false)
+  const [adjusting, setAdjusting] = useState(false)
+  const [adjustment, setAdjustment] = useState('')
+
+  /**
+   * "Modificar con IA" — v1's button, doing what it said.
+   *
+   * v1 appended a canned paragraph based on which words it spotted in your
+   * request; this rewrites the activity. The old text goes back if the request
+   * fails, because losing an activity you had is worse than not changing it.
+   */
+  async function adjust() {
+    const field = content.current
+    if (!material || !field || !adjustment.trim()) return
+
+    const previous = field.value
+    setGeneration('Hilo está ajustando la actividad…')
+    setAdjusting(true)
+    field.value = ''
+
+    try {
+      const response = await fetch('/api/ai/material', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ materialId: material.id, adjustment }),
+      })
+      if (!response.ok || !response.body) {
+        const { error } = (await response.json().catch(() => ({}))) as { error?: string }
+        throw new Error(error ?? 'No pudimos ajustar la actividad.')
+      }
+
+      await readSseStream(response.body, {
+        onDelta: (text) => {
+          if (content.current) content.current.value += text
+        },
+        onError: (message) => setGeneration(message),
+        onDone: () => {
+          setGeneration(null)
+          setAdjustment('')
+        },
+      })
+    } catch (error) {
+      if (content.current) content.current.value = previous
+      setGeneration(
+        `${(error as Error).message} Te dejo la actividad como estaba.`,
+      )
+    } finally {
+      setAdjusting(false)
+    }
+  }
 
   // Streams the generated activity into the field, once.
   //
@@ -209,6 +258,36 @@ export function MaterialForm({
         <p className="text-xs leading-relaxed text-muted-foreground">
           Una línea corta terminada en dos puntos se ve como subtítulo. El resto, párrafos.
         </p>
+
+        {/* v1's "Modificar con IA", with v1's own placeholder — those three
+            examples are the three things a practitioner actually asks for. */}
+        {material ? (
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Input
+              value={adjustment}
+              onChange={(event) => setAdjustment(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  // Inside a form: Enter here means "adjust", not "save".
+                  event.preventDefault()
+                  void adjust()
+                }
+              }}
+              placeholder="¿Qué querés cambiar? más fácil · con temática de animales · para 4º"
+              aria-label="Qué querés cambiar de la actividad"
+              className="min-w-[200px] flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void adjust()}
+              disabled={adjusting || !adjustment.trim()}
+            >
+              <Sparkles className="size-4" />
+              {adjusting ? 'Ajustando…' : 'Modificar con IA'}
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <fieldset className="space-y-2">

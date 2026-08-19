@@ -84,32 +84,40 @@ picker in the edit form, all built in M2. An earlier draft of this document said
 otherwise and was wrong; the badge is only the shortcut v1 had, because adding a
 face to a patient is something you think of while looking at them.
 
-Still open, and each one is more than a component edit:
+"Consulta online" is back too, second in the row as in v1 — see below for why
+its link is not v1's. So is "Exportar datos", and "Próxima sesión" above the
+history.
+
+Still open, and it is more than a component edit:
 
 - **Consentimiento.** v1 recorded that the family consented, which its own terms
-  require before any data is loaded (Ley N.º 18.331 art. 18). v2 has nothing —
-  no column, no screen. v1 captured the authoriser's name and document, their
-  relationship to the patient, the text they agreed to, and **a signature drawn
-  on a canvas**. The signature is what makes this more than a migration: it is
-  an image of a person's hand, which changes what the row is and what deleting
-  an account has to delete. It wants deciding, not copying.
-- **Exportar datos.** The right of access, and v1 had a button for it. Needs a
-  server function that assembles everything about one patient and a route that
-  streams it. No schema change.
-- Objetivos render as range sliders where v1 used a bar and a pencil. Left as
-  is: the slider is the better control for the thing it does.
+  require before any data is loaded (Ley N.º 18.331 art. 18). The column exists
+  (`patients.consent_signed_at`) and the export reports it; what is missing is
+  the screen. v1 captured the authoriser's name and document, their relationship
+  to the patient, the text they agreed to, and **a signature drawn on a canvas**.
+  The signature is what makes this more than a migration: it is an image of a
+  person's hand, which changes what the row is and what deleting an account has
+  to delete. It wants deciding, not copying.
 
-### Agenda — **mostly done**
+One thing deliberately not changed: objetivos render as range sliders where v1
+used a bar and a pencil. The slider is the better control for the thing it does.
+v1's "Marcar logrado" has an equivalent in "Dar por cerrado", which retires the
+goal instead of forcing it to 100 — a goal you stopped working on is not the same
+as a goal you finished, and v2 keeps both facts.
+
+### Agenda — **done**
 
 The weekly hour grid is back (`week-calendar.tsx`), with the day cards kept as
 the phone view exactly as v1 split them. "Recordá los turnos de mañana" is back
-with its WhatsApp button. Reservas is a card at the top again.
+with its WhatsApp button.
 
-Still open:
+Reservas is a card at the top again **and is answered there**, not behind a link.
+v1 put the two buttons on that card, and it is right: a family waiting on a reply
+is what you deal with in the ten seconds between patients, and "go to another
+screen first" is how it becomes tomorrow's job. One component
+(`components/booking/pending-requests.tsx`) renders it here and on `/reservas`.
 
-- **Google Calendar.** See below.
-- Reservas links out to `/reservas` instead of confirming or discarding each
-  request inline the way v1 did.
+Still open: **Google Calendar**. See below.
 
 ### Informes y evaluaciones — **done**
 
@@ -118,30 +126,120 @@ now arrives preselected in the form. The list is built from
 `recipientsFor(discipline)` rather than v1's fixed six, so a kinesióloga is not
 offered ANEP adecuaciones.
 
-### Planificación — **mostly done**
+### Planificación — **done**
 
-Tabs restored, both routes sharing one title, and the nav item now lands on
+Tabs restored, both routes sharing one title, and the nav item lands on
 Materiales as v1 did.
 
-Still open, and one deliberate refusal:
+**"Planificar sesión" is back**, and it was the largest single thing the
+migration lost. The tab existed; inside it was a different screen — a read-only
+list of the coming week. Not wrong, but it told you what was ahead and gave you
+nothing to do about it, and the part it dropped is the part that takes the time.
 
-- **"Generar con IA"** does not exist in v2 at all: there is no path that writes
-  a material with the model, so it is a feature, not a button.
-- **"Publicar material" stays "Nuevo material".** v1's word is wrong here: a
-  material created in v2 is written with the practitioner's own
-  `practitioner_id` and only they can see it. Only the 45 rows shipped with Hilo
-  have a NULL owner and are shared. A button that says "publicar" for something
-  nobody else will ever see is a label that lies about what it does.
+v1's three panels are what live there now (`src/app/(app)/planificacion/page.tsx`):
+the patient's goals sorted by what has moved least, each with its activity and a
+matched material and a one-click "Agregar"; the library search; and "Próxima
+sesión de X", which persists, prints and empties. Registering it fills the
+session form in and retires the plan, as `registrarSesionPreparada` did.
 
-### Cobros — **mostly done**
+Two things came with it:
 
-The three v1 stats are back with v1's icons and colours, and the month switcher
-is v1's. Still open: the per-row `···` menu for editing fee and frequency —
-today that is done from the patient's ficha.
+- **The activity bank is ported verbatim** (`src/lib/activity-bank.ts`). v1's
+  `sugeActividad` is clinical domain knowledge, not a heuristic worth improving:
+  it covers the six disciplines and every phrase is something you can do with a
+  child on a Tuesday.
+- **"Próxima sesión" is on the ficha too** (`proxSesionHTML`), above the history,
+  because a plan is only worth making if it is on the screen you open with the
+  child already in the room.
+
+Underneath it differs from v1 on purpose: v1's plan lived in `p.plan` inside the
+patient's JSON blob — defect #4, the one where two open tabs overwrote each
+other. Rows, with their own policy.
+
+The weekly list is not lost: `todayBriefing` on Inicio is built from the same
+`planUpcoming`, which is where a practitioner actually looked at it.
+
+### Materiales — **done**
+
+Three things v1 offered and none of which quite worked.
+
+- **Editing.** v1's modal was `contenteditable`: you typed into the document and
+  nothing was saved, so every change was gone on reload. Now a form, the same one
+  as creating, because the fields are identical and two would drift.
+- **"Generar con IA"**, against the real model, with its own monthly quota
+  counting only `source = 'ai'` rows — writing one by hand costs nothing. The
+  row is created first with an offline activity, the same order reports use, so
+  a generation counts whether or not the model answered.
+- **"Modificar con IA"**, which v1 only pretended to do: it appended a canned
+  paragraph based on which words it spotted in your request, so "más fácil" and
+  "con dinosaurios" produced the same two sentences with a different label. This
+  rewrites the activity, and puts the old text back if the request fails.
+- **"Sumar a la sesión"** from an open material, which is what closes the loop:
+  you open a material because you are looking for something to do with somebody.
+
+**"Publicar material" now means something.** The earlier note here said the word
+was wrong, and it was — while every material was private. v1's selector existed
+and did nothing: a "published" material lived in an array in memory until the tab
+was reloaded and nobody else ever saw it. It is real now, which makes it **the
+only change in this whole pass that alters who can read what**, and it is
+described under its own heading below.
+
+### Cobros — **done**
+
+The three v1 stats are back with v1's icons and colours, the month switcher is
+v1's, and the per-row `···` opens the fee, the frequency and the sessions per
+month — edited from the row you are already reading while doing the month's
+accounts, as in v1. It writes through `updatePatientBilling`, which can only
+touch those three columns.
+
+## Publishing a material to the community
+
+The one widening of who can read what, so it gets its own section.
+
+The read policy on `materials` is now: what ships with Hilo, plus your own
+(published or not), plus what another practitioner published. The write policies
+are untouched and deliberately not widened — **publishing makes a row readable by
+everyone; it does not make it writable by anyone but its author.**
+
+That distinction has six cases in `src/server/rls.test.ts`, and the one that
+matters most is that Ana cannot edit, unpublish or delete what Bruno published. A
+"simplification" that added `or visibility = 'public'` to `update_own` as well
+would pass `check:rls`, pass the type checker, and hand every practitioner an
+edit button on somebody else's work.
+
+Two more things hold it up:
+
+- **The authorship declaration is validated on the server.** A checkbox is a
+  suggestion until the backend refuses without it. ARASAAC and the other open
+  banks are non-commercial and a test manual is somebody's copyright.
+- **A community material is copied, not referenced.** You take it because you
+  want to change it for the child in front of you, and editing the original would
+  rewrite it under everyone else who took it. The copy starts private and keeps
+  `copied_from`.
+
+Nothing clinical can arrive here: the only way a row is created is the form in
+`/materiales/nuevo`, and there is no path from a patient to this table.
+
+## Exporting a patient's data
+
+The right of access under Ley N.º 18.331. v1 had the button, beside "Borrar
+paciente y sus datos"; v2 had nothing. It is back in the same place, because
+access and erasure are two halves of one right.
+
+Both forms: a page that reads, prints and saves as PDF, and a `.json` with
+exactly what is in the database.
+
+**The private note is excluded, and its existence is declared.** Leaving it out
+silently would be the easy thing and the wrong one — it is still personal data
+about the patient, and pretending it does not exist is what makes an access
+request adversarial. The document says, in one line, that working notes exist and
+can be asked for. Technically the field never enters the object rather than
+entering and being deleted: a field that is not there cannot escape through a
+later `JSON.stringify` of "everything".
 
 ## Not ported, and why
 
-### "Consulta online" — **do not copy v1's**
+### "Consulta online" — v1's shape refused, a safe one built
 
 v1's button built a Jitsi room from the patient's own name:
 
@@ -151,14 +249,23 @@ https://meet.jit.si/Hilo-tomas-perez-x7k2p
 
 `meet.jit.si` rooms are public to anyone holding the URL. That link puts a
 patient's full name into an unauthenticated third-party address that gets pasted
-into WhatsApp threads — it is the same class of mistake as putting clinical
-content in an email, and it is exactly what Ley N.º 18.331 is about. v1 also kept
-the room id in memory only, so it changed on every reload and a link already
-shared with a family stopped working.
+into WhatsApp threads — the same class of mistake as putting clinical content in
+an email. v1 also kept the room id in memory only, so it changed on every reload
+and a link already shared with a family stopped working.
 
-The version worth building stores a random room id on the appointment — no name
-in the URL — so the link is stable and says nothing. That is a migration plus a
-button, and it should be a deliberate decision rather than a port.
+**Built, in the safe shape.** A random id stored on the patient
+(`patients.room_id`): meaningless, because it is random, and stable, because it
+is stored. The room is created when first asked for, not on every ficha that
+loads. There is also a field for your own Zoom or Meet, which wins over Hilo's —
+and it is validated as `http(s)` on the server, because `javascript:alert(1)` is
+a valid string and an `href` will run it with the practitioner's session.
+
+### "Descargar PDF"
+
+v1 loaded `html2pdf` from a CDN at runtime. v2 prints — "Imprimir o guardar en
+PDF" — which reaches the same file through the browser's own dialog without a
+third-party script on a page showing clinical data. Deliberate, and the reason
+that label differs.
 
 ### Google Calendar
 
@@ -188,31 +295,57 @@ consequences would start.
 
 ## What is left
 
-In rough order of how much they are missed:
+Two things, and only one of them is work.
 
-1. **Consentimiento de la familia** — the one with legal weight, and the one
-   that needs a decision before a line of it is written. See Ficha above: v1
-   captured a drawn signature, which is what makes this more than a migration.
-2. **Exportar los datos de un paciente** — the right of access. Server function
-   plus a route, no schema change.
-3. Reservas confirmed inline on the Agenda instead of a link out.
-4. The `···` menu on a Cobros row, for editing fee and frequency.
-5. **"Generar con IA"** for materials — does not exist in v2 in any form.
-6. **"Consulta online"** — only in the safe shape described above, never v1's.
-7. **Google Calendar** — the largest, and the least missed, since every
+1. **Consentimiento de la familia** — the one with legal weight, and the one that
+   needs a decision before a line of it is written. See Ficha above: v1 captured a
+   drawn signature, which is what makes this more than a migration. Note that
+   `patients.consent_signed_at` already exists and is shown on the export; what
+   is missing is the screen that fills it and the decision about the image.
+2. **Google Calendar** — the largest, and the least missed, since every
    appointment menu already offers "Agregar a Google Calendar" without any OAuth.
 
-## Screens never compared
+## How the last pass was done
 
-Honest gap in the sweep. These were never opened side by side, so nothing here
-claims they match: the saved assessment, a saved session's detail page, an open
-material, términos and privacidad, and the mobile pass on everything except
-Agenda.
+Not by re-reading the screens. Every `<button>` label v1 renders was extracted
+from `legacy/index.html` — 103 of them — and checked, accent- and
+punctuation-insensitively, against the whole of `src/`. Thirty-four did not
+appear.
+
+Most were v2 saying the same thing in different words ("Marcar pago" →
+"Registrar pago"), or Clínica and Google Calendar, which are deliberately absent.
+Three were real, and all three are now built: **"Sumar a la sesión"**,
+**"Modificar con IA"**, and **"Próxima sesión" on the ficha**.
+
+The technique is worth repeating when anything else is ported: a label is a
+promise the interface makes, and a promise missing from the new code is a feature
+missing from the new product. It finds things reading cannot.
+
+## Screens compared, finally
+
+The five that had never been opened side by side, and what came of each:
+
+| Screen | Result |
+|---|---|
+| Términos and privacidad | Identical to v1 — all 16 clauses, same order, same text |
+| The saved assessment | v2 has more: the signed document, the editor, and suggested goals adopted into the ficha |
+| A saved session's detail | v2 has more: v1 had no such screen, sessions only lived in the ficha's timeline |
+| An open material | Was missing "Sumar a la sesión". Built. |
+| The mobile pass | Eleven screens at 375px, none scroll horizontally. The library search box was too narrow beside its button; the button now drops below. |
+
+The privacy policy is worth one note: its "Derechos" paragraph promises that a
+practitioner *can export all of a patient's data*. Until this pass that sentence
+was false.
 
 ---
 
-Everything above was component and page work, plus three additions to
-`src/server/` (`todayBriefing`, `patientSummaries`, `session-notes`) because the
-pages must not query. The architecture rules in `CLAUDE.md` held throughout:
-reads in Server Components, writes in Server Actions, no screen grew a database
-query of its own, and `npm run check:boundaries` still passes.
+Most of this was component and page work. Where it needed more it got:
+`session-plans`, `patient-export`, `material-prompt`, `todayBriefing`,
+`patientSummaries` and `session-notes` in `src/server/`, because the pages must
+not query; three migrations; and six new cases in the RLS isolation test for the
+one policy that changed.
+
+The architecture rules in `CLAUDE.md` held throughout: reads in Server
+Components, writes in Server Actions, no screen grew a database query of its own,
+`practitionerId` stayed an explicit argument, and `check:boundaries`,
+`check:rls`, `check:secrets` and `check:migration` all still pass.
