@@ -12,6 +12,7 @@ import {
   setAppointmentStatus,
 } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
+import { setAppointmentFocus } from '@/server/planning'
 
 function messageFor(error: unknown): string {
   if (error && typeof error === 'object' && 'issues' in error) {
@@ -81,6 +82,21 @@ export async function setAppointmentStatusAction(formData: FormData) {
   )
   revalidatePath('/agenda')
   revalidatePath('/inicio')
+}
+
+/** Which goal a session in "Plan de la semana" is for. */
+export async function setAppointmentFocusAction(formData: FormData) {
+  const user = await requireUser()
+  const goalId = String(formData.get('goalId') ?? '')
+
+  await setAppointmentFocus(
+    user.id,
+    String(formData.get('appointmentId')),
+    goalId || null,
+  )
+  revalidatePath('/agenda')
+  revalidatePath('/inicio')
+  revalidatePath('/planificacion')
 }
 
 export async function deleteAppointmentAction(formData: FormData) {

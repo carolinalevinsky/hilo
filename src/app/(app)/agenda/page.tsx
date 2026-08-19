@@ -6,6 +6,7 @@ import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
+import { WeekPlan } from '@/components/agenda/week-plan'
 import { EmptyState } from '@/components/empty-state'
 import { PendingBookingRequests } from '@/components/booking/pending-requests'
 import { PageHeader } from '@/components/page-header'
@@ -24,6 +25,8 @@ import {
 import { requireUser } from '@/server/auth'
 import { listBookingRequests } from '@/server/booking'
 import { listPatients } from '@/server/patients'
+import { planForRange } from '@/server/planning'
+import { getPractitioner } from '@/server/practitioners'
 
 import { deactivateScheduleAction } from './actions'
 
@@ -72,6 +75,11 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
       listBookingRequests(user.id, 'pending'),
       listAppointments(user.id, tomorrow, tomorrow),
     ])
+
+  // The week read as work rather than as a calendar. Its own query because it
+  // needs the goals and the matched material, which the grid does not.
+  const practitioner = await getPractitioner(user.id)
+  const weekSessions = await planForRange(user.id, practitioner.discipline, first, last)
 
   // The appointment row carries the patient's name and colour but not their
   // birthday, and the list is already loaded for the "Agendar" dialog.
@@ -167,6 +175,11 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             ageOf={ageOf}
           />
           <WeekGrid dates={dates} appointments={appointments} today={todayString()} />
+
+          {/* Directly under the grid, as in v1 (`legacy/index.html:1499`). The
+              grid answers "when am I busy"; this answers "what am I doing in
+              each of these". */}
+          <WeekPlan sessions={weekSessions} />
 
           <Card className="mt-5">
             <CardHeader>

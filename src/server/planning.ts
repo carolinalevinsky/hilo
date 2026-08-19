@@ -26,9 +26,16 @@ export type PlannedSession = {
   patientColor: string | null
   scheduledOn: string
   startTime: string
+  /** 'attended' | 'no_show' | 'cancelled' | 'scheduled'. */
+  status: string
   goals: { id: string; title: string; progress: number }[]
-  /** The goal that has moved least. Null when the patient has no goals yet. */
+  /**
+   * What this session is for: the goal chosen in "Plan de la semana", or the one
+   * that has moved least. Null when the patient has no goals yet.
+   */
   focus: { id: string; title: string; progress: number } | null
+  /** True when `focus` was picked deliberately rather than suggested. */
+  focusChosen: boolean
   suggestedMaterial: Material | null
 }
 
@@ -44,12 +51,25 @@ export async function planUpcoming(
   discipline: string,
   days = 7,
 ): Promise<PlannedSession[]> {
-  const from = toDateInput(new Date())
   const until = new Date()
   until.setDate(until.getDate() + days)
 
+  return planForRange(practitionerId, discipline, toDateInput(new Date()), toDateInput(until))
+}
+
+/**
+ * The same thing for an arbitrary week — what "Plan de la semana" under the
+ * agenda grid needs, because that grid pages backwards and forwards and is not
+ * anchored to today.
+ */
+export async function planForRange(
+  practitionerId: string,
+  discipline: string,
+  from: string,
+  to: string,
+): Promise<PlannedSession[]> {
   const [appointments, materials] = await Promise.all([
-    listAppointments(practitionerId, from, toDateInput(until)),
+    listAppointments(practitionerId, from, to),
     listMaterials(practitionerId, { discipline }),
   ])
 
@@ -79,12 +99,21 @@ export async function planUpcoming(
     const own = goalsByPatient.get(appointment.patient_id) ?? []
     // A goal already at 100 is finished; suggesting it would be busywork.
     const candidates = own.filter((goal) => goal.progress < 100)
-    const focus =
+    const suggested =
       candidates.length === 0
         ? null
         : candidates.reduce((lowest, goal) =>
             goal.progress < lowest.progress ? goal : lowest,
           )
+
+    // A choice made in "Plan de la semana" wins over the suggestion. v1's
+    // default was the lowest-scoring goal and it came back on every reload
+    // because nothing was stored; here the suggestion is only what you get
+    // until you decide otherwise.
+    const chosen = appointment.focus_goal_id
+      ? (own.find((goal) => goal.id === appointment.focus_goal_id) ?? null)
+      : null
+    const focus = chosen ?? suggested
 
     return {
       appointmentId: appointment.id,
@@ -93,11 +122,49 @@ export async function planUpcoming(
       patientColor: appointment.patients!.color,
       scheduledOn: appointment.scheduled_on,
       startTime: appointment.start_time,
+      status: appointment.status,
       goals: own,
       focus,
+      focusChosen: chosen !== null,
       suggestedMaterial: focus ? bestMaterialFor(focus.title, materials) : null,
     }
   })
+}
+
+/**
+ * Which goal a session in the week is for.
+ *
+ * v1's "Plan de la semana" (`legacy/index.html:1498`) kept this in memory, so
+ * every choice was gone on reload. The goal is re-read through the user's
+ * session rather than trusted from the form: that is what makes "set the focus
+ * to goal X" mean "to a goal of mine, for this patient".
+ */
+export async function setAppointmentFocus(
+  practitionerId: string,
+  appointmentId: string,
+  goalId: string | null,
+) {
+  const db = await getDb()
+
+  if (goalId) {
+    const { data: goal, error } = await db
+      .from('goals')
+      .select('id')
+      .eq('practitioner_id', practitionerId)
+      .eq('id', goalId)
+      .maybeSingle()
+
+    if (error) throw error
+    if (!goal) throw new Error('Ese objetivo no existe.')
+  }
+
+  const { error } = await db
+    .from('appointments')
+    .update({ focus_goal_id: goalId })
+    .eq('practitioner_id', practitionerId)
+    .eq('id', appointmentId)
+
+  if (error) throw error
 }
 
 /** A goal below this has stalled, and Inicio says so. v1 used the same number. */

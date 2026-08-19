@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { HiloMemory, PatientDocuments } from '@/components/documents/patient-documents'
 import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
@@ -18,10 +19,12 @@ import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
+import { listAssessments } from '@/server/assessments'
 import { requireUser } from '@/server/auth'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { getPractitioner } from '@/server/practitioners'
+import { listReports } from '@/server/reports'
 import { listPlanItems } from '@/server/session-plans'
 import { listSessions } from '@/server/sessions'
 
@@ -34,14 +37,17 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()
 
-  const [photoUrl, practitioner, goals, progress, sessions, planItems] = await Promise.all([
-    getPhotoUrl(patient.photo_path),
-    getPractitioner(user.id),
-    listGoals(user.id, patient.id),
-    listGoalProgress(user.id, patient.id),
-    listSessions(user.id, patient.id),
-    listPlanItems(user.id, patient.id),
-  ])
+  const [photoUrl, practitioner, goals, progress, sessions, planItems, assessments, reports] =
+    await Promise.all([
+      getPhotoUrl(patient.photo_path),
+      getPractitioner(user.id),
+      listGoals(user.id, patient.id),
+      listGoalProgress(user.id, patient.id),
+      listSessions(user.id, patient.id),
+      listPlanItems(user.id, patient.id),
+      listAssessments(user.id, patient.id),
+      listReports(user.id, patient.id),
+    ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
   // that the practitioner is there. The content stays behind the login.
@@ -157,6 +163,19 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
             items={planItems}
           />
 
+          {/* v1's card, right after "Próxima sesión" (`legacy/index.html:1219`).
+              `/informes` lists everybody's, which is the right screen for "what
+              did I write this month" and the wrong one for "what do I already
+              have on this child" — the question you ask while looking at them. */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Evaluaciones e informes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PatientDocuments assessments={assessments} reports={reports} />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Historial de sesiones</CardTitle>
@@ -171,6 +190,23 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
         </div>
 
         <div className="space-y-4">
+          {/* v1 put this at the top of the right column. It looks like
+              decoration and is not: it answers the doubt a practitioner has in
+              month one, which is whether they are writing all this into a
+              hole. */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Memoria de Hilo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <HiloMemory
+                firstName={firstName(patient.full_name)}
+                sessions={sessions.length}
+                goals={goals.length}
+              />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Motivo de consulta</CardTitle>

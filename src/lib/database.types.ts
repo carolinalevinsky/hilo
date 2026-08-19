@@ -38,6 +38,7 @@ export type Database = {
         Row: {
           created_at: string
           duration_minutes: number
+          focus_goal_id: string | null
           gcal_event_id: string | null
           id: string
           note: string | null
@@ -53,6 +54,7 @@ export type Database = {
         Insert: {
           created_at?: string
           duration_minutes?: number
+          focus_goal_id?: string | null
           gcal_event_id?: string | null
           id?: string
           note?: string | null
@@ -68,6 +70,7 @@ export type Database = {
         Update: {
           created_at?: string
           duration_minutes?: number
+          focus_goal_id?: string | null
           gcal_event_id?: string | null
           id?: string
           note?: string | null
@@ -81,6 +84,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_focus_goal_id_fkey"
+            columns: ["focus_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
