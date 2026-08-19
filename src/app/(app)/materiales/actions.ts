@@ -13,6 +13,7 @@ import {
   saveMaterialFile,
   updateMaterial,
 } from '@/server/materials'
+import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
 /** Zod's first message, or a sentence a practitioner can act on. */
@@ -105,6 +106,14 @@ export async function updateMaterialAction(
  * is down — and so the monthly count includes a generation whether or not the
  * model answered. Counting only what gets saved at the end would let someone
  * generate fifty activities, keep none, and pay for all of them.
+ *
+ * The quota is checked **here**, before the row exists, and again in the route
+ * before the model is called. Only the second one protects the spending; this
+ * one exists because without it somebody out of allowance got a saved material,
+ * a redirect, and only then the news that they had no allowance — one useless
+ * row per click, each of which counted, so the number they were over by kept
+ * climbing. Refusing on the form says the same thing on the screen where the
+ * question was asked and leaves nothing behind.
  */
 export async function generateMaterialAction(
   _previous: FormState,
@@ -115,6 +124,13 @@ export async function generateMaterialAction(
 
   const asked = String(formData.get('request') ?? '').trim()
   if (asked.length < 5) return formError('Contame qué querés trabajar.')
+
+  try {
+    await assertQuota(user.id, practitioner.plan, 'materials')
+  } catch (error) {
+    if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status))
+    throw error
+  }
 
   const ageRange = String(formData.get('ageRange') ?? '').trim()
   let material

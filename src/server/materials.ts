@@ -389,6 +389,32 @@ export async function createMaterial(
 }
 
 /**
+ * Marks a material as one the model wrote part of, which is what puts it in the
+ * month's count.
+ *
+ * It exists for the uploaded file that gets described. Generating a material
+ * from a sentence sets `source` at insert time, but an upload is a file the
+ * practitioner already owned — that alone costs nothing and must not spend an
+ * allowance. It becomes an AI material at the moment somebody asks Hilo to read
+ * it, which is the moment the file is sent to Anthropic, and that is where this
+ * is called from.
+ *
+ * Idempotent on purpose: re-reading the same file is a correction, not a second
+ * material, and the route only calls this the first time.
+ */
+export async function markMaterialAiWritten(practitionerId: string, materialId: string) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('materials')
+    .update({ source: 'ai' })
+    .eq('id', materialId)
+    .eq('practitioner_id', practitionerId)
+
+  if (error) throw error
+}
+
+/**
  * Edit a material you wrote.
  *
  * v1's material modal was `contenteditable` — you typed straight into the

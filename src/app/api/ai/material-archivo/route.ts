@@ -5,7 +5,7 @@ import {
   fileDescriptionPrompt,
   parseFileDescription,
 } from '@/server/material-prompt'
-import { getMaterial, readMaterialFile } from '@/server/materials'
+import { getMaterial, markMaterialAiWritten, readMaterialFile } from '@/server/materials'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -60,16 +60,33 @@ export async function POST(request: Request) {
     )
   }
 
+  // Whether this material is *already* in the month's count, which is the whole
+  // question `alreadyCounted` asks. An uploaded file starts as `manual` — the
+  // practitioner already had it, and owning a PDF costs nothing — so the first
+  // description is a new charge and later ones ride the same allowance, the same
+  // trade regenerating an activity makes.
+  //
+  // It used to pass `alreadyCounted: true` unconditionally, which subtracted one
+  // from a count this row had never entered and, worse, left `source` as
+  // `manual` forever: uploading and describing files never counted at all. That
+  // made the single most expensive call in Hilo — the only one that ships a whole
+  // PDF or photo to Anthropic — the one call nothing capped.
+  const counted = material.source === 'ai'
+
   try {
-    // `alreadyCounted`: the material row exists before this runs, so it is
-    // already in the month's count. Same as regenerating one.
-    await assertQuota(user.id, practitioner.plan, 'materials', { alreadyCounted: true })
+    await assertQuota(user.id, practitioner.plan, 'materials', { alreadyCounted: counted })
   } catch (error) {
     if (error instanceof QuotaExceededError) {
       return Response.json({ error: quotaMessage(error.status) }, { status: 429 })
     }
     throw error
   }
+
+  // Before the call, not after. A description that fails still cost the upload
+  // and the tokens, and counting only what comes back would let somebody read
+  // fifty files, keep none, and pay for all of them — the same reasoning that
+  // makes `generateMaterialAction` save its row first.
+  if (!counted) await markMaterialAiWritten(user.id, material.id)
 
   const file = await readMaterialFile(material.file_path)
   if (!file) {
