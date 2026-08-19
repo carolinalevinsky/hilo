@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
 import { GenerateMaterial } from '@/components/materials/generate-material'
+import { UploadMaterial } from '@/components/materials/upload-material'
 import { PageHeader } from '@/components/page-header'
 import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
@@ -49,6 +50,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         action={
           // v1 had both here, in this order (`legacy/index.html:615`).
           <div className="flex flex-wrap gap-2">
+            <UploadMaterial areas={areas} />
             <GenerateMaterial areas={areas} />
             <Button asChild size="lg">
               <Link href="/materiales/nuevo">

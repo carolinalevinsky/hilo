@@ -162,6 +162,107 @@ export async function listMaterials(
   return data
 }
 
+// ─── The attached file ──────────────────────────────────────────────────────
+
+const FILE_BUCKET = 'material-files'
+
+/**
+ * What can be uploaded, and what the bucket accepts. Kept in step with the
+ * `allowed_mime_types` in the migration — Storage would reject a mismatch
+ * anyway, but with an error nobody can read.
+ */
+export const MATERIAL_FILE_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+] as const
+
+export const MaterialFileUpload = z.object({
+  contentType: z.enum(MATERIAL_FILE_TYPES, {
+    message: 'El archivo tiene que ser un PDF o una imagen.',
+  }),
+  bytes: z
+    .instanceof(ArrayBuffer)
+    .refine((b) => b.byteLength > 0, 'El archivo llegó vacío.')
+    .refine(
+      (b) => b.byteLength <= 10 * 1024 * 1024,
+      'El archivo no puede pesar más de 10 MB.',
+    ),
+})
+
+/**
+ * Attaches a file to a material you own.
+ *
+ * The path is `<practitioner_id>/<material_id>`, and the Storage policies check
+ * that first segment rather than trusting this function to build it correctly.
+ * `upsert` because replacing the scan of a worksheet is a normal thing to do and
+ * should not leave the old one behind.
+ */
+export async function saveMaterialFile(
+  practitionerId: string,
+  materialId: string,
+  input: unknown,
+) {
+  const { contentType, bytes } = MaterialFileUpload.parse(input)
+  const db = await getDb()
+
+  const path = `${practitionerId}/${materialId}`
+
+  const { error: uploadError } = await db.storage
+    .from(FILE_BUCKET)
+    .upload(path, bytes, { contentType, upsert: true })
+
+  if (uploadError) throw uploadError
+
+  const { data: row, error } = await db
+    .from('materials')
+    .update({ file_path: path, file_type: contentType })
+    .eq('id', materialId)
+    .eq('practitioner_id', practitionerId)
+    .select()
+    .maybeSingle()
+
+  if (error) throw error
+  if (!row) throw new Error('Ese material no es tuyo, o ya no existe.')
+  return row
+}
+
+/**
+ * A short-lived URL for the attached file.
+ *
+ * Signed rather than public: a photo taken in a consulting room can have a
+ * child's name on the page, and a URL that never expires cannot be recalled.
+ * The Storage policy decides whether this succeeds — for a community material it
+ * does, for somebody else's private one it does not.
+ */
+export async function getMaterialFileUrl(filePath: string | null): Promise<string | null> {
+  if (!filePath) return null
+
+  const db = await getDb()
+  const { data, error } = await db.storage
+    .from(FILE_BUCKET)
+    .createSignedUrl(filePath, 60 * 60)
+
+  if (error) return null
+  return data.signedUrl
+}
+
+/** The bytes themselves, base64, for handing to the model. */
+export async function readMaterialFile(
+  filePath: string,
+): Promise<{ base64: string } | null> {
+  const db = await getDb()
+
+  const { data, error } = await db.storage.from(FILE_BUCKET).download(filePath)
+  if (error || !data) return null
+
+  const buffer = Buffer.from(await data.arrayBuffer())
+  return { base64: buffer.toString('base64') }
+}
+
 export async function getMaterial(materialId: string) {
   const db = await getDb()
 

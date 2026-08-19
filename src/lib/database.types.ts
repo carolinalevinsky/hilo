@@ -407,6 +407,8 @@ export type Database = {
           copied_from: string | null
           created_at: string
           discipline: string | null
+          file_path: string | null
+          file_type: string | null
           focus: string | null
           id: string
           kind: string
@@ -425,6 +427,8 @@ export type Database = {
           copied_from?: string | null
           created_at?: string
           discipline?: string | null
+          file_path?: string | null
+          file_type?: string | null
           focus?: string | null
           id?: string
           kind?: string
@@ -443,6 +447,8 @@ export type Database = {
           copied_from?: string | null
           created_at?: string
           discipline?: string | null
+          file_path?: string | null
+          file_type?: string | null
           focus?: string | null
           id?: string
           kind?: string

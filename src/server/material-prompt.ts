@@ -101,6 +101,83 @@ Devolvé la actividad completa con la misma estructura de títulos, ya con el ca
 }
 
 /**
+ * Describing a material the practitioner already had, from a scan or a photo.
+ *
+ * The model reads the file and writes what it is, so the library has words to
+ * search and match on — `bestMaterialFor` works on text, and a PDF with no
+ * description is a title nobody will ever be offered again.
+ *
+ * **The draft is never saved without being read.** It lands in the same form the
+ * practitioner is already looking at, they correct it, and nothing is stored
+ * until they press the button. That is the whole shape of the feature: the model
+ * does the typing, the person does the deciding.
+ *
+ * Two rules in here earn their place. It must not invent what it cannot see — a
+ * blurry photo should produce a short honest description, not a confident wrong
+ * one. And it must not copy a worksheet out in full: the file is already
+ * attached, so repeating its contents adds nothing and would quietly turn a
+ * scanned page of somebody else's book into text in this database.
+ */
+export function fileDescriptionInstructions(discipline: string): string {
+  return `Sos asistente de un/a profesional de ${discipline} en Uruguay. Recibís el archivo de un material de trabajo que la profesional ya tenía —un PDF o una foto de una ficha, un juego o una lámina— y lo describís para que quede guardado en su biblioteca.
+
+Devolvés exactamente estas tres partes, en este orden y con estos títulos:
+
+TITULO:
+Un título corto, de menos de ocho palabras.
+
+OBJETIVO:
+Para qué sirve, en una oración: qué se trabaja con esto.
+
+DESCRIPCION:
+Qué es el material y cómo se usa, en dos o tres oraciones. Si se ve la consigna, resumila.
+
+Reglas:
+- Escribí en español rioplatense.
+- **No inventes.** Si la imagen está borrosa o no se entiende qué es, decilo en la descripción y sé breve. Una descripción corta y honesta sirve; una inventada arruina la búsqueda.
+- **No transcribas el material entero.** El archivo queda adjunto; acá va una descripción, no una copia.
+- Si aparece el nombre de un niño o cualquier dato de un paciente, no lo incluyas.
+- Sin encabezados de más, sin markdown, sin comillas.`
+}
+
+export function fileDescriptionPrompt(area: string): string {
+  return `Área de la biblioteca donde se va a guardar: ${area}.
+
+Describí el material adjunto.`
+}
+
+/**
+ * Splits the three-part answer into the three fields it fills.
+ *
+ * Tolerant on purpose: if the model drops a heading, whatever came back still
+ * reaches the practitioner as the description rather than vanishing into a
+ * parse error. The worst case is that they retype a title.
+ */
+export function parseFileDescription(text: string): {
+  title: string
+  objective: string
+  content: string
+} {
+  const section = (name: string) => {
+    const match = text.match(
+      new RegExp(`${name}:\\s*([\\s\\S]*?)(?=\\n\\s*(?:TITULO|OBJETIVO|DESCRIPCION):|$)`, 'i'),
+    )
+    return match?.[1]?.trim() ?? ''
+  }
+
+  const title = section('TITULO')
+  const objective = section('OBJETIVO')
+  const content = section('DESCRIPCION')
+
+  return {
+    title: title.slice(0, 160),
+    objective,
+    // Nothing recognised: hand back the whole answer rather than nothing.
+    content: content || (title || objective ? '' : text.trim()),
+  }
+}
+
+/**
  * What lands in the library when the model cannot be reached.
  *
  * v1 had the same idea — a bank of one-line activities per area, used whenever

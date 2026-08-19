@@ -1,6 +1,6 @@
 'use client'
 
-import { Globe, Lock, Sparkles } from '@/components/icons'
+import { Globe, Lock, Paperclip, Sparkles } from '@/components/icons'
 import { useActionState, useEffect, useRef, useState } from 'react'
 
 import { createMaterialAction, updateMaterialAction } from '@/app/(app)/materiales/actions'
@@ -31,6 +31,8 @@ export function MaterialForm({
   areas,
   material,
   generateFor,
+  describeFile = false,
+  fileUrl = null,
 }: {
   areas: Record<string, string[]>
   material?: Material
@@ -39,6 +41,10 @@ export function MaterialForm({
    * into the activity field as soon as the form is on screen.
    */
   generateFor?: string
+  /** Arriving from "Subir un material": read the file and fill the three fields. */
+  describeFile?: boolean
+  /** A signed URL for the attached file, so it can be looked at while editing. */
+  fileUrl?: string | null
 }) {
   const [state, formAction, pending] = useActionState(
     material ? updateMaterialAction : createMaterialAction,
@@ -50,8 +56,14 @@ export function MaterialForm({
   )
 
   const content = useRef<HTMLTextAreaElement>(null)
+  const title = useRef<HTMLInputElement>(null)
+  const objective = useRef<HTMLInputElement>(null)
   const [generation, setGeneration] = useState<string | null>(
-    generateFor ? 'Hilo está escribiendo la actividad…' : null,
+    generateFor
+      ? 'Hilo está escribiendo la actividad…'
+      : describeFile
+        ? 'Hilo está leyendo el archivo…'
+        : null,
   )
   const started = useRef(false)
   const [adjusting, setAdjusting] = useState(false)
@@ -103,6 +115,44 @@ export function MaterialForm({
       setAdjusting(false)
     }
   }
+
+  // Reads the uploaded file and fills the three fields, once.
+  //
+  // It answers all at once rather than streaming: the reply is three sections
+  // that only mean anything split apart, so there is nothing worth showing until
+  // it is whole. What arrives is a draft in a form the practitioner is already
+  // looking at — nothing is saved until they press the button.
+  useEffect(() => {
+    if (!describeFile || !material || started.current) return
+    started.current = true
+
+    fetch('/api/ai/material-archivo', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ materialId: material.id }),
+    })
+      .then(async (response) => {
+        const body = (await response.json()) as {
+          title?: string
+          objective?: string
+          content?: string
+          error?: string
+        }
+        if (!response.ok) throw new Error(body.error ?? 'No pudimos leer el archivo.')
+
+        if (title.current && body.title) title.current.value = body.title
+        if (objective.current && body.objective) objective.current.value = body.objective
+        if (content.current && body.content) content.current.value = body.content
+
+        setGeneration(
+          'Lo escribió Hilo leyendo el archivo. Revisalo y corregí lo que haga falta.',
+        )
+      })
+      .catch((error: Error) => {
+        setGeneration(`${error.message} Escribí la descripción a mano.`)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Streams the generated activity into the field, once.
   //
@@ -156,6 +206,7 @@ export function MaterialForm({
       <div className="space-y-1.5">
         <Label htmlFor="title">Título</Label>
         <Input
+          ref={title}
           id="title"
           name="title"
           placeholder="Ej: Bingo de sonidos iniciales"
@@ -164,6 +215,23 @@ export function MaterialForm({
           autoFocus
         />
       </div>
+
+      {/* The attached file, if there is one. Worth being able to look at while
+          correcting a description that was written from it. */}
+      {fileUrl ? (
+        <a
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2.5 rounded-xl border border-border px-3 py-2.5 text-[13px] font-semibold transition-colors hover:bg-muted"
+        >
+          <Paperclip className="size-4 shrink-0 text-violet" />
+          Ver el archivo adjunto
+          <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">
+            se abre en otra pestaña
+          </span>
+        </a>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
@@ -228,6 +296,7 @@ export function MaterialForm({
       <div className="space-y-1.5">
         <Label htmlFor="objective">¿Para qué sirve?</Label>
         <Input
+          ref={objective}
           id="objective"
           name="objective"
           placeholder="Ej: Identificar con qué sonido empieza cada palabra"

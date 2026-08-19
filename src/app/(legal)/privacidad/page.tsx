@@ -44,6 +44,15 @@ export default function PrivacyPage() {
         profesional.
       </p>
       <p>
+        <b>Archivos enviados a la IA.</b> Al subir un material propio (un PDF o una imagen)
+        y pedir que Hilo lo describa, ese archivo se envía al proveedor de IA para poder
+        leerlo. Es el único caso en que un archivo sale del servidor: en todo lo demás solo
+        viaja texto. La pantalla de carga lo advierte antes de elegir el archivo y
+        recomienda que no contenga datos de ningún paciente. La descripción que devuelve la
+        IA queda como borrador editable y no se guarda hasta que el/la profesional la
+        confirma.
+      </p>
+      <p>
         <b>Dónde se guardan y cómo se protegen.</b> Los datos se almacenan en servidores con
         cifrado en tránsito y en reposo. El acceso es por cuenta y contraseña, y cada
         profesional accede únicamente a sus propios pacientes (aislamiento por usuario a

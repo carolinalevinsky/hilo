@@ -463,6 +463,67 @@ describe('a material published to the community', () => {
     expect(count).toBe(1)
   })
 
+  it('lets another practitioner read the file attached to it', async () => {
+    // The half that is easy to get wrong: the row becomes readable and the file
+    // does not, so the community library shows a title with a broken attachment
+    // under it.
+    //
+    // The upload is asserted rather than assumed — a silent failure here would
+    // make the real assertion below pass for the wrong reason.
+    const { error: uploadError } = await service.storage
+      .from('material-files')
+      .upload(`${idB}/${publishedByB}`, new Uint8Array([37, 80, 68, 70]), {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+    expect(uploadError, 'the fixture upload itself failed').toBeNull()
+
+    const { data, error } = await asA.storage
+      .from('material-files')
+      .createSignedUrl(`${idB}/${publishedByB}`, 60)
+
+    expect(error).toBeNull()
+    expect(data?.signedUrl).toBeTruthy()
+  })
+
+  it('does not let another practitioner read the file of an unpublished one', async () => {
+    // The fixture is asserted first, and that is not ceremony: if the upload
+    // quietly failed, "the URL is falsy" would pass because the object does not
+    // exist rather than because the policy refused it.
+    const { error: uploadError } = await service.storage
+      .from('material-files')
+      .upload(`${idB}/${privateOfB}`, new Uint8Array([37, 80, 68, 70]), {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+    expect(uploadError, 'the fixture upload itself failed').toBeNull()
+
+    const { data } = await asA.storage
+      .from('material-files')
+      .createSignedUrl(`${idB}/${privateOfB}`, 60)
+
+    expect(data?.signedUrl).toBeFalsy()
+  })
+
+  it('does not let another practitioner overwrite the file', async () => {
+    // Publishing makes a file readable, not replaceable — the same rule as the
+    // row. Without it, anyone could swap the PDF under somebody else's title.
+    const { error } = await asA.storage
+      .from('material-files')
+      .upload(`${idB}/${publishedByB}`, new Uint8Array([88, 88]), {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+
+    expect(error).not.toBeNull()
+
+    // And the original is still the original.
+    const { data } = await service.storage
+      .from('material-files')
+      .download(`${idB}/${publishedByB}`)
+    expect(await data?.text()).toBe('%PDF')
+  })
+
   it('can be published by its own author', async () => {
     // The other direction: the policy must not have become so tight that
     // publishing your own work fails.

@@ -93,6 +93,65 @@ function systemPrompt(taskInstructions: string) {
   ]
 }
 
+/**
+ * A file sent along with the prompt, for the model to read.
+ *
+ * The only thing that uses this is describing an uploaded material, and it is
+ * the one place a *file* of the practitioner's leaves the server — everywhere
+ * else, only text they typed does. The upload form says so before a file is
+ * chosen. See `supabase/migrations/…_add_material_files.sql`.
+ */
+export type Attachment = {
+  mediaType: DescribableType
+  /** Base64, without the `data:` prefix. */
+  data: string
+}
+
+/**
+ * What the model can actually read.
+ *
+ * HEIC is deliberately absent and is *not* an oversight: the bucket accepts it,
+ * because that is what an iPhone produces and a photo of a worksheet must not be
+ * rejected at the door, but the API does not take it. A file it cannot read is
+ * stored and kept; only the description has to be written by hand.
+ */
+export const DESCRIBABLE_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+] as const
+
+export type DescribableType = (typeof DESCRIBABLE_TYPES)[number]
+
+export function canDescribe(mediaType: string | null | undefined): mediaType is DescribableType {
+  return DESCRIBABLE_TYPES.includes(mediaType as DescribableType)
+}
+
+/** A PDF is a `document` to the API; everything else here is an `image`. */
+function attachmentBlock(attachment: Attachment) {
+  if (attachment.mediaType === 'application/pdf') {
+    return {
+      type: 'document' as const,
+      source: {
+        type: 'base64' as const,
+        media_type: 'application/pdf' as const,
+        data: attachment.data,
+      },
+    }
+  }
+
+  return {
+    type: 'image' as const,
+    source: {
+      type: 'base64' as const,
+      media_type: attachment.mediaType,
+      data: attachment.data,
+    },
+  }
+}
+
 /** What a refusal or an outage looks like to the caller. */
 export class AiUnavailableError extends Error {
   constructor(
@@ -116,12 +175,20 @@ export class AiUnavailableError extends Error {
 export async function* streamCompletion(
   taskInstructions: string,
   userPrompt: string,
+  attachment?: Attachment,
 ): AsyncGenerator<string> {
   const stream = anthropic().messages.stream({
     model: MODEL,
     max_tokens: MAX_TOKENS,
     system: systemPrompt(taskInstructions),
-    messages: [{ role: 'user', content: userPrompt }],
+    messages: [
+      {
+        role: 'user',
+        content: attachment
+          ? [attachmentBlock(attachment), { type: 'text', text: userPrompt }]
+          : userPrompt,
+      },
+    ],
   })
 
   for await (const event of stream) {

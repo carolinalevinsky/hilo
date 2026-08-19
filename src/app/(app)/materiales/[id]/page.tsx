@@ -1,4 +1,4 @@
-import { ArrowLeft, Copy, Pencil } from '@/components/icons'
+import { ArrowLeft, Copy, Paperclip, Pencil } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
 import { requireUser } from '@/server/auth'
-import { getMaterial, materialOrigin } from '@/server/materials'
+import { getMaterial, getMaterialFileUrl, materialOrigin } from '@/server/materials'
 import { listPatients } from '@/server/patients'
 
 export const metadata: Metadata = { title: 'Material · Hilo' }
@@ -31,6 +31,8 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
   // RLS decides what is visible: Hilo's materials, plus this practitioner's own.
   const [material, patients] = await Promise.all([getMaterial(id), listPatients(user.id)])
   if (!material) notFound()
+
+  const fileUrl = await getMaterialFileUrl(material.file_path)
 
   const origin = materialOrigin(material, user.id)
   const isMine = origin === 'mine'
@@ -121,6 +123,32 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
           <div className="border-t border-border pt-4">
             <DocumentBody text={material.content} />
           </div>
+
+          {/* An image shows itself; a PDF gets a link, because embedding one
+              inside a page that is also meant to print produces two documents
+              fighting over the paper. */}
+          {fileUrl ? (
+            <div className="mt-4 border-t border-border pt-4">
+              {material.file_type?.startsWith('image/') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={fileUrl}
+                  alt={`Material adjunto: ${material.title}`}
+                  className="max-w-full rounded-xl border border-border"
+                />
+              ) : (
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-print inline-flex items-center gap-2 text-[13.5px] font-semibold text-violet hover:underline"
+                >
+                  <Paperclip className="size-4" />
+                  Abrir el archivo adjunto
+                </a>
+              )}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

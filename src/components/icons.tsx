@@ -223,6 +223,15 @@ export const Download = icon(
   <path d="M12 3V15M12 15L8 11M12 15L16 11M5 17V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V17" />,
 )
 
+export const Paperclip = icon(
+  <path d="M20 11L12.5 18.5C10.8 20.2 8.2 20.2 6.5 18.5C4.8 16.8 4.8 14.2 6.5 12.5L14.5 4.5C15.6 3.4 17.4 3.4 18.5 4.5C19.6 5.6 19.6 7.4 18.5 8.5L10.9 16.1C10.3 16.7 9.4 16.7 8.8 16.1C8.2 15.5 8.2 14.6 8.8 14L15.5 7.3" />,
+)
+
+/** v1's `download`, turned around. Same tray, the arrow going the other way. */
+export const Upload = icon(
+  <path d="M12 15V3M12 3L8 7M12 3L16 7M5 17V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V17" />,
+)
+
 export const Inbox = icon(
   <path d="M9 4H7C5.9 4 5 4.9 5 6V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V6C19 4.9 18.1 4 17 4H15M9 4C9 5.1 9.9 6 11 6H13C14.1 6 15 5.1 15 4M9 4C9 2.9 9.9 2 11 2H13C14.1 2 15 2.9 15 4M9 12H15M9 16H13" />,
 )

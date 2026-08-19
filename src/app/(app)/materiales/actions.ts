@@ -10,6 +10,7 @@ import {
   copyMaterial,
   createMaterial,
   deleteMaterial,
+  saveMaterialFile,
   updateMaterial,
 } from '@/server/materials'
 import { getPractitioner } from '@/server/practitioners'
@@ -143,6 +144,56 @@ export async function generateMaterialAction(
   redirect(
     `/materiales/${material.id}/editar?generar=${encodeURIComponent(asked.slice(0, 300))}`,
   )
+}
+
+/**
+ * "Subir un material": creates the row, attaches the file, and hands off to the
+ * description.
+ *
+ * Same two-step as generating one, and for the same reason — the file needs a
+ * material id to live under, so the row exists first. What it does not do is
+ * ask for a title: the whole point is that the model reads the file and writes
+ * one. The placeholder below is what shows for the two seconds until it does,
+ * and on the edit form that follows.
+ */
+export async function uploadMaterialAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const practitioner = await getPractitioner(user.id)
+
+  const file = formData.get('file')
+  if (!(file instanceof File) || file.size === 0) {
+    return formError('Elegí un archivo.')
+  }
+
+  let material
+  try {
+    material = await createMaterial(user.id, practitioner.discipline, {
+      title: 'Material sin describir',
+      area: formData.get('area'),
+      focus: null,
+      kind: formData.get('kind') ?? 'worksheet',
+      objective: null,
+      content: 'Todavía sin descripción. Escribila o pedile a Hilo que lea el archivo.',
+      ageRange: formData.get('ageRange'),
+      visibility: 'private',
+    })
+
+    await saveMaterialFile(user.id, material.id, {
+      contentType: file.type,
+      bytes: await file.arrayBuffer(),
+    })
+  } catch (error) {
+    // The row may exist with no file attached. Leaving it would litter the
+    // library with empty materials nobody asked for.
+    if (material) await deleteMaterial(user.id, material.id).catch(() => {})
+    return toFormError(error, 'No pudimos subir el archivo. Probá de nuevo.')
+  }
+
+  revalidatePath('/materiales')
+  redirect(`/materiales/${material.id}/editar?describir=1`)
 }
 
 export async function copyMaterialAction(formData: FormData) {
