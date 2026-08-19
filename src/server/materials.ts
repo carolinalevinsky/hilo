@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { likePattern } from '@/lib/search'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -93,6 +94,37 @@ export type MaterialFilters = {
   onlyCommunity?: boolean
 }
 
+/**
+ * A search term, made safe to put inside a PostgREST `or(…)` filter.
+ *
+ * There are **two** escaping layers here and missing either one is a bug that
+ * only shows up on some inputs:
+ *
+ * 1. **`LIKE`**, which reads `%` and `_` as wildcards and `\` as its own escape.
+ *    A search box should match those characters literally.
+ * 2. **`or()`**, which takes a single string and parses it — a comma ends the
+ *    condition, a parenthesis closes the group. Searching for "conciencia,
+ *    rimas", a completely ordinary thing to type, produced a malformed filter
+ *    and a **500** on a screen with no other way to search. Double quotes make
+ *    the value opaque to that parser, and the quote and backslash inside it have
+ *    to be escaped in turn.
+ *
+ * The order matters: layer 1 runs first and can introduce backslashes, which
+ * layer 2 then escapes again.
+ *
+ * This was never an injection hole — RLS decides which rows exist regardless of
+ * what the filter says, so the worst case was a broken query rather than someone
+ * else's data. It was a crash reached by typing normally, which is worse in
+ * practice.
+ *
+ * Only `or()` needs any of this. Every other filter passes its value as an
+ * argument (`.eq('area', …)`), where the client handles it.
+ */
+function searchFilter(term: string): string {
+  const pattern = likePattern(term)
+  return `"${pattern.replace(/[\\"]/g, (character) => `\\${character}`)}"`
+}
+
 export async function listMaterials(
   practitionerId: string,
   filters: MaterialFilters,
@@ -121,8 +153,8 @@ export async function listMaterials(
   if (filters.area) query = query.eq('area', filters.area)
   if (filters.ageRange) query = query.eq('age_range', filters.ageRange)
   if (filters.search?.trim()) {
-    const term = filters.search.trim()
-    query = query.or(`title.ilike.%${term}%,objective.ilike.%${term}%,focus.ilike.%${term}%`)
+    const term = searchFilter(filters.search.trim())
+    query = query.or(`title.ilike.${term},objective.ilike.${term},focus.ilike.${term}`)
   }
 
   const { data, error } = await query.order('title')

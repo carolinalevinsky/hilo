@@ -1,7 +1,5 @@
 'use client'
 
-import { useRef } from 'react'
-
 /**
  * The goal picker in "Plan de la semana", which saves as soon as you pick.
  *
@@ -26,11 +24,8 @@ export function FocusSelect({
   label: string
   options: { id: string; title: string; progress: number }[]
 }) {
-  const form = useRef<HTMLSelectElement>(null)
-
   return (
     <select
-      ref={form}
       name={name}
       defaultValue={defaultValue}
       aria-label={label}

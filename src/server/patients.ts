@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { likePattern } from '@/lib/search'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -301,7 +302,7 @@ export async function listPatients(
   // `ilike` handles case; accents it does not, so "Lucia" will not find "Lucía".
   // Fixing that properly means the `unaccent` extension and a functional index,
   // which is worth doing at a few hundred patients and is not worth doing now.
-  if (search?.trim()) query = query.ilike('full_name', `%${search.trim()}%`)
+  if (search?.trim()) query = query.ilike('full_name', likePattern(search.trim()))
 
   query =
     sort === 'recent'

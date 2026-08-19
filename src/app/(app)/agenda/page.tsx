@@ -66,20 +66,33 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   tomorrowDate.setDate(tomorrowDate.getDate() + 1)
   const tomorrow = toDateInput(tomorrowDate)
 
-  const [appointments, schedules, patients, pendingBookings, tomorrowAppointments] =
-    await Promise.all([
-      listAppointments(user.id, first, last),
-      listSchedules(user.id),
-      listPatients(user.id),
-      // The requests themselves rather than a count: they are answered here.
-      listBookingRequests(user.id, 'pending'),
-      listAppointments(user.id, tomorrow, tomorrow),
-    ])
+  const [
+    appointments,
+    schedules,
+    patients,
+    pendingBookings,
+    tomorrowAppointments,
+    practitioner,
+  ] = await Promise.all([
+    listAppointments(user.id, first, last),
+    listSchedules(user.id),
+    listPatients(user.id),
+    // The requests themselves rather than a count: they are answered here.
+    listBookingRequests(user.id, 'pending'),
+    listAppointments(user.id, tomorrow, tomorrow),
+    getPractitioner(user.id),
+  ])
 
-  // The week read as work rather than as a calendar. Its own query because it
-  // needs the goals and the matched material, which the grid does not.
-  const practitioner = await getPractitioner(user.id)
-  const weekSessions = await planForRange(user.id, practitioner.discipline, first, last)
+  // The week read as work rather than as a calendar. It needs the goals and the
+  // matched material, which the grid does not — but it needs the same
+  // appointments, so they are handed over rather than fetched again.
+  const weekSessions = await planForRange(
+    user.id,
+    practitioner.discipline,
+    first,
+    last,
+    appointments,
+  )
 
   // The appointment row carries the patient's name and colour but not their
   // birthday, and the list is already loaded for the "Agendar" dialog.

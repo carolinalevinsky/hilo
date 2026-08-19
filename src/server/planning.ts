@@ -67,9 +67,16 @@ export async function planForRange(
   discipline: string,
   from: string,
   to: string,
+  /**
+   * The same rows, when the caller already has them. The Agenda loads the week's
+   * appointments to draw the grid and then asks for this panel over the same
+   * range — without this it fetched them a second time, on every load, for every
+   * practitioner.
+   */
+  known?: Awaited<ReturnType<typeof listAppointments>>,
 ): Promise<PlannedSession[]> {
   const [appointments, materials] = await Promise.all([
-    listAppointments(practitionerId, from, to),
+    known ?? listAppointments(practitionerId, from, to),
     listMaterials(practitionerId, { discipline }),
   ])
 
