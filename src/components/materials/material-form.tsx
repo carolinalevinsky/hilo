@@ -1,10 +1,11 @@
 'use client'
 
-import { Globe, Lock, Paperclip, Sparkles } from '@/components/icons'
+import { Globe, Lock, Sparkles } from '@/components/icons'
 import { useActionState, useEffect, useRef, useState } from 'react'
 
 import { createMaterialAction, updateMaterialAction } from '@/app/(app)/materiales/actions'
 import { FormMessage } from '@/components/auth/form-message'
+import { MaterialAttachment } from '@/components/materials/material-attachment'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -216,21 +217,17 @@ export function MaterialForm({
         />
       </div>
 
-      {/* The attached file, if there is one. Worth being able to look at while
-          correcting a description that was written from it. */}
+      {/* The attached file, shown while you correct a description that was
+          written from it — which is the whole reason it is here and not behind
+          a link. Shorter than on the material's own page: this is a reference
+          beside a form, not the thing you came to read. */}
       {fileUrl ? (
-        <a
-          href={fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2.5 rounded-xl border border-border px-3 py-2.5 text-[13px] font-semibold transition-colors hover:bg-muted"
-        >
-          <Paperclip className="size-4 shrink-0 text-violet" />
-          Ver el archivo adjunto
-          <span className="ml-auto text-[11.5px] font-normal text-muted-foreground">
-            se abre en otra pestaña
-          </span>
-        </a>
+        <MaterialAttachment
+          url={fileUrl}
+          fileType={material?.file_type ?? null}
+          title={material?.title ?? 'el material'}
+          height={340}
+        />
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
