@@ -84,9 +84,10 @@ picker in the edit form, all built in M2. An earlier draft of this document said
 otherwise and was wrong; the badge is only the shortcut v1 had, because adding a
 face to a patient is something you think of while looking at them.
 
-"Consulta online" is back too, second in the row as in v1 — see below for why
-its link is not v1's. So is "Exportar datos", and "Próxima sesión" above the
-history.
+"Consulta online" is back too, second in the row as in v1 — see below for why its
+link is not v1's. So are "Exportar datos", "Próxima sesión" above the history,
+**"Evaluaciones e informes"** (the patient's own documents, which had lived only
+on `/informes`), and **"Memoria de Hilo"**.
 
 Still open, and it is more than a component edit:
 
@@ -116,6 +117,21 @@ v1 put the two buttons on that card, and it is right: a family waiting on a repl
 is what you deal with in the ten seconds between patients, and "go to another
 screen first" is how it becomes tomorrow's job. One component
 (`components/booking/pending-requests.tsx`) renders it here and on `/reservas`.
+
+**"Plan de la semana" is back under the grid** (`legacy/index.html:1498`). One
+row per session of the week: who, when, which goal it is for, the material that
+fits, and a tick for when you have given it. The grid answers "when am I busy";
+this answers "what am I doing in each of these".
+
+Two things differ from v1, both because v1 kept this in memory:
+
+- **The goal you pick is kept** (`appointments.focus_goal_id`). v1 reset every
+  row to the lowest-scoring goal on each reload, which made choosing pointless.
+  Until you choose, the suggestion is still the lowest-scoring goal, so the panel
+  reads the same on first load.
+- **The tick is the appointment's own status**, the same "Vino" the card menu
+  sets, not a separate checkbox that knew nothing about it. One session, one
+  truth about whether it happened.
 
 Still open: **Google Calendar**. See below.
 
@@ -305,21 +321,34 @@ Two things, and only one of them is work.
 2. **Google Calendar** — the largest, and the least missed, since every
    appointment menu already offers "Agregar a Google Calendar" without any OAuth.
 
-## How the last pass was done
+## How the last passes were done
 
-Not by re-reading the screens. Every `<button>` label v1 renders was extracted
-from `legacy/index.html` — 103 of them — and checked, accent- and
-punctuation-insensitively, against the whole of `src/`. Thirty-four did not
-appear.
+Not by re-reading the screens. Strings were extracted from `legacy/index.html`
+and checked, accent- and punctuation-insensitively, against the whole of `src/`.
+Twice, because the first cut missed a whole category.
 
-Most were v2 saying the same thing in different words ("Marcar pago" →
-"Registrar pago"), or Clínica and Google Calendar, which are deliberately absent.
-Three were real, and all three are now built: **"Sumar a la sesión"**,
-**"Modificar con IA"**, and **"Próxima sesión" on the ficha**.
+**Pass one — every `<button>` label.** 103 of them; 34 did not appear. Most were
+v2 saying the same thing in different words ("Marcar pago" → "Registrar pago"),
+or Clínica and Google Calendar, which are deliberately absent. Three were real
+and all three are built: **"Sumar a la sesión"**, **"Modificar con IA"**, and
+**"Próxima sesión" on the ficha**.
 
-The technique is worth repeating when anything else is ported: a label is a
-promise the interface makes, and a promise missing from the new code is a feature
-missing from the new product. It finds things reading cannot.
+**Pass two — section titles and form labels.** Buttons do not find a card that
+has no button in it, which is exactly what the first pass missed. 24 headings and
+48 labels; three more real gaps, all now built:
+
+- **"Evaluaciones e informes" on the ficha.** The patient's documents lived only
+  on `/informes`, which lists everybody's — the right screen for "what did I
+  write this month", the wrong one for "what do I already have on this child".
+- **"Memoria de Hilo".** It looks like decoration and is not: it answers the
+  first-month doubt about whether all this is being written into a hole.
+- **"Plan de la semana"** under the agenda grid. See Agenda above.
+
+The technique is worth repeating for anything else ported, and worth doing more
+than once, in more than one category: a label is a promise the interface makes,
+and a promise missing from the new code is a feature missing from the new
+product. It finds things reading cannot — including, twice, things this document
+had already claimed were done.
 
 ## Screens compared, finally
 
