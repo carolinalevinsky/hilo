@@ -15,7 +15,7 @@ import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
 import { readSseStream } from '@/lib/sse-client'
 import { cn } from '@/lib/utils'
-import type { Material, MaterialVisibility } from '@/server/materials'
+import type { Material, MaterialFileLinks, MaterialVisibility } from '@/server/materials'
 
 /**
  * Writing or editing a material.
@@ -33,7 +33,7 @@ export function MaterialForm({
   material,
   generateFor,
   describeFile = false,
-  fileUrl = null,
+  file = null,
 }: {
   areas: Record<string, string[]>
   material?: Material
@@ -44,8 +44,8 @@ export function MaterialForm({
   generateFor?: string
   /** Arriving from "Subir un material": read the file and fill the three fields. */
   describeFile?: boolean
-  /** A signed URL for the attached file, so it can be looked at while editing. */
-  fileUrl?: string | null
+  /** Signed links for the attached file, so it can be looked at while editing. */
+  file?: MaterialFileLinks | null
 }) {
   const [state, formAction, pending] = useActionState(
     material ? updateMaterialAction : createMaterialAction,
@@ -221,9 +221,10 @@ export function MaterialForm({
           written from it — which is the whole reason it is here and not behind
           a link. Shorter than on the material's own page: this is a reference
           beside a form, not the thing you came to read. */}
-      {fileUrl ? (
+      {file ? (
         <MaterialAttachment
-          url={fileUrl}
+          url={file.url}
+          downloadUrl={file.downloadUrl}
           fileType={material?.file_type ?? null}
           title={material?.title ?? 'el material'}
           height={340}

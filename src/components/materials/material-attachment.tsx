@@ -1,4 +1,4 @@
-import { Paperclip } from '@/components/icons'
+import { Download } from '@/components/icons'
 
 /**
  * The attached file, shown rather than linked.
@@ -29,12 +29,15 @@ const VIEWABLE_IMAGES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 export function MaterialAttachment({
   url,
+  downloadUrl,
   fileType,
   title,
   /** Taller on the material's own page than beside a form. */
   height = 520,
 }: {
   url: string
+  /** Signed with `Content-Disposition: attachment`. See `getMaterialFileUrl`. */
+  downloadUrl: string
   fileType: string | null
   title: string
   height?: number
@@ -61,19 +64,19 @@ export function MaterialAttachment({
         />
       ) : null}
 
+      {/* Says "Descargar" because that is what it does — the URL is signed to
+          arrive as an attachment. */}
       <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={downloadUrl}
         className="no-print inline-flex items-center gap-2 text-[13px] font-semibold text-violet hover:underline"
       >
-        <Paperclip className="size-4" />
-        {isPdf || isImage ? 'Abrir el archivo aparte' : 'Abrir el archivo adjunto'}
+        <Download className="size-4" />
+        Descargar el archivo
       </a>
 
       {!isPdf && !isImage ? (
         <p className="text-xs text-muted-foreground">
-          Este formato no se puede previsualizar acá. Se abre con la app de tu
+          Este formato no se previsualiza acá. Descargalo y se abre con la app de tu
           computadora.
         </p>
       ) : null}

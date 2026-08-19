@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { areasFor } from '@/lib/material-areas'
 import { requireUser } from '@/server/auth'
-import { getMaterial, getMaterialFileUrl } from '@/server/materials'
+import { getMaterial, getMaterialFileUrl, materialFileName } from '@/server/materials'
 import { getPractitioner } from '@/server/practitioners'
 
 export const metadata: Metadata = { title: 'Editar material · Hilo' }
@@ -57,7 +57,10 @@ export default async function EditMaterialPage({
             material={material}
             generateFor={typeof generar === 'string' ? generar : undefined}
             describeFile={describir === '1'}
-            fileUrl={await getMaterialFileUrl(material.file_path)}
+            file={await getMaterialFileUrl(
+              material.file_path,
+              materialFileName(material.title, material.file_type),
+            )}
           />
         </CardContent>
       </Card>

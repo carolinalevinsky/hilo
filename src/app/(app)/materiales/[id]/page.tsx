@@ -12,7 +12,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
 import { requireUser } from '@/server/auth'
-import { getMaterial, getMaterialFileUrl, materialOrigin } from '@/server/materials'
+import {
+  getMaterial,
+  getMaterialFileUrl,
+  materialFileName,
+  materialOrigin,
+} from '@/server/materials'
 import { listPatients } from '@/server/patients'
 
 export const metadata: Metadata = { title: 'Material · Hilo' }
@@ -33,7 +38,10 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
   const [material, patients] = await Promise.all([getMaterial(id), listPatients(user.id)])
   if (!material) notFound()
 
-  const fileUrl = await getMaterialFileUrl(material.file_path)
+  const file = await getMaterialFileUrl(
+    material.file_path,
+    materialFileName(material.title, material.file_type),
+  )
 
   const origin = materialOrigin(material, user.id)
   const isMine = origin === 'mine'
@@ -125,10 +133,11 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
             <DocumentBody text={material.content} />
           </div>
 
-          {fileUrl ? (
+          {file ? (
             <div className="mt-4 border-t border-border pt-4">
               <MaterialAttachment
-                url={fileUrl}
+                url={file.url}
+                downloadUrl={file.downloadUrl}
                 fileType={material.file_type}
                 title={material.title}
               />

@@ -1,4 +1,4 @@
-import { Check, FileText, Sparkles, Target } from '@/components/icons'
+import { BookOpen, Check, FileText, Sparkles, Target } from '@/components/icons'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -6,29 +6,46 @@ import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 /**
- * "Primeros pasos" — v1's onboarding card (`legacy/index.html:1033`).
+ * "Primeros pasos" — v1's onboarding card (`legacy/index.html:1033`), and the
+ * only thing standing between a new practitioner and six empty screens.
  *
- * v2 had nothing: you created an account and landed on an empty screen that
- * explained itself one card at a time, if at all. This is the thing that makes
- * the first ten minutes make sense.
+ * Two steps, as in v1, and they are the two that unlock everything else: a
+ * patient to write about, and one session written. Not five — a checklist long
+ * enough to feel like work is a checklist nobody finishes.
  *
- * Two steps, as in v1, and they are the two that unlock everything else — a
- * patient to write about, and one session written. Not five steps: a checklist
- * long enough to feel like work is a checklist nobody finishes.
+ * ─── Why the library is here and is not a step ────────────────────────────
  *
- * **It disappears on its own** once both are done, which is what keeps it from
- * becoming furniture. There is no dismiss button, because there is nothing to
- * dismiss for more than a day or two.
+ * Walking the app as a new account makes one thing obvious: **every screen
+ * funnels to "cargá tu primer paciente"**, six times over, and the first thing
+ * Hilo asks anybody to do is type a real child's name into software they have
+ * used for ninety seconds. That is a reasonable thing to hesitate over, and
+ * hesitating leaves you with nothing to look at.
+ *
+ * Except it does not, because the library already has materials for their
+ * discipline on the day they sign up. That is the one piece of real, present-
+ * tense value available before any data is entered — so it goes on this card,
+ * below the steps, worded as a fact rather than a task. It is deliberately not
+ * numbered: nothing about it is required, and making it step three would make
+ * the checklist longer for no reason.
+ *
+ * **The card removes itself** once both steps are done, which is what keeps it
+ * from becoming furniture. There is no dismiss button, because there is nothing
+ * to dismiss for more than a day or two.
  */
 export function FirstSteps({
   hasPatient,
   hasSession,
   firstPatientId,
+  materialCount,
+  disciplineLabel,
 }: {
   hasPatient: boolean
   hasSession: boolean
   /** Where "Registrá tu primera sesión" points, once there is somebody to write about. */
   firstPatientId: string | null
+  materialCount: number
+  /** "Fonoaudiología", to be lowercased into running text. */
+  disciplineLabel: string
 }) {
   if (hasPatient && hasSession) return null
 
@@ -49,7 +66,7 @@ export function FirstSteps({
           done={hasPatient}
           number={1}
           title="Cargá tu primer paciente"
-          text="Nombre, edad y motivo. Se hace una sola vez."
+          text="Nombre, edad y motivo de consulta. Se hace una sola vez y la ficha queda guardada para siempre."
           action={
             <Button asChild size="sm">
               <Link href="/pacientes/nuevo">Cargar paciente</Link>
@@ -63,17 +80,40 @@ export function FirstSteps({
           title="Registrá tu primera sesión"
           text="Anotá cómo salió — podés dictarla por voz — y Hilo empieza el seguimiento."
           action={
-            // Only once there is a patient: a button that leads to a form you
-            // cannot fill in is worse than no button.
             firstPatientId ? (
               <Button asChild size="sm">
                 <Link href={`/pacientes/${firstPatientId}/sesiones/nueva`}>
                   Registrar sesión
                 </Link>
               </Button>
-            ) : null
+            ) : (
+              // Said rather than left blank: an inert row reads as broken, and
+              // "after the first one" reads as a sequence.
+              <span className="shrink-0 text-[12px] text-muted-foreground">
+                Después del paso 1
+              </span>
+            )
           }
         />
+
+        {/* Something to do right now that needs no patient. See above. */}
+        {materialCount > 0 ? (
+          <Link
+            href="/materiales"
+            className="mt-3 flex items-center gap-2.5 rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-violet transition-opacity hover:opacity-85"
+          >
+            <BookOpen className="size-4 shrink-0" />
+            <span>
+              Mientras tanto, tu biblioteca ya tiene{' '}
+              <b>
+                {materialCount} {materialCount === 1 ? 'material' : 'materiales'} de{' '}
+                {disciplineLabel.toLowerCase()}
+              </b>{' '}
+              para usar hoy.
+            </span>
+            <span className="ml-auto shrink-0 font-bold">Ver →</span>
+          </Link>
+        ) : null}
 
         {/* v1 closed the card with what all this is *for*. It is the answer to
             "why am I typing this in", and it is the reason somebody finishes

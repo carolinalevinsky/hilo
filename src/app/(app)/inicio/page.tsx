@@ -4,15 +4,16 @@ import Link from 'next/link'
 
 import { TodaySessionCard } from '@/components/agenda/today-session-card'
 import { AskHilo } from '@/components/assistant/ask-hilo'
-import { EmptyState } from '@/components/empty-state'
 import { FirstSteps } from '@/components/onboarding/first-steps'
 import { PageHeader } from '@/components/page-header'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
+import { disciplineLabel } from '@/lib/disciplines'
 import { firstName } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
+import { countMaterials } from '@/server/materials'
 import { listPatients } from '@/server/patients'
 import { todayBriefing } from '@/server/planning'
 import { countSessions } from '@/server/sessions'
@@ -30,6 +31,13 @@ export default async function HomePage() {
     // and returns no rows.
     countSessions(user.id),
   ])
+
+  // Only while "Primeros pasos" is still on screen, which is a day or two out of
+  // the life of an account. Once it is finished this query stops running.
+  const stillOnboarding = patients.length === 0 || sessionCount === 0
+  const materialCount = stillOnboarding
+    ? await countMaterials(user.id, practitioner.discipline)
+    : 0
 
   // The briefing carries the patient's name and colour but not their birthday,
   // and the list is already here — no reason to ask the database twice.
@@ -56,27 +64,22 @@ export default async function HomePage() {
 
       {/* v1's onboarding, and the thing that made the first ten minutes make
           sense (`legacy/index.html:1033`). It removes itself once both steps are
-          done, so it never becomes furniture. */}
+          done, so it never becomes furniture.
+
+          It also *is* the empty state now. There used to be a card underneath
+          repeating "Empecemos por tu primer paciente / Nombre, edad y motivo",
+          which is what step 1 already says, with a second button going to the
+          same form — the same instruction twice, on the first screen anyone
+          sees. */}
       <FirstSteps
         hasPatient={patients.length > 0}
         hasSession={sessionCount > 0}
         firstPatientId={patients[0]?.id ?? null}
+        materialCount={materialCount}
+        disciplineLabel={disciplineLabel(practitioner.discipline)}
       />
 
-      {patients.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={Users}
-            title="Empecemos por tu primer paciente"
-            text="Nombre, edad y motivo de consulta. Se hace una sola vez y la ficha queda guardada para siempre."
-            action={
-              <Button asChild>
-                <Link href="/pacientes/nuevo">Cargar mi primer paciente</Link>
-              </Button>
-            }
-          />
-        </Card>
-      ) : (
+      {patients.length === 0 ? null : (
         <>
           <StatCardGrid className="lg:grid-cols-2">
             <StatCard

@@ -238,16 +238,71 @@ export async function saveMaterialFile(
  * The Storage policy decides whether this succeeds — for a community material it
  * does, for somebody else's private one it does not.
  */
-export async function getMaterialFileUrl(filePath: string | null): Promise<string | null> {
+export type MaterialFileLinks = {
+  /** Opens in place — what the preview embeds. */
+  url: string
+  /** Saves to disk under a readable name. */
+  downloadUrl: string
+}
+
+export async function getMaterialFileUrl(
+  filePath: string | null,
+  /** Becomes the saved filename. The material's title, usually. */
+  downloadName = 'material',
+): Promise<MaterialFileLinks | null> {
   if (!filePath) return null
 
   const db = await getDb()
-  const { data, error } = await db.storage
-    .from(FILE_BUCKET)
-    .createSignedUrl(filePath, 60 * 60)
 
-  if (error) return null
-  return data.signedUrl
+  // Two signed URLs from one call each, because they differ only in what the
+  // storage server puts in `Content-Disposition`. The `download` flag is what
+  // actually forces a save — the HTML `download` attribute is **ignored on a
+  // cross-origin link**, and these URLs point at Supabase, not at the app. A
+  // button labelled "Descargar" that opens a tab instead is a small lie, and
+  // this is the only way to stop it telling one.
+  const [inline, attachment] = await Promise.all([
+    db.storage.from(FILE_BUCKET).createSignedUrl(filePath, 60 * 60),
+    db.storage.from(FILE_BUCKET).createSignedUrl(filePath, 60 * 60, {
+      download: downloadName,
+    }),
+  ])
+
+  if (inline.error || !inline.data) return null
+
+  return {
+    url: inline.data.signedUrl,
+    downloadUrl: attachment.data?.signedUrl ?? inline.data.signedUrl,
+  }
+}
+
+/**
+ * A filename someone will recognise in their downloads folder.
+ *
+ * The extension comes from the stored mime type rather than from the original
+ * name, which is not kept: a file saved as `material.pdf` opens, and one saved
+ * with no extension makes the operating system ask what to do with it.
+ */
+export function materialFileName(title: string, fileType: string | null): string {
+  const slug =
+    title
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase()
+      .slice(0, 60) || 'material'
+
+  const extension =
+    {
+      'application/pdf': 'pdf',
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/heic': 'heic',
+      'image/heif': 'heif',
+    }[fileType ?? ''] ?? 'archivo'
+
+  return `${slug}.${extension}`
 }
 
 /** The bytes themselves, base64, for handing to the model. */
@@ -261,6 +316,31 @@ export async function readMaterialFile(
 
   const buffer = Buffer.from(await data.arrayBuffer())
   return { base64: buffer.toString('base64') }
+}
+
+/**
+ * How many materials this practitioner can see, without loading any of them.
+ *
+ * Only "Primeros pasos" asks, and only until it is finished — but a new
+ * practitioner's most useful fact on day one is that the library is already
+ * full, and reading eleven whole rows including their `content` to print one
+ * number would be a strange way to say so.
+ */
+export async function countMaterials(
+  practitionerId: string,
+  discipline: string,
+): Promise<number> {
+  const db = await getDb()
+
+  const { count, error } = await db
+    .from('materials')
+    .select('id', { count: 'exact', head: true })
+    .or(
+      `practitioner_id.eq.${practitionerId},discipline.eq.${discipline},discipline.is.null,visibility.eq.public`,
+    )
+
+  if (error) throw error
+  return count ?? 0
 }
 
 export async function getMaterial(materialId: string) {
