@@ -30,7 +30,7 @@ export default async function NewMaterialPage() {
         subtitle="Guardá una actividad tuya y la tenés siempre a mano."
       />
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent>
           <MaterialForm areas={areasFor(practitioner.discipline)} />
         </CardContent>

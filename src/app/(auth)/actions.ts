@@ -28,7 +28,20 @@ export async function signUpAction(
     acceptedTerms: formData.get('acceptedTerms') === 'on',
   })
 
-  if (!result.ok) return formError(result.message)
+  // Handed back so the form can refill itself. Forgetting to tick the terms is
+  // the most likely way to fail this form, and retyping your name and email
+  // because of a checkbox is the kind of small insult that makes someone give
+  // up on signing up at all.
+  //
+  // The password is deliberately absent — see `FormState`.
+  if (!result.ok) {
+    return formError(result.message, {
+      fullName: String(formData.get('fullName') ?? ''),
+      email: String(formData.get('email') ?? ''),
+      discipline: String(formData.get('discipline') ?? ''),
+      acceptedTerms: formData.get('acceptedTerms') === 'on' ? 'on' : '',
+    })
+  }
 
   // `redirect` works by throwing, so it stays outside any try/catch.
   redirect('/inicio')

@@ -52,7 +52,7 @@ export function SessionForm({
   const [state, formAction, pending] = useActionState(saveSessionAction, EMPTY_FORM_STATE)
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-5">
+    <form action={formAction} className="space-y-5">
       <input type="hidden" name="patientId" value={patientId} />
       {session ? <input type="hidden" name="sessionId" value={session.id} /> : null}
       {fromPlan ? <input type="hidden" name="clearPlan" value="1" /> : null}

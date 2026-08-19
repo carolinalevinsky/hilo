@@ -36,7 +36,7 @@ export function PatientForm({
   )
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-5">
+    <form action={formAction} className="space-y-5">
       {patient ? <input type="hidden" name="patientId" value={patient.id} /> : null}
 
       <FormMessage message={state.message} />

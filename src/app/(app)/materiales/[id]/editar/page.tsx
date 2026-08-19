@@ -50,7 +50,7 @@ export default async function EditMaterialPage({
 
       <PageHeader title="Editar material" subtitle={material.title} />
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent>
           <MaterialForm
             areas={areasFor(practitioner.discipline)}

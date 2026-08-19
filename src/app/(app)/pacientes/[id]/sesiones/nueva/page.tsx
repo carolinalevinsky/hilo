@@ -45,7 +45,7 @@ export default async function NewSessionPage({
 
       <PageHeader title="Registrar sesión" subtitle={patient.full_name} />
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent>
           <SessionForm
             patientId={patient.id}

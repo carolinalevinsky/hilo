@@ -43,7 +43,7 @@ export default async function EditSessionPage({
 
       <PageHeader title="Editar sesión" subtitle={patient.full_name} />
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent className="space-y-5">
           <SessionForm
             patientId={patient.id}

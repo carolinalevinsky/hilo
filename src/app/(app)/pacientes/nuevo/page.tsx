@@ -24,7 +24,7 @@ export default function NewPatientPage() {
         subtitle="Con el nombre alcanza para empezar. El resto lo completás cuando quieras."
       />
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent>
           <PatientForm />
         </CardContent>

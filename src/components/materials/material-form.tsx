@@ -149,7 +149,7 @@ export function MaterialForm({
   }, [])
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-4">
+    <form action={formAction} className="space-y-4">
       <FormMessage message={state.message} />
       {material ? <input type="hidden" name="materialId" value={material.id} /> : null}
 
@@ -256,7 +256,9 @@ export function MaterialForm({
           placeholder={`Cómo se juega:\nSe dice una palabra en voz alta y el niño marca la imagen que empieza con el mismo sonido.\n\nMateriales:\nCartones impresos y fichas.`}
         />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Una línea corta terminada en dos puntos se ve como subtítulo. El resto, párrafos.
+          Los renglones cortos que terminan en dos puntos —como{' '}
+          <b className="font-semibold">Materiales:</b>— se ven como títulos cuando lo
+          imprimís. Todo lo demás queda como texto común.
         </p>
 
         {/* v1's "Modificar con IA", with v1's own placeholder — those three
@@ -326,8 +328,7 @@ export function MaterialForm({
             <Checkbox id="ownWork" name="ownWork" className="mt-0.5" />
             <span>
               Declaro que este material es de mi autoría o tengo permiso para compartirlo, y
-              que no incluye contenido con derechos de autor de terceros (por ejemplo ARASAAC
-              u otros bancos de uso no comercial).
+              que no incluye contenido con derechos de autor de terceros.
             </span>
           </Label>
         ) : null}

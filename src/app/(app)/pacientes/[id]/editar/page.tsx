@@ -36,7 +36,7 @@ export default async function EditPatientPage({
 
       <PageHeader title="Editar ficha" subtitle={patient.full_name} />
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardContent className="space-y-4">
           <PatientForm patient={patient} photoUrl={photoUrl} />
 

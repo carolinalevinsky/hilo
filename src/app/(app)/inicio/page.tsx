@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { TodaySessionCard } from '@/components/agenda/today-session-card'
 import { AskHilo } from '@/components/assistant/ask-hilo'
 import { EmptyState } from '@/components/empty-state'
+import { FirstSteps } from '@/components/onboarding/first-steps'
 import { PageHeader } from '@/components/page-header'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import { firstName } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
 import { listPatients } from '@/server/patients'
 import { todayBriefing } from '@/server/planning'
+import { countSessions } from '@/server/sessions'
 import { getPractitioner } from '@/server/practitioners'
 
 export const metadata: Metadata = { title: 'Inicio · Hilo' }
@@ -21,9 +23,12 @@ export const metadata: Metadata = { title: 'Inicio · Hilo' }
 export default async function HomePage() {
   const user = await requireUser()
   const practitioner = await getPractitioner(user.id)
-  const [patients, todaySessions] = await Promise.all([
+  const [patients, todaySessions, sessionCount] = await Promise.all([
     listPatients(user.id, { sort: 'recent' }),
     todayBriefing(user.id, practitioner.discipline),
+    // Just the number, for "Primeros pasos". A `head: true` count reads an index
+    // and returns no rows.
+    countSessions(user.id),
   ])
 
   // The briefing carries the patient's name and colour but not their birthday,
@@ -47,6 +52,15 @@ export default async function HomePage() {
             </Button>
           ) : null
         }
+      />
+
+      {/* v1's onboarding, and the thing that made the first ten minutes make
+          sense (`legacy/index.html:1033`). It removes itself once both steps are
+          done, so it never becomes furniture. */}
+      <FirstSteps
+        hasPatient={patients.length > 0}
+        hasSession={sessionCount > 0}
+        firstPatientId={patients[0]?.id ?? null}
       />
 
       {patients.length === 0 ? (
