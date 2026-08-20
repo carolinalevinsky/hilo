@@ -40,6 +40,25 @@ args=(
   --env HOSTNAME=0.0.0.0
 )
 
+# Credenciales de Supabase, para hablarle a un proyecto de verdad.
+#
+# El contenedor es `--rm`, así que `supabase login` no sirve: el token se guarda
+# en el home de adentro y se pierde al salir. Estas dos variables son la forma
+# que tiene el CLI de recibirlo sin sesión guardada, y son las únicas que hacen
+# falta para `link` y `db push`.
+#
+# Se pasan por NOMBRE, sin `=valor`: Docker lo toma de tu entorno y el valor
+# nunca aparece en la línea de comandos, así que no queda en el historial de la
+# shell ni en un `ps` que cualquiera puede leer. Corré así:
+#
+#   read -rs SUPABASE_ACCESS_TOKEN && export SUPABASE_ACCESS_TOKEN
+#   ./dx npx supabase link --project-ref <ref>
+#
+# `read -rs` no muestra lo que escribís y no lo guarda en el historial.
+for secret in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD; do
+  [ -n "${!secret:-}" ] && args+=(--env "$secret")
+done
+
 # Una TTY sólo si la hay — así `./dx` también sirve desde un script o CI.
 [ -t 0 ] && args+=(--interactive --tty)
 
