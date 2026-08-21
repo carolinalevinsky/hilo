@@ -107,7 +107,7 @@ export function HiloMemory({
       {nothingYet ? (
         <>
           Todavía no cargaste nada de {firstName}. A medida que registres sesiones y
-          evaluaciones, todo se guarda acá — y después Hilo lo usa para armar los informes
+          evaluaciones, todo se guarda acá, y después Hilo lo usa para armar los informes
           por vos.
         </>
       ) : (

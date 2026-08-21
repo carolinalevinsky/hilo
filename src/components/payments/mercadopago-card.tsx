@@ -74,7 +74,7 @@ export function MercadoPagoCard({ connected }: { connected: boolean }) {
                 >
                   tu panel de Mercado Pago
                 </a>
-                . Se guarda cifrado en el servidor y no vuelve a mostrarse — ni a vos.
+                . Se guarda cifrado en el servidor y no vuelve a mostrarse. Ni a vos.
               </p>
             </div>
 

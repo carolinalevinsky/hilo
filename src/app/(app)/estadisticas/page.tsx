@@ -185,11 +185,11 @@ export default async function StatisticsPage() {
                 <dd className="font-bold">{stats.activeGoals}</dd>
                 {/* Asistencia lives here rather than in the row above, because
                     the row above is v1's four and because this number is often
-                    "—": a headline card that usually says nothing teaches you to
-                    stop reading the row. */}
+                    "Sin datos": a headline card that usually says nothing
+                    teaches you to stop reading the row. */}
                 <dt className="text-muted-foreground">Asistencia</dt>
                 <dd className="font-bold">
-                  {stats.attendanceRate === null ? '—' : `${stats.attendanceRate}%`}
+                  {stats.attendanceRate === null ? 'Sin datos' : `${stats.attendanceRate}%`}
                 </dd>
                 <dt className="text-muted-foreground">Informes este mes</dt>
                 <dd className="font-bold">{stats.reportsThisMonth}</dd>

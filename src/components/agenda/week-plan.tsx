@@ -140,7 +140,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                       </Link>
                     </Button>
                   ) : (
-                    <span className="text-[12.5px] text-muted-foreground">—</span>
+                    <span className="text-[12.5px] text-muted-foreground">Sin objetivo</span>
                   )}
                 </li>
               )

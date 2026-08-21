@@ -119,7 +119,7 @@ export function AssessmentForm({
                   <Input
                     name={`score:${field}`}
                     inputMode="decimal"
-                    placeholder="—"
+                    placeholder="Sin dato"
                     aria-label={field}
                     className="w-20"
                   />

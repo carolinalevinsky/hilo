@@ -36,9 +36,9 @@ export default async function ReportPage({
   const patient = await getPatient(user.id, report.patient_id)
 
   const meta = [
-    { label: 'Paciente', value: report.patients?.full_name ?? '—' },
-    { label: 'Edad', value: ageLabel(report.patients?.date_of_birth ?? null) ?? '—' },
-    { label: 'Escolaridad', value: report.patients?.school_level ?? '—' },
+    { label: 'Paciente', value: report.patients?.full_name ?? 'Sin datos' },
+    { label: 'Edad', value: ageLabel(report.patients?.date_of_birth ?? null) ?? 'Sin datos' },
+    { label: 'Escolaridad', value: report.patients?.school_level ?? 'Sin datos' },
     { label: 'Destinatario', value: RECIPIENT_LABELS[report.recipient as RecipientId] },
   ]
 

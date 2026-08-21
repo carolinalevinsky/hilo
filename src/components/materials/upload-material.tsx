@@ -64,7 +64,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
 
           <p className="rounded-xl bg-amber-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
             Para describirlo, Hilo le manda el archivo al modelo de IA. Fijate que no
-            tenga el nombre de ningún paciente escrito — una foto sacada en el consultorio
+            tenga el nombre de ningún paciente escrito. Una foto sacada en el consultorio
             a veces lo tiene.
           </p>
 

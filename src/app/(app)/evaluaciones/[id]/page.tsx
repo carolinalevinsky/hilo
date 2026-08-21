@@ -60,10 +60,10 @@ export default async function AssessmentPage({
         title="Interpretación de evaluación"
         subtitle={`${assessment.instrument} · Montevideo, ${formatLongDate(assessment.assessed_on)}`}
         meta={[
-          { label: 'Paciente', value: assessment.patients?.full_name ?? '—' },
+          { label: 'Paciente', value: assessment.patients?.full_name ?? 'Sin datos' },
           {
             label: 'Edad',
-            value: ageLabel(assessment.patients?.date_of_birth ?? null) ?? '—',
+            value: ageLabel(assessment.patients?.date_of_birth ?? null) ?? 'Sin datos',
           },
           { label: 'Instrumento', value: assessment.instrument },
         ]}

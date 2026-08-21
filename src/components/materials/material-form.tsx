@@ -323,8 +323,8 @@ export function MaterialForm({
           placeholder={`Cómo se juega:\nSe dice una palabra en voz alta y el niño marca la imagen que empieza con el mismo sonido.\n\nMateriales:\nCartones impresos y fichas.`}
         />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Los renglones cortos que terminan en dos puntos —como{' '}
-          <b className="font-semibold">Materiales:</b>— se ven como títulos cuando lo
+          Los renglones cortos que terminan en dos puntos, como{' '}
+          <b className="font-semibold">Materiales:</b>, se ven como títulos cuando lo
           imprimís. Todo lo demás queda como texto común.
         </p>
 

@@ -84,7 +84,7 @@ export function TodaySessionCard({
             {session.focus.progress}%)
             {session.suggestedMaterial ? (
               <>
-                {' — '}
+                {' · '}
                 <Link
                   href={`/materiales/${session.suggestedMaterial.id}`}
                   className="font-semibold text-violet underline"

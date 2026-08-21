@@ -123,7 +123,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               <ul className="space-y-1.5">
                 {data.goals.map((goal) => (
                   <li key={goal.id} className="text-[13px]">
-                    <b>{goal.title}</b> — {goal.progress}%
+                    <b>{goal.title}</b> · {goal.progress}%
                     {goal.is_active ? '' : ' · retirado'}
                   </li>
                 ))}
@@ -143,7 +143,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
                       {session.goals.length > 0 ? ` · ${session.goals.join(', ')}` : ''}
                     </p>
                     <p className="text-[13px] leading-relaxed">
-                      {session.progressNote ?? '—'}
+                      {session.progressNote ?? 'Sin nota de progreso'}
                     </p>
                   </li>
                 ))}
@@ -198,7 +198,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               <ul className="space-y-1.5">
                 {data.payments.map((payment) => (
                   <li key={payment.id} className="text-[13px]">
-                    <b>{periodLabel(payment.period)}</b> — {money(Number(payment.amount))}
+                    <b>{periodLabel(payment.period)}</b> · {money(Number(payment.amount))}
                     {payment.paidOn ? ` · pagado el ${formatDate(payment.paidOn)}` : ''}
                     {payment.method ? ` · ${paymentMethodLabel(payment.method)}` : ''}
                   </li>

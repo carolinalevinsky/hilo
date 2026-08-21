@@ -78,7 +78,7 @@ export function FirstSteps({
           done={hasSession}
           number={2}
           title="Registrá tu primera sesión"
-          text="Anotá cómo salió — podés dictarla por voz — y Hilo empieza el seguimiento."
+          text="Anotá cómo salió, o dictala por voz, y Hilo empieza el seguimiento."
           action={
             firstPatientId ? (
               <Button asChild size="sm">

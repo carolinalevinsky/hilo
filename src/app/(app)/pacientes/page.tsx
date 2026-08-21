@@ -141,7 +141,7 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
                   </div>
 
                   <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5 text-[12px] text-muted-foreground">
-                    <span className="truncate">{patient.school ?? '—'}</span>
+                    <span className="truncate">{patient.school ?? 'Sin escuela'}</span>
                     <span
                       className="shrink-0 font-bold"
                       style={{ color: patientHex(patient.color) }}
