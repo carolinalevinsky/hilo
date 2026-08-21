@@ -44,12 +44,15 @@ export function WeekCalendar({
   appointments,
   today,
   ageOf,
+  calendarPrivacy,
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
   today: string
   /** Patient id → "5 años". The appointment does not carry a birthday. */
   ageOf?: Map<string, string | null>
+  /** Sólo de paso, hacia el menú de cada sesión. Ver `AppointmentMenu`. */
+  calendarPrivacy?: string | null
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -115,7 +118,12 @@ export function WeekCalendar({
                   {(byDate.get(day.date) ?? [])
                     .filter((appointment) => hourOf(appointment.start_time) === hour)
                     .map((appointment) => (
-                      <Event key={appointment.id} appointment={appointment} ageOf={ageOf} />
+                      <Event
+                        key={appointment.id}
+                        appointment={appointment}
+                        ageOf={ageOf}
+                        calendarPrivacy={calendarPrivacy}
+                      />
                     ))}
                 </div>
               ))}
@@ -130,9 +138,11 @@ export function WeekCalendar({
 function Event({
   appointment,
   ageOf,
+  calendarPrivacy,
 }: {
   appointment: AppointmentWithPatient
   ageOf?: Map<string, string | null>
+  calendarPrivacy?: string | null
 }) {
   const patient = appointment.patients
   const name = patient ? firstName(patient.full_name) : 'Paciente'
@@ -153,6 +163,7 @@ function Event({
 
       <AppointmentMenu
         appointment={appointment}
+        calendarPrivacy={calendarPrivacy}
         className="absolute top-0.5 right-0 text-white/80 hover:text-white"
       />
     </div>

@@ -16,8 +16,11 @@ import type { AppointmentWithPatient } from '@/server/appointments'
  */
 export function AppointmentCard({
   appointment,
+  calendarPrivacy,
 }: {
   appointment: AppointmentWithPatient
+  /** Sólo de paso, hacia el menú. Ver `AppointmentMenu`. */
+  calendarPrivacy?: string | null
 }) {
   const patient = appointment.patients
   const name = patient?.full_name ?? 'Paciente'
@@ -63,6 +66,7 @@ export function AppointmentCard({
 
       <AppointmentMenu
         appointment={appointment}
+        calendarPrivacy={calendarPrivacy}
         className="absolute top-1.5 right-1 text-muted-foreground hover:bg-muted"
       />
     </div>

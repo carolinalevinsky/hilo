@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import { calendarEventTitle } from '@/lib/calendar-privacy'
 import { googleCalendarLink } from '@/lib/week'
 import type { AppointmentWithPatient } from '@/server/appointments'
 
@@ -32,9 +33,17 @@ import type { AppointmentWithPatient } from '@/server/appointments'
  */
 export function AppointmentMenu({
   appointment,
+  calendarPrivacy,
   className,
 }: {
   appointment: AppointmentWithPatient
+  /**
+   * Cuánto del paciente puede salir hacia Google. Viaja como prop desde la
+   * página y no se lee acá porque esto es un componente de presentación — pero
+   * sobre todo porque con un dato así conviene poder seguir a ojo por dónde
+   * pasa. Sin valor, `calendarEventTitle` cae en "Ocupado".
+   */
+  calendarPrivacy?: string | null
   className?: string
 }) {
   const patient = appointment.patients
@@ -76,11 +85,20 @@ export function AppointmentMenu({
 
         <DropdownMenuItem asChild>
           <a
+            /* El título salía como `Sesión con Tomás Pérez`, sin preguntar. Eso
+               deja escrito en un servidor de Google, fuera del país, que esa
+               persona es paciente de esta profesional — y era la única opción,
+               en silencio. Ahora lo decide ella en su perfil, y sin haberlo
+               decidido dice "Ocupado".
+
+               `details` no lleva nada del paciente a propósito: el motivo de
+               consulta, los objetivos y la nota clínica no salen de Hilo por
+               este camino bajo ninguna configuración. */
             href={googleCalendarLink({
               date: appointment.scheduled_on,
               time: appointment.start_time,
               durationMinutes: appointment.duration_minutes,
-              title: `Sesión con ${name}`,
+              title: calendarEventTitle(name, calendarPrivacy),
               details: 'Agendado desde Hilo',
             })}
             target="_blank"

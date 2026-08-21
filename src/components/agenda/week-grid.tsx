@@ -20,10 +20,13 @@ export function WeekGrid({
   dates,
   appointments,
   today,
+  calendarPrivacy,
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
   today: string
+  /** Sólo de paso, hacia el menú de cada sesión. Ver `AppointmentMenu`. */
+  calendarPrivacy?: string | null
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -66,7 +69,10 @@ export function WeekGrid({
               <ul className="space-y-2">
                 {dayAppointments.map((appointment) => (
                   <li key={appointment.id}>
-                    <AppointmentCard appointment={appointment} />
+                    <AppointmentCard
+                      appointment={appointment}
+                      calendarPrivacy={calendarPrivacy}
+                    />
                   </li>
                 ))}
               </ul>

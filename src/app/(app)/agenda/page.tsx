@@ -198,13 +198,22 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             ) : null}
           </div>
 
+          {/* `calendarPrivacy` viaja hasta el menú de cada sesión, que es donde
+              se arma el link a Google. Nace acá porque es lo único que conoce a
+              la profesional; abajo son todos componentes de presentación. */}
           <WeekCalendar
             dates={dates}
             appointments={appointments}
             today={todayString()}
             ageOf={ageOf}
+            calendarPrivacy={practitioner.calendar_privacy}
           />
-          <WeekGrid dates={dates} appointments={appointments} today={todayString()} />
+          <WeekGrid
+            dates={dates}
+            appointments={appointments}
+            today={todayString()}
+            calendarPrivacy={practitioner.calendar_privacy}
+          />
 
           {/* Directly under the grid, as in v1 (`legacy/index.html:1499`). The
               grid answers "when am I busy"; this answers "what am I doing in

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { CALENDAR_PRIVACY } from '@/lib/calendar-privacy'
+import type { Tables } from '@/lib/database.types'
 import { DISCIPLINE_IDS } from '@/lib/disciplines'
 
 import { logAction } from './audit'
@@ -20,17 +22,19 @@ import { getDb } from './db'
  * API or an invite.
  */
 
-export type Practitioner = {
-  id: string
-  email: string
-  full_name: string
-  discipline: string
-  plan: string
-  slug: string | null
-  phone: string | null
-  onboarded_at: string | null
-  created_at: string
-}
+/**
+ * La fila, como la describe la base.
+ *
+ * Estaba escrita a mano y repetía las nueve columnas. `getPractitioner` hace
+ * `select('*')`, así que la lista era una copia que había que acordarse de
+ * mantener — y no se mantuvo: al agregar `calendar_privacy` el dato llegaba en
+ * la respuesta y el compilador decía que la propiedad no existía.
+ *
+ * Derivarla de los tipos generados es lo que `CLAUDE.md` da como razón para que
+ * no haya capa de mapeo: se cambia el SQL, se regenera, y el compilador señala
+ * cada lugar que hay que tocar. Una lista a mano rompe justamente eso.
+ */
+export type Practitioner = Tables<'practitioners'>
 
 /**
  * Reads the profile. Throws if it is missing.
@@ -103,6 +107,43 @@ export async function updatePractitioner(practitionerId: string, input: unknown)
 
   if (error) throw error
 
+  await logAction(practitionerId, 'update', 'practitioner', practitionerId)
+  return row
+}
+
+/**
+ * Cuánto de un paciente puede salir hacia Google Calendar.
+ *
+ * Va aparte de `updatePractitioner` porque no es un dato del perfil: es un
+ * permiso sobre datos de terceros — los pacientes — que la profesional otorga.
+ * Guardarlo con el mismo formulario que el teléfono lo volvería un campo más, y
+ * es lo contrario de lo que se quiere: que sea una decisión visible.
+ *
+ * `z.enum` y no `z.string()`: la base tiene el `check`, pero rebotar acá da un
+ * mensaje en castellano en vez de un error de Postgres, y deja el valor
+ * inválido afuera antes de tocar la base.
+ */
+export const CalendarPrivacyUpdate = z.object({
+  calendarPrivacy: z.enum(CALENDAR_PRIVACY, {
+    message: 'Elegí una de las tres opciones.',
+  }),
+})
+
+export async function updateCalendarPrivacy(practitionerId: string, input: unknown) {
+  const data = CalendarPrivacyUpdate.parse(input)
+  const db = await getDb()
+
+  const { data: row, error } = await db
+    .from('practitioners')
+    .update({ calendar_privacy: data.calendarPrivacy })
+    .eq('id', practitionerId)
+    .select()
+    .single()
+
+  if (error) throw error
+
+  // Queda en el registro de auditoría, como cualquier cambio sobre el perfil.
+  // Este más que ninguno: es el que decide qué sale de Hilo hacia afuera.
   await logAction(practitionerId, 'update', 'practitioner', practitionerId)
   return row
 }

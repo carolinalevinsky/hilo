@@ -662,6 +662,7 @@ export type Database = {
       }
       practitioners: {
         Row: {
+          calendar_privacy: string
           created_at: string
           digest_sent_at: string | null
           discipline: string
@@ -675,6 +676,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          calendar_privacy?: string
           created_at?: string
           digest_sent_at?: string | null
           discipline: string
@@ -688,6 +690,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          calendar_privacy?: string
           created_at?: string
           digest_sent_at?: string | null
           discipline?: string

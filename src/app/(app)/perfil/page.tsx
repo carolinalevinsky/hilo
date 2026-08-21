@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { signOutAction } from '@/app/(auth)/actions'
 import { PageHeader } from '@/components/page-header'
+import { CalendarPrivacyForm } from '@/components/profile/calendar-privacy-form'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,6 +27,24 @@ export default async function ProfilePage() {
             discipline={practitioner.discipline}
             phone={practitioner.phone}
           />
+        </CardContent>
+      </Card>
+
+      <Card className="mb-5">
+        <CardHeader>
+          <CardTitle>Tu calendario</CardTitle>
+          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+            Cuando agregás una sesión a Google Calendar, el título del evento
+            queda guardado en un servidor de Google, fuera del país. Elegí cuánto
+            de tu paciente viaja hasta ahí.{' '}
+            <b className="font-semibold">
+              La nota de la sesión, el motivo de consulta y los objetivos no salen
+              nunca, con ninguna de las tres.
+            </b>
+          </p>
+        </CardHeader>
+        <CardContent>
+          <CalendarPrivacyForm value={practitioner.calendar_privacy} />
         </CardContent>
       </Card>
 
