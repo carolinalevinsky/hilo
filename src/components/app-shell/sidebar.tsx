@@ -40,6 +40,10 @@ export function Sidebar({
               key={item.href}
               href={item.href}
               aria-current={active ? 'page' : undefined}
+              // What the tour points at. See `app-tour.tsx`: it looks the item
+              // up by href, and falls back to a centred card if it is not on
+              // screen, so nothing breaks if this attribute goes missing.
+              data-tour={item.href}
               className={cn(
                 'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-[14.5px] font-semibold transition-colors',
                 active

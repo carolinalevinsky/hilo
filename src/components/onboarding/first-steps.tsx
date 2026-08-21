@@ -1,6 +1,7 @@
 import { BookOpen, Check, FileText, Sparkles, Target } from '@/components/icons'
 import Link from 'next/link'
 
+import { TourButton } from '@/components/onboarding/app-tour'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -153,6 +154,14 @@ export function FirstSteps({
             "why am I typing this in", and it is the reason somebody finishes
             step two instead of leaving. */}
         <div className="mt-4 border-t border-border pt-3.5">
+          {/* The tour runs itself on the first visit and then never again. This
+              is its only way back, and it lives here because this card is the
+              one thing on the screen that is already about getting started. */}
+          <p className="mb-3 text-[12.5px] text-muted-foreground">
+            ¿Querés que te muestre dónde está cada cosa?{' '}
+            <TourButton>Ver el recorrido</TourButton>
+          </p>
+
           <p className="mb-2 text-[12.5px] text-muted-foreground">
             Con lo que cargás, Hilo te arma:
           </p>

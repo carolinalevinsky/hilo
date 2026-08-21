@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { TodaySessionCard } from '@/components/agenda/today-session-card'
 import { AskHilo } from '@/components/assistant/ask-hilo'
+import { AppTour } from '@/components/onboarding/app-tour'
 import { FirstSteps } from '@/components/onboarding/first-steps'
 import { PageHeader } from '@/components/page-header'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
@@ -50,6 +51,11 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Runs itself the first time somebody lands here and never again, unless
+          they ask for it from "Primeros pasos". It renders nothing until it
+          decides, so it costs nothing on every other visit. */}
+      <AppTour />
+
       <PageHeader
         title={`¡Hola, ${firstName(practitioner.full_name)}! 👋`}
         subtitle="Esto es lo que tenés hoy."
