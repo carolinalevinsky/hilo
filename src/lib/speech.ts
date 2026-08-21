@@ -55,6 +55,41 @@ export const speechStore = {
   isSupportedOnServer: () => false,
 }
 
+/**
+ * Lo que salió mal, dicho en castellano.
+ *
+ * Los dos botones que usan esto tenían un `onerror` que apagaba el estado y no
+ * decía nada. Desde afuera, "el navegador me pidió permiso, se lo di, y no pasa
+ * nada" es indistinguible de una función rota — y el motivo real, que casi
+ * siempre es del entorno y no del código, se queda adentro del evento.
+ *
+ * `aborted` devuelve null a propósito: es lo que dispara parar uno mismo, y
+ * avisar de algo que acabás de hacer vos es ruido.
+ *
+ * Los códigos son los de la Web Speech API. El caso por defecto incluye el
+ * código crudo: no significa nada para quien lo lee, pero es lo único con lo que
+ * se puede pedir ayuda.
+ */
+export function speechErrorMessage(code: string | undefined): string | null {
+  switch (code) {
+    case 'aborted':
+      return null
+    case 'not-allowed':
+    case 'service-not-allowed':
+      return 'El navegador bloqueó el micrófono. Habilitalo para este sitio y probá de nuevo.'
+    case 'audio-capture':
+      return 'No encontramos ningún micrófono. Fijate que esté conectado y elegido en el sistema.'
+    case 'no-speech':
+      return 'No se escuchó nada. Acercate al micrófono y probá de nuevo.'
+    case 'network':
+      return 'El dictado necesita internet para funcionar y no se pudo conectar.'
+    case 'language-not-supported':
+      return 'Tu navegador no tiene el español de Uruguay para dictar.'
+    default:
+      return `No pudimos usar el dictado${code ? ` (${code})` : ''}. Probá de nuevo.`
+  }
+}
+
 /** A recogniser set up for how people actually speak here. */
 export function newRecognition() {
   const Ctor = recognitionCtor()

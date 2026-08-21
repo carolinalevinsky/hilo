@@ -5,7 +5,12 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Mic, Sparkles, Square, TriangleAlert } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { readSseStream } from '@/lib/sse-client'
-import { newRecognition, speechStore, type SpeechRecognitionLike } from '@/lib/speech'
+import {
+  newRecognition,
+  speechErrorMessage,
+  speechStore,
+  type SpeechRecognitionLike,
+} from '@/lib/speech'
 
 /**
  * "Grabá y Hilo arma el registro" — v1's promise
@@ -101,17 +106,36 @@ export function RecordSession({
       recognitionRef.current = null
     }
 
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       wantedRef.current = false
       recognitionRef.current = null
       setState('idle')
-      setNote('Se cortó la grabación. Lo que se había escuchado quedó guardado.')
+
+      // "Se cortó la grabación" para todo servía cuando el corte era de veras un
+      // corte a mitad de camino. Pero el mismo texto aparecía si el micrófono
+      // estaba bloqueado o si no había ninguno — o sea, cuando nunca había
+      // arrancado— y ahí decir que se cortó y que "quedó guardado" es dos veces
+      // falso, y no menciona lo único que hay que hacer.
+      const message = speechErrorMessage(event.error)
+      setNote(
+        message
+          ? `${message} Lo que se haya escuchado hasta ahora quedó guardado.`
+          : 'Se cortó la grabación. Lo que se había escuchado quedó guardado.',
+      )
     }
 
     wantedRef.current = true
     recognitionRef.current = recognition
     setState('recording')
-    recognition.start()
+
+    try {
+      recognition.start()
+    } catch {
+      wantedRef.current = false
+      recognitionRef.current = null
+      setState('idle')
+      setNote('La grabación ya estaba andando. Esperá un segundo y probá de nuevo.')
+    }
   }
 
   async function stop() {
