@@ -3,7 +3,8 @@
 import { redirect } from 'next/navigation'
 
 import { formError, type FormState } from '@/lib/form-state'
-import { signIn, signOut, signUp } from '@/server/auth'
+import { requireUser, signIn, signOut, signUp } from '@/server/auth'
+import { createProfile } from '@/server/practitioners'
 
 /**
  * Server Actions for the auth screens.
@@ -66,4 +67,37 @@ export async function signInAction(
 export async function signOutAction() {
   await signOut()
   redirect('/entrar')
+}
+
+/**
+ * Builds the profile for an account that never got one from the sign-up
+ * trigger. See `createProfile`.
+ *
+ * The values are echoed back on failure, like the sign-up form — there is no
+ * password here, so all of them can be.
+ */
+export async function completeProfileAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+
+  const fullName = String(formData.get('fullName') ?? '')
+  const discipline = String(formData.get('discipline') ?? '')
+
+  try {
+    await createProfile(user.id, user.email, { fullName, discipline })
+  } catch (error) {
+    const message =
+      error && typeof error === 'object' && 'issues' in error
+        ? ((error as { issues: { message: string }[] }).issues[0]?.message ??
+          'Revisá los datos.')
+        : error instanceof Error && error.message
+          ? error.message
+          : 'No pudimos guardar tu perfil. Probá de nuevo.'
+
+    return formError(message, { fullName, discipline })
+  }
+
+  redirect('/inicio')
 }

@@ -9,8 +9,15 @@ import { getDb } from './db'
  * The practitioner's own profile.
  *
  * One row per signed-up professional, keyed to `auth.users.id`. The row is
- * created by a trigger at sign-up (see the M1 migration), so nothing here
- * inserts — it only reads and updates.
+ * created by a trigger at sign-up (see the M1 migration), so the normal path
+ * never inserts here — it only reads and updates.
+ *
+ * `createProfile` at the bottom is the repair path, and it exists because the
+ * trigger has one blind spot by construction: it fires `after insert on
+ * auth.users`, so an account that already existed when the trigger was
+ * installed never gets a row. That is not hypothetical — it is what happens to
+ * every account carried over from v1, and to any user created through the admin
+ * API or an invite.
  */
 
 export type Practitioner = {
@@ -26,9 +33,12 @@ export type Practitioner = {
 }
 
 /**
- * Reads the profile. Throws if it is missing, which would mean the sign-up
- * trigger did not run — a broken state worth failing loudly on rather than
- * rendering an empty shell around.
+ * Reads the profile. Throws if it is missing.
+ *
+ * Every screen inside the app shell can assume the profile exists, because the
+ * shell checks with `findPractitioner` first and sends anyone without one to
+ * `/completar-perfil`. By the time this runs, a missing row really is a broken
+ * state worth failing loudly on.
  */
 export async function getPractitioner(practitionerId: string): Promise<Practitioner> {
   const db = await getDb()
@@ -37,6 +47,29 @@ export async function getPractitioner(practitionerId: string): Promise<Practitio
     .select('*')
     .eq('id', practitionerId)
     .single()
+
+  if (error) throw error
+  return data
+}
+
+/**
+ * The same read, but a missing row is an answer rather than an exception.
+ *
+ * This is what the app shell calls. The difference matters: `.single()` treats
+ * "no rows" as an error, and an error thrown from a layout renders the generic
+ * "No pudimos cargar esta pantalla" screen on **every** route — including the
+ * two buttons on that screen, which both lead back into the shell. Somebody in
+ * that state cannot get anywhere, and nothing on screen says why.
+ */
+export async function findPractitioner(
+  practitionerId: string,
+): Promise<Practitioner | null> {
+  const db = await getDb()
+  const { data, error } = await db
+    .from('practitioners')
+    .select('*')
+    .eq('id', practitionerId)
+    .maybeSingle()
 
   if (error) throw error
   return data
@@ -88,4 +121,70 @@ export async function markOnboarded(practitionerId: string) {
     .is('onboarded_at', null)
 
   if (error) throw error
+}
+
+// ─── The repair path ────────────────────────────────────────────────────────
+
+export const NewProfile = z.object({
+  fullName: z.string().trim().min(2, 'Escribí tu nombre y apellido.'),
+  discipline: z.enum(DISCIPLINE_IDS, { message: 'Elegí tu profesión.' }),
+})
+
+/**
+ * Builds the profile for an account that has none.
+ *
+ * **Not a second sign-up path.** The trigger still owns profile creation for
+ * everyone who signs up; this only runs for an account the trigger could never
+ * have seen, and `/completar-perfil` is the only thing that calls it.
+ *
+ * The slug is built by the database's own `slugify`, through RPC, rather than
+ * by a copy of it in TypeScript. Two implementations of "how a name becomes a
+ * URL" drift, and the day they disagree is the day one practitioner's booking
+ * link stops matching the row it is supposed to find.
+ *
+ * The uniqueness loop mirrors the trigger's: append `-2`, `-3`, and so on. The
+ * `slug` column carries a unique constraint, so the check-then-insert race ends
+ * in a rejected insert rather than two identical links — which is why the retry
+ * is driven by the insert failing, not by the lookup succeeding.
+ */
+export async function createProfile(
+  practitionerId: string,
+  email: string,
+  input: unknown,
+): Promise<Practitioner> {
+  const data = NewProfile.parse(input)
+  const db = await getDb()
+
+  const { data: base } = await db.rpc('slugify', { input: data.fullName })
+  const baseSlug = base && base.length > 0 ? base : 'profesional'
+
+  // Bounded rather than `while (true)`: a loop that cannot end is worse than a
+  // profile that fails to save and says so.
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    const slug = attempt === 1 ? baseSlug : `${baseSlug}-${attempt}`
+
+    const { data: row, error } = await db
+      .from('practitioners')
+      .insert({
+        id: practitionerId,
+        email,
+        full_name: data.fullName,
+        discipline: data.discipline,
+        slug,
+      })
+      .select()
+      .single()
+
+    if (!error) {
+      await logAction(practitionerId, 'create', 'practitioner', practitionerId)
+      return row
+    }
+
+    // 23505 is unique_violation. On the slug it means "taken, try the next one";
+    // on the primary key it means the profile already exists, and retrying with
+    // a different slug would loop twenty times to reach the same answer.
+    if (error.code !== '23505' || !error.message.includes('slug')) throw error
+  }
+
+  throw new Error('No pudimos generar una dirección para tu perfil. Probá con otro nombre.')
 }
