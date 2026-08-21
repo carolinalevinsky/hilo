@@ -52,10 +52,6 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-// Decir en voz alta a qué base se está por escribir. El error caro acá no es
-// que falle: es que funcione contra la base equivocada.
-console.log(`Base: ${process.env.PGUSER}@${process.env.PGHOST}\n`)
-
 const files = readdirSync(DIR)
   .filter((name) => name.endsWith('.sql'))
   .sort()
@@ -65,12 +61,67 @@ if (files.length === 0) {
   process.exit(1)
 }
 
-function psql(args) {
+/**
+ * El pooler de Supabase atiende en dos puertos y no siempre en los dos: 6543 es
+ * el modo transacción y 5432 el modo sesión. Cuál está abierto depende del
+ * proyecto, y equivocarse devuelve *el mismo texto* que una contraseña mal
+ * puesta: "password authentication failed". Eso mandó a resetear la contraseña
+ * tres veces cuando la contraseña nunca había estado mal.
+ *
+ * Así que se prueban los dos y se distingue una cosa de la otra antes de
+ * escribir nada.
+ */
+const PUERTOS = process.env.PGPORT ? [process.env.PGPORT] : ['6543', '5432']
+
+let PORT = null
+
+function psql(args, port = PORT) {
   return execFileSync('psql', ['-v', 'ON_ERROR_STOP=1', '-X', '-q', ...args], {
     encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'inherit'],
+    env: { ...process.env, PGPORT: String(port), PGCONNECT_TIMEOUT: '15' },
+    stdio: ['ignore', 'pipe', 'pipe'],
   })
 }
+
+const fallos = []
+for (const puerto of PUERTOS) {
+  try {
+    psql(['-t', '-A', '-c', 'select 1'], puerto)
+    PORT = puerto
+    break
+  } catch (error) {
+    fallos.push({ puerto, texto: String(error.stderr ?? error.message) })
+  }
+}
+
+if (!PORT) {
+  const auth = fallos.every((f) => /password authentication failed/i.test(f.texto))
+
+  if (auth) {
+    console.error('✗ La contraseña no es la actual de esta base.\n')
+    console.error(
+      PUERTOS.length > 1
+        ? `  Probé los puertos ${PUERTOS.join(' y ')}, y los dos la rechazaron.`
+        : `  El puerto ${PUERTOS[0]} la rechazó.`,
+    )
+    console.error('  Reseteala en Supabase (Project Settings → Database → Reset database')
+    console.error('  password), copiala con el botón, y sin cerrar el cartel corré:\n')
+    console.error("    printf 'Pegá: ' && read -rs PGPASSWORD && export PGPASSWORD && echo ok\n")
+  } else {
+    console.error('✗ No pude conectarme a la base.\n')
+    for (const f of fallos) {
+      console.error(`  Puerto ${f.puerto}: ${f.texto.trim().split('\n')[0]}`)
+    }
+    console.error(`\n  Host: ${process.env.PGHOST}`)
+    console.error(`  Usuario: ${process.env.PGUSER}`)
+    console.error('\n  Verificá esos dos contra el botón "Connect" del proyecto en Supabase.\n')
+  }
+  process.exit(1)
+}
+
+// Decir en voz alta a qué base se está por escribir. El error caro acá no es
+// que falle: es que funcione contra la base equivocada.
+console.log(`Base: ${process.env.PGUSER}@${process.env.PGHOST}:${PORT}\n`)
 
 // Si ya hay materiales, cargar otra vez los duplica: estos INSERT no tienen
 // clave natural sobre la que chocar. Ya pasó una vez, con catorce duplicados
@@ -88,7 +139,18 @@ console.log(`Cargando ${files.length} archivos en la base remota…\n`)
 
 for (const name of files) {
   process.stdout.write(`  ${name} … `)
-  psql(['-f', join(DIR, name)])
+  try {
+    psql(['-f', join(DIR, name)])
+  } catch (error) {
+    console.log('falló')
+    console.error(`\n✗ Se cortó cargando ${name}.\n`)
+    console.error(String(error.stderr ?? error.message).trim())
+    console.error(
+      '\n  Los archivos anteriores sí entraron. Antes de reintentar, vaciá lo cargado:\n',
+    )
+    console.error('    delete from materials where practitioner_id is null;\n')
+    process.exit(1)
+  }
   const total = Number(psql(['-t', '-A', '-c', 'select count(*) from materials']).trim())
   console.log(`${total} en total`)
 }
