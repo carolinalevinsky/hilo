@@ -125,13 +125,47 @@ function searchFilter(term: string): string {
   return `"${pattern.replace(/[\\"]/g, (character) => `\\${character}`)}"`
 }
 
+/**
+ * A material without its text.
+ *
+ * Every screen that shows a *list* of materials shows the same twelve fields and
+ * none of them is `content`: the library grid, the planner, and the suggestion
+ * that `bestMaterialFor` picks. Only the material's own page shows the text, and
+ * that reads a single row through `getMaterial`.
+ *
+ * The difference is not academic. Measured on the seeded library: `content` is
+ * **165 kB** and the fields the list actually reads are **34 kB**. Selecting
+ * `*` meant Inicio, Agenda and Planificación each downloaded the full text of
+ * every shared material, on every load, to choose one suggestion and discard the
+ * rest. That is five sixths of the payload thrown away, and it grows with every
+ * material anybody publishes.
+ */
+export type MaterialSummary = Pick<
+  Material,
+  | 'id'
+  | 'practitioner_id'
+  | 'discipline'
+  | 'title'
+  | 'area'
+  | 'focus'
+  | 'kind'
+  | 'objective'
+  | 'age_range'
+  | 'visibility'
+  | 'source'
+  | 'author_name'
+>
+
+const SUMMARY_COLUMNS =
+  'id, practitioner_id, discipline, title, area, focus, kind, objective, age_range, visibility, source, author_name'
+
 export async function listMaterials(
   practitionerId: string,
   filters: MaterialFilters,
-): Promise<Material[]> {
+): Promise<MaterialSummary[]> {
   const db = await getDb()
 
-  let query = db.from('materials').select('*')
+  let query = db.from('materials').select(SUMMARY_COLUMNS)
 
   if (filters.onlyMine) {
     query = query.eq('practitioner_id', practitionerId)
@@ -534,14 +568,17 @@ export async function deleteMaterial(practitionerId: string, materialId: string)
  * unhelpful costs nothing because the practitioner is one click from the full
  * library.
  */
-export function bestMaterialFor(goalTitle: string, materials: Material[]): Material | null {
+export function bestMaterialFor<T extends Pick<Material, 'title' | 'focus' | 'area' | 'objective'>>(
+  goalTitle: string,
+  materials: T[],
+): T | null {
   const words = normalise(goalTitle)
     .split(/\s+/)
     .filter((word) => word.length > 3)
 
   if (words.length === 0) return null
 
-  let best: Material | null = null
+  let best: T | null = null
   let bestScore = 0
 
   for (const material of materials) {

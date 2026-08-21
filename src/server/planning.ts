@@ -3,7 +3,7 @@ import { currentPeriod } from '@/lib/periods'
 
 import { listAppointments } from './appointments'
 import { getDb } from './db'
-import { bestMaterialFor, listMaterials, type Material } from './materials'
+import { bestMaterialFor, listMaterials, type MaterialSummary } from './materials'
 import { monthlyLedger } from './payments'
 
 /**
@@ -36,7 +36,7 @@ export type PlannedSession = {
   focus: { id: string; title: string; progress: number } | null
   /** True when `focus` was picked deliberately rather than suggested. */
   focusChosen: boolean
-  suggestedMaterial: Material | null
+  suggestedMaterial: MaterialSummary | null
 }
 
 /**

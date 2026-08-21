@@ -1,7 +1,12 @@
 import { suggestedActivity } from '@/lib/activity-bank'
 
 import { getDb } from './db'
-import { bestMaterialFor, listMaterials, type Material } from './materials'
+import {
+  bestMaterialFor,
+  listMaterials,
+  type Material,
+  type MaterialSummary,
+} from './materials'
 
 /**
  * The prepared next session.
@@ -61,7 +66,7 @@ export type PlanSuggestion = {
   progress: number
   /** What to actually do about it, from v1's activity bank. */
   activity: string
-  material: Material | null
+  material: MaterialSummary | null
   /** True when this goal is already in the plan, so the button says "Agregado". */
   added: boolean
 }
