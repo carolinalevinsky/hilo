@@ -414,6 +414,7 @@ export type Database = {
           kind: string
           objective: string | null
           practitioner_id: string | null
+          search_text: string | null
           source: string
           title: string
           updated_at: string
@@ -434,6 +435,7 @@ export type Database = {
           kind?: string
           objective?: string | null
           practitioner_id?: string | null
+          search_text?: string | null
           source?: string
           title: string
           updated_at?: string
@@ -454,6 +456,7 @@ export type Database = {
           kind?: string
           objective?: string | null
           practitioner_id?: string | null
+          search_text?: string | null
           source?: string
           title?: string
           updated_at?: string
@@ -529,6 +532,7 @@ export type Database = {
           room_id: string | null
           school: string | null
           school_level: string | null
+          search_text: string | null
           session_fee: number | null
           start_date: string | null
           updated_at: string
@@ -554,6 +558,7 @@ export type Database = {
           room_id?: string | null
           school?: string | null
           school_level?: string | null
+          search_text?: string | null
           session_fee?: number | null
           start_date?: string | null
           updated_at?: string
@@ -579,6 +584,7 @@ export type Database = {
           room_id?: string | null
           school?: string | null
           school_level?: string | null
+          search_text?: string | null
           session_fee?: number | null
           start_date?: string | null
           updated_at?: string

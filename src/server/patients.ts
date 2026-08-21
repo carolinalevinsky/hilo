@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
-import { likePattern } from '@/lib/search'
+import { searchPattern } from '@/lib/search'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -299,10 +299,11 @@ export async function listPatients(
 
   if (ageGroup !== 'all') query = query.eq('age_group', ageGroup)
 
-  // `ilike` handles case; accents it does not, so "Lucia" will not find "Lucía".
-  // Fixing that properly means the `unaccent` extension and a functional index,
-  // which is worth doing at a few hundred patients and is not worth doing now.
-  if (search?.trim()) query = query.ilike('full_name', likePattern(search.trim()))
+  // Contra `search_text`, que la base mantiene en minúsculas y sin acentos, para
+  // que "Lucia" encuentre a "Lucía". El comentario que estaba acá decía que
+  // arreglarlo no valía la pena todavía; con la migración de los trigramas pasó
+  // a costar una línea.
+  if (search?.trim()) query = query.ilike('search_text', searchPattern(search.trim()))
 
   query =
     sort === 'recent'
