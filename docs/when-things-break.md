@@ -21,8 +21,45 @@ la presión de encima para poder pensar.
 | El sitio está caído o muy roto | **Rollback en Vercel.** Después investigar. |
 | Un cambio quedó mal pero el sitio funciona | Revertí el commit y hacé push. Se redespliega solo. |
 | Los datos se ven mal o faltan | **No toques nada.** Restaurá un backup en un proyecto nuevo y compará. |
+| Toda pantalla con datos da "No pudimos cargar esta pantalla" | Buscá `PGRST303` en los registros. Si está, [reiniciá el proyecto de Supabase](#jwt-issued-at-future). |
 | CI está en rojo y no se entiende el mensaje | Pegale el error completo a Claude. Los checks están escritos para explicarse. |
 | Algo se está incendiando y nada de esto encaja | Llamá a Tomás. |
+
+---
+
+## JWT issued at future
+
+**Síntoma:** todas las pantallas que leen datos muestran "No pudimos cargar esta
+pantalla". Las que no leen nada —entrar, crear cuenta— funcionan. En los
+registros de Vercel:
+
+```
+Error: {"code":"PGRST303","message":"JWT issued at future"}
+```
+
+**Qué significa:** el token de la sesión dice "emitido a las 19:54:57" y la pieza
+de Supabase que lo valida cree que son las 19:54:55. Como está fechado en el
+futuro, lo rechaza.
+
+**No es de este código.** Hilo no fabrica ese token: lo emite Supabase Auth y lo
+valida PostgREST, las dos partes del mismo proyecto. Son dos relojes de Supabase
+que se corrieron entre sí.
+
+**Cómo se arregla,** en este orden:
+
+1. Cerrar sesión y volver a entrar. Pide un token nuevo, con hora nueva.
+2. Esperar cinco minutos. A veces se acomoda solo.
+3. *Project Settings → General → Restart project.* Apaga y prende; no toca datos
+   ni configuración, y tarda un minuto.
+
+**Cuándo aparece:** en proyectos recién creados, mientras se asientan. Pasó en
+local con los contenedores de Docker y otra vez en la nube el día que se creó el
+proyecto de São Paulo — las dos veces se arregló reiniciando, y las dos veces
+costó un rato porque el mensaje en pantalla no dice nada de esto.
+
+**Lo que no sirve:** tocar "Probar de nuevo". El desfasaje dura minutos, no
+segundos, así que el reintento devuelve el mismo error. Por eso tampoco tiene
+sentido que la app reintente sola.
 
 ---
 

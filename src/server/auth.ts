@@ -119,9 +119,28 @@ export async function signIn(input: unknown): Promise<AuthResult> {
   const { error } = await db.auth.signInWithPassword(parsed.data)
 
   if (error) {
-    // Deliberately the same message for "no such account" and "wrong password".
-    // Telling them apart tells a stranger which emails have accounts here, and
-    // the accounts belong to health professionals.
+    // "Falta confirmar el correo" sí se dice, y es la única excepción.
+    //
+    // Callarlo no protege nada: Supabase devuelve este código *después* de
+    // validar la contraseña, así que quien lo ve ya escribió la contraseña
+    // correcta y entraría en cuanto confirme. No revela nada que un login
+    // exitoso no revelara igual.
+    //
+    // Lo que sí costaba callarlo: la cuenta está creada, la contraseña está
+    // bien, y la pantalla dice que no coinciden. Se pierde media hora dudando de
+    // datos correctos, y el único paso que falta —abrir el correo— ni se
+    // menciona.
+    if (error.code === 'email_not_confirmed') {
+      return {
+        ok: false,
+        message:
+          'Te falta confirmar tu correo. Buscá el mail de Hilo y tocá el enlace; fijate también en spam.',
+      }
+    }
+
+    // Para todo lo demás, el mismo mensaje a propósito: distinguir "no existe
+    // esa cuenta" de "contraseña incorrecta" le dice a un desconocido qué
+    // correos tienen cuenta acá, y las cuentas son de profesionales de la salud.
     return { ok: false, message: 'El correo o la contraseña no coinciden.' }
   }
 
