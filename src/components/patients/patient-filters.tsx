@@ -1,10 +1,11 @@
 'use client'
 
 import { ChevronDown, Search, SlidersHorizontal } from '@/components/icons'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 
+import { Results } from '@/components/results'
 import { Input } from '@/components/ui/input'
+import { useUrlState } from '@/components/use-url-state'
 import { AGE_GROUP_LABELS, ageGroupLabel } from '@/lib/patient-labels'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +25,13 @@ import { cn } from '@/lib/utils'
  * on a phone, and they are read once a month.
  */
 
+const DEFAULTS = {
+  vista: 'lista',
+  edad: 'all',
+  estado: 'active',
+  orden: 'nombre',
+} as const
+
 const SORT_LABELS: Record<string, string> = {
   nombre: 'Nombre A-Z',
   sesiones: 'Más sesiones',
@@ -31,11 +39,14 @@ const SORT_LABELS: Record<string, string> = {
   'avance+': 'Más avance',
 }
 
-export function PatientFilters({ total }: { total: number }) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const params = useSearchParams()
-  const [, startTransition] = useTransition()
+export function PatientFilters({
+  total,
+  children,
+}: {
+  total: number
+  children: React.ReactNode
+}) {
+  const { params, set: setParams, pending } = useUrlState()
 
   const [search, setSearch] = useState(params.get('q') ?? '')
   const [open, setOpen] = useState(false)
@@ -46,24 +57,17 @@ export function PatientFilters({ total }: { total: number }) {
     const current = params.get('q') ?? ''
     if (search === current) return
 
-    const timer = setTimeout(() => {
-      startTransition(() => router.replace(withParam('q', search), { scroll: false }))
-    }, 250)
-
+    const timer = setTimeout(() => setParams({ q: search }), 250)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search])
 
-  function withParam(key: string, value: string) {
-    const next = new URLSearchParams(params)
-    if (value && value !== 'all') next.set(key, value)
-    else next.delete(key)
-    const query = next.toString()
-    return query ? `${pathname}?${query}` : pathname
-  }
-
-  function set(key: string, value: string) {
-    startTransition(() => router.replace(withParam(key, value), { scroll: false }))
+  // The default is expressed by leaving the parameter out rather than by
+  // spelling it. `?vista=lista&orden=nombre` is the untouched screen, and it has
+  // no business being in a link somebody shares. These four have to match what
+  // `pacientes/page.tsx` falls back to when the parameter is absent.
+  function set(key: keyof typeof DEFAULTS, value: string) {
+    setParams({ [key]: value === DEFAULTS[key] ? '' : value })
   }
 
   const ageGroup = params.get('edad') ?? 'all'
@@ -81,6 +85,7 @@ export function PatientFilters({ total }: { total: number }) {
   ].join(' · ')
 
   return (
+    <>
     <div className="mb-4 space-y-3">
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -165,6 +170,9 @@ export function PatientFilters({ total }: { total: number }) {
         {total === 1 ? '1 paciente' : `${total} pacientes`}
       </p>
     </div>
+
+    <Results pending={pending}>{children}</Results>
+    </>
   )
 }
 

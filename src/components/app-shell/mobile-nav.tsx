@@ -1,7 +1,7 @@
 'use client'
 
 import { Menu, X } from '@/components/icons'
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
@@ -9,6 +9,7 @@ import {
   MOBILE_BAR_ITEMS,
   MOBILE_SHEET_ITEMS,
   isNavItemActive,
+  type NavItem,
 } from '@/components/app-shell/nav-items'
 import { cn } from '@/lib/utils'
 
@@ -81,16 +82,8 @@ export function MobileNav() {
 
       <nav className="fixed inset-x-0 bottom-0 z-70 flex justify-around border-t border-border bg-card/96 px-1 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] shadow-[0_-4px_22px_rgba(30,36,54,0.07)] backdrop-blur-md lg:hidden">
         {MOBILE_BAR_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'flex flex-1 flex-col items-center gap-[3px] rounded-xl px-0.5 py-1.5 text-[10.5px] font-semibold',
-              isNavItemActive(item, pathname) ? 'text-violet' : 'text-[#8b90a3]',
-            )}
-          >
-            <item.icon className="size-5" />
-            {item.label}
+          <Link key={item.href} href={item.href} className="flex flex-1">
+            <BarItem item={item} active={isNavItemActive(item, pathname)} />
           </Link>
         ))}
 
@@ -109,5 +102,28 @@ export function MobileNav() {
         ) : null}
       </nav>
     </>
+  )
+}
+
+/**
+ * Un botón de la barra, que se pinta apenas lo tocás.
+ *
+ * Igual que en el menú de escritorio: `useLinkStatus` sólo se lee adentro del
+ * `<Link>`, así que el estilo bajó un nivel. En el celular importa más todavía,
+ * porque no hay estado de hover que confirme que el dedo dio en el lugar.
+ */
+function BarItem({ item, active }: { item: NavItem; active: boolean }) {
+  const { pending } = useLinkStatus()
+
+  return (
+    <span
+      className={cn(
+        'flex flex-1 flex-col items-center gap-[3px] rounded-xl px-0.5 py-1.5 text-[10.5px] font-semibold',
+        active || pending ? 'text-violet' : 'text-[#8b90a3]',
+      )}
+    >
+      <item.icon className="size-5" />
+      {item.label}
+    </span>
   )
 }

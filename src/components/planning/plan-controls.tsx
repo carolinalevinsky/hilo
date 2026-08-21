@@ -1,7 +1,7 @@
 'use client'
 
 
-import { useUrlParam } from '@/components/use-url-param'
+import { useUrlState } from '@/components/use-url-state'
 
 /**
  * The two controls on the planner that change what the server queries: which
@@ -25,11 +25,23 @@ export function PlanPatientPicker({
   patients: { id: string; fullName: string }[]
   selectedId: string
 }) {
-  const set = useUrlParam()
+  const { params, set } = useUrlState()
+
+  // El paciente que se está por mostrar, no el que se está mostrando. Sin esto
+  // el desplegable volvía solo al nombre anterior mientras el servidor
+  // contestaba, que se lee como "no me tomó el cambio".
+  //
+  // Se acepta el de la dirección sólo si está en la lista: si la URL trae un id
+  // que no existe, el servidor cae al primer paciente y el desplegable tiene que
+  // mostrar ese, no un renglón en blanco.
+  const requested = params.get('paciente') ?? ''
+  const shown = patients.some((patient) => patient.id === requested)
+    ? requested
+    : selectedId
 
   return (
     <select
-      value={selectedId}
+      value={shown}
       // Changing patient must also drop the library search: the results carry
       // "Agregar" buttons that would otherwise still be pointing at the previous
       // patient's plan for as long as the URL kept the old query.

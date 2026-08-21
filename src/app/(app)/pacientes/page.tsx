@@ -91,8 +91,11 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
         }
       />
 
-      <PatientFilters total={patients.length} />
-
+      {/* La lista va adentro de los filtros porque comparten un dato: si hay un
+          cambio en curso. Los chips se pintan al tocarlos y la lista se atenúa
+          hasta que llega la respuesta. Sigue siendo servidor: entra como
+          `children` y no se vuelve cliente por pasar por ahí. */}
+      <PatientFilters total={patients.length}>
       {patients.length === 0 ? (
         <Card>
           {filtering ? (
@@ -209,6 +212,7 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
           </ul>
         </Card>
       )}
+      </PatientFilters>
     </>
   )
 }

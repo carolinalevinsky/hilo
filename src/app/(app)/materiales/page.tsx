@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
 import { GenerateMaterial } from '@/components/materials/generate-material'
+import { MaterialFilters } from '@/components/materials/material-filters'
 import { MaterialSearch } from '@/components/materials/material-search'
 import { UploadMaterial } from '@/components/materials/upload-material'
 import { PageHeader } from '@/components/page-header'
@@ -11,7 +12,6 @@ import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { areasFor, materialKindLabel } from '@/lib/material-areas'
-import { cn } from '@/lib/utils'
 import { listMaterials, materialOrigin } from '@/server/materials'
 import { currentSession } from '../session'
 
@@ -19,25 +19,6 @@ export const metadata: Metadata = { title: 'Materiales · Hilo' }
 
 function readParam(value: string | string[] | undefined) {
   return typeof value === 'string' ? value : undefined
-}
-
-/** Un filtro, sin perder lo que se escribió en la caja de buscar. */
-function chipHref({
-  search,
-  ...filters
-}: {
-  search: string
-  area?: string
-  mios?: string
-  comunidad?: string
-}) {
-  const params = new URLSearchParams()
-  if (search) params.set('q', search)
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) params.set(key, value)
-  }
-  const query = params.toString()
-  return query ? `/materiales?${query}` : '/materiales'
 }
 
 export default async function MaterialsPage({ searchParams }: PageProps<'/materiales'>) {
@@ -92,31 +73,11 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         <MaterialSearch initial={search} />
       </div>
 
-      {/* Cada chip conserva lo que haya escrito en la caja de buscar. Armar el
-          href de cero borraría el término al tocar un filtro, que es justo lo
-          contrario de lo que alguien espera al ir acotando una búsqueda. */}
-      <div className="mb-4 flex flex-wrap gap-1.5">
-        <Chip href={chipHref({ search })} active={!area && !onlyMine && !onlyCommunity}>
-          Todos
-        </Chip>
-        {areas.map((name) => (
-          <Chip
-            key={name}
-            href={chipHref({ search, area: name })}
-            active={area === name}
-          >
-            {name}
-          </Chip>
-        ))}
-        <span className="mx-1 hidden w-px self-stretch bg-border sm:block" />
-        <Chip href={chipHref({ search, mios: '1' })} active={onlyMine}>
-          Los míos
-        </Chip>
-        <Chip href={chipHref({ search, comunidad: '1' })} active={onlyCommunity}>
-          De la comunidad
-        </Chip>
-      </div>
-
+      {/* Los chips y la lista van juntos porque comparten un dato: si hay una
+          búsqueda en curso. El chip se pinta al tocarlo y la lista se atenúa
+          hasta que llega la respuesta. La lista sigue siendo servidor: entra
+          como `children` y no se vuelve cliente por pasar por ahí. */}
+      <MaterialFilters areas={areas}>
       {materials.length === 0 ? (
         <Card>
           <EmptyState
@@ -183,30 +144,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
           ))}
         </ul>
       )}
+      </MaterialFilters>
     </>
-  )
-}
-
-function Chip({
-  href,
-  active,
-  children,
-}: {
-  href: string
-  active: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        'rounded-full px-3 py-1.5 text-xs font-bold transition-colors',
-        active
-          ? 'bg-violet text-white'
-          : 'border border-border bg-card text-muted-foreground hover:bg-muted',
-      )}
-    >
-      {children}
-    </Link>
   )
 }

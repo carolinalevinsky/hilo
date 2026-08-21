@@ -78,6 +78,51 @@ esperar; si no, ya sabemos exactamente qué falta.
 
 ---
 
+## La otra mitad: tardar poco y parecer que no tardás
+
+Mover el código a Oregon bajó el número y no cambió la sensación. El motivo es
+que había un segundo problema, independiente del primero.
+
+Cambiar un filtro es una **transición** de React: la pantalla vieja se queda en
+su lugar mientras el servidor contesta, en vez de vaciarse y mostrar un
+esqueleto. Eso es lo correcto —vaciar una lista para volver a llenarla con casi
+lo mismo es peor— pero tiene una condición: **hay que dibujar que algo está
+pasando.**
+
+No se dibujaba. El código decía:
+
+```ts
+const [, startTransition] = useTransition()
+```
+
+Esa coma descarta `isPending`, que es el dato que dice "hay algo en curso". Sin
+él, tocabas un chip y la pantalla quedaba **exactamente igual** hasta que
+llegaba la respuesta y cambiaba todo de golpe. Cuatrocientos milisegundos así se
+sienten como varios segundos, porque durante ese rato la aplicación es
+indistinguible de una que no recibió el click.
+
+Tres cosas lo arreglan, y ninguna hace que el servidor conteste más rápido:
+
+| Qué | Cómo |
+|---|---|
+| El chip se pinta al tocarlo | `useOptimistic` sobre la query string, en `use-url-state.ts` |
+| La lista se atenúa mientras carga | `Results`, con `aria-busy` para lectores de pantalla |
+| El menú se pinta al tocarlo | `useLinkStatus()`, adentro del `<Link>` |
+
+Lo optimista es la dirección **como va a quedar**, no como está: si el servidor
+contesta otra cosa, React lo corrige solo. No hay un segundo lugar donde viva el
+estado.
+
+Medido en el navegador: al segundo cuadro después del click el chip ya está
+pintado y `aria-busy` ya es `true`, con la URL todavía sin cambiar. La píldora
+del menú queda blanca a los 147 ms, también antes de que la navegación termine.
+
+**La regla que queda:** si una interacción dispara una transición, algo tiene que
+cambiar en pantalla en el mismo cuadro. `useTransition` sin leer `isPending` es
+casi siempre un error, y se reconoce por esa coma.
+
+---
+
 ## Cómo comprobar dónde está corriendo
 
 ```bash

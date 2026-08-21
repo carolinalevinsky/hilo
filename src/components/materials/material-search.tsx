@@ -1,11 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 import { Search } from '@/components/icons'
 import { Input } from '@/components/ui/input'
-import { useUrlParam } from '@/components/use-url-param'
+import { useUrlState } from '@/components/use-url-state'
 
 /**
  * La caja de buscar de la biblioteca, en las dos pantallas que la muestran.
@@ -17,8 +16,7 @@ import { useUrlParam } from '@/components/use-url-param'
  * pestaña. Con 45 materiales se podía; con la biblioteca de ahora, no.
  */
 export function MaterialSearch({ initial }: { initial: string }) {
-  const params = useSearchParams()
-  const set = useUrlParam()
+  const { params, set } = useUrlState()
   const [value, setValue] = useState(initial)
 
   // Same 250ms as the patient list, and for the same reason: typing "fluidez"
