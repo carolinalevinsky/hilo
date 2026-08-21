@@ -55,7 +55,17 @@ args=(
 #   ./dx npx supabase link --project-ref <ref>
 #
 # `read -rs` no muestra lo que escribís y no lo guarda en el historial.
-for secret in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD; do
+#
+# Las PG* son para `db:seed:remote`, que habla con psql directamente. Van por
+# separado y no como una cadena `postgresql://…` a propósito: una cadena mete la
+# contraseña adentro de una URL, y ahí una contraseña con `@`, `/` o `#` la parte
+# al medio salvo que la codifiques a mano. psql lee estas variables sin
+# interpretar nada, así que cualquier contraseña entra tal cual.
+for secret in \
+  SUPABASE_ACCESS_TOKEN \
+  SUPABASE_DB_PASSWORD \
+  PGHOST PGPORT PGUSER PGDATABASE PGPASSWORD
+do
   [ -n "${!secret:-}" ] && args+=(--env "$secret")
 done
 

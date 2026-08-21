@@ -21,11 +21,17 @@
  *
  * ─── Uso ────────────────────────────────────────────────────────────────────
  *
- *   printf 'Cadena de conexión: ' && read -rs SUPABASE_DB_URL && export SUPABASE_DB_URL && echo ok
+ *   export PGHOST=... PGUSER=... PGDATABASE=postgres
+ *   printf 'Contraseña: ' && read -rs PGPASSWORD && export PGPASSWORD && echo ok
  *   ./dx npm run db:seed:remote
  *
- * `read -rs` mantiene la contraseña fuera del historial de la shell y fuera de
- * `ps`. Por eso la cadena entra por una variable de entorno y no como argumento.
+ * Los datos van en las variables estándar de psql y no en una cadena
+ * `postgresql://…`. Una cadena mete la contraseña adentro de una URL, y ahí una
+ * contraseña con `@`, `/` o `#` la parte al medio salvo que la codifiques a
+ * mano. psql lee estas variables sin interpretar nada.
+ *
+ * Y `read -rs` mantiene la contraseña fuera del historial de la shell y fuera
+ * de `ps`, que es la otra razón para que no sea un argumento.
  */
 
 import { execFileSync } from 'node:child_process'
@@ -34,22 +40,21 @@ import { join } from 'node:path'
 
 const DIR = 'supabase/seeds'
 
-const url = process.env.SUPABASE_DB_URL
-if (!url) {
-  console.error('✗ Falta SUPABASE_DB_URL.\n')
-  console.error('  Sacala de Supabase: Project Settings → Database → Connection string.')
+const missing = ['PGHOST', 'PGUSER', 'PGPASSWORD'].filter((name) => !process.env[name])
+if (missing.length > 0) {
+  console.error(`✗ Faltan variables de conexión: ${missing.join(', ')}\n`)
+  console.error('  Los datos están en Supabase: Project Settings → Database.')
   console.error('  Después, en la terminal:\n')
-  console.error("    printf 'Cadena de conexión: ' && read -rs SUPABASE_DB_URL && export SUPABASE_DB_URL && echo ok\n")
+  console.error('    export PGHOST=<el host>')
+  console.error('    export PGUSER=<el usuario>')
+  console.error('    export PGDATABASE=postgres')
+  console.error("    printf 'Contraseña: ' && read -rs PGPASSWORD && export PGPASSWORD && echo ok\n")
   process.exit(1)
 }
 
-// Una salvaguarda barata contra el error caro: apuntar a la base equivocada.
-// No prueba que sea la correcta, pero descarta el caso de pegar cualquier cosa.
-if (!/^postgres(ql)?:\/\//.test(url)) {
-  console.error('✗ SUPABASE_DB_URL no parece una cadena de conexión.')
-  console.error('  Tiene que empezar con postgresql://')
-  process.exit(1)
-}
+// Decir en voz alta a qué base se está por escribir. El error caro acá no es
+// que falle: es que funcione contra la base equivocada.
+console.log(`Base: ${process.env.PGUSER}@${process.env.PGHOST}\n`)
 
 const files = readdirSync(DIR)
   .filter((name) => name.endsWith('.sql'))
@@ -61,7 +66,7 @@ if (files.length === 0) {
 }
 
 function psql(args) {
-  return execFileSync('psql', [url, '-v', 'ON_ERROR_STOP=1', '-X', '-q', ...args], {
+  return execFileSync('psql', ['-v', 'ON_ERROR_STOP=1', '-X', '-q', ...args], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'inherit'],
   })
