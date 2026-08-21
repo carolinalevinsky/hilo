@@ -158,7 +158,24 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 </Link>
               </CardContent>
             </Card>
-          ) : null}
+          ) : (
+            /* Y cuando no hay ninguna pendiente, igual hay que poder llegar.
+               Esta rama era `null`, así que el único camino a /reservas vivía
+               adentro de la tarjeta de arriba — la que sólo existe cuando ya
+               tenés reservas. Para tener reservas hay que haber compartido el
+               link, y el link estaba detrás de tenerlas: un círculo cerrado que
+               dejaba la pantalla inalcanzable justo para quien recién empieza,
+               que es quien más la necesita.
+
+               Discreto a propósito. Es una línea, no una tarjeta: cuando no hay
+               nada pendiente esto no es trabajo del día, es algo que se busca
+               una vez y se comparte. */
+            <p className="mb-3.5 text-center text-[12.5px] text-muted-foreground">
+              <Link href="/reservas" className="font-semibold text-violet hover:underline">
+                Tu link para que te reserven online →
+              </Link>
+            </p>
+          )}
 
           <TomorrowReminders
             date={tomorrow}
