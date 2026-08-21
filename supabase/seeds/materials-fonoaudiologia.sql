@@ -1,6 +1,6 @@
 -- Fonoaudiología, hasta llegar a 50.
 --
--- El v1 traía 11 y materials.curated.sql agregó 6. Estos son los 33 que faltaban.
+-- El v1 traía 11 y materials-curados.sql agregó 6. Estos son los 33 que faltaban.
 --
 -- Convenciones: subtítulo es una línea corta terminada en dos puntos, las
 -- viñetas empiezan con •, y no hay rayas en el texto que lee la persona.

@@ -13,6 +13,7 @@ import { ageLabel } from '@/lib/age'
 import { disciplineLabel } from '@/lib/disciplines'
 import { firstName } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
+import { hasAnyGoal } from '@/server/goals'
 import { countMaterials } from '@/server/materials'
 import { listPatients } from '@/server/patients'
 import { todayBriefing } from '@/server/planning'
@@ -24,17 +25,19 @@ export const metadata: Metadata = { title: 'Inicio · Hilo' }
 export default async function HomePage() {
   const user = await requireUser()
   const practitioner = await getPractitioner(user.id)
-  const [patients, todaySessions, sessionCount] = await Promise.all([
+  const [patients, todaySessions, sessionCount, goalExists] = await Promise.all([
     listPatients(user.id, { sort: 'recent' }),
     todayBriefing(user.id, practitioner.discipline),
-    // Just the number, for "Primeros pasos". A `head: true` count reads an index
-    // and returns no rows.
+    // Just the numbers, for "Primeros pasos". Both read an index and return no
+    // rows.
     countSessions(user.id),
+    hasAnyGoal(user.id),
   ])
 
-  // Only while "Primeros pasos" is still on screen, which is a day or two out of
-  // the life of an account. Once it is finished this query stops running.
-  const stillOnboarding = patients.length === 0 || sessionCount === 0
+  // Only while "Primeros pasos" is still on screen, which is a few days out of
+  // the life of an account. Once the three steps are done this query stops
+  // running.
+  const stillOnboarding = patients.length === 0 || sessionCount === 0 || !goalExists
   const materialCount = stillOnboarding
     ? await countMaterials(user.id, practitioner.discipline)
     : 0
@@ -74,6 +77,7 @@ export default async function HomePage() {
       <FirstSteps
         hasPatient={patients.length > 0}
         hasSession={sessionCount > 0}
+        hasGoal={goalExists}
         firstPatientId={patients[0]?.id ?? null}
         materialCount={materialCount}
         disciplineLabel={disciplineLabel(practitioner.discipline)}

@@ -108,20 +108,23 @@ export async function updatePractitioner(practitionerId: string, input: unknown)
 }
 
 /**
- * Marks the two-step onboarding as finished. v1 showed the onboarding card
- * until the practitioner had both a patient and a session; a timestamp says the
- * same thing without recomputing it on every page load.
+ * There is no `markOnboarded` here, on purpose.
+ *
+ * There was one, and it was never called from anywhere. Its comment said a
+ * timestamp would save recomputing the onboarding state on every page load,
+ * which would have been true if anything had written it. Dead code that
+ * describes behaviour the product does not have is worse than no code: the next
+ * person reads the comment, believes `onboarded_at` means something, and builds
+ * on a column that is always null.
+ *
+ * "Primeros pasos" works out its three steps from counts instead. Two of them
+ * are `head: true` counts that read an index, and the patient list is already
+ * being fetched for the screen, so the whole thing costs one extra query while
+ * the card is on screen and none afterwards.
+ *
+ * The `onboarded_at` column stays in the schema. Dropping it needs a migration
+ * and it is not in anybody's way.
  */
-export async function markOnboarded(practitionerId: string) {
-  const db = await getDb()
-  const { error } = await db
-    .from('practitioners')
-    .update({ onboarded_at: new Date().toISOString() })
-    .eq('id', practitionerId)
-    .is('onboarded_at', null)
-
-  if (error) throw error
-}
 
 // ─── The repair path ────────────────────────────────────────────────────────
 

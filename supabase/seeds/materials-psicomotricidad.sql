@@ -1,6 +1,6 @@
 -- Psicomotricidad, hasta llegar a 50.
 --
--- El v1 no traía ninguno. materials.curated.sql agregó 20 y estos son los 30
+-- El v1 no traía ninguno. materials-curados.sql agregó 20 y estos son los 30
 -- que faltaban.
 --
 -- Convenciones: subtítulo es una línea corta terminada en dos puntos, las

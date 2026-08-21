@@ -1,6 +1,6 @@
 -- Psicología, hasta llegar a 50.
 --
--- materials.curated.sql trajo los primeros 8 de esta disciplina. Estos son el
+-- materials-curados.sql trajo los primeros 8 de esta disciplina. Estos son el
 -- resto. A partir de acá cada profesión tiene su archivo, que es más fácil de
 -- revisar que un archivo largo con las seis mezcladas.
 --

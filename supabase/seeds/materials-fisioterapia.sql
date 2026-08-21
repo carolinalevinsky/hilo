@@ -1,6 +1,6 @@
 -- Fisioterapia, hasta llegar a 50.
 --
--- El v1 no traía ninguno. materials.curated.sql agregó 21 y estos son los 29
+-- El v1 no traía ninguno. materials-curados.sql agregó 21 y estos son los 29
 -- que faltaban.
 --
 -- Casi todos son pautas para llevarse a casa, que es el formato que más se usa

@@ -1,6 +1,6 @@
 -- Terapia ocupacional, hasta llegar a 50.
 --
--- El v1 traía 3 de esta disciplina y materials.curated.sql agregó 8. Estos son
+-- El v1 traía 3 de esta disciplina y materials-curados.sql agregó 8. Estos son
 -- los 39 que faltaban.
 --
 -- Convenciones: subtítulo es una línea corta terminada en dos puntos, las

@@ -9,9 +9,23 @@ import { cn } from '@/lib/utils'
  * "Primeros pasos" — v1's onboarding card (`legacy/index.html:1033`), and the
  * only thing standing between a new practitioner and six empty screens.
  *
- * Two steps, as in v1, and they are the two that unlock everything else: a
- * patient to write about, and one session written. Not five — a checklist long
- * enough to feel like work is a checklist nobody finishes.
+ * Three steps. v1 had two, and for a while this did too: a patient to write
+ * about, and one session written. The third was added after watching what
+ * happens when the second one finishes.
+ *
+ * What happens is that the card disappears and the practitioner is left on a
+ * patient record with an empty goals section. Everything that makes Hilo more
+ * than a notebook hangs off a goal: the progress chart, the material the planner
+ * suggests, the "se trabajó" line in the next session, and most of what a report
+ * is built from. Somebody who never writes one gets a tidy place to store notes
+ * and never finds out why they came.
+ *
+ * So the goal is a step, and it goes third rather than second: steps one and two
+ * are v1's and they are the fastest route to having used the product. The goal is
+ * what makes the second session better than the first.
+ *
+ * Three and not five. A checklist long enough to feel like work is a checklist
+ * nobody finishes.
  *
  * ─── Why the library is here and is not a step ────────────────────────────
  *
@@ -35,31 +49,33 @@ import { cn } from '@/lib/utils'
 export function FirstSteps({
   hasPatient,
   hasSession,
+  hasGoal,
   firstPatientId,
   materialCount,
   disciplineLabel,
 }: {
   hasPatient: boolean
   hasSession: boolean
-  /** Where "Registrá tu primera sesión" points, once there is somebody to write about. */
+  hasGoal: boolean
+  /** Where steps two and three point, once there is somebody to write about. */
   firstPatientId: string | null
   materialCount: number
   /** "Fonoaudiología", to be lowercased into running text. */
   disciplineLabel: string
 }) {
-  if (hasPatient && hasSession) return null
+  if (hasPatient && hasSession && hasGoal) return null
 
-  const done = [hasPatient, hasSession].filter(Boolean).length
+  const done = [hasPatient, hasSession, hasGoal].filter(Boolean).length
 
   return (
     <Card className="mb-4 border-violet">
       <CardContent className="px-5 py-4.5">
         <div className="mb-0.5 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-[16px] font-extrabold">Primeros pasos</h2>
-          <span className="text-[12.5px] text-muted-foreground">{done} de 2</span>
+          <span className="text-[12.5px] text-muted-foreground">{done} de 3</span>
         </div>
         <p className="mb-3 text-[12.5px] text-muted-foreground">
-          Dos pasos para empezar a usar Hilo.
+          Tres pasos para empezar a usar Hilo.
         </p>
 
         <Step
@@ -89,6 +105,24 @@ export function FirstSteps({
             ) : (
               // Said rather than left blank: an inert row reads as broken, and
               // "after the first one" reads as a sequence.
+              <span className="shrink-0 text-[12px] text-muted-foreground">
+                Después del paso 1
+              </span>
+            )
+          }
+        />
+
+        <Step
+          done={hasGoal}
+          number={3}
+          title="Ponele un objetivo"
+          text="Es lo que Hilo usa para seguir el progreso, sugerirte materiales y armar los informes."
+          action={
+            firstPatientId ? (
+              <Button asChild size="sm">
+                <Link href={`/pacientes/${firstPatientId}`}>Ir a la ficha</Link>
+              </Button>
+            ) : (
               <span className="shrink-0 text-[12px] text-muted-foreground">
                 Después del paso 1
               </span>

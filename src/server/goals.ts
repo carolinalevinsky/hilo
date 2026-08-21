@@ -22,6 +22,25 @@ export const GoalInput = z.object({
   progress: z.coerce.number().int().min(0).max(100).default(0),
 })
 
+/**
+ * Whether this practitioner has written a goal for anybody yet.
+ *
+ * For "Primeros pasos" on Inicio, which asks the question once and never again
+ * after the third step is done. `head: true` reads an index and returns no rows,
+ * so this costs about as much as asking whether the table is empty.
+ */
+export async function hasAnyGoal(practitionerId: string): Promise<boolean> {
+  const db = await getDb()
+  const { count, error } = await db
+    .from('goals')
+    .select('id', { count: 'exact', head: true })
+    .eq('practitioner_id', practitionerId)
+    .limit(1)
+
+  if (error) throw error
+  return (count ?? 0) > 0
+}
+
 export async function createGoal(
   practitionerId: string,
   patientId: string,
