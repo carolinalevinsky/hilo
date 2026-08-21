@@ -20,19 +20,19 @@ import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
 import { listAssessments } from '@/server/assessments'
-import { requireUser } from '@/server/auth'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
-import { getPractitioner } from '@/server/practitioners'
 import { listReports } from '@/server/reports'
 import { listPlanItems } from '@/server/session-plans'
 import { listSessions } from '@/server/sessions'
+
+import { currentPractitioner, currentUser } from '../../session'
 
 export const metadata: Metadata = { title: 'Paciente · Hilo' }
 
 export default async function PatientPage({ params }: PageProps<'/pacientes/[id]'>) {
   const { id } = await params
-  const user = await requireUser()
+  const user = await currentUser()
 
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()
@@ -40,7 +40,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   const [photoUrl, practitioner, goals, progress, sessions, planItems, assessments, reports] =
     await Promise.all([
       getPhotoUrl(patient.photo_path),
-      getPractitioner(user.id),
+      currentPractitioner(user.id),
       listGoals(user.id, patient.id),
       listGoalProgress(user.id, patient.id),
       listSessions(user.id, patient.id),

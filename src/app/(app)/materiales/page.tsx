@@ -12,9 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { areasFor, materialKindLabel } from '@/lib/material-areas'
 import { cn } from '@/lib/utils'
-import { requireUser } from '@/server/auth'
 import { listMaterials, materialOrigin } from '@/server/materials'
-import { getPractitioner } from '@/server/practitioners'
+import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Materiales · Hilo' }
 
@@ -43,8 +42,7 @@ function chipHref({
 
 export default async function MaterialsPage({ searchParams }: PageProps<'/materiales'>) {
   const params = await searchParams
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { user, practitioner } = await currentSession()
 
   const area = readParam(params.area)
   const onlyMine = readParam(params.mios) === '1'

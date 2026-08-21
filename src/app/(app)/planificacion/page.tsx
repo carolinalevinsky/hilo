@@ -26,12 +26,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { ageGroupLabel } from '@/lib/patient-labels'
-import { requireUser } from '@/server/auth'
 import { averageProgress } from '@/server/goals'
 import { listMaterials } from '@/server/materials'
 import { getPhotoUrl, listPatients } from '@/server/patients'
-import { getPractitioner } from '@/server/practitioners'
 import { listPlanItems, planSuggestions } from '@/server/session-plans'
+import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Planificar sesión · Hilo' }
 
@@ -55,8 +54,7 @@ function readParam(value: string | string[] | undefined) {
 
 export default async function PlanningPage({ searchParams }: PageProps<'/planificacion'>) {
   const params = await searchParams
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { user, practitioner } = await currentSession()
   const patients = await listPatients(user.id)
 
   const [firstPatient] = patients

@@ -13,19 +13,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { disciplineLabel } from '@/lib/disciplines'
 import { firstName } from '@/lib/whatsapp'
-import { requireUser } from '@/server/auth'
 import { hasAnyGoal } from '@/server/goals'
 import { countMaterials } from '@/server/materials'
 import { listPatients } from '@/server/patients'
 import { todayBriefing } from '@/server/planning'
 import { countSessions } from '@/server/sessions'
-import { getPractitioner } from '@/server/practitioners'
+import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Inicio · Hilo' }
 
 export default async function HomePage() {
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { user, practitioner } = await currentSession()
   const [patients, todaySessions, sessionCount, goalExists] = await Promise.all([
     listPatients(user.id, { sort: 'recent' }),
     todayBriefing(user.id, practitioner.discipline),

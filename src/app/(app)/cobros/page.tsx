@@ -15,12 +15,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDayMonth } from '@/lib/dates'
 import { currentPeriod, periodLabel, shiftPeriod } from '@/lib/periods'
-import { requireUser } from '@/server/auth'
 import { isMercadoPagoConnected } from '@/server/mercadopago'
 import { listPatients } from '@/server/patients'
 import { monthlyLedger } from '@/server/payments'
 
 import { deletePaymentAction } from './actions'
+import { currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Cobros · Hilo' }
 
@@ -29,7 +29,7 @@ const money = (value: number) =>
 
 export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'>) {
   const params = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const now = currentPeriod()
   const requested = typeof params.mes === 'string' ? params.mes : now

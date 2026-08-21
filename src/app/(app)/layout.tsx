@@ -6,8 +6,9 @@ import { Toaster } from '@/components/ui/sonner'
 import { disciplineLabel } from '@/lib/disciplines'
 import { redirect } from 'next/navigation'
 
-import { requireUser } from '@/server/auth'
 import { findPractitioner } from '@/server/practitioners'
+
+import { currentUser } from './session'
 
 /**
  * The shell every signed-in screen renders inside.
@@ -32,7 +33,7 @@ import { findPractitioner } from '@/server/practitioners'
  * how it was found: signing in to the first real deployment.
  */
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
-  const user = await requireUser()
+  const user = await currentUser()
   const practitioner = await findPractitioner(user.id)
 
   if (!practitioner) redirect('/completar-perfil')

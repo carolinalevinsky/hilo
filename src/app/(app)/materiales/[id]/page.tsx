@@ -11,7 +11,6 @@ import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
-import { requireUser } from '@/server/auth'
 import {
   getMaterial,
   getMaterialFileUrl,
@@ -19,6 +18,7 @@ import {
   materialOrigin,
 } from '@/server/materials'
 import { listPatients } from '@/server/patients'
+import { currentUser } from '../../session'
 
 export const metadata: Metadata = { title: 'Material · Hilo' }
 
@@ -32,7 +32,7 @@ export const metadata: Metadata = { title: 'Material · Hilo' }
  */
 export default async function MaterialPage({ params }: PageProps<'/materiales/[id]'>) {
   const { id } = await params
-  const user = await requireUser()
+  const user = await currentUser()
 
   // RLS decides what is visible: Hilo's materials, plus this practitioner's own.
   const [material, patients] = await Promise.all([getMaterial(id), listPatients(user.id)])

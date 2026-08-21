@@ -6,14 +6,12 @@ import { MaterialForm } from '@/components/materials/material-form'
 import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { areasFor } from '@/lib/material-areas'
-import { requireUser } from '@/server/auth'
-import { getPractitioner } from '@/server/practitioners'
+import { currentSession } from '../../session'
 
 export const metadata: Metadata = { title: 'Nuevo material · Hilo' }
 
 export default async function NewMaterialPage() {
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { practitioner } = await currentSession()
 
   return (
     <>

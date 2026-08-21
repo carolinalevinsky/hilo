@@ -7,9 +7,8 @@ import { MaterialForm } from '@/components/materials/material-form'
 import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { areasFor } from '@/lib/material-areas'
-import { requireUser } from '@/server/auth'
 import { getMaterial, getMaterialFileUrl, materialFileName } from '@/server/materials'
-import { getPractitioner } from '@/server/practitioners'
+import { currentSession } from '../../../session'
 
 export const metadata: Metadata = { title: 'Editar material · Hilo' }
 
@@ -29,8 +28,7 @@ export default async function EditMaterialPage({
 }: PageProps<'/materiales/[id]/editar'>) {
   const { id } = await params
   const { generar, describir } = await searchParams
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { user, practitioner } = await currentSession()
 
   const material = await getMaterial(id)
   // 404 rather than a message, and the same 404 whether the material belongs to

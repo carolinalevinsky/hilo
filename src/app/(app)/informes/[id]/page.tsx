@@ -12,10 +12,10 @@ import { formatLongDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
-import { requireUser } from '@/server/auth'
 import { getPatient } from '@/server/patients'
-import { getPractitioner } from '@/server/practitioners'
 import { getReport } from '@/server/reports'
+
+import { currentPractitioner, currentUser } from '../../session'
 
 export const metadata: Metadata = { title: 'Informe · Hilo' }
 
@@ -25,11 +25,11 @@ export default async function ReportPage({
 }: PageProps<'/informes/[id]'>) {
   const { id } = await params
   const query = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const [report, practitioner] = await Promise.all([
     getReport(user.id, id),
-    getPractitioner(user.id),
+    currentPractitioner(user.id),
   ])
   if (!report) notFound()
 

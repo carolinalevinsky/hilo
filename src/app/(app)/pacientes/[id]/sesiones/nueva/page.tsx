@@ -6,10 +6,10 @@ import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/page-header'
 import { SessionForm } from '@/components/sessions/session-form'
 import { Card, CardContent } from '@/components/ui/card'
-import { requireUser } from '@/server/auth'
 import { listGoals } from '@/server/goals'
 import { getPatient } from '@/server/patients'
 import { listPlanItems, planSummary } from '@/server/session-plans'
+import { currentUser } from '../../../../session'
 
 export const metadata: Metadata = { title: 'Registrar sesión · Hilo' }
 
@@ -19,7 +19,7 @@ export default async function NewSessionPage({
 }: PageProps<'/pacientes/[id]/sesiones/nueva'>) {
   const { id } = await params
   const { plan } = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()

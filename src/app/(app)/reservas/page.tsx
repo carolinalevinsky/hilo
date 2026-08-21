@@ -8,17 +8,17 @@ import { PageHeader } from '@/components/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/dates'
 import { publicConfig } from '@/lib/env'
-import { requireUser } from '@/server/auth'
 import { listBookingRequests } from '@/server/booking'
-import { getPractitioner } from '@/server/practitioners'
+
+import { currentPractitioner, currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Reservas · Hilo' }
 
 export default async function BookingsPage() {
-  const user = await requireUser()
+  const user = await currentUser()
 
   const [practitioner, requests] = await Promise.all([
-    getPractitioner(user.id),
+    currentPractitioner(user.id),
     listBookingRequests(user.id),
   ])
 

@@ -12,12 +12,12 @@ import { ageLabel } from '@/lib/age'
 import { patientClasses, patientHex } from '@/lib/patient-colors'
 import { ageGroupLabel } from '@/lib/patient-labels'
 import { cn } from '@/lib/utils'
-import { requireUser } from '@/server/auth'
 import {
   listPatients,
   patientSummaries,
   type PatientListOptions,
 } from '@/server/patients'
+import { currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Pacientes · Hilo' }
 
@@ -42,7 +42,7 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
 
 export default async function PatientsPage({ searchParams }: PageProps<'/pacientes'>) {
   const params = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const scope = readParam(params.estado) === 'archived' ? 'archived' : 'active'
   const ageGroup = readParam(params.edad) as PatientListOptions['ageGroup']

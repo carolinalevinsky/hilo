@@ -5,14 +5,12 @@ import { PageHeader } from '@/components/page-header'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { requireUser } from '@/server/auth'
-import { getPractitioner } from '@/server/practitioners'
+import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Mi perfil · Hilo' }
 
 export default async function ProfilePage() {
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { practitioner } = await currentSession()
 
   return (
     <>

@@ -8,8 +8,8 @@ import { PatientForm } from '@/components/patients/patient-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { removePhotoAction } from '@/app/(app)/pacientes/actions'
-import { requireUser } from '@/server/auth'
 import { getPatient, getPhotoUrl } from '@/server/patients'
+import { currentUser } from '../../../session'
 
 export const metadata: Metadata = { title: 'Editar ficha · Hilo' }
 
@@ -17,7 +17,7 @@ export default async function EditPatientPage({
   params,
 }: PageProps<'/pacientes/[id]/editar'>) {
   const { id } = await params
-  const user = await requireUser()
+  const user = await currentUser()
 
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()

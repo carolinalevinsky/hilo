@@ -6,18 +6,18 @@ import { ReportForm } from '@/components/documents/report-form'
 import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { recipientsFor, type RecipientId } from '@/lib/recipients'
-import { requireUser } from '@/server/auth'
 import { listPatients } from '@/server/patients'
-import { getPractitioner } from '@/server/practitioners'
+
+import { currentPractitioner, currentUser } from '../../session'
 
 export const metadata: Metadata = { title: 'Nuevo informe · Hilo' }
 
 export default async function NewReportPage({ searchParams }: PageProps<'/informes/nuevo'>) {
   const params = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const [practitioner, patients] = await Promise.all([
-    getPractitioner(user.id),
+    currentPractitioner(user.id),
     listPatients(user.id),
   ])
 

@@ -15,8 +15,8 @@ import { ageLabel } from '@/lib/age'
 import { formatLongDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
 import { AssessmentResults, getAssessment, suggestedGoals } from '@/server/assessments'
-import { requireUser } from '@/server/auth'
-import { getPractitioner } from '@/server/practitioners'
+
+import { currentPractitioner, currentUser } from '../../session'
 
 export const metadata: Metadata = { title: 'Evaluación · Hilo' }
 
@@ -26,11 +26,11 @@ export default async function AssessmentPage({
 }: PageProps<'/evaluaciones/[id]'>) {
   const { id } = await params
   const query = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const [assessment, practitioner] = await Promise.all([
     getAssessment(user.id, id),
-    getPractitioner(user.id),
+    currentPractitioner(user.id),
   ])
   if (!assessment) notFound()
 

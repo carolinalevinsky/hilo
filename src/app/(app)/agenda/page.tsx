@@ -22,19 +22,19 @@ import {
   listSchedules,
   materialiseAppointments,
 } from '@/server/appointments'
-import { requireUser } from '@/server/auth'
 import { listBookingRequests } from '@/server/booking'
 import { listPatients } from '@/server/patients'
 import { planForRange } from '@/server/planning'
-import { getPractitioner } from '@/server/practitioners'
 
 import { deactivateScheduleAction } from './actions'
+
+import { currentPractitioner, currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Agenda · Hilo' }
 
 export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>) {
   const params = await searchParams
-  const user = await requireUser()
+  const user = await currentUser()
 
   const offsetParam = typeof params.semana === 'string' ? Number(params.semana) : 0
   const offset = Number.isFinite(offsetParam) ? Math.trunc(offsetParam) : 0
@@ -80,7 +80,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     // The requests themselves rather than a count: they are answered here.
     listBookingRequests(user.id, 'pending'),
     listAppointments(user.id, tomorrow, tomorrow),
-    getPractitioner(user.id),
+    currentPractitioner(user.id),
   ])
 
   // The week read as work rather than as a calendar. It needs the goals and the

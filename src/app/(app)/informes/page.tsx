@@ -15,17 +15,15 @@ import {
   type RecipientId,
 } from '@/lib/recipients'
 import { listAssessments } from '@/server/assessments'
-import { requireUser } from '@/server/auth'
 import { countPatients } from '@/server/patients'
 import { planLimits, quota } from '@/server/plans'
-import { getPractitioner } from '@/server/practitioners'
 import { listReports } from '@/server/reports'
+import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Informes y evaluaciones · Hilo' }
 
 export default async function DocumentsPage() {
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { user, practitioner } = await currentSession()
 
   const [reports, assessments, patients, reportQuota] = await Promise.all([
     listReports(user.id),

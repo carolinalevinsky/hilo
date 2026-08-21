@@ -9,17 +9,17 @@ import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { patientHex } from '@/lib/patient-colors'
-import { requireUser } from '@/server/auth'
 import {
   mostWorkedGoals,
   practitionerStats,
   progressByPatient,
 } from '@/server/statistics'
+import { currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Estadísticas · Hilo' }
 
 export default async function StatisticsPage() {
-  const user = await requireUser()
+  const user = await currentUser()
 
   const [stats, byPatient, worked] = await Promise.all([
     practitionerStats(user.id),

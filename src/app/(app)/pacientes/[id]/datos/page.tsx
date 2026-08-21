@@ -16,9 +16,8 @@ import {
 } from '@/lib/patient-labels'
 import { periodLabel } from '@/lib/periods'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
-import { requireUser } from '@/server/auth'
 import { buildPatientExport } from '@/server/patient-export'
-import { getPractitioner } from '@/server/practitioners'
+import { currentSession } from '../../../session'
 
 export const metadata: Metadata = { title: 'Datos del paciente · Hilo' }
 
@@ -37,8 +36,7 @@ const money = (value: number) =>
  */
 export default async function PatientDataPage({ params }: PageProps<'/pacientes/[id]/datos'>) {
   const { id } = await params
-  const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
+  const { user, practitioner } = await currentSession()
 
   const data = await buildPatientExport(user.id, id, practitioner)
   if (!data || !data.patient) notFound()

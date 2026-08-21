@@ -8,10 +8,10 @@ import { PageHeader } from '@/components/page-header'
 import { SessionForm } from '@/components/sessions/session-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { requireUser } from '@/server/auth'
 import { listGoals } from '@/server/goals'
 import { getPatient } from '@/server/patients'
 import { getSession } from '@/server/sessions'
+import { currentUser } from '../../../../session'
 
 export const metadata: Metadata = { title: 'Editar sesión · Hilo' }
 
@@ -19,7 +19,7 @@ export default async function EditSessionPage({
   params,
 }: PageProps<'/pacientes/[id]/sesiones/[sessionId]'>) {
   const { id, sessionId } = await params
-  const user = await requireUser()
+  const user = await currentUser()
 
   const [patient, session] = await Promise.all([
     getPatient(user.id, id),
