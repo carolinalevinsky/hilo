@@ -108,7 +108,7 @@ Las otras tres:
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://uepyfqibtocrekvnliyk.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | *Project Settings → API*, la clave `anon public` |
-| `NEXT_PUBLIC_APP_URL` | Por ahora la URL `*.vercel.app` que te dé Vercel |
+| `NEXT_PUBLIC_APP_URL` | La URL `*.vercel.app` que te dé Vercel, exacta y con `https://` |
 
 Cargalas para **Production y Preview**, las dos.
 
@@ -142,9 +142,17 @@ verificaciones:
 
 ---
 
-## 6. El dominio, después
+## 6. Un dominio propio, si algún día querés
 
-Con la app andando, apuntás `hilo.uy` a Vercel y actualizás **tres** lugares:
+**`hilo.uy` no es de Hilo.** Aparece como ejemplo en `launch.md` y en un comentario
+de `booking-link.tsx`, y en algún momento se dio por propio sin comprobarlo. No lo
+es: responde 403 y pertenece a otra persona.
+
+Mientras tanto la URL de Vercel funciona perfecto — es una dirección real, con
+HTTPS, y no vence.
+
+El día que compres un dominio, apuntarlo son quince minutos y hay que tocar
+**tres** lugares, no uno:
 
 1. `NEXT_PUBLIC_APP_URL` en Vercel
 2. Site URL y Redirect URLs en Supabase
