@@ -22,9 +22,6 @@
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
 values
-
--- ─── Psicomotricidad ───────────────────────────────────────────────────────
-
   (null, 'psychomotricity', 'Esquema corporal', 'Reconocimiento', 'El cuerpo dibujado en el piso', 'activity', 'Reconocer y nombrar las partes del cuerpo sobre la propia silueta', '3-5 años', 'Qué necesitás:
 Papel de kiosco o varias hojas pegadas, marcadores gruesos.
 Cómo se hace:
@@ -256,8 +253,6 @@ Se lo mostrás, no se lo cantás. Tiene que mirar y repetir.
 Para hacerlo más largo:
 Que invente él una y la copies vos. Inventar una secuencia y sostenerla es más difícil que repetirla.'),
 
--- ─── Fisioterapia ──────────────────────────────────────────────────────────
-
   (null, 'physiotherapy', 'Movilidad', 'Rango articular', 'Movilidad de hombro en casa', 'guide', 'Sostener el rango de movimiento del hombro entre sesiones', '15+ años', 'Cuándo hacerlos:
 Una vez por día, preferentemente a la misma hora. Tres veces por semana ya sirve, todos los días es mejor.
 Los movimientos:
@@ -421,19 +416,6 @@ Un escalón más alto, o bajar más despacio contando hasta tres.
 Bajar es lo que más fortalece:
 Y es lo que la mayoría hace rápido para terminar antes.'),
 
-  (null, 'physiotherapy', 'Equilibrio y marcha', 'Propiocepción', 'Después del yeso: recuperar el pie', 'guide', 'Devolverle sensibilidad y control al pie tras una inmovilización', '15+ años', 'Por qué hace falta:
-Un pie que estuvo semanas quieto pierde la información que le manda al cerebro. La fuerza vuelve antes que esa información, y esa distancia es la que hace que se tuerza de nuevo.
-Los ejercicios, sentado:
-• Escribir el abecedario en el aire con el dedo gordo.
-• Juntar una toalla del piso agarrándola con los dedos.
-• Levantar canicas o tapitas con los dedos y pasarlas a un vaso.
-• Rodar una pelota de tenis bajo la planta, un minuto.
-Después, parado:
-• Repartir el peso entre los dos pies y sentir dónde apoya más.
-• Pararse en un pie, primero con los ojos abiertos.
-Cuántas veces:
-Dos veces por día, diez minutos. Es aburrido y es lo que más cambia el resultado final.'),
-
   (null, 'physiotherapy', 'Fuerza', 'Core', 'Espalda que duele de estar sentado', 'guide', 'Aliviar y prevenir el dolor lumbar de la vida sedentaria', '15+ años', 'Lo que más ayuda no es un ejercicio:
 Es levantarse. Cada cuarenta y cinco minutos, dos minutos de pie. Ninguna rutina compensa ocho horas sin moverse.
 Para hacer en el momento en que duele:
@@ -528,8 +510,6 @@ Lo que importa no es cómo te sentís durante. Es cómo amanecés al otro día.
 Lo que más hace recaer:
 Volver al nivel de antes en la primera semana porque el dolor ya no está.'),
 
--- ─── Terapia ocupacional ───────────────────────────────────────────────────
-
   (null, 'occupational_therapy', 'Motricidad fina', 'Agarre y pinza', 'La pinza que junta de todo', 'activity', 'Fortalecer la pinza índice pulgar con objetos de distinto tamaño', '3-5 años', 'Qué necesitás:
 Pompones, botones grandes, fideos secos, pinzas de ropa, una cubetera.
 Cómo se hace:
@@ -545,19 +525,6 @@ Suma precisión al agarre, porque no alcanza con levantarlo: hay que soltarlo en
 Para observar:
 Si usa el dedo del medio para ayudarse. Es una compensación común y conviene señalarla con humor, sin retarlo.'),
 
-  (null, 'occupational_therapy', 'Motricidad fina', 'Destreza manual', 'Enhebrar, de grueso a fino', 'activity', 'Coordinar las dos manos en una tarea de precisión creciente', '3-5 años', 'La progresión, y respetarla importa:
-• Aros grandes en un palo parado.
-• Cuentas grandes en un cordón grueso con la punta dura.
-• Cuentas medianas en un cordón fino.
-• Fideos tipo rigatoni en un hilo.
-• Mostacillas en hilo de coser.
-Lo que se trabaja:
-Una mano sostiene y la otra hace. Esa división de tareas entre las dos manos es lo que después sostiene cortar con tijera y escribir apoyando la hoja.
-Si abandona rápido:
-El paso es demasiado difícil. Volvé uno atrás sin comentarlo.
-Para darle sentido:
-Que arme un collar para alguien. La tarea es la misma y la tolerancia se duplica.'),
-
   (null, 'occupational_therapy', 'Motricidad fina', 'Grafomotricidad', 'Antes de escribir: el trazo grande', 'activity', 'Preparar el gesto gráfico con movimientos amplios de hombro y codo', '3-5 años', 'Por qué grande primero:
 La escritura sale del hombro antes que de los dedos. Empezar por la hoja chica saltea dos articulaciones.
 En la pared o en un caballete:
@@ -572,80 +539,6 @@ Después el mismo trazo, más chico:
 En una hoja apoyada en la mesa. Y recién después, entre dos renglones.
 Por qué vertical:
 La muñeca queda estirada sola, que es la posición desde la que después se escribe.'),
-
-  (null, 'occupational_therapy', 'Integración sensorial', 'Regulación', 'La caja de la calma', 'guide', 'Armar un recurso propio para autorregularse antes o después de una tarea exigente', '6-7 años', 'Qué es:
-Una caja que arma el chico con cosas que a él lo calman. No una que armás vos con lo que suele funcionar.
-Cómo se arma:
-Le ofrecés muchas opciones y prueba cada una en sesión. Entra a la caja sólo lo que él elige.
-Opciones para ofrecer:
-• Una pelota antiestrés.
-• Masa o plastilina.
-• Algo con textura suave, como un retazo de tela.
-• Auriculares o tapones.
-• Un frasco con purpurina y agua para mirar.
-• Un chicle o algo para masticar.
-Cuándo se usa:
-Antes de la tarea difícil, no después del estallido. Si se usa sólo después, aprende que hay que estallar para conseguirla.
-Para la casa y la escuela:
-Que haya una igual en cada lugar. Buscar la caja en otro cuarto es tiempo suficiente para perder el momento.'),
-
-  (null, 'occupational_therapy', 'Integración sensorial', 'Propiocepción', 'Trabajo pesado, para bajar un cambio', 'guide', 'Usar actividades de carga para organizar el cuerpo antes de una tarea que requiere quietud', '6-7 años', 'Qué es el trabajo pesado:
-Cualquier actividad que empuja, tira o carga. Manda al cerebro información de músculos y articulaciones, y eso organiza.
-Actividades, todas de casa:
-• Llevar la bolsa de las compras.
-• Empujar una silla de un lado al otro.
-• Ayudar a mover el sillón.
-• Colgarse de una barra.
-• Cargar una mochila con libros por el pasillo.
-• Amasar.
-Cuándo hacerlo:
-Diez minutos antes de la tarea que requiere estar quieto. Antes de sentarse a hacer los deberes, no en el medio.
-Cuánto dura el efecto:
-Entre una y dos horas. Por eso se reparte a lo largo del día y no se hace todo junto a la mañana.'),
-
-  (null, 'occupational_therapy', 'Coordinación', 'Bilateral', 'Las dos manos, cada una en lo suyo', 'activity', 'Coordinar una mano que sostiene con otra que actúa', '6-7 años', 'Qué se busca:
-Que una mano estabilice mientras la otra trabaja. Es distinto de usar las dos para lo mismo.
-Actividades:
-• Cortar con tijera mientras la otra gira el papel.
-• Abrir un frasco.
-• Sacarle punta a un lápiz.
-• Enhebrar.
-• Poner clips en el borde de un cartón.
-• Abrochar botones.
-Para observar:
-Si la mano que sostiene se olvida y suelta. Es la señal más clara de que la coordinación bilateral todavía no está.
-Cómo ayudar sin hacerlo por él:
-Poné tu mano sobre la que sostiene, sin apretar, sólo como recordatorio. Se saca a las pocas repeticiones.'),
-
-  (null, 'occupational_therapy', 'Vida diaria (AVD)', 'Vestido', 'Aprender a atarse los cordones', 'guide', 'Enseñar el atado de cordones descomponiéndolo en pasos', '6-7 años', 'Antes de empezar:
-Practicar sobre un zapato apoyado en la mesa, no sobre el pie puesto. Cambia el ángulo y hace todo más fácil.
-Con dos colores:
-Cordones de dos colores distintos en el mismo zapato. Poder decir el rojo por encima del azul vale más que cualquier explicación.
-Los pasos:
-• Cruzar y pasar uno por debajo del otro. Tirar.
-• Hacer una gasita con el rojo.
-• El azul rodea la gasita.
-• Empujar el azul por el agujerito.
-• Tirar de las dos gasitas.
-Enseñar al revés:
-Hacés vos todo menos el último paso, y ese lo hace él. Cuando lo tiene, le dejás los dos últimos. Terminar la tarea da la sensación de logro desde el primer día.
-Cuánto tarda:
-Semanas. Es normal.'),
-
-  (null, 'occupational_therapy', 'Vida diaria (AVD)', 'Autonomía', 'La rutina de la mañana, en imágenes', 'worksheet', 'Sostener la secuencia de la mañana sin depender de que un adulto la recuerde', '6-7 años', 'Qué se arma:
-Una tira con las cosas de la mañana en orden, en dibujos o fotos.
-La secuencia típica:
-Levantarse, ir al baño, vestirse, desayunar, lavarse los dientes, mochila, salir.
-Cómo se hace bien:
-• Las fotos son de él haciendo cada cosa, no dibujos genéricos.
-• El orden lo arma él, aunque no quede igual al que vos harías.
-• Se cuelga donde empieza la rutina, no en la cocina.
-Cómo se usa:
-Al principio le señalás la tira en vez de decirle qué sigue. Después la mira solo. Después ya no la necesita.
-Para qué sirve de verdad:
-Corta la discusión de todas las mañanas. La consigna deja de venir de una persona y pasa a venir de la pared.'),
-
--- ─── Psicología ────────────────────────────────────────────────────────────
 
   (null, 'psychology', 'Emociones', 'Reconocer emociones', 'El diario de las tres caras', 'worksheet', 'Registrar el estado emocional del día con un sistema simple y sostenible', '6-7 años', 'Qué es:
 Una hoja por semana. Cada día, una carita: contento, más o menos, mal.
@@ -697,19 +590,6 @@ Que invente qué pasa después. Eso conecta la emoción con lo que la persona va
 Sin sonido a propósito:
 Con las palabras, la cara deja de mirarse.'),
 
-  (null, 'psychology', 'Habilidades sociales', 'Resolución de conflictos', 'Tres formas de decir lo mismo', 'activity', 'Distinguir respuestas pasivas, agresivas y asertivas ante un conflicto', '10-11 años', 'La situación:
-Un compañero le sacó algo sin pedir. Se plantea así, en concreto.
-Las tres respuestas:
-• Pasiva: no decir nada y quedarse mal.
-• Agresiva: gritarle o sacárselo de vuelta.
-• Asertiva: decirle que eso era suyo y que le gustaría que le pida.
-Cómo se trabaja:
-Las actúan las tres, y él dice cómo se sintió en cada una y qué habría hecho el otro.
-Lo que suele aparecer:
-Que la asertiva se siente rara al principio. Vale nombrarlo: es rara porque es nueva, no porque esté mal.
-Con situaciones propias:
-Cuando el mecanismo se entiende, se pasa a algo que le pasó de verdad esta semana.'),
-
   (null, 'psychology', 'Técnicas', 'Respiración', 'Respirar en cuadrado', 'guide', 'Bajar la activación con un patrón respiratorio simple de recordar', '8-9 años', 'Cómo es:
 Cuatro tiempos iguales, como los cuatro lados de un cuadrado.
 El patrón:
@@ -752,96 +632,4 @@ Pasó que no me contestó el mensaje. Pensé que está enojada conmigo. A favor:
 El error frecuente:
 Confundir buscar evidencia en contra con pensar en positivo. No se trata de que todo esté bien, se trata de mirar completo.
 Cuándo se completa:
-Después del momento, no durante. En el medio no se puede pensar así.'),
-
--- ─── Fonoaudiología ────────────────────────────────────────────────────────
-
-  (null, 'speech_therapy', 'Articulación', 'Praxias orofaciales', 'Gimnasia de la boca', 'activity', 'Trabajar la movilidad de labios, lengua y mejillas antes del sonido', '3-5 años', 'Para qué sirve:
-Prepara los músculos que después van a hacer el sonido. Se hace antes de trabajar el fonema, no en vez de.
-Con espejo, siempre:
-Sin verse, no puede corregir lo que hace.
-Labios:
-• Beso y sonrisa, alternando. Diez veces.
-• Inflar los cachetes y pasar el aire de uno al otro.
-• Sostener una cuchara con el labio superior.
-Lengua:
-• Sacar y meter, rápido.
-• Tocar la nariz y el mentón.
-• Pasar la lengua por los dientes de arriba, como limpiándolos.
-• Hacer ruido de caballo con la lengua.
-Cuánto:
-Cinco minutos. Es mucho más de lo que parece cuando se hace todos los días.
-Para que no aburra:
-Una tarjeta por ejercicio y que saque una al azar.'),
-
-  (null, 'speech_therapy', 'Articulación', 'Fonema /r/', 'La r que vibra, paso a paso', 'guide', 'Construir la vibrante múltiple desde movimientos previos', '6-7 años', 'Por qué cuesta tanto:
-La r múltiple necesita que la lengua esté en el lugar justo y que pase aire suficiente para hacerla vibrar sola. No se puede vibrar a propósito.
-Paso 1, encontrar el punto:
-Que diga la, la, la y sienta dónde toca la lengua. Ese es el punto.
-Paso 2, la t y la d rápidas:
-Repetir tada, tada, tada cada vez más rápido. La lengua rebota en el mismo lugar donde después va la r.
-Paso 3, la vibración sin palabra:
-Soplar fuerte con la lengua apoyada ahí, floja. Si sale un ruido de motor, ya está.
-Paso 4, con vocal:
-Motor y después una vocal. Rrrr, rrra, rrre.
-Paso 5, en palabra:
-Primero al principio: rata, remo, rulo. Después en el medio: perro, carro.
-Lo que no ayuda:
-Pedirle que ponga la lengua fuerte. Una lengua tensa no vibra.'),
-
-  (null, 'speech_therapy', 'Habla y voz', 'Soplo y respiración', 'Juegos de soplo con propósito', 'game', 'Trabajar el control y la duración del soplo, base de muchos sonidos', '3-5 años', 'Qué se busca:
-Soplo dirigido y sostenido. Muchos sonidos dependen de poder mandar aire de forma controlada.
-Para soplo largo:
-• Mover una pelotita de papel por la mesa hasta una meta.
-• Hacer burbujas en un vaso con agua y un sorbete, sin parar.
-• Empañar un espejo y dibujar antes de que se borre.
-Para soplo corto y fuerte:
-• Apagar velas imaginarias, una por una.
-• Volar un papelito de un solo soplido.
-Para soplo fino:
-• Mover una plumita sin que se caiga de la mesa.
-• Sostener una pelotita de telgopor en el aire.
-Cuidado con esto:
-Máximo cinco minutos. Soplar mucho seguido marea, y un chico mareado no vuelve a querer.'),
-
-  (null, 'speech_therapy', 'Habla y voz', 'Fluidez del habla', 'Hablar despacio, jugando', 'activity', 'Bajar la velocidad del habla sin señalar la disfluencia', '6-7 años', 'La regla de fondo:
-No se le pide que hable bien. Se le propone un juego donde hablar lento es parte del juego.
-Los juegos:
-• Hablar como una tortuga. Vos también.
-• Contar algo mientras caminás despacio, una palabra por paso.
-• Decir una frase estirando las vocales.
-• Turnos de tres segundos: se cuenta hasta tres antes de contestar. Los dos.
-Lo que no se hace:
-Decirle tranquilo, respirá, empezá de nuevo. Todo eso pone el foco justo donde más traba.
-Lo que sí ayuda:
-Que vos también bajes la velocidad, todo el tiempo, no sólo en el ejercicio. El ritmo se contagia.
-Para la familia:
-La misma indicación. La casa que habla más lento hace más que cualquier ejercicio.'),
-
-  (null, 'speech_therapy', 'Conciencia fonológica', 'Sílabas', 'Contar sílabas con el cuerpo', 'game', 'Segmentar palabras en sílabas usando movimiento', '3-5 años', 'Cómo se hace:
-Cada sílaba es un movimiento. Se dice la palabra separándola y se hace el movimiento en cada parte.
-Los movimientos, para ir cambiando:
-• Una palmada.
-• Un salto.
-• Un paso.
-• Un golpe en la mesa.
-• Un dedo que se levanta.
-Las palabras, en orden:
-Dos sílabas primero: mano, gato, pelo. Después tres: ventana, zapato. Después una: sol, pan, luz.
-La de una sílaba es la más difícil:
-Muchos chicos hacen dos palmadas para sol. Vale la pena quedarse ahí.
-El paso siguiente:
-Preguntarle cuántas fueron, sin decirla de nuevo. Ahí ya no está contando, está recordando.'),
-
-  (null, 'speech_therapy', 'Conciencia fonológica', 'Rimas', 'La cadena de rimas', 'game', 'Reconocer y producir rimas en cadena', '6-7 años', 'Cómo se juega:
-Uno dice una palabra, el otro dice una que rime, y sigue el primero. La cadena se corta cuando alguien no encuentra.
-Reglas que ayudan:
-• Valen las palabras inventadas, siempre que rimen.
-• Vale pedir una pista.
-• No vale repetir una que ya salió.
-Si le cuesta empezar:
-Dale dos opciones y que elija cuál rima. Gato rima con pato o con perro.
-Un escalón más:
-Vos decís tres palabras y él dice cuál no rima con las otras dos.
-Para qué sirve:
-La rima es de los primeros indicadores de conciencia fonológica, y de los que mejor predicen cómo va a andar la lectura después.');
+Después del momento, no durante. En el medio no se puede pensar así.');

@@ -532,4 +532,19 @@ Que con el otro es comprensivo y con uno mismo no. Y que la diferencia no tiene 
 La pregunta que cierra:
 Si a él le sirve escuchar eso, ¿por qué a vos no?
 Para guardar:
-La carta al amigo se guarda y se relee cuando vuelva la situación. Funciona mejor releída que recordada.');
+La carta al amigo se guarda y se relee cuando vuelva la situación. Funciona mejor releída que recordada.'),
+
+  (null, 'psychology', 'Habilidades sociales', 'Resolución de conflictos', 'Pedir perdón de verdad', 'activity', 'Distinguir una disculpa real de una fórmula vacía', '8-9 años', 'Por qué trabajarlo:
+Perdón dicho de apuro para que el adulto deje de insistir no repara nada, y además enseña que la palabra no significa nada.
+Las tres partes de una disculpa que sirve:
+• Qué hice. Concreto, sin excusas.
+• Cómo se habrá sentido el otro.
+• Qué voy a hacer distinto, o cómo lo arreglo.
+Un ejemplo:
+Te rompí el auto porque lo tiré. Te debe haber dado bronca porque era nuevo. Te ayudo a arreglarlo y la próxima te pido antes de agarrarlo.
+Lo que no va adentro:
+Perdón pero vos también. El pero borra todo lo anterior.
+Cuándo se pide:
+No en caliente. Cuando los dos se calmaron.
+Y algo importante:
+El otro puede no aceptarla. Eso también se conversa antes.');

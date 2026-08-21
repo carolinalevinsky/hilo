@@ -564,4 +564,76 @@ Que sigan la mano sin mover la cabeza. Esa es la mitad del ejercicio.
 Cuántos:
 Diez ochos por variante. Es corto.
 Para qué sirve:
-Es un cruce de línea media continuo y sin decisión, así que se automatiza más rápido que las actividades donde hay que pensar cada movimiento.');
+Es un cruce de línea media continuo y sin decisión, así que se automatiza más rápido que las actividades donde hay que pensar cada movimiento.'),
+
+  (null, 'occupational_therapy', 'Motricidad fina', 'Grafomotricidad', 'Copiar figuras, en orden de dificultad', 'worksheet', 'Reproducir formas gráficas siguiendo la secuencia del desarrollo', '6-7 años', 'El orden, que es el del desarrollo:
+Línea vertical, horizontal, círculo, cruz, cuadrado, diagonal, triángulo, rombo.
+Cómo se presenta:
+El modelo arriba y el espacio para copiar abajo, en la misma hoja.
+Lo que se mira, además de si se parece:
+• Por dónde empieza el trazo.
+• En qué dirección lo hace.
+• Si levanta el lápiz o lo hace de una.
+• Si mira el modelo mientras copia o sólo al principio.
+La diagonal es la frontera:
+Antes de los cinco años casi nadie la hace bien, y el rombo llega cerca de los siete. Pedirlos antes sólo enseña que dibujar sale mal.
+Si una no sale:
+Se practica esa forma en grande, en el aire y en una bandeja, antes de volver al papel.'),
+
+  (null, 'occupational_therapy', 'Motricidad fina', 'Destreza manual', 'Tijera avanzada: curvas y esquinas', 'activity', 'Progresar en el recorte después de la línea recta', '8-9 años', 'Cuándo se llega acá:
+Cuando la línea recta ya sale sin salirse.
+La progresión:
+• Curva amplia, tipo ola.
+• Círculo grande.
+• Círculo chico.
+• Cuadrado, que exige frenar y girar el papel en cada esquina.
+• Estrella.
+• Figura con partes internas.
+La clave en las esquinas:
+Se frena la tijera, se gira el papel, se sigue. Girar la tijera en el aire es lo que arruina el corte.
+La clave en las curvas:
+La mano que sostiene el papel es la que gira, en movimiento continuo.
+Para hacerlo útil:
+Que lo que recorta sirva para algo. Un móvil, una guirnalda, las piezas de un juego.'),
+
+  (null, 'occupational_therapy', 'Vida diaria (AVD)', 'Autonomía', 'El cuaderno y la mochila ordenados', 'guide', 'Instalar un sistema de organización de materiales escolares', '8-9 años', 'El problema:
+No es desorden, es que nunca nadie enseñó un sistema. Se lo pide y no se lo muestra.
+El sistema, con lo mínimo:
+• Un color por materia, en la carpeta y en el cuaderno.
+• Todo lo suelto entra en una sola carpeta de plástico, nunca en el fondo de la mochila.
+• La hoja se archiva el mismo día. No hay pila de después.
+• El viernes se vacía la mochila entera sobre la cama.
+El vaciado de los viernes es el que sostiene todo:
+Sin eso, cualquier sistema se llena de papeles en tres semanas.
+Cómo se enseña:
+Se hace juntos cuatro viernes seguidos. Después se pregunta si lo hizo. Después nada.
+Lo que no ayuda:
+Ordenárselo. Se ordena una vez y vuelve al estado anterior en días.'),
+
+  (null, 'occupational_therapy', 'Integración sensorial', 'Modulación táctil', 'La hora del baño y del pelo', 'guide', 'Reducir la resistencia a la higiene por sensibilidad táctil', '3-5 años', 'Por qué cuesta tanto:
+El agua que cae, el champú, el peine y la toalla son estímulos táctiles intensos y poco previsibles. Para un chico sensible es una pelea diaria, y no es capricho.
+Lo que ayuda:
+• Avisar cada paso antes de hacerlo. Ahora te mojo la cabeza.
+• Presión firme en vez de roce suave: secar apretando, no frotando.
+• Que él sostenga la ducha o el peine.
+• Agua más tibia de lo que parece necesario.
+• Un orden fijo, siempre el mismo.
+• Contar los pasos: faltan tres enjuagues, dos, uno.
+Para el pelo:
+Desenredar de las puntas hacia arriba, con la otra mano sujetando el mechón para que no tire.
+Lo que empeora:
+Apurar porque llora. La próxima vez empieza peor.'),
+
+  (null, 'occupational_therapy', 'Coordinación', 'Óculo-manual', 'Juegos de mesa que trabajan la mano', 'game', 'Usar juegos comunes como trabajo de motricidad fina', '6-7 años', 'Por qué juegos y no ejercicios:
+La misma cantidad de repeticiones, sin resistencia, y con alguien enfrente.
+Los juegos y qué trabaja cada uno:
+• Jenga: pinza fina, control graduado de la fuerza, quietud.
+• Operando: precisión con pinza y tolerancia a la frustración.
+• Levantar palitos: pinza y control del temblor.
+• Encastres y rompecabezas: rotación de la muñeca y percepción de la forma.
+• Cartas: sostener un abanico con una mano es más difícil de lo que parece.
+• Dominó parado: presión mínima y muy controlada.
+Cuál elegir:
+El que le guste. Un juego que se abandona no trabaja nada.
+Cuánto:
+Quince minutos. Es de lo poco que sostiene tanto tiempo.');

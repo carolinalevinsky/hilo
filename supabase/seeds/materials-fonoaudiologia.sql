@@ -472,4 +472,83 @@ Para la l:
 La luna limpia la loma con la lluvia.
 Lola le lleva el lápiz a Lucas.
 La regla de oro:
-Bien y despacio, diez veces. Rápido y mal, ninguna. Un trabalenguas dicho mal a toda velocidad refuerza el error.');
+Bien y despacio, diez veces. Rápido y mal, ninguna. Un trabalenguas dicho mal a toda velocidad refuerza el error.'),
+
+  (null, 'speech_therapy', 'Articulación', 'Fonemas /s/ y /l/', 'Los fonemas /k/ y /g/, que se hacen atrás', 'activity', 'Lograr el punto articulatorio velar, que no se ve desde afuera', '6-7 años', 'Por qué son distintos:
+La /k/ y la /g/ se hacen con la parte de atrás de la lengua contra el paladar blando. No se ven, así que el espejo no ayuda como con los otros.
+Cómo se encuentra el punto:
+• Acostado boca arriba: la lengua cae hacia atrás sola y el sonido sale más fácil.
+• Hacer gárgaras con un poquito de agua y sentir dónde toca.
+• Toser suave: la tos usa el mismo punto.
+• Con un bajalenguas apoyando la punta de la lengua abajo, para que no suba.
+Lo que suele pasar:
+Que la reemplace por /t/ y /d/, que se hacen adelante. Casa por tasa, gato por dato.
+La secuencia:
+Sonido solo, después ka, ke, ki, ko, ku, después palabras que empiezan con /k/, y por último en el medio, que es donde más cuesta.'),
+
+  (null, 'speech_therapy', 'Habla y voz', 'Voz', 'Hablar fuerte sin gritar', 'activity', 'Trabajar la intensidad de la voz con apoyo respiratorio', '8-9 años', 'La diferencia:
+Gritar sale de la garganta. Proyectar sale del aire. Se escuchan parecido y el cuerpo las vive muy distinto.
+Los ejercicios:
+• Decir una frase a alguien que está a un metro. Después a tres. Después a cinco.
+• En cada distancia, la mano en la panza: tiene que moverse más, no apretarse más la garganta.
+• Contar del uno al diez subiendo el volumen de a poco, sin que suba el tono.
+Lo que hay que evitar:
+Que suba el tono junto con el volumen. Es la señal de que está forzando.
+Un truco:
+Imaginar que la voz sale por la frente y no por la boca.
+Cuánto:
+Cinco minutos. La voz se cansa.'),
+
+  (null, 'speech_therapy', 'Conciencia fonológica', 'Sílabas', 'Las sílabas trabadas', 'activity', 'Trabajar la estructura de dos consonantes seguidas', '8-9 años', 'Qué son:
+Las que tienen dos consonantes juntas antes de la vocal: pla, tri, cre, blo.
+Por qué se trabajan aparte:
+Son la estructura silábica más difícil del castellano y la última en aparecer. Un chico puede tener todos los fonemas bien y aun así comerse una consonante acá.
+Los ejercicios:
+• Palmear la palabra separando: pla to.
+• Decir la sílaba estirando la primera consonante.
+• Escribirla con fichas, una por sonido, y notar que hay dos antes de la vocal.
+• Buscar la diferencia entre pares: pato y plato, cavo y clavo.
+Los pares mínimos son lo mejor:
+Cambiar el significado con un solo sonido es lo que hace que se note por qué importa.'),
+
+  (null, 'speech_therapy', 'Habla y voz', 'Fluidez del habla', 'Contar un cuento con apoyo de imágenes', 'activity', 'Sostener una narración larga con menos carga de planificación', '6-7 años', 'Por qué con imágenes:
+Narrar exige decidir qué contar y cómo decirlo al mismo tiempo. Las imágenes resuelven la primera mitad y liberan atención para la segunda.
+Cómo se hace:
+Cuatro o cinco imágenes en orden. Cuenta la historia mirándolas.
+La progresión:
+• Con las imágenes a la vista y en orden.
+• Con las imágenes desordenadas, que él las ordene primero.
+• Con las imágenes dadas vuelta después de mirarlas.
+• Sin imágenes.
+Lo que se mira:
+Si aparecen los conectores. Y después. Entonces. Al final. Un relato sin conectores es una lista.
+Para la casa:
+Contar la película que vio, con las mismas cuatro partes.'),
+
+  (null, 'speech_therapy', 'Conciencia fonológica', 'Sonidos iniciales y finales', 'Comprender consignas cada vez más largas', 'activity', 'Trabajar la comprensión oral con instrucciones encadenadas', '6-7 años', 'Por qué está acá:
+Un chico que no entiende la consigna no puede hacer el ejercicio, y a veces se confunde una dificultad de comprensión con una de articulación.
+La progresión:
+• Una acción: agarrá el lápiz.
+• Dos acciones: agarrá el lápiz y ponelo en la caja.
+• Con un adjetivo: agarrá el lápiz rojo.
+• Con dos: agarrá el lápiz rojo y el papel chico.
+• Con negación: agarrá todo menos el lápiz.
+• Con condición: si hay tres lápices, dame dos.
+Sin repetir la consigna:
+La primera vez se dice una sola vez. Si no salió, se repite y se anota que hizo falta.
+Dónde se traba:
+La negación y la condición son las dos que más cuestan y las últimas en llegar.'),
+
+  (null, 'speech_therapy', 'Conciencia fonológica', 'Rimas', 'El vocabulario que falta', 'activity', 'Ampliar el vocabulario agrupando por campos', '6-7 años', 'Por qué por campos:
+Las palabras sueltas se olvidan. Agrupadas por tema quedan enganchadas entre sí y se recuperan más fácil.
+Los campos que sirven:
+La casa, la ropa, los alimentos, los animales, el cuerpo, la escuela, los transportes.
+Para cada campo:
+• Nombrar todo lo que se le ocurra, en un minuto.
+• Agregar vos tres que no dijo.
+• Agrupar dentro del campo: animales de la casa, de la granja, del monte.
+• Decir para qué sirve cada uno.
+La categorización es lo que más suma:
+Poder decir que un perro es un animal y una silla es un mueble organiza el vocabulario entero.
+Para observar:
+Si nombra muchos pero no puede agrupar, el problema no es de cantidad.');

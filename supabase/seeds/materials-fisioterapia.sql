@@ -425,4 +425,19 @@ Trabaja agarre, hombro y core al mismo tiempo, y es exactamente lo que se hace c
 Cuántas veces:
 Tres por semana.
 Lo que también hay que hacer:
-Abrir, no sólo cerrar. La mano que sólo agarra se desequilibra.');
+Abrir, no sólo cerrar. La mano que sólo agarra se desequilibra.'),
+
+  (null, 'physiotherapy', 'Movilidad', 'Elongación', 'Elongar en la cama, antes de levantarse', 'guide', 'Una rutina mínima para quien amanece rígido', '15+ años', 'Para quién:
+Artrosis, fibromialgia, o simplemente una espalda que amanece dura.
+Todo acostado, antes de poner los pies en el piso:
+• Estirar brazos y piernas como un bostezo largo. Cinco veces.
+• Rodillas al pecho, de a una. Veinte segundos cada una.
+• Las dos rodillas dobladas cayendo a un lado y al otro. Diez veces.
+• Círculos de tobillo, diez para cada lado.
+• Encoger y soltar los hombros, diez veces.
+Después, sentado al borde:
+Un minuto quieto antes de pararse. Evita el mareo y da tiempo a que la presión se acomode.
+Cuánto lleva:
+Cinco minutos.
+Por qué antes de levantarse:
+El momento de más rigidez es el primero del día, y es también cuando más caídas hay.');
