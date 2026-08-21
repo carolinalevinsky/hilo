@@ -66,6 +66,28 @@ beforeAll(async () => {
     { title: 'El niño que leía despacio', area: 'Lectura', content: 'Actividad' },
     { title: 'Cien por ciento %', area: 'Lectura', content: 'Actividad' },
     { title: 'Guion_bajo en el medio', area: 'Lectura', content: 'Actividad' },
+
+    // Uno por cada campo que la búsqueda dice mirar, y con la palabra buscada
+    // **sólo** en ese campo. Los siete de arriba llevan todos `area: 'Lectura'`
+    // y buscan por título, así que pasaban en verde con el área afuera de
+    // `search_text` — que es exactamente lo que estuvo roto en producción.
+    {
+      title: 'Sin la palabra en el título',
+      area: 'Conciencia fonológica',
+      content: 'Actividad',
+    },
+    {
+      title: 'Tampoco en el título',
+      area: 'Lectura',
+      focus: 'Segmentación silábica',
+      content: 'Actividad',
+    },
+    {
+      title: 'Ni en el título ni en el foco',
+      area: 'Lectura',
+      objective: 'Mejorar la velocidad lectora',
+      content: 'Actividad',
+    },
   ]
 
   const { error } = await service
@@ -99,9 +121,45 @@ describe('the characters that used to break the filter', () => {
   })
 })
 
+describe('los cuatro campos que se buscan', () => {
+  // El buscador dice mirar título, área, foco y objetivo. Estos cuatro lo
+  // comprueban de a uno, con la palabra en un solo lugar cada vez.
+  //
+  // El del área es el que faltaba, y su ausencia costó: doce materiales de
+  // fonoaudiología tienen "Conciencia fonológica" como área, y buscar
+  // "fonologica" devolvía cero con el chip de ese nombre a la vista, en la misma
+  // pantalla. La suite estaba en verde porque las siete filas de prueba llevan
+  // `area: 'Lectura'` y buscan palabras que están en el título.
+  //
+  // La lección no es "faltaba un test". Es que probar "encuentra algo" no es lo
+  // mismo que probar "encuentra lo que hay", y sólo el segundo sirve.
+
+  it('encuentra por el título', async () => {
+    expect(await titles('despacio')).toContain('El niño que leía despacio')
+  })
+
+  it('encuentra por el área, aunque el título no diga nada', async () => {
+    expect(await titles('fonologica')).toContain('Sin la palabra en el título')
+  })
+
+  it('encuentra por el foco', async () => {
+    expect(await titles('silabica')).toEqual(['Tampoco en el título'])
+  })
+
+  it('encuentra por el objetivo', async () => {
+    expect(await titles('velocidad')).toEqual(['Ni en el título ni en el foco'])
+  })
+})
+
 describe('accents', () => {
+  // Dos resultados y no uno desde que el área entró en la búsqueda: uno lleva la
+  // palabra en el título y el otro en el área. Que este número creciera es la
+  // señal de que el arreglo hizo algo.
   it('finds an accented title from an unaccented term', async () => {
-    expect(await titles('fonologica')).toEqual(['Conciencia fonológica avanzada'])
+    expect(await titles('fonologica')).toEqual([
+      'Conciencia fonológica avanzada',
+      'Sin la palabra en el título',
+    ])
   })
 
   it('finds an unaccented title from an accented term', async () => {
@@ -117,6 +175,7 @@ describe('accents', () => {
   it('still folds case', async () => {
     expect(await titles('CONCIENCIA FONOLOGICA')).toEqual([
       'Conciencia fonológica avanzada',
+      'Sin la palabra en el título',
     ])
   })
 })
