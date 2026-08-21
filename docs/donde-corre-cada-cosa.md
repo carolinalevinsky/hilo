@@ -37,44 +37,56 @@ La base quedó en Oregon porque es la del v1, que se reusó para salir rápido.
 `docs/launch.md` decía que un proyecto nuevo iba en São Paulo justamente por
 esto; reusar fue la decisión correcta para publicar, y esto es lo que costó.
 
+## El paso intermedio: los dos en Oregon
+
+Primero se movió sólo el código, a Oregon, para juntarlo con la base sin tocar
+datos. Eso arregló los saltos por consulta y dejó el número así:
+
+| | Cuánto | Se paga |
+|---|---|---|
+| Llegar al borde de Vercel (São Paulo) | ~150 ms | una vez |
+| Del borde hasta Oregon y volver | ~180 ms | una vez |
+| El código corriendo | ~193 ms | una vez |
+| **Total** | **~500 ms** | |
+
+Los ~193 ms salen del panel de Vercel, en *Active CPU*, y los otros dos de
+comparar un archivo estático —que se sirve en el borde y nunca viaja a Oregon,
+~150 ms— contra una pantalla dinámica, ~500 ms.
+
+Con ese reparto medido quedó claro que sólo había una palanca más: **los 180 ms
+de ir hasta Oregon**, que se borran si el código y la base viven donde está la
+usuaria.
+
 ## Cómo está ahora
 
 ```
 Navegador (Uruguay)
-   ↓  ~180 ms         una vez por pantalla
-Código + base (Oregon)
+   ↓  ~30 ms          una vez por pantalla
+Código + base (São Paulo)
    ↓  ~1 ms           por consulta
 ```
-
-Se paga un poco más en el salto único y se ahorran todos los saltos por consulta.
 
 Está en `vercel.json`:
 
 ```json
-"regions": ["pdx1"]
+"regions": ["gru1"]
 ```
 
-`pdx1` es Portland, que es donde vive `aws-0-us-west-2`. No es un número mágico:
-tiene que coincidir con la región del proyecto de Supabase. Si algún día la base
-se muda, esta línea se muda con ella o volvemos al problema de arriba.
+`gru1` es São Paulo, que es donde vive `sa-east-1`. No es un número mágico: tiene
+que coincidir con la región del proyecto de Supabase. Si algún día la base se
+muda, esta línea se muda con ella o volvemos al problema de arriba.
 
-## Lo que sería mejor todavía
+> La región de un proyecto de Supabase **no se puede cambiar**. Su propia
+> documentación dice que el procedimiento para cambiarla es crear un proyecto
+> nuevo y migrar. Por eso esto se hizo cuando no había datos reales que mover:
+> tres pacientes de prueba, cero sesiones, cero informes. Con historias clínicas
+> cargadas la misma mudanza exige respaldo, plan de vuelta atrás y una ventana de
+> mantenimiento.
 
-Las dos cosas en São Paulo:
-
-```
-Navegador (Uruguay)
-   ↓  ~30 ms
-Código + base (São Paulo)
-   ↓  ~1 ms
-```
-
-Eso exige crear un proyecto de Supabase nuevo en São Paulo y migrar los datos, y
-después cambiar `regions` a `["gru1"]`. Es la mejor configuración posible para
-usuarias en Uruguay y es varias horas de trabajo con datos reales de por medio.
-
-Conviene medir con Oregon primero. Si con eso alcanza, la migración puede
-esperar; si no, ya sabemos exactamente qué falta.
+`Settings → Functions → Function Region` en Vercel es un valor aparte, y
+`vercel.json` le gana. Cuando no coinciden, el panel muestra "Overridden" y lo
+que manda es el archivo. Conviene igual dejarlos iguales: el día que el archivo
+no cubra alguna función, esa se va sola a donde diga el panel.
 
 ---
 
