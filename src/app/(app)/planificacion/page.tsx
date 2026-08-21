@@ -18,7 +18,8 @@ import {
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
-import { PlanMaterialSearch, PlanPatientPicker } from '@/components/planning/plan-controls'
+import { MaterialSearch } from '@/components/materials/material-search'
+import { PlanPatientPicker } from '@/components/planning/plan-controls'
 import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
@@ -222,7 +223,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                   read what you typed, so the link drops underneath. */}
               <div className="flex flex-wrap gap-2">
                 <div className="min-w-[180px] flex-1">
-                  <PlanMaterialSearch initial={search} />
+                  <MaterialSearch initial={search} />
                 </div>
                 <Button asChild variant="outline" className="max-sm:w-full">
                   <Link href="/materiales">Ir a la biblioteca</Link>

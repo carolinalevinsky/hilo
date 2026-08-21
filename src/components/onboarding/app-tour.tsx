@@ -118,7 +118,7 @@ export function AppTour() {
   // Where to draw the ring. Recomputed on every step and whenever the page
   // moves under it, because a ring that stays behind is worse than none.
   useEffect(() => {
-    if (!stop) return
+    if (!stop?.target) return
 
     const measure = () => {
       const element = document.querySelector(`[data-tour="${stop.target}"]`)
@@ -160,6 +160,11 @@ export function AppTour() {
 
   const last = step === TOUR_STOPS.length - 1
 
+  // El saludo no señala nada, así que descarta lo medido en el paso anterior.
+  // Se decide acá y no borrando el estado dentro de un efecto, que es lo que
+  // `react-hooks/set-state-in-effect` existe para evitar.
+  const foco = stop.target ? box : null
+
   return (
     <div
       role="dialog"
@@ -174,7 +179,7 @@ export function AppTour() {
           with a shadow big enough to cover everything else. Two stacked divs
           with a cut-out would need to agree on the geometry; this cannot
           disagree with itself. */}
-      {box ? (
+      {foco ? (
         <div
           // Distinct keys so React does not reuse one div as the other. It did,
           // and with `transition-all` on it the ring animated in from the
@@ -184,10 +189,10 @@ export function AppTour() {
           aria-hidden
           className="pointer-events-none absolute rounded-xl transition-all duration-200"
           style={{
-            top: box.top - 4,
-            left: box.left - 4,
-            width: box.width + 8,
-            height: box.height + 8,
+            top: foco.top - 4,
+            left: foco.left - 4,
+            width: foco.width + 8,
+            height: foco.height + 8,
             // Both in one declaration. A Tailwind `ring-2` would be a second
             // box-shadow on the same element, and an inline one replaces the
             // class outright, so the ring simply never appeared.
@@ -209,10 +214,10 @@ export function AppTour() {
         className="absolute rounded-2xl bg-card p-5 shadow-2xl"
         style={{
           width: 'min(340px, calc(100vw - 32px))',
-          ...(box
+          ...(foco
             ? {
-                top: Math.min(box.top, window.innerHeight - 260),
-                left: box.left + box.width + 16,
+                top: Math.min(foco.top, window.innerHeight - 260),
+                left: foco.left + foco.width + 16,
               }
             : {
                 left: '50%',
@@ -221,9 +226,13 @@ export function AppTour() {
               }),
         }}
       >
-        <p className="mb-1 text-[11.5px] font-semibold tracking-wide text-violet uppercase">
-          {step + 1} de {TOUR_STOPS.length}
-        </p>
+        {/* El saludo no lleva contador: no es una de las cinco pantallas, y
+            numerarlo haría que "1 de 6" empiece antes de mostrar nada. */}
+        {step > 0 ? (
+          <p className="mb-1 text-[11.5px] font-semibold tracking-wide text-violet uppercase">
+            {step} de {TOUR_STOPS.length - 1}
+          </p>
+        ) : null}
 
         <h2 className="text-[17px] font-extrabold tracking-[-0.3px]">{stop.title}</h2>
         <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">

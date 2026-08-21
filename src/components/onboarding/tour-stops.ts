@@ -15,13 +15,27 @@
  */
 
 export type TourStop = {
-  /** Matches `data-tour` on the nav item, which is the item's href. */
-  target: string
+  /**
+   * Matches `data-tour` on the nav item, which is the item's href.
+   *
+   * `null` en el saludo: no señala nada porque todavía no hay nada que señalar.
+   * El recorrido dibuja la tarjeta centrada, igual que cuando el elemento no
+   * está en pantalla, así que no hace falta ningún caso especial.
+   */
+  target: string | null
   title: string
   body: string
 }
 
 export const TOUR_STOPS: TourStop[] = [
+  {
+    // El saludo. Sin él, el recorrido empieza señalando un botón sin haber
+    // dicho qué es esto ni por qué apareció, que es la forma más rápida de que
+    // alguien lo cierre sin leer.
+    target: null,
+    title: '¡Hola! Bienvenida a Hilo',
+    body: 'Te muestro en un minuto dónde está cada cosa. Son cinco pantallas y podés saltarlo cuando quieras.',
+  },
   {
     target: '/pacientes',
     title: 'Pacientes',
@@ -35,7 +49,7 @@ export const TOUR_STOPS: TourStop[] = [
   {
     target: '/materiales',
     title: 'Planificación',
-    body: 'Trescientos materiales, cincuenta de tu profesión, buscables por área y por edad. Y el planificador, para dejar armada la sesión que viene.',
+    body: 'La biblioteca de materiales de tu profesión, con buscador y filtros por área y por edad. Y el planificador, para dejar armada la sesión que viene.',
   },
   {
     target: '/informes',

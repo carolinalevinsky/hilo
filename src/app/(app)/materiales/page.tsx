@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
 import { GenerateMaterial } from '@/components/materials/generate-material'
+import { MaterialSearch } from '@/components/materials/material-search'
 import { UploadMaterial } from '@/components/materials/upload-material'
 import { PageHeader } from '@/components/page-header'
 import { PlanningTabs } from '@/components/planning/planning-tabs'
@@ -21,6 +22,25 @@ function readParam(value: string | string[] | undefined) {
   return typeof value === 'string' ? value : undefined
 }
 
+/** Un filtro, sin perder lo que se escribió en la caja de buscar. */
+function chipHref({
+  search,
+  ...filters
+}: {
+  search: string
+  area?: string
+  mios?: string
+  comunidad?: string
+}) {
+  const params = new URLSearchParams()
+  if (search) params.set('q', search)
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) params.set(key, value)
+  }
+  const query = params.toString()
+  return query ? `/materiales?${query}` : '/materiales'
+}
+
 export default async function MaterialsPage({ searchParams }: PageProps<'/materiales'>) {
   const params = await searchParams
   const user = await requireUser()
@@ -29,6 +49,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
   const area = readParam(params.area)
   const onlyMine = readParam(params.mios) === '1'
   const onlyCommunity = readParam(params.comunidad) === '1'
+  const search = readParam(params.q)?.trim() ?? ''
 
   const areas = Object.keys(areasFor(practitioner.discipline))
 
@@ -37,6 +58,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
     area,
     onlyMine,
     onlyCommunity,
+    search,
   })
 
   return (
@@ -64,24 +86,35 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
 
       <PlanningTabs />
 
+      {/* La caja de buscar vivía sólo en el planificador. Acá, que es donde
+          alguien mira las cincuenta de su profesión más lo que publicó la
+          comunidad, había únicamente filtros por área: para encontrar algo por
+          su nombre había que cambiar de pestaña. */}
+      <div className="mb-3">
+        <MaterialSearch initial={search} />
+      </div>
+
+      {/* Cada chip conserva lo que haya escrito en la caja de buscar. Armar el
+          href de cero borraría el término al tocar un filtro, que es justo lo
+          contrario de lo que alguien espera al ir acotando una búsqueda. */}
       <div className="mb-4 flex flex-wrap gap-1.5">
-        <Chip href="/materiales" active={!area && !onlyMine && !onlyCommunity}>
+        <Chip href={chipHref({ search })} active={!area && !onlyMine && !onlyCommunity}>
           Todos
         </Chip>
         {areas.map((name) => (
           <Chip
             key={name}
-            href={`/materiales?area=${encodeURIComponent(name)}`}
+            href={chipHref({ search, area: name })}
             active={area === name}
           >
             {name}
           </Chip>
         ))}
         <span className="mx-1 hidden w-px self-stretch bg-border sm:block" />
-        <Chip href="/materiales?mios=1" active={onlyMine}>
+        <Chip href={chipHref({ search, mios: '1' })} active={onlyMine}>
           Los míos
         </Chip>
-        <Chip href="/materiales?comunidad=1" active={onlyCommunity}>
+        <Chip href={chipHref({ search, comunidad: '1' })} active={onlyCommunity}>
           De la comunidad
         </Chip>
       </div>
