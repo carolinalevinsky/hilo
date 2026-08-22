@@ -24,7 +24,21 @@ import { getDb, getServiceDb } from './db'
  * error is reported to the server logs and the caller carries on.
  */
 
-type Action = 'create' | 'update' | 'archive' | 'delete' | 'export' | 'generate' | 'view'
+// `connect` y `disconnect` son de otra clase que el resto: no cambian un dato,
+// cambian a quién más se le está dando acceso. Conectar Google decide que las
+// horas de los pacientes empiecen a salir de Hilo, y desconectar decide que
+// dejen de salir. Si alguna vez hay que reconstruir qué se compartió y desde
+// cuándo, es lo único que lo cuenta.
+type Action =
+  | 'create'
+  | 'update'
+  | 'archive'
+  | 'delete'
+  | 'export'
+  | 'generate'
+  | 'view'
+  | 'connect'
+  | 'disconnect'
 
 type Entity =
   | 'practitioner'
@@ -37,6 +51,7 @@ type Entity =
   | 'payment'
   | 'booking_request'
   | 'material'
+  | 'google_account'
 
 export async function logAction(
   practitionerId: string,

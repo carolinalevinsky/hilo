@@ -25,6 +25,22 @@ const serverEnv = z.object({
   MAIL_FROM: z.string().min(1),
   CRON_SECRET: z.string().min(1),
   MP_WEBHOOK_SECRET: z.string().min(1),
+
+  /**
+   * Google Calendar. Obligatorias y no opcionales, aunque la integración lo sea.
+   *
+   * La versión opcional —"si no está la variable, no ofrecemos conectar"— se lee
+   * como prudencia y es lo contrario. Una variable que falta por accidente en
+   * Vercel haría desaparecer el botón sin decir nada, y desde adentro eso es
+   * indistinguible de una función rota. Así, faltar es un build que se cae
+   * nombrando la variable.
+   *
+   * El client ID es público por diseño: viaja en la URL de autorización, a la
+   * vista. Vive acá igual porque el servidor es el único que arma esa URL, y
+   * ponerle `NEXT_PUBLIC_` lo metería en el bundle sin necesidad.
+   */
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
 })
 
 /**
@@ -50,6 +66,8 @@ export const env = serverEnv.parse({
   MAIL_FROM: process.env.MAIL_FROM,
   CRON_SECRET: process.env.CRON_SECRET,
   MP_WEBHOOK_SECRET: process.env.MP_WEBHOOK_SECRET,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 })
 
 export const publicConfig = publicEnv.parse({

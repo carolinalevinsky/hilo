@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { formError, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
+import { disconnect } from '@/server/google'
 import { updateCalendarPrivacy, updatePractitioner } from '@/server/practitioners'
 
 export async function updateProfileAction(
@@ -53,4 +54,17 @@ export async function updateCalendarPrivacyAction(
   revalidatePath('/perfil')
   revalidatePath('/agenda')
   return formOk('Listo, guardamos tu elección.')
+}
+
+/**
+ * Desconecta Google Calendar.
+ *
+ * `disconnect` le avisa a Google además de borrar la fila, así que después de
+ * esto Hilo deja de poder entrar de verdad — no se olvida de cómo. La razón
+ * completa está en `src/server/google.ts`.
+ */
+export async function disconnectGoogleAction(): Promise<void> {
+  const user = await requireUser()
+  await disconnect(user.id)
+  revalidatePath('/perfil')
 }

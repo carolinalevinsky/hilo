@@ -183,7 +183,7 @@ subquery once per query and a bare `auth.uid()` once per row.
 ## Security invariants
 
 **The service-role key bypasses Row Level Security completely.** It is used in
-exactly five places, and every one of them earns it the same way: **there is no
+exactly six places, and every one of them earns it the same way: **there is no
 user session for RLS to check against.** Not "it was easier", not "the policy was
 in the way".
 
@@ -192,9 +192,11 @@ in the way".
 3. `src/server/booking.ts` — inserting a public booking request
 4. `src/server/audit.ts` — writing the audit log
 5. `src/server/digest.ts` — the cron acts for every practitioner, so as none
+6. `src/server/google.ts` — `google_accounts` is `using (false)`, so no session
+   reaches it; and Google's push webhook arrives with a channel id, not a user
 
 Everywhere else uses `getDb()`, which carries the user's session. A lint rule
-enforces this; a sixth place requires editing `SERVICE_DB_ALLOWED` in
+enforces this; a seventh place requires editing `SERVICE_DB_ALLOWED` in
 `eslint.config.mjs` — and this list here, which is the one a person reads.
 
 `npm run check:boundaries` proves the rule still fires. It reads the allowlisted

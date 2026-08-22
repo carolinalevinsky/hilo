@@ -67,6 +67,7 @@ const SERVICE_DB_ALLOWED = [
   'src/server/booking.ts',     // a family filling in a public form has no session
   'src/server/audit.ts',       // a log the user can write is not a log
   'src/server/digest.ts',      // a cron run acts for every practitioner, as none
+  'src/server/google.ts',      // google_accounts is using(false): no session reaches it
 ]
 
 const restrict = (options) => ({

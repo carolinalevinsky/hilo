@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 
 import { signOutAction } from '@/app/(auth)/actions'
+import { disconnectGoogleAction } from '@/app/(app)/perfil/actions'
+import { findGoogleAccount } from '@/server/google'
 import { PageHeader } from '@/components/page-header'
 import { CalendarPrivacyForm } from '@/components/profile/calendar-privacy-form'
 import { ProfileForm } from '@/components/profile/profile-form'
@@ -10,8 +12,34 @@ import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Mi perfil · Hilo' }
 
-export default async function ProfilePage() {
+/** Lo que dejó el ida y vuelta a Google, traducido. */
+const GOOGLE_RESULTS: Record<string, { ok: boolean; message: string }> = {
+  listo: { ok: true, message: 'Listo, conectamos tu Google Calendar.' },
+  cancelado: {
+    ok: false,
+    message: 'No autorizaste el acceso, así que no conectamos nada.',
+  },
+  // El `state` que no coincide casi siempre es una pestaña vieja o los diez
+  // minutos vencidos. Podría ser también el ataque que ese control existe para
+  // frenar, y no hay forma de distinguirlos desde acá — así que el texto sirve
+  // para los dos casos y no asusta por lo que casi nunca es.
+  estado: {
+    ok: false,
+    message: 'La conexión venció o se abrió desde otra pestaña. Probá de nuevo.',
+  },
+  'sin-codigo': { ok: false, message: 'Google no nos devolvió el permiso. Probá de nuevo.' },
+  error: { ok: false, message: 'No pudimos completar la conexión. Probá de nuevo.' },
+}
+
+export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>) {
   const { practitioner } = await currentSession()
+  const [google, params] = await Promise.all([
+    findGoogleAccount(practitioner.id),
+    searchParams,
+  ])
+
+  const result =
+    typeof params.google === 'string' ? GOOGLE_RESULTS[params.google] : undefined
 
   return (
     <>
@@ -43,7 +71,53 @@ export default async function ProfilePage() {
             </b>
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-5">
+          {result ? (
+            <p
+              role="status"
+              className={
+                result.ok
+                  ? 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-[12.5px] text-[#1a8f57]'
+                  : 'rounded-[11px] bg-red-soft px-3.5 py-2.5 text-[12.5px] text-[#c0392b]'
+              }
+            >
+              {result.message}
+            </p>
+          ) : null}
+
+          <div className="rounded-xl border border-border p-3.5">
+            {google ? (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[13.5px] font-bold">Google Calendar conectado</p>
+                  <p className="truncate text-[12.5px] text-muted-foreground">
+                    {google.googleEmail}
+                  </p>
+                </div>
+                <form action={disconnectGoogleAction}>
+                  <Button type="submit" variant="outline" size="sm">
+                    Desconectar
+                  </Button>
+                </form>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[13.5px] font-bold">Google Calendar</p>
+                  <p className="text-[12.5px] text-muted-foreground">
+                    Tus sesiones aparecen en tu calendario, y lo que muevas ahí se
+                    mueve acá.
+                  </p>
+                </div>
+                {/* Un enlace y no un botón con acción: el final del camino es
+                    una redirección al dominio de Google. */}
+                <Button asChild size="sm">
+                  <a href="/api/google/conectar">Conectar</a>
+                </Button>
+              </div>
+            )}
+          </div>
+
           <CalendarPrivacyForm value={practitioner.calendar_privacy} />
         </CardContent>
       </Card>

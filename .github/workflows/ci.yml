@@ -28,6 +28,8 @@ jobs:
       MAIL_FROM: Hilo <ci@example.com>
       CRON_SECRET: ci-placeholder
       MP_WEBHOOK_SECRET: ci-placeholder
+      GOOGLE_CLIENT_ID: ci-placeholder
+      GOOGLE_CLIENT_SECRET: ci-placeholder
 
     steps:
       - uses: actions/checkout@v4
