@@ -9,6 +9,25 @@
 
 const LOCALE = 'es-UY'
 
+/**
+ * La zona horaria del país donde se usa Hilo.
+ *
+ * Adentro de la aplicación no hace falta: las horas se guardan como hora de
+ * pared —`15:00` es las tres de la tarde— y se muestran igual. Hace falta en el
+ * borde, cuando una hora sale hacia un sistema que no sabe dónde estamos.
+ *
+ * Google Calendar es ese caso. Se le manda la hora local con el nombre de la
+ * zona al lado y él resuelve el resto. Convertir a UTC nosotros sería la otra
+ * opción, y es la que se equivoca: un servidor en Oregon o en São Paulo restaría
+ * su propio huso, no el de Uruguay, y las sesiones aparecerían corridas unas
+ * horas sin que nada fallara.
+ *
+ * Uruguay no cambia la hora desde 2015, así que hoy es UTC-3 todo el año. El
+ * nombre igual va por nombre y no por número: si algún día vuelve el horario de
+ * verano, esto sigue estando bien y una constante `-03:00` no.
+ */
+export const TIME_ZONE = 'America/Montevideo'
+
 function toLocalDate(value: string): Date {
   return value.includes('T') ? new Date(value) : new Date(`${value}T00:00:00`)
 }

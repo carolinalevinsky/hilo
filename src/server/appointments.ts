@@ -5,6 +5,7 @@ import { toDateInput } from '@/lib/dates'
 
 import { logAction } from './audit'
 import { getDb } from './db'
+import { pushAppointment, removeAppointment } from './google-calendar'
 
 /**
  * Scheduling.
@@ -243,6 +244,13 @@ export async function createAppointment(practitionerId: string, input: unknown) 
 
   if (error) throw error
   await logAction(practitionerId, 'create', 'appointment', row.id)
+
+  // Después de guardar y sin poder deshacerlo. Ver la regla en
+  // `google-calendar.ts`: que Google falle no puede impedir agendar. Si no
+  // llega, la fila queda con `gcal_event_id` en null y la reconciliación la
+  // encuentra después.
+  await pushAppointment(practitionerId, row.id)
+
   return row
 }
 
@@ -261,10 +269,20 @@ export async function setAppointmentStatus(
 
   if (error) throw error
   await logAction(practitionerId, 'update', 'appointment', appointmentId)
+
+  // Cancelar saca la hora del calendario; volver a agendarla la repone. Los
+  // otros dos estados —"vino", "no vino"— son cosas que se anotan después de que
+  // la hora pasó y no cambian que haya ocupado ese lugar.
+  if (status === 'cancelled') await removeAppointment(practitionerId, appointmentId)
+  else if (status === 'scheduled') await pushAppointment(practitionerId, appointmentId)
 }
 
 export async function deleteAppointment(practitionerId: string, appointmentId: string) {
   const db = await getDb()
+
+  // Antes de borrar la fila, porque después no queda de dónde sacar el id del
+  // evento y quedaría dando vueltas en Google para siempre.
+  await removeAppointment(practitionerId, appointmentId)
 
   const { error } = await db
     .from('appointments')

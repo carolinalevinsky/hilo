@@ -267,6 +267,29 @@ export async function accessTokenFor(practitionerId: string): Promise<string | n
 }
 
 /**
+ * Lo único que el resto del código necesita para hablarle a Google: un token de
+ * una hora y a qué calendario escribir.
+ *
+ * Existe para que `google-calendar.ts` no tenga que tocar `google_accounts` — y
+ * por lo tanto no necesite la clave de servicio. El refresh token, que es el que
+ * no vence, se lee en este archivo y en ninguno más.
+ *
+ * `null` significa "no hay cuenta conectada", que no es un error: es el estado
+ * normal de quien todavía no conectó nada.
+ */
+export async function connectionFor(
+  practitionerId: string,
+): Promise<{ accessToken: string; calendarId: string } | null> {
+  const account = await findGoogleAccount(practitionerId)
+  if (!account) return null
+
+  const accessToken = await accessTokenFor(practitionerId)
+  if (!accessToken) return null
+
+  return { accessToken, calendarId: account.calendarId }
+}
+
+/**
  * Desconecta la cuenta.
  *
  * Le avisa a Google además de borrar la fila. Borrar sólo la fila deja el
