@@ -2,7 +2,7 @@ import { calendarEventTitle } from '@/lib/calendar-privacy'
 import { TIME_ZONE } from '@/lib/dates'
 
 import { getDb } from './db'
-import { connectionFor } from './google'
+import { connectionFor, pullStateFor, saveSyncPoint } from './google'
 
 /**
  * Escribir en el calendario de Google lo que pasa en Hilo.
@@ -86,6 +86,45 @@ export function eventBody(appointment: AppointmentForSync, title: string) {
       private: { hilo_appointment_id: appointment.id },
     },
   }
+}
+
+/**
+ * Una hora que vuelve de Google, leída como la lee alguien en Uruguay.
+ *
+ * Google devuelve `2026-08-24T15:00:00-03:00`. La tentación es
+ * `new Date(...).getHours()`, y ahí está el error que no avisa: `getHours()`
+ * devuelve la hora **del servidor**, que en Vercel es UTC. Las tres de la tarde
+ * en Montevideo se guardarían como las seis, en todas las sesiones, y nada
+ * fallaría.
+ *
+ * `Intl.DateTimeFormat` con la zona explícita es lo que hace la conversión bien,
+ * sin importar dónde corra esto. `hourCycle: 'h23'` y no `hour12: false`: el
+ * segundo devuelve "24" para la medianoche en algunos entornos, y "24:00:00" no
+ * es una hora válida para Postgres.
+ */
+export function toLocalDateTime(iso: string): { date: string; time: string } {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date(iso))
+
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? ''
+
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    time: `${get('hour')}:${get('minute')}:00`,
+  }
+}
+
+/** Cuántos minutos dura, redondeando hacia arriba al minuto. */
+export function minutesBetween(startIso: string, endIso: string): number {
+  const millis = new Date(endIso).getTime() - new Date(startIso).getTime()
+  return Math.max(5, Math.round(millis / 60_000))
 }
 
 async function callGoogle(
@@ -186,6 +225,151 @@ export async function pushAppointment(
   }
 
   return true
+}
+
+type GoogleEvent = {
+  id?: string
+  status?: string
+  start?: { dateTime?: string; date?: string }
+  end?: { dateTime?: string; date?: string }
+  extendedProperties?: { private?: Record<string, string> }
+}
+
+/**
+ * Trae de Google lo que cambió y lo aplica en Hilo.
+ *
+ * ─── La regla, y no se negocia ─────────────────────────────────────────────
+ *
+ * **Borrar un evento en Google nunca borra una sesión en Hilo.** Cancela el
+ * horario y nada más. La nota clínica es lo que después lee la IA para armar un
+ * informe, y es lo único de todo esto que no se puede volver a escribir. Un dedo
+ * torpe en el celular, en el auto, no puede llevarse eso puesto.
+ *
+ * Por eso la cancelación acá es un `update` de estado y jamás un `delete`.
+ *
+ * ─── Qué se toca y qué no ──────────────────────────────────────────────────
+ *
+ * Sólo los eventos que Hilo creó, reconocidos por la marca que se les puso al
+ * escribirlos. El almuerzo, el cumpleaños y la reunión del consorcio quedan
+ * donde están: tocar lo que no es nuestro sería peor que no sincronizar.
+ *
+ * ─── Por qué se pregunta en vez de que Google avise ────────────────────────
+ *
+ * Preguntar al abrir la Agenda da el mismo resultado que las notificaciones push
+ * —moviste algo en el celular, lo ves al entrar— con muchísima menos maquinaria:
+ * sin endpoint público, sin canales que vencen cada semana, sin un cron que los
+ * renueve y sin un séptimo lugar con clave de servicio. El día que la demora
+ * moleste, el push se agrega encima de esto sin rehacer nada.
+ */
+export async function pullFromGoogle(practitionerId: string): Promise<number> {
+  const state = await pullStateFor(practitionerId)
+  if (!state || !state.dueForPull) return 0
+
+  const connection = await connectionFor(practitionerId)
+  if (!connection) return 0
+
+  const applied = await pullOnce(
+    practitionerId,
+    connection.accessToken,
+    connection.calendarId,
+    state.syncToken,
+  )
+
+  return applied
+}
+
+async function pullOnce(
+  practitionerId: string,
+  accessToken: string,
+  calendarId: string,
+  syncToken: string | null,
+  retriedFromScratch = false,
+): Promise<number> {
+  const params = new URLSearchParams({ maxResults: '250', showDeleted: 'true' })
+
+  if (syncToken) {
+    params.set('syncToken', syncToken)
+  } else {
+    // La primera vez, o después de que el punto caducó: sólo desde hoy hacia
+    // adelante. El pasado ya sucedió y reescribirlo con lo que diga un calendario
+    // sería cambiar historia clínica por un arrastre de mouse.
+    params.set('timeMin', new Date().toISOString())
+    params.set('singleEvents', 'true')
+  }
+
+  const response = await callGoogle(
+    accessToken,
+    `${calendarId}/events?${params.toString()}`,
+    { method: 'GET' },
+  )
+
+  if (!response) return 0
+
+  // 410: el punto de sincronización caducó. Google lo dice así y la respuesta es
+  // empezar de nuevo, una sola vez — reintentar en bucle contra un 410 sería un
+  // bucle.
+  if (response.status === 410 && !retriedFromScratch) {
+    await saveSyncPoint(practitionerId, null)
+    return pullOnce(practitionerId, accessToken, calendarId, null, true)
+  }
+
+  if (!response.ok) return 0
+
+  const payload = (await response.json()) as {
+    items?: GoogleEvent[]
+    nextSyncToken?: string
+  }
+
+  let applied = 0
+  for (const event of payload.items ?? []) {
+    if (await applyEvent(practitionerId, event)) applied += 1
+  }
+
+  await saveSyncPoint(practitionerId, payload.nextSyncToken ?? null)
+  return applied
+}
+
+async function applyEvent(
+  practitionerId: string,
+  event: GoogleEvent,
+): Promise<boolean> {
+  const appointmentId = event.extendedProperties?.private?.hilo_appointment_id
+  if (!appointmentId) return false
+
+  const db = await getDb()
+
+  if (event.status === 'cancelled') {
+    // Cancela el horario. NO borra la sesión. Ver la regla arriba.
+    const { error } = await db
+      .from('appointments')
+      .update({ status: 'cancelled', gcal_event_id: null })
+      .eq('id', appointmentId)
+      .eq('practitioner_id', practitionerId)
+
+    return !error
+  }
+
+  const startIso = event.start?.dateTime
+  const endIso = event.end?.dateTime
+
+  // Un evento de día entero no tiene hora. Si alguien arrastró una sesión hasta
+  // la franja de "todo el día", no hay ninguna hora que copiar y adivinar una
+  // sería peor que dejar la que estaba.
+  if (!startIso || !endIso) return false
+
+  const { date, time } = toLocalDateTime(startIso)
+
+  const { error } = await db
+    .from('appointments')
+    .update({
+      scheduled_on: date,
+      start_time: time,
+      duration_minutes: minutesBetween(startIso, endIso),
+    })
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+
+  return !error
 }
 
 /**

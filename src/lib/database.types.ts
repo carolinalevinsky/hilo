@@ -408,6 +408,7 @@ export type Database = {
           channel_resource_id: string | null
           connected_at: string
           google_email: string
+          last_pulled_at: string | null
           practitioner_id: string
           refresh_token: string
           sync_token: string | null
@@ -422,6 +423,7 @@ export type Database = {
           channel_resource_id?: string | null
           connected_at?: string
           google_email: string
+          last_pulled_at?: string | null
           practitioner_id: string
           refresh_token: string
           sync_token?: string | null
@@ -436,6 +438,7 @@ export type Database = {
           channel_resource_id?: string | null
           connected_at?: string
           google_email?: string
+          last_pulled_at?: string | null
           practitioner_id?: string
           refresh_token?: string
           sync_token?: string | null

@@ -290,6 +290,55 @@ export async function connectionFor(
 }
 
 /**
+ * El punto de sincronización: desde dónde seguir preguntando por cambios.
+ *
+ * `null` en `syncToken` significa "nunca se sincronizó" o "el punto caducó", y
+ * las dos cosas se resuelven igual: pidiendo desde cero.
+ *
+ * `dueForPull` limita la frecuencia. Sin él, cada carga de la Agenda sería una
+ * consulta a Google, y alguien que toca "semana anterior" cuatro veces haría
+ * cuatro viajes a otro continente para preguntar lo mismo.
+ */
+export async function pullStateFor(
+  practitionerId: string,
+): Promise<{ syncToken: string | null; dueForPull: boolean } | null> {
+  const db = getServiceDb()
+  const { data, error } = await db
+    .from('google_accounts')
+    .select('sync_token, last_pulled_at')
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!data) return null
+
+  const TWO_MINUTES = 2 * 60 * 1000
+  const dueForPull =
+    !data.last_pulled_at ||
+    Date.now() - new Date(data.last_pulled_at).getTime() > TWO_MINUTES
+
+  return { syncToken: data.sync_token, dueForPull }
+}
+
+/**
+ * Guarda desde dónde seguir la próxima vez.
+ *
+ * La marca de tiempo se escribe aunque el token venga en null —una
+ * sincronización que falló también cuenta como intento— para que un problema del
+ * lado de Google no se convierta en un reintento en cada carga de pantalla.
+ */
+export async function saveSyncPoint(
+  practitionerId: string,
+  syncToken: string | null,
+): Promise<void> {
+  const db = getServiceDb()
+  await db
+    .from('google_accounts')
+    .update({ sync_token: syncToken, last_pulled_at: new Date().toISOString() })
+    .eq('practitioner_id', practitionerId)
+}
+
+/**
  * Desconecta la cuenta.
  *
  * Le avisa a Google además de borrar la fila. Borrar sólo la fila deja el

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { eventBody } from '@/server/google-calendar'
+import {
+  eventBody,
+  minutesBetween,
+  toLocalDateTime,
+} from '@/server/google-calendar'
 
 /**
  * Exactamente qué sale de Hilo hacia el calendario de Google.
@@ -54,6 +58,67 @@ describe('la hora del evento', () => {
     const body = eventBody({ ...sesion, start_time: '09:00' }, 'Ocupado')
     expect(body.start.dateTime).toBe('2026-08-24T09:00:00')
     expect(body.end.dateTime).toBe('2026-08-24T09:45:00')
+  })
+})
+
+describe('la hora que vuelve de Google', () => {
+  // Este bloque existe por un error concreto y silencioso: leer la hora con
+  // `new Date(...).getHours()`, que devuelve la hora del servidor. En Vercel el
+  // servidor está en UTC, así que las tres de la tarde en Montevideo se
+  // guardarían como las seis — en todas las sesiones, sin que nada falle.
+  //
+  // El script de tests fija `TZ=UTC` (ver `package.json`), y eso es lo que hace
+  // que estos tests signifiquen algo: en una Mac uruguaya la versión con el bug
+  // daría la respuesta correcta por casualidad y pasarían igual. Con el reloj en
+  // UTC, la máquina de quien programa se comporta como el servidor.
+
+  it('lee una hora de Montevideo como hora de Montevideo', () => {
+    expect(toLocalDateTime('2026-08-24T15:00:00-03:00')).toEqual({
+      date: '2026-08-24',
+      time: '15:00:00',
+    })
+  })
+
+  it('convierte una hora que viene en UTC', () => {
+    // Las 18:00 UTC son las 15:00 en Montevideo, el mismo día.
+    expect(toLocalDateTime('2026-08-24T18:00:00Z')).toEqual({
+      date: '2026-08-24',
+      time: '15:00:00',
+    })
+  })
+
+  it('retrocede el día cuando en UTC ya es el siguiente', () => {
+    // Las 02:00 UTC del 25 son las 23:00 del 24 en Montevideo. Si la fecha se
+    // tomara de UTC, esta sesión aparecería un día después.
+    expect(toLocalDateTime('2026-08-25T02:00:00Z')).toEqual({
+      date: '2026-08-24',
+      time: '23:00:00',
+    })
+  })
+
+  it('escribe la medianoche como 00 y no como 24', () => {
+    // `hour12: false` devuelve "24" en algunos entornos, y "24:00:00" no es una
+    // hora válida para Postgres: la fila se rechaza y la sesión no se mueve.
+    expect(toLocalDateTime('2026-08-24T03:00:00Z').time).toBe('00:00:00')
+  })
+})
+
+describe('cuánto dura', () => {
+  it('cuenta los minutos entre principio y fin', () => {
+    expect(
+      minutesBetween('2026-08-24T15:00:00-03:00', '2026-08-24T15:45:00-03:00'),
+    ).toBe(45)
+  })
+
+  it('cuenta bien aunque los desfasajes vengan escritos distinto', () => {
+    expect(minutesBetween('2026-08-24T18:00:00Z', '2026-08-24T16:00:00-03:00')).toBe(60)
+  })
+
+  it('nunca devuelve menos de cinco minutos', () => {
+    // La tabla tiene `check (duration_minutes between 5 and 480)`. Un evento de
+    // duración cero —posible arrastrando en el calendario— rebotaría contra ese
+    // check y la sesión no se movería, sin que nadie sepa por qué.
+    expect(minutesBetween('2026-08-24T15:00:00Z', '2026-08-24T15:00:00Z')).toBe(5)
   })
 })
 

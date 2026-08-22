@@ -23,6 +23,7 @@ import {
   materialiseAppointments,
 } from '@/server/appointments'
 import { listBookingRequests } from '@/server/booking'
+import { pullFromGoogle } from '@/server/google-calendar'
 import { listPatients } from '@/server/patients'
 import { planForRange } from '@/server/planning'
 
@@ -59,6 +60,19 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     weekDates(new Date(), 0)[0]!,
     horizon[horizon.length - 1]!,
   )
+
+  // Traer de Google lo que se movió allá, antes de leer la semana.
+  //
+  // Antes de `listAppointments` y no en paralelo, a propósito: si corriera al
+  // lado, la pantalla mostraría los horarios viejos y los nuevos recién
+  // aparecerían al recargar. Esperarlo cuesta una consulta y hace que lo que ves
+  // sea lo que hay.
+  //
+  // Adentro se limita solo a una vez cada dos minutos, así que pasear por las
+  // semanas con las flechas no dispara un viaje a Google por cada click. Y si
+  // Google falla o tarda, devuelve cero y la Agenda sigue: ver la regla en
+  // `google-calendar.ts`.
+  await pullFromGoogle(user.id)
 
   // Tomorrow, whichever week is on screen. The reminder is about the phone
   // calls tonight, not about the week you happen to be paging through.
