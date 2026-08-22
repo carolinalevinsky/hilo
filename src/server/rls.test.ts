@@ -583,6 +583,52 @@ describe('the Mercado Pago access token', () => {
   })
 })
 
+describe('el refresh token de Google', () => {
+  // Vale más que el token de Mercado Pago. Aquél mueve plata y se puede
+  // revocar rápido; éste no vence, y con él se lee y se escribe el calendario
+  // entero de esa persona —el del consultorio y el de su vida— hasta que ella
+  // se acuerde de sacarle el permiso a Hilo desde Google.
+  //
+  // Por eso la tabla usa `using (false)` en vez de la política de filas propias
+  // que usa todo el resto: ninguna pantalla necesita este dato en el navegador,
+  // así que no puede llegar. Estos dos tests son la diferencia entre haberlo
+  // escrito y que sea verdad.
+
+  beforeAll(async () => {
+    await service.from('google_accounts').insert({
+      practitioner_id: idA,
+      google_email: 'lucia@gmail.com',
+      refresh_token: '1//refresh-token-secretisimo',
+    })
+  })
+
+  it('no lo puede leer ni la profesional a la que pertenece', async () => {
+    const { data, error } = await asA.from('google_accounts').select('*')
+
+    // Cualquiera de las dos formas pasa: la tabla no tiene grant ni política
+    // permisiva, así que el pedido se rechaza en vez de filtrarse. Lo que nunca
+    // puede pasar es que vuelva una fila.
+    expect(data ?? []).toEqual([])
+    if (!error) expect(data).toEqual([])
+  })
+
+  it('tampoco lo puede sobrescribir', async () => {
+    const { error } = await asA
+      .from('google_accounts')
+      .update({ refresh_token: 'reemplazado' })
+      .eq('practitioner_id', idA)
+
+    const { data: stored } = await service
+      .from('google_accounts')
+      .select('refresh_token')
+      .eq('practitioner_id', idA)
+      .single()
+
+    expect(stored?.refresh_token).toBe('1//refresh-token-secretisimo')
+    expect(error ?? true).toBeTruthy()
+  })
+})
+
 describe('the audit log', () => {
   it('can be read by its owner and not by anyone else', async () => {
     const { error: insertError } = await service.from('audit_log').insert([

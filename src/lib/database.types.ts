@@ -398,6 +398,59 @@ export type Database = {
           },
         ]
       }
+      google_accounts: {
+        Row: {
+          access_token: string | null
+          access_token_expires_at: string | null
+          calendar_id: string
+          channel_expires_at: string | null
+          channel_id: string | null
+          channel_resource_id: string | null
+          connected_at: string
+          google_email: string
+          practitioner_id: string
+          refresh_token: string
+          sync_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          access_token_expires_at?: string | null
+          calendar_id?: string
+          channel_expires_at?: string | null
+          channel_id?: string | null
+          channel_resource_id?: string | null
+          connected_at?: string
+          google_email: string
+          practitioner_id: string
+          refresh_token: string
+          sync_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          access_token_expires_at?: string | null
+          calendar_id?: string
+          channel_expires_at?: string | null
+          channel_id?: string | null
+          channel_resource_id?: string | null
+          connected_at?: string
+          google_email?: string
+          practitioner_id?: string
+          refresh_token?: string
+          sync_token?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_accounts_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: true
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           age_range: string | null
