@@ -164,6 +164,75 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* The sign-in screen's background. Ported from legacy/index.html:503 — it is
+   the only non-white surface in the product and the first thing anyone sees. */
+.hilo-auth-bg {
+  background:
+    radial-gradient(900px 500px at 18% -10%, rgb(169 77 240 / 90%), transparent 60%),
+    linear-gradient(140deg, #5a4bd4, #6c5ce7 55%, #7d6ef0);
+}
+
+/* The progress slider on a goal.
+   `accent-color` would be shorter, but browsers derive the *unfilled* track from
+   the accent's luminance, so a row of goals in six different colours came out
+   with six different track colours — one of them nearly black. Painting the fill
+   as a gradient and the thumb by hand is the only way to get one consistent
+   control. */
+.hilo-range {
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  outline: none;
+}
+
+.hilo-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--range-color);
+  box-shadow: 0 1px 4px rgb(30 36 54 / 25%);
+  cursor: pointer;
+}
+
+.hilo-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--range-color);
+  box-shadow: 0 1px 4px rgb(30 36 54 / 25%);
+  cursor: pointer;
+}
+
+.hilo-range:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--range-color), transparent 70%);
+}
+
+/* Printing a clinical document.
+   Practitioners print these and hand them over, or "print to PDF" and email
+   them, so the printed page is a real output of this product and not an
+   afterthought. Everything that is interface disappears; the document keeps its
+   margins and loses its card. */
+@media print {
+  .no-print,
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .hilo-doc {
+    max-width: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

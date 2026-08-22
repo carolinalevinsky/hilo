@@ -183,16 +183,24 @@ subquery once per query and a bare `auth.uid()` once per row.
 ## Security invariants
 
 **The service-role key bypasses Row Level Security completely.** It is used in
-exactly four places:
+exactly five places, and every one of them earns it the same way: **there is no
+user session for RLS to check against.** Not "it was easier", not "the policy was
+in the way".
 
 1. `src/server/mercadopago.ts` — reading a practitioner's MP access token
 2. `src/server/mercadopago.ts` — the payment webhook
 3. `src/server/booking.ts` — inserting a public booking request
 4. `src/server/audit.ts` — writing the audit log
+5. `src/server/digest.ts` — the cron acts for every practitioner, so as none
 
 Everywhere else uses `getDb()`, which carries the user's session. A lint rule
-enforces this; a fifth place requires editing the allowlist in
-`eslint.config.mjs`.
+enforces this; a sixth place requires editing `SERVICE_DB_ALLOWED` in
+`eslint.config.mjs` — and this list here, which is the one a person reads.
+
+`npm run check:boundaries` proves the rule still fires. It reads the allowlisted
+files; it does not write them. A check that authors a source file in order to
+test it will eventually author the wrong thing, which is how `booking.ts` lost
+224 lines seven times — the story is in `docs/when-things-break.md`.
 
 **`NEXT_PUBLIC_` is not a naming style.** It is the switch that puts a value
 into the JavaScript bundle every visitor downloads. Never put it on a key,

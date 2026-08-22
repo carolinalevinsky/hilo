@@ -40,14 +40,55 @@ args=(
   --env HOSTNAME=0.0.0.0
 )
 
+# Credenciales de Supabase, para hablarle a un proyecto de verdad.
+#
+# El contenedor es `--rm`, así que `supabase login` no sirve: el token se guarda
+# en el home de adentro y se pierde al salir. Estas dos variables son la forma
+# que tiene el CLI de recibirlo sin sesión guardada, y son las únicas que hacen
+# falta para `link` y `db push`.
+#
+# Se pasan por NOMBRE, sin `=valor`: Docker lo toma de tu entorno y el valor
+# nunca aparece en la línea de comandos, así que no queda en el historial de la
+# shell ni en un `ps` que cualquiera puede leer. Corré así:
+#
+#   read -rs SUPABASE_ACCESS_TOKEN && export SUPABASE_ACCESS_TOKEN
+#   ./dx npx supabase link --project-ref <ref>
+#
+# `read -rs` no muestra lo que escribís y no lo guarda en el historial.
+#
+# Las PG* son para `db:seed:remote`, que habla con psql directamente. Van por
+# separado y no como una cadena `postgresql://…` a propósito: una cadena mete la
+# contraseña adentro de una URL, y ahí una contraseña con `@`, `/` o `#` la parte
+# al medio salvo que la codifiques a mano. psql lee estas variables sin
+# interpretar nada, así que cualquier contraseña entra tal cual.
+for secret in \
+  SUPABASE_ACCESS_TOKEN \
+  SUPABASE_DB_PASSWORD \
+  PGHOST PGPORT PGUSER PGDATABASE PGPASSWORD
+do
+  [ -n "${!secret:-}" ] && args+=(--env "$secret")
+done
+
 # Una TTY sólo si la hay — así `./dx` también sirve desde un script o CI.
 [ -t 0 ] && args+=(--interactive --tty)
 
-# Publicar el 3000 sólo si está libre. Si ya hay un dev server corriendo,
+# Publicar el puerto sólo si está libre. Si ya hay un dev server corriendo,
 # publicarlo de nuevo sería un error; pero un `./dx npm run typecheck` en otra
 # terminal no tiene por qué fallar por eso.
-if ! lsof -nP -iTCP:3000 -sTCP:LISTEN >/dev/null 2>&1; then
-  args+=(--publish 3000:3000)
+#
+# PORT existe para cuando hay dos copias del repo abiertas a la vez — un
+# worktree al lado del checkout principal. Sin esto la segunda arranca sin
+# ningún puerto publicado y el navegador termina mirando la primera, que es un
+# rato perdido buscando por qué "no se aplican los cambios":
+#
+#   PORT=3001 ./dx npm run dev
+#
+# Next lee PORT solo, así que alcanza con pasárselo al contenedor.
+PORT="${PORT:-3000}"
+args+=(--env "PORT=$PORT")
+
+if ! lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  args+=(--publish "$PORT:$PORT")
 fi
 
 exec docker run "${args[@]}" "$IMAGE" "$@"

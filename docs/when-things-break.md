@@ -21,8 +21,45 @@ la presión de encima para poder pensar.
 | El sitio está caído o muy roto | **Rollback en Vercel.** Después investigar. |
 | Un cambio quedó mal pero el sitio funciona | Revertí el commit y hacé push. Se redespliega solo. |
 | Los datos se ven mal o faltan | **No toques nada.** Restaurá un backup en un proyecto nuevo y compará. |
+| Toda pantalla con datos da "No pudimos cargar esta pantalla" | Buscá `PGRST303` en los registros. Si está, [reiniciá el proyecto de Supabase](#jwt-issued-at-future). |
 | CI está en rojo y no se entiende el mensaje | Pegale el error completo a Claude. Los checks están escritos para explicarse. |
 | Algo se está incendiando y nada de esto encaja | Llamá a Tomás. |
+
+---
+
+## JWT issued at future
+
+**Síntoma:** todas las pantallas que leen datos muestran "No pudimos cargar esta
+pantalla". Las que no leen nada —entrar, crear cuenta— funcionan. En los
+registros de Vercel:
+
+```
+Error: {"code":"PGRST303","message":"JWT issued at future"}
+```
+
+**Qué significa:** el token de la sesión dice "emitido a las 19:54:57" y la pieza
+de Supabase que lo valida cree que son las 19:54:55. Como está fechado en el
+futuro, lo rechaza.
+
+**No es de este código.** Hilo no fabrica ese token: lo emite Supabase Auth y lo
+valida PostgREST, las dos partes del mismo proyecto. Son dos relojes de Supabase
+que se corrieron entre sí.
+
+**Cómo se arregla,** en este orden:
+
+1. Cerrar sesión y volver a entrar. Pide un token nuevo, con hora nueva.
+2. Esperar cinco minutos. A veces se acomoda solo.
+3. *Project Settings → General → Restart project.* Apaga y prende; no toca datos
+   ni configuración, y tarda un minuto.
+
+**Cuándo aparece:** en proyectos recién creados, mientras se asientan. Pasó en
+local con los contenedores de Docker y otra vez en la nube el día que se creó el
+proyecto de São Paulo — las dos veces se arregló reiniciando, y las dos veces
+costó un rato porque el mensaje en pantalla no dice nada de esto.
+
+**Lo que no sirve:** tocar "Probar de nuevo". El desfasaje dura minutos, no
+segundos, así que el reintento devuelve el mismo error. Por eso tampoco tiene
+sentido que la app reintente sola.
 
 ---
 
@@ -92,6 +129,104 @@ información sobre el código, no sobre el check.
   producción y en ningún archivo. El próximo `npm run db:reset` lo borra.
 - **Nunca pongas `NEXT_PUBLIC_` adelante de una clave.** Ese prefijo publica el
   valor al navegador de todos.
+
+---
+
+## En desarrollo, no en producción
+
+Cuatro cosas que cuestan horas la primera vez y treinta segundos cuando sabés
+que existen. Ninguna afecta a producción ni a CI, que compila desde cero.
+
+### La página se ve pero no anda nada
+
+Ningún diálogo abre, ningún filtro filtra, ningún formulario manda. En la
+consola, una fila de **403 en los archivos de `/_next/static/chunks/`**.
+
+El dev server corre en `0.0.0.0` adentro del contenedor, así que un navegador
+que pide `127.0.0.1` es otro origen para Next, y contesta 403 en todos los
+bundles. La página se ve igual porque eso es HTML del servidor; lo que nunca
+pasa es la hidratación. Lo arregla `allowedDevOrigins` en `next.config.ts`, que
+ya está puesto — si volvés a ver 403 ahí, es que alguien lo sacó.
+
+### Dos copias del repo abiertas a la vez
+
+Con un worktree al lado del checkout principal, el segundo `./dx npm run dev`
+arranca **sin ningún puerto publicado**, porque el 3000 ya está tomado. El
+navegador te muestra el primero y te volvés loca buscando por qué no se aplican
+tus cambios.
+
+```bash
+PORT=3001 ./dx npm run dev
+```
+
+Peor todavía si las dos copias comparten `.next`: los dos Turbopack se traban
+escribiendo el mismo archivo y aparece `Resource deadlock avoided (os error 35)`
+seguido de un panic que se lleva puesto el proceso.
+
+### `npm run typecheck` falla por archivos que no existen
+
+```
+error TS6053: File '.next/types/routes.d 2.ts' not found.
+```
+
+Duplicados con " 2" en el nombre adentro de `.next/`, de los que deja macOS
+cuando algo copia la carpeta. `tsconfig.json` los levanta con su glob y `tsc` se
+queja de archivos que ya no están. Se borran y listo — `.next` está en
+`.gitignore` y se regenera sola:
+
+```bash
+rm -f .next/types/*\ 2*.ts
+```
+
+### Un archivo de `src/server/` aparece vacío
+
+Si un import falla con *"The module has no exports at all"* y el archivo tiene
+siete líneas y un `export {}`, **no lo reescribas**. Sacalo de git:
+
+```bash
+git log --oneline -- src/server/<archivo>.ts
+git checkout <el último commit bueno> -- src/server/<archivo>.ts
+```
+
+Pasó **siete veces** con `src/server/booking.ts` en agosto de 2026, y las siete
+fue lo mismo: `npm run check:boundaries`.
+
+Ese script comprueba que la allowlist de `getServiceDb` sigue funcionando. Para
+hacerlo **sobrescribía el `booking.ts` de verdad** con una sonda de dos líneas,
+y al terminar lo "restauraba" escribiendo un texto hardcodeado en el script —
+que era el contenido del archivo en M7, antes de que las reservas existieran.
+Siete líneas terminadas en `export {}`. Cada corrida borraba 224 líneas de
+código que andaba.
+
+Lo difícil fue que no parecía eso. El archivo estaba sano durante `typecheck`,
+los tests y el `build`, y aparecía vacío recién después — porque `check:boundaries`
+es el último de la secuencia. Se lo atribuyó a otra sesión de Claude abierta
+sobre el mismo repositorio, se buscó el proceso, se cerró, y por un rato pareció
+resuelto. No lo estaba: simplemente nadie volvió a correr el chequeo hasta la vez
+siguiente. Terminó saliendo en un commit y pusheado a origin.
+
+Arreglado en la misma sesión que lo encontró. El chequeo ahora linteá el
+`booking.ts` real sin tocarlo — el archivo de verdad importa `getServiceDb`, así
+que es mejor evidencia que una sonda — y falla ruidosamente con `✗ VACUOUS` si
+algún día deja de importarlo, que es cuando el tilde verde pasaría a no
+significar nada. Las sondas que sí se escriben están en `.gitignore`.
+
+**La regla que sale de acá:** un chequeo que necesita que un archivo real tenga
+cierto contenido, lo **lee**. No lo escribe. Y `git add -A` empaqueta lo que haya
+en el árbol, incluido lo que rompió un script hace treinta segundos — en un
+repositorio donde algo puede tocar archivos por su cuenta, se stagea por nombre:
+
+```bash
+git add src/server/materials.ts src/app/…    # sí
+git add -A                                    # no
+```
+
+Si aun así ves un archivo vaciarse y el chequeo ya no es la causa, fijate quién
+más está escribiendo antes de culpar a nadie:
+
+```bash
+ps aux | grep '[c]laude' | grep -- --output-format
+```
 
 ---
 

@@ -37,6 +37,13 @@ yarn-error.log*
 # local tooling caches
 .atl/
 
+# check:boundaries writes these into src/ on purpose — they exist to be rejected
+# by ESLint — and deletes them in a `finally`. Ignored so that the one run that
+# gets killed before cleanup cannot put a deliberately-broken file into a commit.
+__probe*.ts
+__probe*.tsx
+/src/__boundary_probe__/
+
 # vercel
 .vercel
 

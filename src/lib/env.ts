@@ -35,6 +35,12 @@ const serverEnv = z.object({
 const publicEnv = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  /**
+   * Where Hilo lives. Used to build the links inside emails and the booking link
+   * a practitioner hands to families — both of which are read outside a request,
+   * so neither can derive it from headers.
+   */
+  NEXT_PUBLIC_APP_URL: z.string().url(),
 })
 
 export const env = serverEnv.parse({
@@ -49,4 +55,5 @@ export const env = serverEnv.parse({
 export const publicConfig = publicEnv.parse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 })

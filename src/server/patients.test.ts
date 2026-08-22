@@ -1,41 +1,37 @@
 import { describe, expect, it } from 'vitest'
 
-import { NewPatient } from './patients'
+import { PatientInput } from './patients'
 
 /**
- * Boundary validation tests.
+ * Boundary validation.
  *
  * Everything entering `src/server/` from the outside is parsed by a Zod schema
- * first, so these tests are cheap and they cover the case that actually
- * matters: bad input never reaches the database.
+ * first, so these tests are cheap and they cover the case that matters: bad
+ * input never reaches the database.
  *
- * The test that matters most on this project does not exist yet, because the
- * tables do not: an RLS isolation test asserting that practitioner A cannot
- * read practitioner B's rows. It lands with M1 and it is non-negotiable — it is
- * the difference between "we enabled RLS" and "we verified RLS works," and the
- * data is clinical.
+ * The empty-string cases are not padding. HTML forms send `""` for every
+ * optional field the practitioner left alone, and `""` in a `date` column is an
+ * error rather than an absence — so the schema has to turn it into null before
+ * Postgres ever sees it.
  */
-describe('NewPatient', () => {
-  it('accepts a minimal valid patient', () => {
-    const result = NewPatient.safeParse({
-      fullName: 'Ana Pereyra',
-      dateOfBirth: '2017-04-12',
-    })
+describe('PatientInput', () => {
+  it('accepts a patient with nothing but a name', () => {
+    // Creating a patient at the door, with the family still in the room, has to
+    // work. Everything else gets filled in later.
+    const result = PatientInput.safeParse({ fullName: 'Ana Pereyra' })
     expect(result.success).toBe(true)
+    expect(result.data?.ageGroup).toBe('children')
+    expect(result.data?.dateOfBirth).toBeNull()
   })
 
   it('rejects an empty name', () => {
-    const result = NewPatient.safeParse({
-      fullName: '',
-      dateOfBirth: '2017-04-12',
-    })
-    expect(result.success).toBe(false)
+    expect(PatientInput.safeParse({ fullName: '   ' }).success).toBe(false)
   })
 
   it('rejects a free-text age, which is what v1 stored', () => {
-    // v1 kept "5 años" in a text field, so age went stale and patients could
+    // v1 kept "5 años" in a text field, so the age went stale and patients could
     // not be sorted or filtered by it. A real date is the whole point.
-    const result = NewPatient.safeParse({
+    const result = PatientInput.safeParse({
       fullName: 'Ana Pereyra',
       dateOfBirth: '5 años',
     })
@@ -43,10 +39,48 @@ describe('NewPatient', () => {
   })
 
   it('rejects an impossible date', () => {
-    const result = NewPatient.safeParse({
+    const result = PatientInput.safeParse({
       fullName: 'Ana Pereyra',
       dateOfBirth: '2017-02-30',
     })
+    expect(result.success).toBe(false)
+  })
+
+  it('turns the empty strings a form sends into nulls', () => {
+    const result = PatientInput.safeParse({
+      fullName: 'Ana Pereyra',
+      dateOfBirth: '',
+      startDate: '',
+      school: '',
+      phone: '',
+      sessionFee: '',
+      expectedSessionsPerMonth: '',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({
+      dateOfBirth: null,
+      startDate: null,
+      school: null,
+      phone: null,
+      sessionFee: null,
+      expectedSessionsPerMonth: null,
+    })
+  })
+
+  it('coerces a fee typed as text into a number', () => {
+    const result = PatientInput.safeParse({ fullName: 'Ana', sessionFee: '1500' })
+    expect(result.data?.sessionFee).toBe(1500)
+  })
+
+  it('rejects a negative fee', () => {
+    expect(PatientInput.safeParse({ fullName: 'Ana', sessionFee: '-100' }).success).toBe(
+      false,
+    )
+  })
+
+  it('rejects an age group that is not one of the three', () => {
+    const result = PatientInput.safeParse({ fullName: 'Ana', ageGroup: 'bebés' })
     expect(result.success).toBe(false)
   })
 })
