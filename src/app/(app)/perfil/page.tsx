@@ -102,11 +102,15 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
               </div>
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-3">
+                {/* Dice lo que hace hoy, no lo que va a hacer. La versión
+                    anterior prometía la sincronización en las dos direcciones,
+                    que todavía se está escribiendo — y una pantalla que promete
+                    algo que no pasa es peor que una que no lo ofrece. */}
                 <div className="min-w-0">
                   <p className="text-[13.5px] font-bold">Google Calendar</p>
                   <p className="text-[12.5px] text-muted-foreground">
-                    Tus sesiones aparecen en tu calendario, y lo que muevas ahí se
-                    mueve acá.
+                    Conectá tu cuenta. La sincronización de tus sesiones se está
+                    terminando; esto deja lista la parte de los permisos.
                   </p>
                 </div>
                 {/* Un enlace y no un botón con acción: el final del camino es
