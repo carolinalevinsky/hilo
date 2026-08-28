@@ -22,8 +22,49 @@ la presión de encima para poder pensar.
 | Un cambio quedó mal pero el sitio funciona | Revertí el commit y hacé push. Se redespliega solo. |
 | Los datos se ven mal o faltan | **No toques nada.** Restaurá un backup en un proyecto nuevo y compará. |
 | Toda pantalla con datos da "No pudimos cargar esta pantalla" | Buscá `PGRST303` en los registros. Si está, [reiniciá el proyecto de Supabase](#jwt-issued-at-future). |
+| `tenant/user … not found`, o el dominio del proyecto no resuelve | [El proyecto de Supabase está pausado](#el-proyecto-de-supabase-se-pausó). Se reactiva desde el panel. |
 | CI está en rojo y no se entiende el mensaje | Pegale el error completo a Claude. Los checks están escritos para explicarse. |
 | Algo se está incendiando y nada de esto encaja | Llamá a Tomás. |
+
+---
+
+## El proyecto de Supabase se pausó
+
+**Síntoma.** Un `db push` falla con algo que suena a que el proyecto no existe:
+
+```
+FATAL: (ENOTFOUND) tenant/user postgres.<ref> not found
+```
+
+Y el dominio del proyecto no resuelve:
+
+```bash
+host <ref>.supabase.co     # → NXDOMAIN
+```
+
+La web sigue en pie, porque entrar y crear cuenta no consultan la base. Lo que
+falla es todo lo que sí: entrar de verdad, la agenda, los pacientes.
+
+**Qué es.** El plan gratuito de Supabase pausa los proyectos después de unos días
+sin actividad. No se pierde nada; se apaga.
+
+**Cómo se arregla.** [supabase.com/dashboard](https://supabase.com/dashboard) → el
+proyecto aparece con el cartel **Paused** → botón para reactivarlo. Tarda un
+minuto.
+
+**Por qué cuesta reconocerlo.** El mensaje dice "not found" y el DNS dice que el
+dominio no existe: las dos cosas se leen como *"alguien borró el proyecto"*, que
+es un problema muchísimo peor y manda a buscar al lugar equivocado. Pasó
+exactamente así una vez.
+
+**Al reactivarlo, ojo con las respuestas cacheadas.** Las páginas públicas que
+fallaron durante la pausa quedan guardadas en el borde de Vercel con el error
+adentro. Probá con una URL nueva —`/reservar/loquesea-1234`— antes de concluir
+que algo sigue roto. Una pantalla que devolvía 500 mientras la base estaba
+apagada devolvió 404, que era lo correcto, apenas se pidió sin caché.
+
+**Si molesta que se pause,** las opciones son el plan pago o algo que la toque
+cada tanto. No hay una tercera.
 
 ---
 
@@ -129,6 +170,28 @@ información sobre el código, no sobre el check.
   producción y en ningún archivo. El próximo `npm run db:reset` lo borra.
 - **Nunca pongas `NEXT_PUBLIC_` adelante de una clave.** Ese prefijo publica el
   valor al navegador de todos.
+- **Nunca subas a `main` código que necesita una migración que no se aplicó.**
+  Primero la migración en producción, después el despliegue. Y "se aplicó" quiere
+  decir que se vio del otro lado, no que se corrió un `db push` esa mañana.
+
+  Pasó: se subió el código de Google Calendar el 22 de agosto dando por hecho que
+  las migraciones estaban, cuando el último `db push` había sido antes de
+  escribirlas. Faltaban tres. "Mi perfil" quedó tirando error seis días, porque
+  esa pantalla lee una tabla que no existía.
+
+  Cuesta verlo porque el despliegue sale verde: el build compila, los tests pasan
+  y CI queda en verde — nada de eso mira la base de producción. La pantalla rota
+  aparece recién cuando alguien entra.
+
+  La comprobación es una consulta en el editor de SQL del panel:
+
+  ```sql
+  select version from supabase_migrations.schema_migrations
+  order by version desc limit 3;
+  ```
+
+  Si la última no coincide con el archivo más nuevo de `supabase/migrations/`,
+  falta aplicar.
 
 ---
 
