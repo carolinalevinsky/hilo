@@ -36,6 +36,8 @@ const PUBLIC_PREFIXES = [
   '/', // the landing page
   '/entrar',
   '/crear-cuenta',
+  '/recuperar', // asking for a "cambiá tu contraseña" email
+  '/confirmar', // where every emailed link comes back to
   '/reservar', // the public booking link a family opens
   '/terminos',
   '/privacidad',

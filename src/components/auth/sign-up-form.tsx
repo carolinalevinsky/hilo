@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState } from 'react'
 
 import { signUpAction } from '@/app/(auth)/actions'
+import { EmailSent } from '@/components/auth/email-sent'
 import { FormMessage } from '@/components/auth/form-message'
 import { PasswordField } from '@/components/auth/password-field'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,19 @@ import { EMPTY_FORM_STATE } from '@/lib/form-state'
 
 export function SignUpForm() {
   const [state, formAction, pending] = useActionState(signUpAction, EMPTY_FORM_STATE)
+
+  // Only reachable with email confirmation on: with it off — how Hilo runs today
+  // — a successful sign-up redirects and this component never re-renders. It
+  // exists so that turning confirmation on is a switch in Supabase and nothing
+  // else, instead of a sign-up that appears to fail.
+  if (state.ok) {
+    return (
+      <EmailSent title="Revisá tu correo">
+        Te mandamos un enlace para confirmar la cuenta. Abrilo y entrás derecho a tu
+        espacio de trabajo.
+      </EmailSent>
+    )
+  }
 
   return (
     <form action={formAction} className="space-y-4">

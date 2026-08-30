@@ -14,12 +14,16 @@ import { Label } from '@/components/ui/label'
  */
 export function PasswordField({
   id,
+  name = 'password',
   label,
   placeholder,
   autoComplete,
   hint,
 }: {
   id: string
+  /** Defaults to `password`; the confirmation field on the reset screen is the
+      one place that needs a second name in the same form. */
+  name?: string
   label: string
   placeholder?: string
   autoComplete: 'new-password' | 'current-password'
@@ -33,7 +37,7 @@ export function PasswordField({
       <div className="relative">
         <Input
           id={id}
-          name="password"
+          name={name}
           type={visible ? 'text' : 'password'}
           placeholder={placeholder}
           autoComplete={autoComplete}
