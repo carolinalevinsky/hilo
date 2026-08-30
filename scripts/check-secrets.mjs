@@ -16,7 +16,26 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const ROOT = process.cwd()
-const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'legacy', 'out', 'build', 'supabase'])
+/**
+ * `.next-e2e`, `test-results` and `.playwright` are build output like `.next`,
+ * and they are skipped for the same reason — nothing in them is source. They are
+ * named separately because they only exist after a local end-to-end run, which
+ * is why CI never noticed: on this Mac, iCloud leaves `name 2.json` copies
+ * inside them that cannot be read at all, and the check died on one instead of
+ * reporting anything.
+ */
+const SKIP_DIRS = new Set([
+  'node_modules',
+  '.next',
+  '.next-e2e',
+  '.playwright',
+  'test-results',
+  '.git',
+  'legacy',
+  'out',
+  'build',
+  'supabase',
+])
 const SCAN_EXT = /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|env|example|local)$/
 
 /** Genuinely public by design. RLS is what protects Supabase data, not this key. */

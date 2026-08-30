@@ -21,6 +21,7 @@ Last updated: 16 August 2026, M9 complete. The code is done.
 | M7 — Public booking + notification | **done** | `31aa9ac` |
 | M8 — Materials, statistics, digest, assistant | **done** | `2599889` |
 | M9 — Launch | **done, in code** | `b59144c` |
+| M10 — Auth callback + password recovery | **done** | (this commit) |
 
 **All twelve defects in the plan's catalogue are retired**, #12 included: the
 digest is batched, rotating, and tested.
@@ -233,6 +234,60 @@ judgement and not a check.
 **The Playwright critical-path test from §8 now exists** — `e2e/critical-path.spec.ts`,
 one story in six steps, run by `./dx npm run test:e2e` and by CI. Every line of
 the plan's testing table is now covered.
+
+---
+
+## M10 — the auth callback, and getting back in
+
+Not in the original plan, and it should have been. The app had no route for an
+emailed link to return to: `/confirmar` did not exist, so the confirmation link
+went nowhere, and there was no way at all to recover a forgotten password. None
+of it was visible from a test, because every piece that *did* exist was correct.
+
+| File | What it is |
+|---|---|
+| `src/app/(auth)/confirmar/route.ts` | Where every emailed link lands. Reads the token hash (or the `?code=` of Supabase's stock templates), asks `src/server/auth.ts` for a session, redirects. |
+| `src/app/(auth)/recuperar/` | "Olvidé mi contraseña" — asks for the address, always answers the same way. |
+| `src/app/(auth)/nueva-contrasena/` | Where the recovery link lands, gated on the marker cookie. |
+| `src/app/(auth)/recovery-cookie.ts` | The marker itself, and why a session alone is not enough. |
+| `src/app/(auth)/notices.ts` | The codes `/entrar?aviso=` accepts, so no wording travels in a URL. |
+| `src/lib/safe-path.ts` | One guard for `?next=` and `?volver=`, both of which come from an address bar. |
+| `supabase/templates/*.html` | The two emails, in Spanish, in Hilo's colours. |
+| `e2e/password-recovery.spec.ts`, `e2e/support/mailpit.ts` | The second end-to-end test: it reads the real email out of Mailpit and clicks the real link. |
+
+### Decisions in here worth knowing before changing them
+
+**The templates use `{{ .TokenHash }}`, not `{{ .ConfirmationURL }}`.** A PKCE
+code can only be exchanged by the browser that asked for the email. The request
+happens on a laptop and the email is read on a phone, so that link fails for the
+normal case and works for the one you test with. `/confirmar` accepts both, but
+the templates decide which one arrives.
+
+**A session is not permission to set a password.** `/confirmar` sets a
+short-lived, `httpOnly`, path-scoped marker cookie when it consumes a recovery
+link, and `/nueva-contrasena` refuses to render or act without it — page *and*
+action, because an action is an endpoint. Without that, any signed-in tab left
+open in a consulting room is a way to take the account over without knowing the
+current password.
+
+**Every failed link says the same thing.** Expired, already used, tampered with,
+wrong browser — one message. Telling them apart tells a stranger which addresses
+have accounts here, which is the same reason `signIn` does not separate "no such
+account" from "wrong password".
+
+**`?aviso=` carries a code, not a message.** `/confirmar` redirects to `/entrar`
+after a failure; putting the text in the URL would mean rendering whatever an
+address bar contains.
+
+**`internalPath` closed a hole that was already there.** `?volver=` only checked
+for a leading slash, and `//ejemplo.com` passes that check and is a different
+host to a browser. Same guard now serves both parameters.
+
+**Email confirmation is still off, and turning it on is now only a switch.**
+`signUp` returns whether a session came back; with none, the form shows "revisá
+tu correo" instead of redirecting into a bounce. Verified by flipping
+`enable_confirmations` on locally and running the whole path, then flipping it
+back.
 
 ---
 

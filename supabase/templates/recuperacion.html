@@ -1,0 +1,31 @@
+<!--
+  The "cambiá tu contraseña" email. Same shape as confirmacion.html, and the same
+  reason for the token hash rather than {{ .ConfirmationURL }}: the request is
+  made on one device and the email is read on another.
+
+  `next` sends them to /nueva-contrasena, which is also what tells /confirmar to
+  set the marker cookie that screen requires.
+-->
+<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f5fb;padding:24px">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(30,36,54,.08)">
+    <div style="background:linear-gradient(120deg,#6c4cf0,#8a5cf0);padding:20px 24px;color:#fff">
+      <div style="font-weight:800;font-size:18px">Hilo</div>
+      <div style="opacity:.9;font-size:13px;margin-top:2px">Cambiá tu contraseña</div>
+    </div>
+    <div style="padding:22px 24px;color:#20293a">
+      <p style="margin:0 0 10px;font-size:14px;line-height:1.6">
+        Pediste poner una contraseña nueva en Hilo. Tocá el botón y la elegís ahí mismo.
+      </p>
+      <a href="{{ .SiteURL }}/confirmar?token_hash={{ .TokenHash }}&amp;type=recovery&amp;next=/nueva-contrasena"
+         style="display:inline-block;margin-top:14px;background:#6c5ce7;color:#fff;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;font-size:14px">
+        Poner una contraseña nueva
+      </a>
+      <p style="margin:16px 0 0;font-size:12.5px;line-height:1.6;color:#6b7280">
+        El enlace vence en una hora y se usa una sola vez. Si no lo pediste vos, ignorá este correo: tu contraseña sigue siendo la de siempre.
+      </p>
+    </div>
+  </div>
+  <div style="max-width:520px;margin:12px auto 0;text-align:center;color:#9aa0b4;font-size:11.5px">
+    Hilo — tu trabajo clínico, ordenado.
+  </div>
+</div>

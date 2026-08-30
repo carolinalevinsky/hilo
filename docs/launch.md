@@ -56,19 +56,46 @@ should return 45.
 
 In *Authentication → URL Configuration*:
 
-- **Site URL**: `https://<the real domain>`
-- **Redirect URLs**: the same, plus the Vercel preview pattern if previews are
-  used.
+- **Site URL**: `https://<the real domain>` — every emailed link is built from
+  this, so a wrong value here sends practitioners to the wrong host.
+- **Redirect URLs**: `https://<the real domain>/confirmar`, plus the same path on
+  the Vercel preview pattern if previews are used.
 
 `supabase/config.toml` sets these for local development only. The production
 values live in the dashboard and are not in the repo — this is the one place
 where "never change the schema in the dashboard" does not apply, because these
 are not schema.
 
-Email confirmations are **off** (`enable_confirmations = false`). That is a
-deliberate choice for a tool where the practitioner signs up and starts working
-in the same minute. If that changes, the sign-up flow in
-`src/app/(auth)/crear-cuenta/` has to grow a "revisá tu correo" step first.
+### The email templates
+
+In *Authentication → Email Templates*, replace **Confirm signup** and **Reset
+password** with the contents of `supabase/templates/confirmacion.html` and
+`supabase/templates/recuperacion.html`, and set the subjects to the ones in
+`supabase/config.toml`.
+
+This is not only about the emails being in Spanish. Both templates build their
+link from `{{ .TokenHash }}` rather than `{{ .ConfirmationURL }}`, and that is
+the difference between a link that works and one that does not: a token hash can
+be redeemed by any browser, while `{{ .ConfirmationURL }}` carries a PKCE code
+that only the browser which asked for the email can exchange. The request is
+made on a laptop and the email is read on a phone. `/confirmar` handles both
+shapes, so a forgotten template degrades rather than breaks — but it degrades
+into exactly the failure nobody can reproduce.
+
+### Email confirmations
+
+They are **off** (`enable_confirmations = false`), deliberately: a practitioner
+signs up and is working the same minute.
+
+Turning them on is now a switch and nothing else. The flow behind it is built and
+was run end to end — `signUp` reports that no session came back, the sign-up form
+shows "revisá tu correo" instead of redirecting, and `/confirmar` turns the
+emailed link into a session. The `practitioners` row is created by a trigger on
+`auth.users`, so it exists before anyone has signed in.
+
+For a clinical tool it is a reasonable thing to want. If you turn it on, do it in
+the dashboard *and* in `supabase/config.toml`, so local development behaves the
+way production does.
 
 ---
 
@@ -83,6 +110,33 @@ in the same minute. If that changes, the sign-up flow in
 Until the domain is verified, Resend only delivers to the address that owns the
 account. A booking notification that silently goes nowhere looks exactly like a
 booking that never arrived.
+
+### Resend as Supabase's mail server
+
+The booking notification and the digest are sent by Hilo through the Resend API.
+The confirmation and password-recovery emails are sent by **Supabase**, which has
+its own mail server — and by default that is a shared one limited to a handful of
+messages an hour, meant for testing and not for people who need to get back into
+their accounts.
+
+Point it at the same Resend domain, in *Project Settings → Authentication → SMTP
+Settings*:
+
+| Field | Value |
+|---|---|
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | the `RESEND_API_KEY` |
+| Sender email | the same address as `MAIL_FROM` |
+| Sender name | `Hilo` |
+
+Then raise the rate limit in *Authentication → Rate Limits* — the default of a
+few emails per hour is a shared-server limit and no longer applies.
+
+Send yourself one password reset afterwards and read it. An address that is not
+on the verified domain is accepted by Supabase and dropped by Resend, and the
+only symptom is a practitioner who says the email never arrived.
 
 **No clinical content is ever in an email** — the digest sends counts and a
 link, the booking notification sends what a family typed into a public form.
@@ -195,6 +249,9 @@ Then, signed in as a real account:
 2. Generate a report and read it. This is the one that costs money and matters.
 3. Open the booking link on a phone, send a request, confirm the email arrives.
 4. Install the app from the browser and check it opens at `/inicio`.
+5. Use "Olvidé mi contraseña", and **open the link on a different device than the
+   one that asked for it**. That is the case the whole token-hash decision above
+   exists for, and the only way to find out it was got wrong is to try it.
 
 And once, deliberately: `select * from patients` from a second account's
 session, and confirm it returns nothing. `src/server/rls.test.ts` proves this
