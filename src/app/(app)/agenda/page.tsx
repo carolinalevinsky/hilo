@@ -23,7 +23,7 @@ import {
   materialiseAppointments,
 } from '@/server/appointments'
 import { listBookingRequests } from '@/server/booking'
-import { pullFromGoogle } from '@/server/google-calendar'
+import { listBusyBlocks, pullFromGoogle } from '@/server/google-calendar'
 import { listPatients } from '@/server/patients'
 import { planForRange } from '@/server/planning'
 
@@ -96,6 +96,16 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     listAppointments(user.id, tomorrow, tomorrow),
     currentPractitioner(user.id),
   ])
+
+  // Lo que ya está ocupado en Google y no lo puso Hilo: la reunión de trabajo, la
+  // cena, el cumpleaños. No se guarda en ningún lado — se lee, se dibuja y se
+  // olvida. Ver `listBusyBlocks`.
+  //
+  // Va después del `Promise.all` y no adentro porque sólo hace falta la semana
+  // que está en pantalla, y `first`/`last` ya la delimitan. Si la cuenta no está
+  // conectada o Google falla, devuelve una lista vacía y la Agenda se ve igual
+  // que antes.
+  const busyBlocks = await listBusyBlocks(user.id, first, last)
 
   // The week read as work rather than as a calendar. It needs the goals and the
   // matched material, which the grid does not — but it needs the same
@@ -221,12 +231,14 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             today={todayString()}
             ageOf={ageOf}
             calendarPrivacy={practitioner.calendar_privacy}
+            busyBlocks={busyBlocks}
           />
           <WeekGrid
             dates={dates}
             appointments={appointments}
             today={todayString()}
             calendarPrivacy={practitioner.calendar_privacy}
+            busyBlocks={busyBlocks}
           />
 
           {/* Directly under the grid, as in v1 (`legacy/index.html:1499`). The

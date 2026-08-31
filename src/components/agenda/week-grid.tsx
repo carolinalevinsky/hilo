@@ -1,7 +1,8 @@
 import { AppointmentCard } from '@/components/agenda/appointment-card'
-import { WEEK_ORDER, weekdayName } from '@/lib/week'
+import { WEEK_ORDER, formatTime, weekdayName } from '@/lib/week'
 import { cn } from '@/lib/utils'
 import type { AppointmentWithPatient } from '@/server/appointments'
+import type { BusyBlock } from '@/server/google-calendar'
 
 /**
  * The week as one card per day — what a phone gets, where the hour grid in
@@ -21,12 +22,15 @@ export function WeekGrid({
   appointments,
   today,
   calendarPrivacy,
+  busyBlocks = [],
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
   today: string
   /** Sólo de paso, hacia el menú de cada sesión. Ver `AppointmentMenu`. */
   calendarPrivacy?: string | null
+  /** Lo que ya está ocupado en Google. Ver `listBusyBlocks`. */
+  busyBlocks?: BusyBlock[]
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -35,11 +39,19 @@ export function WeekGrid({
     else byDate.set(appointment.scheduled_on, [appointment])
   }
 
+  const busyByDate = new Map<string, BusyBlock[]>()
+  for (const block of busyBlocks) {
+    const list = busyByDate.get(block.date)
+    if (list) list.push(block)
+    else busyByDate.set(block.date, [block])
+  }
+
   return (
     <div className="grid gap-2.5 sm:grid-cols-2 lg:hidden">
       {dates.map((date, index) => {
         const weekday = WEEK_ORDER[index]!
         const dayAppointments = byDate.get(date) ?? []
+        const dayBusy = busyByDate.get(date) ?? []
         const isToday = date === today
         const dayNumber = Number(date.slice(8, 10))
 
@@ -63,7 +75,7 @@ export function WeekGrid({
               <span className="text-[12px] text-muted-foreground">{dayNumber}</span>
             </header>
 
-            {dayAppointments.length === 0 ? (
+            {dayAppointments.length === 0 && dayBusy.length === 0 ? (
               <p className="py-2 text-[12px] text-muted-foreground">Libre</p>
             ) : (
               <ul className="space-y-2">
@@ -73,6 +85,22 @@ export function WeekGrid({
                       appointment={appointment}
                       calendarPrivacy={calendarPrivacy}
                     />
+                  </li>
+                ))}
+
+                {/* Debajo de las sesiones: lo de Hilo primero, que es lo que se
+                    viene a hacer acá. Ver `Busy` en `week-calendar.tsx`. */}
+                {dayBusy.map((block) => (
+                  <li
+                    key={block.id}
+                    className="rounded-[9px] border border-dashed border-border bg-muted px-2.5 py-2 text-[12px] leading-tight text-muted-foreground"
+                  >
+                    <div className="font-semibold">{block.title}</div>
+                    <div className="opacity-90">
+                      {block.startTime
+                        ? `${formatTime(block.startTime)}${block.endTime ? ` – ${formatTime(block.endTime)}` : ''}`
+                        : 'Todo el día'}
+                    </div>
                   </li>
                 ))}
               </ul>

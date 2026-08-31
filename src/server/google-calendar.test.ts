@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   eventBody,
   minutesBetween,
+  toBusyBlocks,
   toLocalDateTime,
 } from '@/server/google-calendar'
+import type { GoogleEvent } from '@/server/google-calendar'
 
 /**
  * Exactamente qué sale de Hilo hacia el calendario de Google.
@@ -157,5 +159,106 @@ describe('lo que se cuenta del paciente', () => {
   it('lo único que identifica es el id de la sesión, que no dice nada por sí solo', () => {
     const body = eventBody(sesion, 'Ocupado')
     expect(body.extendedProperties.private).toEqual({ hilo_appointment_id: sesion.id })
+  })
+})
+
+/**
+ * Qué del calendario de Google termina dibujado en la Agenda.
+ *
+ * `toBusyBlocks` está separada de `listBusyBlocks` justamente para esto: la que
+ * decide se puede probar entera, sin cuenta de Google y sin red.
+ *
+ * Lo que se afirma acá es sobre todo lo que **no** aparece. Un bloque de más es
+ * una hora que parece ocupada y no lo está, y sobre eso se decide no agendar a
+ * un paciente.
+ */
+describe('lo que se muestra del calendario de Google', () => {
+  const semana = { from: '2026-08-31', to: '2026-09-06' }
+
+  const evento = (extra: Partial<GoogleEvent> = {}): GoogleEvent => ({
+    id: 'evt-1',
+    summary: 'Devlane',
+    start: { dateTime: '2026-08-31T09:00:00-03:00' },
+    end: { dateTime: '2026-08-31T17:00:00-03:00' },
+    ...extra,
+  })
+
+  it('trae un evento propio de la profesional, en hora de Montevideo', () => {
+    const [block] = toBusyBlocks([evento()], semana.from, semana.to)
+
+    expect(block).toEqual({
+      id: 'evt-1',
+      title: 'Devlane',
+      date: '2026-08-31',
+      startTime: '09:00:00',
+      endTime: '17:00:00',
+    })
+  })
+
+  it('descarta lo que escribió Hilo, que ya está en la grilla como sesión', () => {
+    const propio = evento({
+      extendedProperties: { private: { hilo_appointment_id: 'aaaa-0000' } },
+    })
+
+    expect(toBusyBlocks([propio], semana.from, semana.to)).toEqual([])
+  })
+
+  it('descarta un evento borrado en Google', () => {
+    expect(toBusyBlocks([evento({ status: 'cancelled' })], semana.from, semana.to)).toEqual(
+      [],
+    )
+  })
+
+  it('descarta lo que cae fuera de la semana en pantalla', () => {
+    // La ventana se le pide a Google con un día de más de cada lado, así que
+    // esto llega de verdad y hay que recortarlo acá.
+    const domingoAnterior = evento({ start: { dateTime: '2026-08-30T09:00:00-03:00' } })
+    const lunesSiguiente = evento({ start: { dateTime: '2026-09-07T09:00:00-03:00' } })
+
+    expect(toBusyBlocks([domingoAnterior, lunesSiguiente], semana.from, semana.to)).toEqual(
+      [],
+    )
+  })
+
+  it('marca el evento de todo el día sin inventarle una hora', () => {
+    const feriado = evento({
+      summary: 'Feriado',
+      start: { date: '2026-09-02' },
+      end: { date: '2026-09-03' },
+    })
+
+    const [block] = toBusyBlocks([feriado], semana.from, semana.to)
+
+    expect(block?.startTime).toBeNull()
+    expect(block?.endTime).toBeNull()
+    expect(block?.date).toBe('2026-09-02')
+  })
+
+  it('le pone "Ocupado" al evento sin título, en vez de dejar el hueco', () => {
+    expect(toBusyBlocks([evento({ summary: '   ' })], semana.from, semana.to)[0]?.title).toBe(
+      'Ocupado',
+    )
+    expect(toBusyBlocks([evento({ summary: undefined })], semana.from, semana.to)[0]?.title).toBe(
+      'Ocupado',
+    )
+  })
+
+  it('no se cae si Google manda un evento sin final', () => {
+    const [block] = toBusyBlocks([evento({ end: undefined })], semana.from, semana.to)
+
+    expect(block?.startTime).toBe('09:00:00')
+    expect(block?.endTime).toBeNull()
+  })
+
+  it('usa la zona de Montevideo y no la del servidor', () => {
+    // Un evento a las 23:30 de Montevideo es el día siguiente en UTC. Si esto se
+    // leyera con la hora del servidor —que en Vercel es UTC— la cena del lunes
+    // aparecería el martes.
+    const cena = evento({ start: { dateTime: '2026-08-31T23:30:00-03:00' }, end: undefined })
+
+    expect(toBusyBlocks([cena], semana.from, semana.to)[0]).toMatchObject({
+      date: '2026-08-31',
+      startTime: '23:30:00',
+    })
   })
 })

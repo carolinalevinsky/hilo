@@ -227,9 +227,11 @@ export async function pushAppointment(
   return true
 }
 
-type GoogleEvent = {
+export type GoogleEvent = {
   id?: string
   status?: string
+  /** El título. Sólo lo lee `listBusyBlocks`; la sincronización no lo mira. */
+  summary?: string
   start?: { dateTime?: string; date?: string }
   end?: { dateTime?: string; date?: string }
   extendedProperties?: { private?: Record<string, string> }
@@ -370,6 +372,148 @@ async function applyEvent(
     .eq('practitioner_id', practitionerId)
 
   return !error
+}
+
+/**
+ * Lo que ya está ocupado en el calendario de Google, para pintarlo en la Agenda.
+ *
+ * Es lo contrario de `pullFromGoogle`: aquél sincroniza **sólo** lo que Hilo
+ * creó, y esto trae **sólo** lo que Hilo no creó. Juntos cubren el calendario
+ * entero sin pisarse — un evento aparece como sesión o como bloque ocupado,
+ * nunca como los dos.
+ *
+ * ─── Por qué no se guarda nada ─────────────────────────────────────────────
+ *
+ * Estos eventos no van a `appointments` y no van a ninguna tabla. Dos razones,
+ * y la segunda es la que manda:
+ *
+ * 1. `appointments.patient_id` es obligatorio, y "cena familiar" no es paciente
+ *    de nadie. Inventar uno ficticio metería la agenda personal adentro de la
+ *    historia clínica, que después es lo que leen los informes y las
+ *    estadísticas.
+ *
+ * 2. El título de un evento personal es dato de la profesional, no de Hilo.
+ *    Mostrarlo en su propia pantalla es una cosa; copiarlo a la base de datos de
+ *    una aplicación clínica es otra, y no hay ninguna necesidad que lo pida.
+ *
+ * Se leen, se dibujan, se olvidan.
+ *
+ * Vale la misma regla que el resto del archivo: si Google falla, esto devuelve
+ * una lista vacía y la Agenda se ve como se veía antes de conectar. Nunca tira.
+ */
+export type BusyBlock = {
+  id: string
+  title: string
+  /** 'YYYY-MM-DD', ya en hora de Montevideo. */
+  date: string
+  /** 'HH:MM:SS', o null si es un evento de todo el día. */
+  startTime: string | null
+  endTime: string | null
+}
+
+export async function listBusyBlocks(
+  practitionerId: string,
+  from: string,
+  to: string,
+): Promise<BusyBlock[]> {
+  const connection = await connectionFor(practitionerId)
+  if (!connection) return []
+
+  // La ventana se pide con un día de más de cada lado, en UTC, y después se
+  // filtra por fecha local. Es a propósito: armar el instante exacto en que
+  // empieza el lunes en Montevideo obliga a calcular un desplazamiento horario a
+  // mano, y esa cuenta es justo la que se rompe sola. Traer de más y descartar
+  // con `toLocalDateTime` —la misma función que ya usa el resto del archivo— da
+  // el mismo resultado sin ninguna aritmética de zonas.
+  const dayBefore = new Date(`${from}T00:00:00Z`)
+  dayBefore.setUTCDate(dayBefore.getUTCDate() - 1)
+  const dayAfter = new Date(`${to}T00:00:00Z`)
+  dayAfter.setUTCDate(dayAfter.getUTCDate() + 2)
+
+  const params = new URLSearchParams({
+    timeMin: dayBefore.toISOString(),
+    timeMax: dayAfter.toISOString(),
+    // Una reunión semanal es un evento con una regla de repetición. Sin esto
+    // Google devuelve la regla, no los martes; con esto devuelve cada martes.
+    singleEvents: 'true',
+    orderBy: 'startTime',
+    maxResults: '250',
+  })
+
+  const response = await callGoogle(
+    connection.accessToken,
+    `${connection.calendarId}/events?${params.toString()}`,
+    { method: 'GET' },
+  )
+
+  if (!response || !response.ok) return []
+
+  try {
+    const payload = (await response.json()) as { items?: GoogleEvent[] }
+    return toBusyBlocks(payload.items ?? [], from, to)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * La parte de `listBusyBlocks` que decide qué se muestra y cómo, separada de la
+ * que habla por HTTP para poder probarla sin una cuenta de Google del otro lado
+ * — el mismo criterio que explica `eventBody` más arriba.
+ *
+ * Acá viven las cuatro decisiones que importan: qué se descarta, qué pasa con un
+ * evento de todo el día, y cómo se lleva una hora de Google a hora de
+ * Montevideo.
+ */
+export function toBusyBlocks(
+  items: GoogleEvent[],
+  from: string,
+  to: string,
+): BusyBlock[] {
+  const blocks: BusyBlock[] = []
+
+  for (const event of items) {
+    if (event.status === 'cancelled') continue
+
+    // Lo que Hilo escribió ya está en la grilla como sesión, con su paciente y
+    // su menú. Mostrarlo otra vez como bloque gris sería el mismo horario dos
+    // veces.
+    if (event.extendedProperties?.private?.hilo_appointment_id) continue
+
+    const startIso = event.start?.dateTime
+
+    // Evento de todo el día: viene con `date` en vez de `dateTime` y no tiene
+    // hora que ubicar en la grilla. Se muestra igual, anclado arriba del día.
+    if (!startIso) {
+      const allDay = event.start?.date
+      if (!allDay || allDay < from || allDay > to) continue
+      blocks.push({
+        id: event.id ?? allDay,
+        title: event.summary?.trim() || 'Ocupado',
+        date: allDay,
+        startTime: null,
+        endTime: null,
+      })
+      continue
+    }
+
+    // La ventana se pidió con un día de más de cada lado; el recorte fino se
+    // hace acá, ya en hora local. Ver el comentario en `listBusyBlocks`.
+    const start = toLocalDateTime(startIso)
+    if (start.date < from || start.date > to) continue
+
+    const endIso = event.end?.dateTime
+
+    blocks.push({
+      id: event.id ?? `${start.date}-${start.time}`,
+      title: event.summary?.trim() || 'Ocupado',
+      date: start.date,
+      startTime: start.time,
+      endTime: endIso ? toLocalDateTime(endIso).time : null,
+    })
+  }
+
+  return blocks
 }
 
 /**
