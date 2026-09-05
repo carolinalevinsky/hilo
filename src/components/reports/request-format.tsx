@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -64,8 +65,15 @@ export function RequestFormat() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
+          {/* La bajada no es relleno: sin ella el título y la etiqueta del
+              campo quedan uno encima del otro con casi el mismo peso —16px y
+              14px, las dos medium— y se leen como un bloque pegado por más
+              espacio que se les ponga en el medio. */}
           <DialogHeader>
             <DialogTitle>Pedir un formato</DialogTitle>
+            <DialogDescription>
+              Los formatos los escribimos a mano, uno por uno. Contanos cuál te falta.
+            </DialogDescription>
           </DialogHeader>
 
           <form action={formAction} className="space-y-4">
