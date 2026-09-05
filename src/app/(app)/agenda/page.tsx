@@ -7,6 +7,7 @@ import { ConnectGoogle } from '@/components/agenda/connect-google'
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { SessionPanel } from '@/components/agenda/session-panel'
 import { WeekNav } from '@/components/agenda/week-nav'
+import { WeekViewSelect } from '@/components/agenda/week-view-select'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
@@ -190,6 +191,10 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     </>
   )
 
+  // Cuántos días dibuja la grilla. "laboral" es el valor por defecto, así que la
+  // dirección sólo lleva el parámetro cuando se pidió la semana entera.
+  const weekView = params.vista === 'completa' ? 'completa' : 'laboral'
+
   const weekNavDesktop = (
     <WeekNav
       prevHref={`/agenda?semana=${offset - 1}`}
@@ -312,6 +317,8 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 selectedId={selected?.id}
                 hrefForSession={hrefForSession}
                 header={weekNavDesktop}
+                headerEnd={<WeekViewSelect value={weekView} />}
+                showWeekend={weekView === 'completa'}
               />
             </div>
 

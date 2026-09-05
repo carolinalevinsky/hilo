@@ -77,6 +77,8 @@ export function WeekCalendar({
   selectedId,
   hrefForSession,
   header,
+  headerEnd,
+  showWeekend = false,
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
@@ -100,6 +102,19 @@ export function WeekCalendar({
    * porque los enlaces dependen de la URL, y esto no sabe nada de rutas.
    */
   header?: React.ReactNode
+  /** Contra el borde derecho de la misma barra: el selector de días. */
+  headerEnd?: React.ReactNode
+  /**
+   * Dibujar sábado y domingo.
+   *
+   * En `false` —lo normal— la grilla es de lunes a viernes y punto, aunque el
+   * fin de semana tenga algo. Casi nadie atiende sábado, y dos columnas
+   * permanentemente vacías son dos séptimos del ancho gastados en nada.
+   *
+   * Lo que no puede pasar es que algo desaparezca sin avisar, así que cuando hay
+   * sesiones escondidas la barra lo dice y ofrece el cambio. Ver `hiddenCount`.
+   */
+  showWeekend?: boolean
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -117,17 +132,21 @@ export function WeekCalendar({
     else bucket.set(block.date, [block])
   }
 
-  // Un sábado con una cena tiene que aparecer, igual que un sábado con una
-  // sesión: si el día trae algo, el día se dibuja.
-  const has = (date: string) =>
-    (byDate.get(date)?.length ?? 0) +
-      (busyByDate.get(date)?.length ?? 0) +
-      (allDayByDate.get(date)?.length ?? 0) >
-    0
-
+  // Lunes a viernes, salvo que se pida la semana entera. Antes el fin de semana
+  // se dibujaba solo cuando traía algo; ahora lo decide el selector de la barra,
+  // y lo que quedó afuera se anuncia en vez de dibujarse (ver `hiddenCount`).
   const days = dates
     .map((date, index) => ({ date, weekday: WEEK_ORDER[index]!, index }))
-    .filter((day) => day.index < 5 || has(day.date))
+    .filter((day) => day.index < 5 || showWeekend)
+
+  // Cuántas sesiones quedaron fuera de la vista por ser de fin de semana. Sólo
+  // las de Hilo: un cumpleaños en Google que no se vea no es un problema, una
+  // sesión que no se vea sí.
+  const hiddenCount = showWeekend
+    ? 0
+    : dates
+        .slice(5)
+        .reduce((total, date) => total + (byDate.get(date)?.length ?? 0), 0)
 
   // La franja se estira con las dos cosas, y con el final además del principio:
   // una cena que va de 20:30 a 22:30 necesita que la grilla llegue a las 22, o
@@ -155,9 +174,23 @@ export function WeekCalendar({
   return (
     <div className="max-lg:hidden">
       <div className="overflow-hidden rounded-lg bg-card shadow-card">
-        {header ? (
+        {header || headerEnd ? (
           <div className="flex items-center gap-3 border-b border-border px-3.5 py-2.5">
             {header}
+
+            <div className="ml-auto flex items-center gap-2.5">
+              {/* Nada se esconde en silencio. Si hay sesiones el fin de semana y
+                  la vista es de lunes a viernes, la barra lo dice; el selector
+                  está justo al lado para cambiarlo. */}
+              {hiddenCount > 0 ? (
+                <span className="text-[12px] font-semibold text-violet">
+                  {hiddenCount === 1
+                    ? '1 sesión el fin de semana'
+                    : `${hiddenCount} sesiones el fin de semana`}
+                </span>
+              ) : null}
+              {headerEnd}
+            </div>
           </div>
         ) : null}
 
