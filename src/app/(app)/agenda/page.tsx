@@ -154,6 +154,26 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     weekSessions.map((session) => [session.appointmentId, session.focus?.title ?? null]),
   )
 
+  // Las flechas, el rango y "Hoy". Se arma una sola vez y se usa en los dos
+  // lugares donde hace falta —adentro de la tarjeta en escritorio, suelto en
+  // teléfono— para que no se puedan desincronizar.
+  const weekNav = (
+    <>
+      <PeriodSwitcher
+        prevHref={`/agenda?semana=${offset - 1}`}
+        nextHref={`/agenda?semana=${offset + 1}`}
+        label={weekLabel(dates)}
+        caption={offset === 0 ? 'Esta semana' : undefined}
+        className="min-w-0"
+      />
+      {offset !== 0 ? (
+        <Button asChild variant="outline" size="sm">
+          <Link href="/agenda">Hoy</Link>
+        </Button>
+      ) : null}
+    </>
+  )
+
   return (
     <>
       <PageHeader
@@ -221,24 +241,16 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 </Link>
               </CardContent>
             </Card>
-          ) : (
-            /* Y cuando no hay ninguna pendiente, igual hay que poder llegar.
-               Esta rama era `null`, así que el único camino a /reservas vivía
-               adentro de la tarjeta de arriba — la que sólo existe cuando ya
-               tenés reservas. Para tener reservas hay que haber compartido el
-               link, y el link estaba detrás de tenerlas: un círculo cerrado que
-               dejaba la pantalla inalcanzable justo para quien recién empieza,
-               que es quien más la necesita.
+          ) : null}
+          {/* Acá vivía una línea suelta —"Tu link para que te reserven online
+              →"— que existía porque el único camino a /reservas estaba adentro
+              de la tarjeta de arriba, y esa tarjeta sólo aparece cuando ya
+              tenés reservas: un círculo cerrado que dejaba la pantalla
+              inalcanzable justo para quien recién empieza.
 
-               Discreto a propósito. Es una línea, no una tarjeta: cuando no hay
-               nada pendiente esto no es trabajo del día, es algo que se busca
-               una vez y se comparte. */
-            <p className="mb-3.5 text-center text-[12.5px] text-muted-foreground">
-              <Link href="/reservas" className="font-semibold text-violet hover:underline">
-                Tu link para que te reserven online →
-              </Link>
-            </p>
-          )}
+              El círculo lo abre ahora la tarjeta "Reservas online" del
+              encabezado, que está siempre. Dejar las dos era decir lo mismo dos
+              veces en la misma pantalla. */}
 
           <TomorrowReminders
             date={tomorrow}
@@ -246,19 +258,11 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             phoneOf={phoneOf}
           />
 
-          <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5">
-            <PeriodSwitcher
-              prevHref={`/agenda?semana=${offset - 1}`}
-              nextHref={`/agenda?semana=${offset + 1}`}
-              label={weekLabel(dates)}
-              caption={offset === 0 ? 'Esta semana' : undefined}
-              className="min-w-0"
-            />
-            {offset !== 0 ? (
-              <Button asChild variant="outline" size="sm">
-                <Link href="/agenda">Hoy</Link>
-              </Button>
-            ) : null}
+          {/* En teléfono la navegación va suelta arriba de las tarjetas del día,
+              que es la vista que manda ahí. En escritorio entra adentro de la
+              tarjeta del calendario — ver el `header` de `WeekCalendar`. */}
+          <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5 lg:hidden">
+            {weekNav}
           </div>
 
           {/* `calendarPrivacy` viaja hasta el menú de cada sesión, que es donde
@@ -280,6 +284,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 busyBlocks={busyBlocks}
                 selectedId={selected?.id}
                 hrefForSession={hrefForSession}
+                header={weekNav}
               />
             </div>
 

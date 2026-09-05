@@ -17,26 +17,26 @@ import { Button } from '@/components/ui/button'
  * hora?". Antes había que acordarse de que existía una pantalla llamada
  * Reservas, entrar, y volver.
  *
- * El link se muestra sin `https://` sólo para que entre en el ancho; lo que se
- * copia es la dirección completa, porque un link a medias pegado en Instagram no
- * abre.
+ * ─── La dirección no se muestra ───────────────────────────────────────────
+ *
+ * Se copia, no se lee. Escrita entera ocupaba media pantalla de encabezado con
+ * una cadena que nadie va a transcribir a mano, y encima empujaba los botones.
+ * Quien quiere verla entra a "Reservas", donde está en grande y con las otras
+ * formas de compartirla.
  */
 export function BookingChip({ url }: { url: string }) {
   const [copied, setCopied] = useState(false)
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-2.5">
+    <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card py-1.5 pr-1.5 pl-3">
       <Link2 className="size-4 shrink-0 text-violet" />
 
-      <div className="min-w-0">
-        <p className="text-[12.5px] font-bold">Reservas online</p>
-        <Link
-          href="/reservas"
-          className="block truncate text-[11.5px] text-muted-foreground hover:text-violet hover:underline"
-        >
-          {url.replace(/^https?:\/\//, '')}
-        </Link>
-      </div>
+      <Link
+        href="/reservas"
+        className="text-[12.5px] font-bold hover:text-violet hover:underline"
+      >
+        Reservas online
+      </Link>
 
       <Button
         type="button"

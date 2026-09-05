@@ -76,6 +76,7 @@ export function WeekCalendar({
   busyBlocks = [],
   selectedId,
   hrefForSession,
+  header,
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
@@ -93,6 +94,12 @@ export function WeekCalendar({
    * sabe en qué semana estamos y qué otros parámetros hay que conservar.
    */
   hrefForSession: (appointmentId: string) => string
+  /**
+   * Las flechas de semana y el botón "Hoy", adentro de la tarjeta del
+   * calendario y no flotando arriba. Entra como slot en vez de armarse acá
+   * porque los enlaces dependen de la URL, y esto no sabe nada de rutas.
+   */
+  header?: React.ReactNode
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -147,7 +154,14 @@ export function WeekCalendar({
 
   return (
     <div className="max-lg:hidden">
-      <div className="overflow-x-auto rounded-lg bg-card shadow-card">
+      <div className="overflow-hidden rounded-lg bg-card shadow-card">
+        {header ? (
+          <div className="flex items-center gap-3 border-b border-border px-3.5 py-2.5">
+            {header}
+          </div>
+        ) : null}
+
+        <div className="overflow-x-auto">
         <div
           className="grid min-w-[640px]"
           style={{
@@ -291,6 +305,7 @@ export function WeekCalendar({
               </div>
             )
           })}
+          </div>
         </div>
       </div>
     </div>
