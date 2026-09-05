@@ -1,4 +1,15 @@
-import { ChartPie, FileText, Plus } from '@/components/icons'
+import {
+  BookOpen,
+  ChartColumn,
+  ChartPie,
+  ClipboardList,
+  Compass,
+  FileText,
+  Plus,
+  Send,
+  User,
+  Users,
+} from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -102,6 +113,7 @@ export default async function DocumentsPage() {
                     blurb={RECIPIENT_FORMATS[recipient].blurb}
                     chip={RECIPIENT_LABELS[recipient]}
                     href={`/informes/nuevo?para=${recipient}`}
+                    style={FORMAT_STYLE[recipient]}
                   />
                 ))}
 
@@ -110,6 +122,7 @@ export default async function DocumentsPage() {
                   blurb="Cargás los puntajes y Hilo los interpreta y arma los objetivos"
                   chip="Evaluación"
                   href="/evaluaciones/nueva"
+                  style={FORMAT_STYLE.assessment}
                 />
               </div>
             </CardContent>
@@ -123,7 +136,7 @@ export default async function DocumentsPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Informes</CardTitle>
+                <CardTitle>Últimos informes generados</CardTitle>
               </CardHeader>
               <CardContent>
                 {reports.length === 0 ? (
@@ -162,7 +175,10 @@ export default async function DocumentsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Evaluaciones</CardTitle>
+                {/* "Cargadas" y no "generadas": una evaluación la hacés vos con
+                    el instrumento y Hilo interpreta los puntajes. Decir que la
+                    generó él sería contar mal de quién es el trabajo. */}
+                <CardTitle>Últimas evaluaciones cargadas</CardTitle>
               </CardHeader>
               <CardContent>
                 {assessments.length === 0 ? (
@@ -211,22 +227,58 @@ export default async function DocumentsPage() {
  * "Crear →", but somebody reading "Informe para la familia" and reaching for it
  * will hit the title first.
  */
+/**
+ * El color y el ícono de cada formato.
+ *
+ * No es decoración: son seis tarjetas parecidas en una grilla, y lo que se busca
+ * acá no se lee, se reconoce. Con todas iguales hay que leer los seis títulos
+ * cada vez; con un color y una forma por formato, la de la familia es "la
+ * violeta con la gente" desde la segunda visita.
+ *
+ * Vive en esta pantalla y no en `src/lib/recipients.ts` a propósito: aquello es
+ * el dominio —quién lee cada informe y en qué tono se le escribe— y no tiene por
+ * qué saber que existen íconos. `src/lib` no importa de `src/components`.
+ */
+const FORMAT_STYLE: Record<
+  RecipientId | 'assessment',
+  { icon: typeof BookOpen; className: string }
+> = {
+  school: { icon: BookOpen, className: 'bg-blue-soft text-blue' },
+  family: { icon: Users, className: 'bg-violet-soft text-violet' },
+  health_insurer: { icon: ClipboardList, className: 'bg-green-soft text-green' },
+  anep: { icon: Compass, className: 'bg-amber-soft text-amber' },
+  physician: { icon: Send, className: 'bg-coral-soft text-coral' },
+  patient: { icon: User, className: 'bg-violet-soft text-violet' },
+  assessment: { icon: ChartColumn, className: 'bg-blue-soft text-blue' },
+}
+
 function FormatCard({
   title,
   blurb,
   chip,
   href,
+  style,
 }: {
   title: string
   blurb: string
   chip: string
   href: string
+  style: { icon: typeof BookOpen; className: string }
 }) {
+  const Icon = style.icon
+
   return (
     <Link
       href={href}
       className="flex flex-col rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-violet"
     >
+      <span
+        aria-hidden
+        className={`mb-2.5 inline-flex size-9 items-center justify-center rounded-xl ${style.className}`}
+      >
+        <Icon className="size-[18px]" />
+      </span>
+
       <span className="text-[14.5px] font-bold">{title}</span>
       <span className="mt-1 mb-2.5 text-[12.5px] text-muted-foreground">{blurb}</span>
 
