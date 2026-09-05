@@ -128,16 +128,13 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           <CardTitle>Tu cuenta</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <dl className="grid gap-3 text-[13px] sm:grid-cols-2">
+          {/* El plan no se muestra. Los límites siguen existiendo y se aplican
+              en el servidor; lo que no hay todavía es forma de cambiar de plan,
+              y un dato que no se puede accionar sólo ocupa lugar. */}
+          <dl className="grid gap-3 text-[13px]">
             <div>
               <dt className="text-muted-foreground">Correo</dt>
               <dd className="font-semibold">{practitioner.email}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Plan</dt>
-              <dd className="font-semibold">
-                {practitioner.plan === 'pro' ? 'Pro' : 'Gratis'}
-              </dd>
             </div>
           </dl>
 

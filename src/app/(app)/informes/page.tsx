@@ -28,7 +28,6 @@ import {
 } from '@/lib/recipients'
 import { listAssessments } from '@/server/assessments'
 import { countPatients } from '@/server/patients'
-import { planLimits, quota } from '@/server/plans'
 import { listReports } from '@/server/reports'
 import { currentSession } from '../session'
 
@@ -37,11 +36,10 @@ export const metadata: Metadata = { title: 'Informes y evaluaciones · Hilo' }
 export default async function DocumentsPage() {
   const { user, practitioner } = await currentSession()
 
-  const [reports, assessments, patients, reportQuota] = await Promise.all([
+  const [reports, assessments, patients] = await Promise.all([
     listReports(user.id),
     listAssessments(user.id),
     countPatients(user.id),
-    quota(user.id, practitioner.plan, 'reports'),
   ])
 
   const hasPatients = patients > 0
@@ -132,11 +130,6 @@ export default async function DocumentsPage() {
               </div>
             </CardContent>
           </Card>
-
-          <p className="mb-4 text-[12.5px] text-muted-foreground">
-            Plan {planLimits(practitioner.plan).label} · {reportQuota.used} de{' '}
-            {reportQuota.limit} informes usados este mes.
-          </p>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
