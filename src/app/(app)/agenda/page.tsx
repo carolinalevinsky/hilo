@@ -16,7 +16,6 @@ import { PeriodSwitcher } from '@/components/period-switcher'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
-import { publicConfig } from '@/lib/env'
 import { frequencyLabel } from '@/lib/appointment-labels'
 import { toDateInput, today as todayString } from '@/lib/dates'
 import { formatTime, weekDates, weekLabel, weekdayName } from '@/lib/week'
@@ -32,6 +31,7 @@ import { planForRange } from '@/server/planning'
 
 import { deactivateScheduleAction } from './actions'
 
+import { currentOrigin } from '../origin'
 import { currentPractitioner, currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Agenda · Hilo' }
@@ -39,6 +39,11 @@ export const metadata: Metadata = { title: 'Agenda · Hilo' }
 export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>) {
   const params = await searchParams
   const user = await currentUser()
+
+  // La dirección real de esta petición, no la variable cargada a mano. Ver
+  // `currentOrigin`: la variable quedó apuntando a Supabase y el link que se le
+  // pasa a las familias no llevaba a ningún lado.
+  const origin = await currentOrigin()
 
   const offsetParam = typeof params.semana === 'string' ? Number(params.semana) : 0
   const offset = Number.isFinite(offsetParam) ? Math.trunc(offsetParam) : 0
@@ -185,9 +190,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 cuando alguien te pregunta cómo pedir hora. La pantalla completa
                 sigue en /reservas. Sin slug todavía no hay link que copiar. */}
             {practitioner.slug ? (
-              <BookingChip
-                url={`${publicConfig.NEXT_PUBLIC_APP_URL}/reservar/${practitioner.slug}`}
-              />
+              <BookingChip url={`${origin}/reservar/${practitioner.slug}`} />
             ) : null}
             <ScheduleDialogs
               patients={patients.map((p) => ({ id: p.id, full_name: p.full_name }))}
