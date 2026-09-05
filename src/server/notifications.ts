@@ -217,3 +217,47 @@ export async function sendDigest({
 
   return send({ to, subject: 'Tu resumen de Hilo', html })
 }
+
+/**
+ * Aviso a quien mantiene Hilo de que falta un formato de informe.
+ *
+ * Va a `OWNER_EMAIL` y no a la profesional: es un pedido *hacia adentro*, y
+ * quien tiene que enterarse es quien puede agregar el formato.
+ *
+ * ─── Por qué este mail sí puede llevar el texto ───────────────────────────
+ *
+ * La regla del proyecto es que el contenido clínico no viaja por correo, y se
+ * sostiene: un mail es una copia que vive para siempre en una casilla de otra
+ * empresa. Un pedido de formato no es contenido clínico —habla de documentos,
+ * no de pacientes— así que acá el texto va entero, que es lo único que hace útil
+ * el aviso.
+ *
+ * Lo que no viaja es de qué pacientes se trata, porque no se pregunta: el
+ * formulario pide expresamente que no se escriban nombres. Lo que sí va es el
+ * nombre y el correo de la profesional, que son datos de ella y de nadie más, y
+ * sin ellos no hay a quién contestarle.
+ */
+export async function sendFormatRequestNotification({
+  to,
+  practitionerName,
+  practitionerEmail,
+  discipline,
+  detail,
+}: {
+  to: string
+  practitionerName: string
+  practitionerEmail: string
+  discipline: string
+  detail: string
+}) {
+  const html = layout({
+    subtitle: 'Pedido de formato',
+    body: `
+        <p style="margin:0 0 12px">${escapeHtml(practitionerName)} (${escapeHtml(discipline)}) pidió un formato de informe que todavía no existe:</p>
+        <blockquote style="margin:0 0 14px;padding:12px 14px;background:#f4f2ff;border-radius:11px;font-size:14px;line-height:1.6">${escapeHtml(detail)}</blockquote>
+        <p style="margin:0;font-size:13.5px;color:#586074">Contestale a ${escapeHtml(practitionerEmail)}.</p>`,
+    footer: 'Este aviso lo genera Hilo cuando alguien pide un formato nuevo.',
+  })
+
+  return send({ to, subject: `Pedido de formato · ${practitionerName}`, html })
+}

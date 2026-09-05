@@ -295,6 +295,35 @@ export type Database = {
           },
         ]
       }
+      format_requests: {
+        Row: {
+          created_at: string
+          detail: string
+          id: string
+          practitioner_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail: string
+          id?: string
+          practitioner_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string
+          id?: string
+          practitioner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "format_requests_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_progress: {
         Row: {
           created_at: string

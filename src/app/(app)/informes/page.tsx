@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
+import { RequestFormat } from '@/components/reports/request-format'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/dates'
@@ -124,6 +125,10 @@ export default async function DocumentsPage() {
                   href="/evaluaciones/nueva"
                   style={FORMAT_STYLE.assessment}
                 />
+
+                {/* Última de la grilla: primero lo que se puede hacer hoy, y
+                    después la salida para lo que falta. */}
+                <RequestFormat />
               </div>
             </CardContent>
           </Card>
