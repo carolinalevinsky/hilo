@@ -28,6 +28,7 @@ import {
 } from '@/lib/recipients'
 import { listAssessments } from '@/server/assessments'
 import { countPatients } from '@/server/patients'
+import { quota, quotaWarning } from '@/server/plans'
 import { listReports } from '@/server/reports'
 import { currentSession } from '../session'
 
@@ -36,11 +37,14 @@ export const metadata: Metadata = { title: 'Informes y evaluaciones · Hilo' }
 export default async function DocumentsPage() {
   const { user, practitioner } = await currentSession()
 
-  const [reports, assessments, patients] = await Promise.all([
+  const [reports, assessments, patients, reportQuota] = await Promise.all([
     listReports(user.id),
     listAssessments(user.id),
     countPatients(user.id),
+    quota(user.id, practitioner.plan, 'reports'),
   ])
+
+  const runningOut = quotaWarning(reportQuota)
 
   const hasPatients = patients > 0
   const recipients = recipientsFor(practitioner.discipline)
@@ -130,6 +134,14 @@ export default async function DocumentsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Sólo en los últimos tres. El resto del mes no hay contador: ver
+              `quotaWarning` en src/server/plans.ts. */}
+          {runningOut ? (
+            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-[12.5px] leading-relaxed text-amber">
+              {runningOut}
+            </p>
+          ) : null}
 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
