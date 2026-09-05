@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { AppointmentMenu } from '@/components/agenda/appointment-menu'
+import { NowLine } from '@/components/agenda/now-line'
 import { HOUR_HEIGHT, placeSpans, type Span } from '@/lib/agenda-layout'
 import { patientHex } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
@@ -73,6 +74,8 @@ export function WeekCalendar({
   ageOf,
   calendarPrivacy,
   busyBlocks = [],
+  selectedId,
+  hrefForSession,
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
@@ -83,6 +86,13 @@ export function WeekCalendar({
   calendarPrivacy?: string | null
   /** Lo que ya está ocupado en Google. Ver `listBusyBlocks`. */
   busyBlocks?: BusyBlock[]
+  /** La sesión abierta en el panel, para marcarla en la grilla. */
+  selectedId?: string
+  /**
+   * Cómo se arma el enlace de cada sesión. Lo decide la página, que es la que
+   * sabe en qué semana estamos y qué otros parámetros hay que conservar.
+   */
+  hrefForSession: (appointmentId: string) => string
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -250,6 +260,12 @@ export function WeekCalendar({
                   />
                 ))}
 
+                {/* Sólo en la columna de hoy: una línea de "ahora" en el jueves
+                    que viene no marca nada. */}
+                {day.date === today ? (
+                  <NowLine firstHour={firstHour} lastHour={lastHour} />
+                ) : null}
+
                 <div className="absolute inset-0">
                   {placeSpans(pieces).map(({ span: piece, z, top, height, width, labelTop }) => (
                     <div
@@ -263,6 +279,8 @@ export function WeekCalendar({
                           ageOf={ageOf}
                           calendarPrivacy={calendarPrivacy}
                           labelTop={labelTop}
+                          href={hrefForSession(piece.appointment.id)}
+                          selected={piece.appointment.id === selectedId}
                         />
                       ) : (
                         <Busy block={piece.block} labelTop={labelTop} />
@@ -284,11 +302,16 @@ function Event({
   ageOf,
   calendarPrivacy,
   labelTop,
+  href,
+  selected,
 }: {
   appointment: AppointmentWithPatient
   ageOf?: Map<string, string | null>
   calendarPrivacy?: string | null
   labelTop: number
+  /** A dónde lleva el nombre: esta misma semana, con esta sesión abierta. */
+  href: string
+  selected: boolean
 }) {
   const patient = appointment.patients
   const name = patient ? firstName(patient.full_name) : 'Paciente'
@@ -299,13 +322,17 @@ function Event({
       className={cn(
         'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-[11.5px] leading-tight font-semibold text-white',
         appointment.status === 'cancelled' && 'opacity-55',
+        // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
+        // Sin esto no habría forma de saber cuál de las doce es la que estás
+        // mirando en el panel.
+        selected && 'ring-2 ring-foreground ring-offset-1',
       )}
       style={{ background: patientHex(patient?.color ?? null) }}
     >
       <div style={{ paddingTop: labelTop }}>
-        <LinkOrText patientId={patient?.id}>
+        <SelectLink href={href}>
           {formatTime(appointment.start_time)} · {name}
-        </LinkOrText>
+        </SelectLink>
         {age ? <div className="font-normal opacity-90">{age}</div> : null}
       </div>
 
@@ -341,16 +368,26 @@ function Busy({ block, labelTop }: { block: BusyBlock; labelTop: number }) {
   )
 }
 
-function LinkOrText({
-  patientId,
+/**
+ * El nombre, que abre la sesión al costado.
+ *
+ * Antes llevaba a la ficha del paciente, y eso sacaba la semana de la pantalla
+ * para responder algo que casi siempre es más chico: a qué hora era, cuánto
+ * dura, marcar que vino. Ahora eso pasa al lado de la grilla y la ficha sigue a
+ * un click, desde el panel.
+ *
+ * Es un enlace y no un botón porque el estado vive en la URL: se puede volver
+ * con el botón de atrás, se puede recargar, y anda sin JavaScript.
+ */
+function SelectLink({
+  href,
   children,
 }: {
-  patientId?: string
+  href: string
   children: React.ReactNode
 }) {
-  if (!patientId) return <span className="block">{children}</span>
   return (
-    <Link href={`/pacientes/${patientId}`} className="block hover:underline">
+    <Link href={href} scroll={false} className="block hover:underline">
       {children}
     </Link>
   )
