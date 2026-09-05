@@ -1,6 +1,7 @@
 import { ageLabel } from '@/lib/age'
 import { disciplineLabel } from '@/lib/disciplines'
 
+import type { ChatMessage } from './ai'
 import { getDb } from './db'
 
 /**
@@ -25,6 +26,19 @@ import { getDb } from './db'
  * do send notes, for one named patient, when the practitioner has asked for a
  * document about that patient. That is a decision they made about one person;
  * this box is not.
+ *
+ * ─── And the conversation ──────────────────────────────────────────────────
+ *
+ * This is a thread, so the turns before the current question travel with it —
+ * that is what makes "¿y con Malena?" mean anything. It is a real cost and it
+ * was chosen knowing it: whatever the practitioner typed earlier leaves the app
+ * again on every question of the same conversation.
+ *
+ * Two things keep it bounded. `HISTORY_LIMIT` caps how far back goes, so an
+ * afternoon of questions does not become one enormous request. And the thread
+ * lives only in the browser tab — `parseHistory` reads it off the request body,
+ * and nothing here writes it down. Closing the panel ends the conversation,
+ * which is also the only "delete" a transcript can honestly offer.
  */
 
 export type AssistantPatient = {
@@ -115,7 +129,7 @@ export async function gatherAssistantContext(
  * Its three rules are the ones that matter and they are the same as the report
  * prompt's: do not invent a patient, say so when one is not in the context, keep
  * it short. The clinical instruction block in `ai.ts` is prepended to this by
- * `streamCompletion` and carries the rest.
+ * `streamChat` and carries the rest.
  */
 export function assistantInstructions(discipline: string): string {
   return [
@@ -126,11 +140,12 @@ export function assistantInstructions(discipline: string): string {
     'No hacés diagnósticos cerrados y no afirmás resultados que no estén en los datos.',
     'Respuestas breves: dos o tres frases, salvo que te pidan más.',
     'Escribís en texto plano, sin markdown ni viñetas.',
+    'Es una conversación: si la consulta se apoya en lo que ya venían hablando, seguí el hilo sin repetir lo dicho.',
   ].join(' ')
 }
 
 /** The roster, as text. */
-export function assistantUserPrompt(context: AssistantContext, question: string): string {
+export function assistantRoster(context: AssistantContext): string {
   const roster = context.patients.length
     ? context.patients
         .map((patient) => {
@@ -149,11 +164,78 @@ export function assistantUserPrompt(context: AssistantContext, question: string)
     : 'sin sesiones agendadas'
 
   return [
-    `Mis pacientes:\n${roster}`,
+    `Sus pacientes:\n${roster}`,
     `Hoy: ${agenda}.`,
     `Reservas pendientes de responder: ${context.pendingBookings}.`,
-    `Consulta: ${question}`,
   ].join('\n\n')
+}
+
+/**
+ * Who Hilo is, and then the roster.
+ *
+ * The roster sits in the system prompt rather than inside the question, and that
+ * is what makes a thread affordable: it travels once per request instead of once
+ * per turn, and it is always today's — the patient added ten minutes ago is in
+ * the next answer, and a stale copy from four questions ago is not sitting in
+ * the conversation contradicting it.
+ */
+export function assistantSystemPrompt(context: AssistantContext): string {
+  return [assistantInstructions(context.discipline), assistantRoster(context)].join('\n\n')
+}
+
+/**
+ * How much of the conversation travels: five exchanges.
+ *
+ * A cap, not a preference. Without one, every question of a long afternoon would
+ * carry every question before it — a request that grows without bound, costs
+ * more each time, and sends the same clinical sentence out again on its
+ * fortieth trip. Five is enough for "¿y con Malena?" to mean something, which is
+ * the whole reason the thread exists.
+ */
+export const HISTORY_LIMIT = 10
+
+/** One turn cannot be longer than this. Questions are capped at 500 by the route. */
+const TURN_LIMIT = 2_000
+
+/**
+ * The conversation as the browser sent it, made safe to forward.
+ *
+ * The thread lives in the tab, so this arrives in the request body like any
+ * other user input: it is not trusted, and none of it is treated as an
+ * instruction — it is just the previous turns of the same box. What comes out
+ * starts with the practitioner and alternates strictly, because that is the
+ * shape the API takes and because a forged or half-written body should cost a
+ * dropped turn rather than a 400 in the middle of a question.
+ */
+export function parseHistory(input: unknown): ChatMessage[] {
+  if (!Array.isArray(input)) return []
+
+  const turns: ChatMessage[] = []
+
+  for (const entry of input) {
+    if (!entry || typeof entry !== 'object') continue
+
+    const { role, content } = entry as { role?: unknown; content?: unknown }
+    if (role !== 'user' && role !== 'assistant') continue
+    if (typeof content !== 'string') continue
+
+    const text = content.trim().slice(0, TURN_LIMIT)
+    if (!text) continue
+    if (role !== (turns.length % 2 === 0 ? 'user' : 'assistant')) continue
+
+    turns.push({ role, content: text })
+  }
+
+  // A question whose answer is missing is the tail of a request that failed. It
+  // goes, so the new question is not the second `user` turn in a row.
+  if (turns.length % 2 === 1) turns.pop()
+
+  return turns.slice(-HISTORY_LIMIT)
+}
+
+/** The turns that travel, oldest first, with the new question last. */
+export function assistantMessages(history: ChatMessage[], question: string): ChatMessage[] {
+  return [...history, { role: 'user' as const, content: question }]
 }
 
 /**

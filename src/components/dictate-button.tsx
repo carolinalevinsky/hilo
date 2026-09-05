@@ -22,8 +22,27 @@ import {
  * report, so an empty one costs more than it looks.
  *
  * The plumbing lives in `src/lib/speech.ts`, shared with the session recorder.
+ *
+ * Two ways to receive what was said, because the fields differ. A textarea is
+ * uncontrolled and is written straight through `targetId` — that is every note
+ * field in the app. "Preguntale a Hilo" is a controlled input, so a write to
+ * `.value` would show text React does not know about: the box would look full
+ * and "Preguntar" would stay disabled. That one passes `onText` and its own
+ * `value` instead.
  */
-export function DictateButton({ targetId }: { targetId: string }) {
+export function DictateButton({
+  targetId,
+  value,
+  onText,
+  compact,
+}: {
+  targetId?: string
+  /** The field's current text, in `onText` mode. Dictation adds to it. */
+  value?: string
+  onText?: (text: string) => void
+  /** Icon only, for a composer where a labelled button would not fit. */
+  compact?: boolean
+}) {
   const [listening, setListening] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const supported = useSyncExternalStore(
@@ -41,13 +60,15 @@ export function DictateButton({ targetId }: { targetId: string }) {
   }
 
   function start() {
-    const target = document.getElementById(targetId) as HTMLTextAreaElement | null
+    const target = targetId
+      ? (document.getElementById(targetId) as HTMLTextAreaElement | null)
+      : null
     const recognition = newRecognition()
 
     // Volver sin decir nada era lo que hacía que "no anda" fuera la única
     // descripción posible desde afuera. Cada una de estas dos ramas es un error
     // nuestro, no del entorno, y son las únicas que quedan mudas si no se dicen.
-    if (!target) {
+    if (targetId && !target) {
       toast.error('No encontramos el campo donde escribir. Recargá la pantalla.')
       return
     }
@@ -56,7 +77,8 @@ export function DictateButton({ targetId }: { targetId: string }) {
       return
     }
 
-    let committed = target.value ? `${target.value.trim()} ` : ''
+    const existing = target ? target.value : (value ?? '')
+    let committed = existing.trim() ? `${existing.trim()} ` : ''
 
     recognition.onresult = (event) => {
       let settled = ''
@@ -68,7 +90,10 @@ export function DictateButton({ targetId }: { targetId: string }) {
         else pending += result[0].transcript
       }
       if (settled) committed += settled
-      target.value = `${committed}${pending}`.replace(/\s{2,}/g, ' ')
+
+      const written = `${committed}${pending}`.replace(/\s{2,}/g, ' ')
+      if (target) target.value = written
+      else onText?.(written)
     }
 
     recognition.onend = () => {
@@ -97,6 +122,21 @@ export function DictateButton({ targetId }: { targetId: string }) {
       setListening(false)
       toast.error('El dictado ya estaba andando. Esperá un segundo y probá de nuevo.')
     }
+  }
+
+  if (compact) {
+    return (
+      <Button
+        type="button"
+        variant={listening ? 'destructive' : 'outline'}
+        size="icon"
+        aria-label={listening ? 'Parar el dictado' : 'Dictar la pregunta'}
+        className="shrink-0"
+        onClick={() => (listening ? stop() : start())}
+      >
+        {listening ? <Square className="size-3.5" /> : <Mic className="size-4" />}
+      </Button>
+    )
   }
 
   return (

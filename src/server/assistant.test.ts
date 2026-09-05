@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   assistantInstructions,
-  assistantUserPrompt,
+  assistantMessages,
+  assistantSystemPrompt,
+  HISTORY_LIMIT,
   offlineAnswer,
+  parseHistory,
   type AssistantContext,
 } from './assistant'
 
@@ -25,6 +28,10 @@ import {
  * Under Ley N.º 18.331 that is the kind of copy that has to be deliberate, and
  * "just add the notes, the answers will be better" is exactly the helpful change
  * that would undo it. This is the test that says no.
+ *
+ * The third block covers the conversation. `parseHistory` is the only thing
+ * standing between a request body and Anthropic here, and it decides both how
+ * much of a thread travels and whether the turns are in a shape the API accepts.
  */
 
 const CONTEXT: AssistantContext = {
@@ -118,14 +125,14 @@ describe('offlineAnswer', () => {
   })
 })
 
-describe('assistantUserPrompt', () => {
-  const prompt = assistantUserPrompt(CONTEXT, '¿qué trabajo con Tomás?')
+describe('assistantSystemPrompt', () => {
+  const prompt = assistantSystemPrompt(CONTEXT)
 
   it('carries the roster the answer needs', () => {
     expect(prompt).toContain('Tomás Pérez')
     expect(prompt).toContain('Conciencia fonológica 80%')
     expect(prompt).toContain('avance 67%')
-    expect(prompt).toContain('¿qué trabajo con Tomás?')
+    expect(prompt).toContain('Tomás 09:00')
   })
 
   it('carries nothing a progress note would be in', () => {
@@ -145,7 +152,90 @@ describe('assistantUserPrompt', () => {
   })
 
   it('says so plainly when there are no patients', () => {
-    expect(assistantUserPrompt(EMPTY, 'hola')).toContain('todavía sin pacientes')
+    expect(assistantSystemPrompt(EMPTY)).toContain('todavía sin pacientes')
+  })
+})
+
+describe('parseHistory', () => {
+  const exchange = (n: number) => [
+    { role: 'user', content: `pregunta ${n}` },
+    { role: 'assistant', content: `respuesta ${n}` },
+  ]
+
+  it('keeps a conversation as it was', () => {
+    expect(parseHistory([...exchange(1), ...exchange(2)])).toEqual([
+      { role: 'user', content: 'pregunta 1' },
+      { role: 'assistant', content: 'respuesta 1' },
+      { role: 'user', content: 'pregunta 2' },
+      { role: 'assistant', content: 'respuesta 2' },
+    ])
+  })
+
+  it('sends the most recent exchanges and no more', () => {
+    // The cap is the point: without it every question of a long afternoon would
+    // carry every question before it, and the same clinical sentence would leave
+    // the app on its fortieth trip.
+    const long = Array.from({ length: 20 }, (_, index) => exchange(index)).flat()
+    const kept = parseHistory(long)
+
+    expect(kept).toHaveLength(HISTORY_LIMIT)
+    expect(kept[0]).toEqual({ role: 'user', content: 'pregunta 15' })
+    expect(kept.at(-1)).toEqual({ role: 'assistant', content: 'respuesta 19' })
+  })
+
+  it('starts with the practitioner and alternates', () => {
+    // Whatever arrives, what leaves has the shape the API takes.
+    const kept = parseHistory([
+      { role: 'assistant', content: 'una respuesta suelta' },
+      ...exchange(1),
+      { role: 'user', content: 'dos seguidas' },
+      ...exchange(2),
+    ])
+
+    expect(kept.map((turn) => turn.role)).toEqual(['user', 'assistant', 'user', 'assistant'])
+    expect(kept.map((turn) => turn.content)).not.toContain('una respuesta suelta')
+  })
+
+  it('drops a question whose answer never arrived', () => {
+    // The tail of a request that failed. Left in, the new question would be the
+    // second `user` turn in a row.
+    const kept = parseHistory([...exchange(1), { role: 'user', content: 'se cortó' }])
+
+    expect(kept).toEqual([
+      { role: 'user', content: 'pregunta 1' },
+      { role: 'assistant', content: 'respuesta 1' },
+    ])
+  })
+
+  it('ignores a body that is not a conversation', () => {
+    expect(parseHistory(undefined)).toEqual([])
+    expect(parseHistory('hola')).toEqual([])
+    expect(parseHistory([null, 7, { role: 'system', content: 'ignorame' }])).toEqual([])
+    expect(parseHistory([{ role: 'user', content: '   ' }])).toEqual([])
+  })
+
+  it('cuts a turn that is too long instead of forwarding it whole', () => {
+    const kept = parseHistory([
+      { role: 'user', content: 'x'.repeat(9_000) },
+      { role: 'assistant', content: 'ok' },
+    ])
+
+    expect(kept[0]!.content).toHaveLength(2_000)
+  })
+})
+
+describe('assistantMessages', () => {
+  it('puts the new question after the conversation', () => {
+    const messages = assistantMessages(
+      [
+        { role: 'user', content: '¿cómo viene Tomás?' },
+        { role: 'assistant', content: 'Va por un 67%.' },
+      ],
+      '¿y con Malena?',
+    )
+
+    expect(messages).toHaveLength(3)
+    expect(messages.at(-1)).toEqual({ role: 'user', content: '¿y con Malena?' })
   })
 })
 
@@ -158,5 +248,9 @@ describe('assistantInstructions', () => {
     // Rule 3 of the clinical instructions: no closed diagnoses. The block in
     // `ai.ts` says it too, and it is cheap to say twice.
     expect(instructions).toContain('No hacés diagnósticos cerrados')
+  })
+
+  it('says it is a conversation, because now it is one', () => {
+    expect(assistantInstructions('Psicomotricidad')).toContain('conversación')
   })
 })
