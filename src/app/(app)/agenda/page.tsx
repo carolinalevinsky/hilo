@@ -3,8 +3,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { BookingChip } from '@/components/agenda/booking-chip'
+import { ConnectGoogle } from '@/components/agenda/connect-google'
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { SessionPanel } from '@/components/agenda/session-panel'
+import { WeekNav } from '@/components/agenda/week-nav'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
@@ -25,6 +27,7 @@ import {
   materialiseAppointments,
 } from '@/server/appointments'
 import { listBookingRequests } from '@/server/booking'
+import { findGoogleAccount } from '@/server/google'
 import { listBusyBlocks, pullFromGoogle } from '@/server/google-calendar'
 import { listPatients } from '@/server/patients'
 import { planForRange } from '@/server/planning'
@@ -95,6 +98,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     pendingBookings,
     tomorrowAppointments,
     practitioner,
+    googleAccount,
   ] = await Promise.all([
     listAppointments(user.id, first, last),
     listSchedules(user.id),
@@ -103,6 +107,8 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     listBookingRequests(user.id, 'pending'),
     listAppointments(user.id, tomorrow, tomorrow),
     currentPractitioner(user.id),
+    // Sólo para saber si hay que ofrecer conectar. No se usa nada de adentro.
+    findGoogleAccount(user.id),
   ])
 
   // Lo que ya está ocupado en Google y no lo puso Hilo: la reunión de trabajo, la
@@ -162,13 +168,18 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // Las flechas, el rango y "Hoy". Se arma una sola vez y se usa en los dos
   // lugares donde hace falta —adentro de la tarjeta en escritorio, suelto en
   // teléfono— para que no se puedan desincronizar.
-  const weekNav = (
+  // En teléfono el período es el título de lo que hay abajo, así que va centrado
+  // entre las dos flechas. En escritorio es una barra de herramientas arriba de
+  // la grilla, y ahí los controles van juntos a la izquierda. Ver `WeekNav`.
+  const weekNavMobile = (
     <>
       <PeriodSwitcher
         prevHref={`/agenda?semana=${offset - 1}`}
         nextHref={`/agenda?semana=${offset + 1}`}
         label={weekLabel(dates)}
-        caption={offset === 0 ? 'Esta semana' : undefined}
+        // Sin "Esta semana": la columna de hoy ya viene pintada en la grilla, y
+        // cuando no estás en la semana actual aparece el botón "Hoy". Decirlo
+        // además con texto era la tercera vez.
         className="min-w-0"
       />
       {offset !== 0 ? (
@@ -177,6 +188,16 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
         </Button>
       ) : null}
     </>
+  )
+
+  const weekNavDesktop = (
+    <WeekNav
+      prevHref={`/agenda?semana=${offset - 1}`}
+      nextHref={`/agenda?semana=${offset + 1}`}
+      todayHref="/agenda"
+      label={weekLabel(dates)}
+      isCurrentWeek={offset === 0}
+    />
   )
 
   return (
@@ -255,6 +276,9 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
               encabezado, que está siempre. Dejar las dos era decir lo mismo dos
               veces en la misma pantalla. */}
 
+          {/* Sólo si todavía no conectó. Ver `ConnectGoogle`. */}
+          {googleAccount ? null : <ConnectGoogle />}
+
           <TomorrowReminders
             date={tomorrow}
             appointments={tomorrowAppointments}
@@ -265,7 +289,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
               que es la vista que manda ahí. En escritorio entra adentro de la
               tarjeta del calendario — ver el `header` de `WeekCalendar`. */}
           <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5 lg:hidden">
-            {weekNav}
+            {weekNavMobile}
           </div>
 
           {/* `calendarPrivacy` viaja hasta el menú de cada sesión, que es donde
@@ -287,7 +311,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 busyBlocks={busyBlocks}
                 selectedId={selected?.id}
                 hrefForSession={hrefForSession}
-                header={weekNav}
+                header={weekNavDesktop}
               />
             </div>
 
