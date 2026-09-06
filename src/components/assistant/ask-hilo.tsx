@@ -127,10 +127,23 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
   }
 
   return (
-    <Card className={cn(fill && 'flex h-full flex-col border-0 bg-transparent shadow-none')}>
-      {/* Room for the panel's ✕, which floats over this corner. Without it the
-          close button lands on top of "Empezar de nuevo". */}
-      <CardHeader className={cn(fill && 'pr-10')}>
+    <Card
+      className={cn(fill && 'flex h-full flex-col border-0 bg-transparent pt-0 shadow-none')}
+    >
+      {/* In the panel the header is a band: a pale strip to the top edge, ruled
+          off from the conversation below it, so the title and the thread do not
+          read as one column of text.
+
+          `pr-10` leaves room for the panel's ✕, which floats over this corner —
+          without it the close button lands on top of "Empezar de nuevo".
+          `rounded-t-none` because the panel already rounds and clips this
+          corner, at a wider radius than the card's own. The bottom padding
+          comes free: `CardHeader` adds it whenever there is a `border-b`. */}
+      <CardHeader
+        className={cn(
+          fill && 'rounded-t-none border-b bg-muted pt-(--card-spacing) pr-10',
+        )}
+      >
         <CardTitle className="flex items-center gap-2">
           <MessageCircle className="size-[18px] text-violet" />
           Preguntale a Hilo
