@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import type { TablesUpdate } from '@/lib/database.types'
 import {
   createTestPractitioner,
   deleteTestPractitioner,
@@ -165,6 +166,66 @@ describe('row level security on practitioners', () => {
 
     expect(error).toBeNull()
     expect(data?.map((row) => row.id)).toEqual([idA])
+  })
+
+  /**
+   * The half this block did not watch, and the gap an audit walked through.
+   *
+   * Every test above asks whether A can reach B's row. None of them asked what A
+   * may write **in her own** — and the own-rows policy has no opinion on that:
+   * `using (id = auth.uid())` decides which row, never which column. The column
+   * privilege came from the table-level grant in M1, so it covered `plan`, and a
+   * PATCH to PostgREST with the anon key that ships in every bundle turned a
+   * free account into a Pro one.
+   *
+   * Note the shape: a refused **privilege** is an error, where a refused row is
+   * an empty result. Same distinction the `mp_accounts` block below relies on.
+   */
+  const refusedUpdate = async (patch: TablesUpdate<'practitioners'>) => {
+    const { error } = await asA.from('practitioners').update(patch).eq('id', idA)
+    return error
+  }
+
+  it('does not let a practitioner rewrite the columns the server owns', async () => {
+    expect(await refusedUpdate({ plan: 'pro' }), 'plan').not.toBeNull()
+    expect(await refusedUpdate({ slug: 'ana-elegida-a-mano' }), 'slug').not.toBeNull()
+    expect(await refusedUpdate({ email: 'otra@ejemplo.test' }), 'email').not.toBeNull()
+    expect(await refusedUpdate({ digest_sent_at: null }), 'digest_sent_at').not.toBeNull()
+
+    const { data } = await service
+      .from('practitioners')
+      .select('plan, slug, email')
+      .eq('id', idA)
+      .single()
+
+    expect(data?.plan).toBe('free')
+    expect(data?.slug).toMatch(/^ana-prueba(-\d+)?$/)
+    expect(data?.email).toBe(emailA)
+  })
+
+  it('still lets her write every column the app writes', async () => {
+    // The other direction, and it caught a real one: the first version of the
+    // column grants left `onboarded_at` out, because it was written against a
+    // branch where nothing wrote that column yet. Tightening too far does not
+    // fail at deploy — `app-tour.tsx` calls its action with `.catch(() => {})`,
+    // so the guided tour would simply have replayed on every load, forever,
+    // with nothing anywhere to say why.
+    //
+    // So this list is not "some fields": it is every column any function in
+    // `src/server/practitioners.ts` writes through the user's session, and it
+    // has to stay that way.
+    const { error } = await asA
+      .from('practitioners')
+      .update({
+        full_name: 'Ana Prueba',
+        discipline: 'psychopedagogy',
+        phone: '099 111 222',
+        calendar_privacy: 'initials',
+        onboarded_at: new Date().toISOString(),
+      })
+      .eq('id', idA)
+
+    expect(error).toBeNull()
   })
 
   it('does not let a practitioner write to another one', async () => {
