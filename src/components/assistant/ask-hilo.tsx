@@ -148,16 +148,20 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
           <MessageCircle className="size-[18px] text-violet" />
           Preguntale a Hilo
           {turns.length ? (
+            /* Icon only. The arrow says "start over" on its own, and the
+               words were the widest thing in a header that also has to hold the
+               title and the ✕. The label stays for anyone who cannot see it. */
             <button
               type="button"
               onClick={() => {
                 setTurns([])
                 inputRef.current?.focus()
               }}
-              className="ml-auto inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Empezar de nuevo"
+              title="Empezar de nuevo"
+              className="ml-auto inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
             >
-              <RotateCw className="size-3.5" />
-              Empezar de nuevo
+              <RotateCw className="size-4" />
             </button>
           ) : null}
         </CardTitle>
