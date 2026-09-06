@@ -184,42 +184,46 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
           <div
             ref={threadRef}
             aria-live="polite"
-            className={cn(
-              'space-y-2.5 overflow-y-auto',
-              fill ? 'min-h-0 flex-1' : 'max-h-[46vh]',
-            )}
+            className={cn('flex flex-col overflow-y-auto', fill ? 'min-h-0 flex-1' : 'max-h-[46vh]')}
           >
-            {turns.map((turn, index) =>
-              turn.role === 'user' ? (
-                <p
-                  key={index}
-                  className="ml-auto w-fit max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-[13.5px] leading-relaxed"
-                >
-                  {turn.content}
-                </p>
-              ) : (
-                <div key={index} className="space-y-2">
-                  {turn.content ? (
-                    <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap">
-                      {turn.content}
-                    </p>
-                  ) : null}
+            {/* `mt-auto`, not `justify-end`, and the difference is not cosmetic:
+                with `justify-end` a conversation taller than the panel has its
+                oldest messages pushed out of the top and no way to scroll back
+                to them. An auto margin collapses to nothing once the content
+                overflows, so it only does something while there is room. */}
+            <div className="mt-auto space-y-2.5">
+              {turns.map((turn, index) =>
+                turn.role === 'user' ? (
+                  <p
+                    key={index}
+                    className="ml-auto w-fit max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-[13.5px] leading-relaxed"
+                  >
+                    {turn.content}
+                  </p>
+                ) : (
+                  <div key={index} className="space-y-2">
+                    {turn.content ? (
+                      <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                        {turn.content}
+                      </p>
+                    ) : null}
 
-                  {!turn.content && asking && index === turns.length - 1 ? (
-                    <p className="text-[13px] text-muted-foreground">Pensando…</p>
-                  ) : null}
+                    {!turn.content && asking && index === turns.length - 1 ? (
+                      <p className="text-[13px] text-muted-foreground">Pensando…</p>
+                    ) : null}
 
-                  {/* Beside the answer, not instead of it: the answer above is
-                      real either way, it just did not come from the model. */}
-                  {turn.note ? (
-                    <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
-                      <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-                      <span>{turn.note}</span>
-                    </p>
-                  ) : null}
-                </div>
-              ),
-            )}
+                    {/* Beside the answer, not instead of it: the answer above is
+                        real either way, it just did not come from the model. */}
+                    {turn.note ? (
+                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
+                        <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+                        <span>{turn.note}</span>
+                      </p>
+                    ) : null}
+                  </div>
+                ),
+              )}
+            </div>
           </div>
         ) : null}
 
