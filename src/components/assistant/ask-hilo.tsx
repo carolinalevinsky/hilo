@@ -228,7 +228,11 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             event.preventDefault()
             void ask(question)
           }}
-          className="space-y-2"
+          // One box, and the controls live inside it — which is how every chat
+          // people already use is built, so it needs no learning. The border and
+          // the focus ring move from the field to the box; the field keeps the
+          // caret and gives up everything else.
+          className="rounded-xl border border-input bg-card px-3 py-2.5 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50"
         >
           <Input
             ref={inputRef}
@@ -249,7 +253,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             maxLength={500}
             disabled={asking}
             aria-label="Tu pregunta"
-            className="w-full"
+            className="h-auto w-full border-0 bg-transparent px-0 py-0 focus-visible:border-transparent focus-visible:ring-0"
           />
           {/* The controls go under the field, not beside it.
 
@@ -263,7 +267,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
               `ml-auto` rather than `justify-between`: the microphone renders
               nothing where the browser cannot listen, and the button still
               belongs on the right when it is the only one left. */}
-          <div className="flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2">
             {/* The same dictation as every note field, in the browser: the audio
                 never leaves the page, only the text does. Icon only — this box
                 is often used with a patient still in the room. */}

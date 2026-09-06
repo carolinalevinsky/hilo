@@ -128,7 +128,9 @@ export function DictateButton({
     return (
       <Button
         type="button"
-        variant={listening ? 'destructive' : 'outline'}
+        // Ghost, not outline: this one sits inside the box you type in, and a
+        // second border in there reads as a box within a box.
+        variant={listening ? 'destructive' : 'ghost'}
         size="icon"
         aria-label={listening ? 'Parar el dictado' : 'Dictar la pregunta'}
         className="shrink-0"
