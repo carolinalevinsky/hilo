@@ -129,15 +129,63 @@ export function assistantInstructions(discipline: string): string {
   ].join(' ')
 }
 
+/**
+ * How a patient is named to the model.
+ *
+ * The first name, and a surname initial **only** where two patients share a
+ * first name. The initial is not decoration: "¿cómo va Tomás?" answered about
+ * the other Tomás is a wrong clinical suggestion about a named child, which is
+ * exactly what rule 1 of the instruction block exists to prevent. Where there is
+ * no collision there is nothing to disambiguate, so nothing extra travels.
+ *
+ * This is the line that decides how much of a caseload leaves the country, and
+ * it read `patient.fullName` until an audit held it against the promise at the
+ * top of this file — which said first names, and had said so all along. The type
+ * still carries `fullName` because `offlineAnswer` uses it, and that answer is
+ * computed here and rendered in the practitioner's own browser: it never leaves.
+ */
+function rosterLabels(patients: AssistantPatient[]): Map<string, string> {
+  const seen = new Set<string>()
+  const shared = new Set<string>()
+
+  for (const patient of patients) {
+    const key = normalise(patient.firstName)
+    if (seen.has(key)) shared.add(key)
+    seen.add(key)
+  }
+
+  const labels = new Map<string, string>()
+
+  for (const patient of patients) {
+    const initial = shared.has(normalise(patient.firstName))
+      ? surnameInitial(patient.fullName)
+      : ''
+    labels.set(patient.id, initial ? `${patient.firstName} ${initial}` : patient.firstName)
+  }
+
+  return labels
+}
+
+/** "Tomás Pérez" → "P." Empty when there is only one name on the ficha. */
+function surnameInitial(fullName: string): string {
+  const surname = fullName.trim().split(/\s+/).filter(Boolean)[1]
+  return surname ? `${surname[0]!.toUpperCase()}.` : ''
+}
+
 /** The roster, as text. */
 export function assistantUserPrompt(context: AssistantContext, question: string): string {
+  const labels = rosterLabels(context.patients)
+
   const roster = context.patients.length
     ? context.patients
         .map((patient) => {
           const goals = patient.goals.length
             ? patient.goals.map((goal) => `${goal.title} ${goal.progress}%`).join('; ')
             : 'sin objetivos cargados'
-          return `- ${patient.fullName} (${patient.age ?? 'edad s/d'}): avance ${patient.averageProgress}%. Objetivos: ${goals}`
+          // The fallback is the plain first name — never the full one. If the
+          // label were ever missing, the safe answer is still less, not more.
+          const name = labels.get(patient.id) ?? patient.firstName
+          return `- ${name} (${patient.age ?? 'edad s/d'}): avance ${patient.averageProgress}%. Objetivos: ${goals}`
         })
         .join('\n')
     : '(todavía sin pacientes)'
