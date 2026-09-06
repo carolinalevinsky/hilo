@@ -165,11 +165,18 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             </button>
           ) : null}
         </CardTitle>
-        <p className="text-[12.5px] text-muted-foreground">
-          {turns.length
-            ? 'Se acuerda de esta charla. Cuando la cerrás, no queda guardada.'
-            : 'Sobre cualquier paciente o sobre tu práctica.'}
-        </p>
+        {/* Not in the panel: there the band should be a title and two icons,
+            and a second line of grey text under it is what made it read as a
+            form rather than as a chat. The card on Inicio keeps it — that one
+            is being seen for the first time, and it is where the promise that
+            nothing is written down still gets made. */}
+        {fill ? null : (
+          <p className="text-[12.5px] text-muted-foreground">
+            {turns.length
+              ? 'Se acuerda de esta charla. Cuando la cerrás, no queda guardada.'
+              : 'Sobre cualquier paciente o sobre tu práctica.'}
+          </p>
+        )}
       </CardHeader>
 
       <CardContent className={cn('space-y-3', fill && 'flex min-h-0 flex-1 flex-col')}>
