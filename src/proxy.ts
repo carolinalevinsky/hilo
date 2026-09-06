@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { AUTH_COOKIE_OPTIONS } from '@/lib/auth-cookie'
 import { publicConfig } from '@/lib/env'
 
 /**
@@ -73,6 +74,10 @@ export async function proxy(request: NextRequest) {
     publicConfig.NEXT_PUBLIC_SUPABASE_URL,
     publicConfig.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      // The same options as `getDb()`, from the same constant. This is the call
+      // that rewrites the cookie every hour when the token is refreshed, so if
+      // it disagreed with `getDb()` it would quietly undo it within the hour.
+      cookieOptions: AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet) => {
