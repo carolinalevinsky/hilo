@@ -191,7 +191,7 @@ export function AskHilo() {
             event.preventDefault()
             void ask(question)
           }}
-          className="flex gap-2"
+          className="space-y-2"
         >
           <Input
             ref={inputRef}
@@ -212,21 +212,34 @@ export function AskHilo() {
             maxLength={500}
             disabled={asking}
             aria-label="Tu pregunta"
-            className="min-w-0 flex-1"
+            className="w-full"
           />
-          {/* The same dictation as every note field, in the browser: the audio
-              never leaves the page, only the text does. Icon only — the panel is
-              narrow, and this box is often used with a patient still in the
-              room. Renders nothing where the browser cannot listen. */}
-          <DictateButton compact value={question} onText={setQuestion} />
-          {/* One row, always. Letting it wrap left the button alone at the left
-              edge of the floating panel, reading as an afterthought rather than
-              as the way to send — and the panel is narrow everywhere: it is a
-              dialog on a desktop and the whole screen on a phone. */}
-          <Button type="submit" disabled={asking || !question.trim()} className="shrink-0">
-            <Send className="size-4" />
-            {asking ? 'Pensando…' : 'Preguntar'}
-          </Button>
+          {/* The controls go under the field, not beside it.
+
+              Sharing one row with the button left the field about half the panel
+              wide — narrow enough that its own placeholder was cut off mid-word,
+              which is the one line telling a first-time user what to write here.
+              The panel is narrow everywhere: a dialog on a desktop, the whole
+              screen on a phone. The question is the long part, so it gets the
+              full width.
+
+              `ml-auto` rather than `justify-between`: the microphone renders
+              nothing where the browser cannot listen, and the button still
+              belongs on the right when it is the only one left. */}
+          <div className="flex items-center gap-2">
+            {/* The same dictation as every note field, in the browser: the audio
+                never leaves the page, only the text does. Icon only — this box
+                is often used with a patient still in the room. */}
+            <DictateButton compact value={question} onText={setQuestion} />
+            <Button
+              type="submit"
+              disabled={asking || !question.trim()}
+              className="ml-auto shrink-0"
+            >
+              <Send className="size-4" />
+              {asking ? 'Pensando…' : 'Preguntar'}
+            </Button>
+          </div>
         </form>
 
         {turns.length === 0 ? (
