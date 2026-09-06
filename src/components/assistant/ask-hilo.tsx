@@ -8,6 +8,7 @@ import { DictateButton } from '@/components/dictate-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { readSseStream } from '@/lib/sse-client'
+import { cn } from '@/lib/utils'
 
 /**
  * "Preguntale a Hilo", on the dashboard — v1 put it there
@@ -48,7 +49,14 @@ type Turn = {
   note?: string
 }
 
-export function AskHilo() {
+/**
+ * `fill` is the difference between the two places this lives: the card on Inicio
+ * sizes to its content and caps the thread so a long conversation does not push
+ * the rest of the dashboard off the screen, and the docked panel has a height of
+ * its own, so there the thread takes whatever is left between the header and the
+ * box you type in.
+ */
+export function AskHilo({ fill = false }: { fill?: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([])
   const [question, setQuestion] = useState('')
   const [asking, setAsking] = useState(false)
@@ -119,8 +127,10 @@ export function AskHilo() {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className={cn(fill && 'flex h-full flex-col border-0 bg-transparent shadow-none')}>
+      {/* Room for the panel's ✕, which floats over this corner. Without it the
+          close button lands on top of "Empezar de nuevo". */}
+      <CardHeader className={cn(fill && 'pr-10')}>
         <CardTitle className="flex items-center gap-2">
           <MessageCircle className="size-[18px] text-violet" />
           Preguntale a Hilo
@@ -145,12 +155,15 @@ export function AskHilo() {
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className={cn('space-y-3', fill && 'flex min-h-0 flex-1 flex-col')}>
         {turns.length ? (
           <div
             ref={threadRef}
             aria-live="polite"
-            className="max-h-[46vh] space-y-2.5 overflow-y-auto"
+            className={cn(
+              'space-y-2.5 overflow-y-auto',
+              fill ? 'min-h-0 flex-1' : 'max-h-[46vh]',
+            )}
           >
             {turns.map((turn, index) =>
               turn.role === 'user' ? (
