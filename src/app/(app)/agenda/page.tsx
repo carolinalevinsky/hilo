@@ -6,7 +6,7 @@ import { BookingChip } from '@/components/agenda/booking-chip'
 import { ConnectGoogle } from '@/components/agenda/connect-google'
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { SessionPanel } from '@/components/agenda/session-panel'
-import { WeekNav } from '@/components/agenda/week-nav'
+import { PeriodNav } from '@/components/period-nav'
 import { WeekViewSelect } from '@/components/agenda/week-view-select'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
@@ -196,12 +196,13 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   const weekView = params.vista === 'completa' ? 'completa' : 'laboral'
 
   const weekNavDesktop = (
-    <WeekNav
+    <PeriodNav
       prevHref={`/agenda?semana=${offset - 1}`}
       nextHref={`/agenda?semana=${offset + 1}`}
-      todayHref="/agenda"
+      resetHref="/agenda"
       label={weekLabel(dates)}
-      isCurrentWeek={offset === 0}
+      isCurrent={offset === 0}
+      resetLabel="Hoy"
     />
   )
 
