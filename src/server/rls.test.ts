@@ -119,6 +119,33 @@ beforeAll(async () => {
     title: 'Informe de avance',
     content: 'Cuerpo del informe de Bruno',
   })
+
+  // The three that had no fixture, and therefore no case below, and therefore
+  // policies nobody had ever watched work. They are asserted rather than fired
+  // and forgotten: an insert that quietly failed would make the read cases pass
+  // because the table is empty, not because RLS filtered — which is a green
+  // test that proves nothing. Same reasoning as the storage fixtures further
+  // down, and the same trap.
+  const { error: latecomers } = await service.from('payments').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    period: '2026-08',
+    amount: 1500,
+  })
+  expect(latecomers, 'the payments fixture itself failed').toBeNull()
+
+  const { error: bookingError } = await service.from('booking_requests').insert({
+    practitioner_id: idB,
+    name: 'Familia que le escribió a Bruno',
+    phone: '099 000 000',
+  })
+  expect(bookingError, 'the booking_requests fixture itself failed').toBeNull()
+
+  const { error: formatError } = await service.from('format_requests').insert({
+    practitioner_id: idB,
+    detail: 'Uno para presentar en el juzgado, con el motivo de derivación.',
+  })
+  expect(formatError, 'the format_requests fixture itself failed').toBeNull()
 }, 60_000)
 
 afterAll(async () => {
@@ -266,6 +293,16 @@ describe('the clinical tables', () => {
       // quota has something to count — but it is still one practitioner's
       // activity, and it gets the same case as everything else.
       'assistant_questions',
+      // What a family owes and has paid, per patient, per month. Not a clinical
+      // note, and still nobody else's business.
+      'payments',
+      // The phone number of a family that filled in a public form asking to be
+      // contacted. They gave it to one practitioner.
+      'booking_requests',
+      // The newest table in the schema, and the one this list existed to catch:
+      // its own test file only checks the Zod schema, so until this line the
+      // policy had never been watched from the outside.
+      'format_requests',
     ] as const) {
       const { data, error } = await asA.from(table).select('practitioner_id')
       expect(error, `${table} should read cleanly`).toBeNull()
@@ -288,11 +325,31 @@ describe('the clinical tables', () => {
     // The `with check` half of the policy. Without it a practitioner could
     // insert rows *into* someone else's record — invisible to them, and signed
     // with their name.
-    const { error } = await asA
+    //
+    // Four tables rather than one, because the consequence is different in each
+    // and none of them is theoretical: a patient nobody added, a payment against
+    // a family that never paid, a booking request in an inbox that answers real
+    // families, and a format request that arrives at OWNER_EMAIL under somebody
+    // else's name and discipline.
+    const planted = await asA
       .from('patients')
       .insert({ practitioner_id: idB, full_name: 'Paciente plantado' })
+    expect(planted.error, 'patients').not.toBeNull()
 
-    expect(error).not.toBeNull()
+    const payment = await asA
+      .from('payments')
+      .insert({ practitioner_id: idB, patient_id: patientB, period: '2026-08', amount: 1 })
+    expect(payment.error, 'payments').not.toBeNull()
+
+    const booking = await asA
+      .from('booking_requests')
+      .insert({ practitioner_id: idB, name: 'Reserva plantada', phone: '099 111 222' })
+    expect(booking.error, 'booking_requests').not.toBeNull()
+
+    const format = await asA
+      .from('format_requests')
+      .insert({ practitioner_id: idB, detail: 'Pedido plantado en la cuenta de Bruno.' })
+    expect(format.error, 'format_requests').not.toBeNull()
   })
 })
 
