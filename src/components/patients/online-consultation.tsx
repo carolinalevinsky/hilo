@@ -3,7 +3,11 @@
 import { Globe, MessageCircle, Video } from '@/components/icons'
 import { useActionState, useState } from 'react'
 
-import { openConsultationAction, saveVideoUrlAction } from '@/app/(app)/pacientes/actions'
+import {
+  openConsultationAction,
+  rotateRoomAction,
+  saveVideoUrlAction,
+} from '@/app/(app)/pacientes/actions'
 import { FormMessage } from '@/components/auth/form-message'
 import { Button } from '@/components/ui/button'
 import {
@@ -104,9 +108,15 @@ export function OnlineConsultation({
               </Button>
 
               <p className="text-xs leading-relaxed text-muted-foreground">
-                El link es siempre el mismo, así que la familia puede guardarlo. Se abre en
-                una pestaña nueva.
+                El link es siempre el mismo, así que la familia puede guardarlo. Se abre
+                en una pestaña nueva.
               </p>
+
+              {/* Y porque es siempre el mismo, quien lo tenga entra a todas las
+                  sesiones que vengan. Esto es la salida, y va acá abajo —
+                  chiquita, porque casi nunca hace falta, y presente, porque el
+                  día que haga falta no hay otra. */}
+              {videoUrl ? null : <RotateRoom patientId={patientId} />}
             </>
           ) : (
             // Created on request rather than on every ficha that loads: most
@@ -152,5 +162,59 @@ export function OnlineConsultation({
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/**
+ * Cambiar la sala por una nueva.
+ *
+ * Es lo único que saca de las sesiones a quien tenga el link viejo — una sala
+ * de `meet.jit.si` la abre cualquiera que tenga la URL, y esa URL se reenvía.
+ *
+ * En dos toques y no en uno. Lo que se rompe es el link que la familia tiene
+ * guardado, así que un dedo torpe cuesta un mensaje para mandar el nuevo; el
+ * mismo criterio que usa archivar un paciente, más liviano porque esto se
+ * arregla mandando un link y aquello no.
+ *
+ * No aparece cuando la profesional puso su propia sala: ahí la de Hilo no es la
+ * que se comparte, y ofrecer cambiarla sería ofrecer arreglar algo que no está
+ * roto.
+ */
+function RotateRoom({ patientId }: { patientId: string }) {
+  const [confirming, setConfirming] = useState(false)
+
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+      >
+        Cambiar el link de la sala
+      </button>
+    )
+  }
+
+  return (
+    <form action={rotateRoomAction} className="rounded-xl bg-muted px-3 py-3">
+      <input type="hidden" name="patientId" value={patientId} />
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        Se arma una sala nueva y <b>el link que tenga la familia deja de andar</b>.
+        Después hay que mandarles el nuevo.
+      </p>
+      <div className="mt-2.5 flex gap-2">
+        <Button type="submit" size="sm" variant="destructive">
+          Cambiar el link
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => setConfirming(false)}
+        >
+          Mejor no
+        </Button>
+      </div>
+    </form>
   )
 }

@@ -9,6 +9,7 @@ import {
   createPatient,
   ensurePatientRoom,
   removePatientPhoto,
+  rotatePatientRoom,
   savePatientPhoto,
   setPatientArchived,
   setPatientVideoUrl,
@@ -135,6 +136,18 @@ export async function openConsultationAction(formData: FormData) {
   const patientId = String(formData.get('patientId'))
 
   await ensurePatientRoom(user.id, patientId)
+  revalidatePath(`/pacientes/${patientId}`)
+}
+
+/**
+ * Una sala nueva, que es la única forma de sacar de la sesión a quien tenga el
+ * link viejo. Ver `rotatePatientRoom`.
+ */
+export async function rotateRoomAction(formData: FormData) {
+  const user = await requireUser()
+  const patientId = String(formData.get('patientId'))
+
+  await rotatePatientRoom(user.id, patientId)
   revalidatePath(`/pacientes/${patientId}`)
 }
 
