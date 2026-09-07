@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import type { TablesUpdate } from '@/lib/database.types'
 import {
+  anonClient,
   createTestPractitioner,
   deleteTestPractitioner,
   serviceClient,
@@ -744,6 +745,50 @@ describe('el refresh token de Google', () => {
 
     expect(stored?.refresh_token).toBe('1//refresh-token-secretisimo')
     expect(error ?? true).toBeTruthy()
+  })
+})
+
+describe('practitioner_by_slug', () => {
+  /**
+   * The one `security definer` function the public surface leans on, and the
+   * only thing standing between a stranger and the list of health professionals
+   * who use Hilo.
+   *
+   * It is reached through the service role — the booking page has no session,
+   * which is why the function exists at all — so nobody else needs EXECUTE. It
+   * was nonetheless callable by `anon` with the key that ships in every bundle,
+   * which turned a slug (generated from a name, so guessable) into a name, a
+   * discipline and a UUID.
+   *
+   * Both cases matter and the second is the one that bites: the revoke has to
+   * take EXECUTE away from PUBLIC, and `service_role` inherits from PUBLIC too.
+   * Getting the first half right and the second half wrong is a booking page
+   * that answers `permission denied` to every family.
+   */
+  it('cannot be called by a stranger holding the anon key', async () => {
+    const { error } = await anonClient().rpc('practitioner_by_slug', {
+      lookup_slug: 'ana-prueba',
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('cannot be called by a signed-in practitioner either', async () => {
+    const { error } = await asA.rpc('practitioner_by_slug', {
+      lookup_slug: 'ana-prueba',
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('still answers the booking page, which is what it is for', async () => {
+    // Through the service role, exactly as `practitionerBySlug` does it.
+    const { data, error } = await service.rpc('practitioner_by_slug', {
+      lookup_slug: 'ana-prueba',
+    })
+
+    expect(error).toBeNull()
+    expect(data?.[0]?.full_name).toBe('Ana Prueba')
   })
 })
 
