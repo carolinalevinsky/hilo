@@ -174,7 +174,19 @@ export async function pushAppointment(
   if (!appointment) return false
 
   const [{ data: patient }, { data: practitioner }] = await Promise.all([
-    db.from('patients').select('full_name').eq('id', appointment.patient_id).maybeSingle(),
+    // `.eq('practitioner_id', …)` además del id, como las otras cuatro consultas
+    // de este archivo. Hoy RLS ya lo acota y sin esto tampoco filtraba nada —
+    // pero es la única función del archivo que recibe `practitionerId` y no lo
+    // usa, y eso se vuelve una fuga el día que alguien la llame desde un
+    // contexto con clave de servicio: un cron de reconciliación que empuje a
+    // Google las citas pendientes de todas escribiría el nombre de un paciente
+    // ajeno en el calendario equivocado.
+    db
+      .from('patients')
+      .select('full_name')
+      .eq('id', appointment.patient_id)
+      .eq('practitioner_id', practitionerId)
+      .maybeSingle(),
     db
       .from('practitioners')
       .select('calendar_privacy')
