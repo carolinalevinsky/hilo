@@ -31,6 +31,34 @@ import { publicConfig } from '@/lib/env'
  * la hace cumplir el lint. Leer la dirección de una petición es trabajo de
  * transporte, y el transporte vive en esta capa.
  */
+/**
+ * Los hosts que pueden mandar. Todo lo demás cae en la variable.
+ *
+ * `x-forwarded-host` llega tal como venga: un pedido con `Host: ejemplo.com`
+ * hacía que la página dibujara el link de reservas apuntando ahí. No es
+ * explotable por un tercero —lo único que se arma es un link que se devuelve en
+ * la respuesta a ese mismo pedido, y el navegador de la víctima no falsifica su
+ * propio `Host`— así que esto no cierra un agujero abierto: cierra el que se
+ * abriría el día que alguien use `currentOrigin()` para armar el link de un
+ * correo, que es el clásico del envenenamiento de Host.
+ *
+ * `*.vercel.app` está adentro porque los previews cambian de nombre en cada
+ * despliegue y son justo el caso que esta función vino a resolver.
+ */
+function trusted(host: string): boolean {
+  const name = (host.split(':')[0] ?? '').toLowerCase()
+  if (!name) return false
+
+  if (name === 'localhost' || name === '127.0.0.1') return true
+  if (name === 'vercel.app' || name.endsWith('.vercel.app')) return true
+
+  try {
+    return name === new URL(publicConfig.NEXT_PUBLIC_APP_URL).hostname.toLowerCase()
+  } catch {
+    return false
+  }
+}
+
 export async function currentOrigin(): Promise<string> {
   const list = await headers()
 
@@ -42,6 +70,16 @@ export async function currentOrigin(): Promise<string> {
   if (!host) {
     // Sin encabezados no queda nada mejor que la variable. Pasa en un render
     // sin petición, que es justo el caso para el que la variable existe.
+    return publicConfig.NEXT_PUBLIC_APP_URL
+  }
+
+  if (!trusted(host)) {
+    // Ruidoso a propósito. Si esto aparece y no es un pedido con el encabezado
+    // falsificado, entonces `NEXT_PUBLIC_APP_URL` está mal cargada y los links
+    // de los correos —que salen de esa misma variable— también lo están. Antes
+    // eso era silencioso de un lado y correcto del otro, que es la peor
+    // combinación para darse cuenta.
+    console.warn('[origin] host no reconocido, uso NEXT_PUBLIC_APP_URL', { host })
     return publicConfig.NEXT_PUBLIC_APP_URL
   }
 
