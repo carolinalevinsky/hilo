@@ -1,3 +1,5 @@
+import { timingSafeEqual } from 'node:crypto'
+
 import { publicConfig, env } from '@/lib/env'
 import { DIGEST_BATCH_SIZE, digestRecipients, markDigestSent } from '@/server/digest'
 import { sendDigest } from '@/server/notifications'
@@ -25,9 +27,7 @@ import { sendDigest } from '@/server/notifications'
  * next run orders by that stamp, not because a cap implies a queue.
  */
 export async function GET(request: Request) {
-  const authorization = request.headers.get('authorization')
-
-  if (authorization !== `Bearer ${env.CRON_SECRET}`) {
+  if (!authorised(request.headers.get('authorization'))) {
     return Response.json({ error: 'no autorizado' }, { status: 401 })
   }
 
@@ -54,4 +54,29 @@ export async function GET(request: Request) {
     sent,
     capped: recipients.length >= DIGEST_BATCH_SIZE,
   })
+}
+
+/**
+ * El bearer del cron, comparado en tiempo constante.
+ *
+ * Era un `!==` sobre la cadena entera. En la práctica no era un ataque: medir
+ * diferencias de nanosegundos a través de la red, contra una función serverless
+ * que a veces arranca en frío, no es algo que nadie haga. Se cambia igual
+ * porque cuesta cuatro líneas y porque el patrón ya está escrito tres archivos
+ * más allá — `verifyWebhookSignature` en `mercadopago.ts` lo hace así desde el
+ * primer día, y dos formas distintas de comparar un secreto en la misma base de
+ * código es una invitación a copiar la peor.
+ *
+ * La comparación de largos va antes y por fuera: `timingSafeEqual` tira si los
+ * buffers no miden lo mismo, y el largo de un secreto no es lo que se está
+ * protegiendo.
+ */
+function authorised(header: string | null): boolean {
+  if (!header) return false
+
+  const expected = Buffer.from(`Bearer ${env.CRON_SECRET}`, 'utf8')
+  const received = Buffer.from(header, 'utf8')
+
+  if (expected.length !== received.length) return false
+  return timingSafeEqual(expected, received)
 }
