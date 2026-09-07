@@ -29,8 +29,52 @@ export const NewFormatRequest = z.object({
  * porque el servidor de correo tuvo un mal día es peor que un aviso que no
  * llega: el segundo se puede ver en la tabla, el primero no está en ningún lado.
  */
+/**
+ * Cuántos pedidos por hora. No es una cuota, es un freno.
+ *
+ * Cada pedido manda un correo a `OWNER_EMAIL`, así que sin tope alcanzaba con
+ * apretar el botón en un bucle para llenar esa casilla y gastar la cuota de
+ * Resend. Era la única superficie del sistema que mandaba correo sin ningún
+ * límite: `/api/reservas` cuenta filas por hora y el resumen quincenal manda en
+ * lotes acotados.
+ *
+ * Tres es holgado para lo que esto es —contar que falta un formato— y cierra el
+ * bucle. Quien de verdad necesite pedir cuatro cosas en una hora puede esperar,
+ * o escribir las cuatro en un pedido.
+ */
+export const FORMAT_REQUESTS_PER_HOUR = 3
+
+/** Se pidieron demasiados seguidos. Es una respuesta, no un error del programa. */
+export class TooManyFormatRequests extends Error {
+  constructor() {
+    super('Ya nos mandaste varios pedidos. Probá de nuevo en un rato.')
+    this.name = 'TooManyFormatRequests'
+  }
+}
+
+async function recentCount(practitionerId: string): Promise<number> {
+  const db = await getDb()
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+
+  const { count, error } = await db
+    .from('format_requests')
+    .select('id', { count: 'exact', head: true })
+    .eq('practitioner_id', practitionerId)
+    .gte('created_at', since)
+
+  if (error) throw error
+  return count ?? 0
+}
+
 export async function createFormatRequest(practitionerId: string, input: unknown) {
   const { detail } = NewFormatRequest.parse(input)
+
+  // Antes de escribir y antes del correo. Cuenta filas, como el de reservas, así
+  // que no hace falta ni Redis ni estado en memoria — que además no sobreviviría
+  // entre invocaciones de una función serverless.
+  if ((await recentCount(practitionerId)) >= FORMAT_REQUESTS_PER_HOUR) {
+    throw new TooManyFormatRequests()
+  }
 
   const db = await getDb()
   const { data, error } = await db
@@ -41,17 +85,4 @@ export async function createFormatRequest(practitionerId: string, input: unknown
 
   if (error) throw error
   return data
-}
-
-/** Los pedidos de esta profesional, del más nuevo al más viejo. */
-export async function listFormatRequests(practitionerId: string) {
-  const db = await getDb()
-  const { data, error } = await db
-    .from('format_requests')
-    .select('id, detail, created_at')
-    .eq('practitioner_id', practitionerId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data ?? []
 }

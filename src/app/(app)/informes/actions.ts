@@ -7,7 +7,7 @@ import { env } from '@/lib/env'
 import { formError, formOk, type FormState } from '@/lib/form-state'
 import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
-import { createFormatRequest } from '@/server/format-requests'
+import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
 import { sendFormatRequestNotification } from '@/server/notifications'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
@@ -102,11 +102,16 @@ export async function requestFormatAction(
   try {
     await createFormatRequest(user.id, { detail })
   } catch (error) {
+    // El tope es una respuesta y se dice con sus palabras; un fallo de Zod
+    // también. Cualquier otra cosa es un problema nuestro y no se le cuenta a
+    // quien está del otro lado.
     const message =
-      error && typeof error === 'object' && 'issues' in error
-        ? ((error as { issues: { message: string }[] }).issues[0]?.message ??
-          'Revisá lo que escribiste.')
-        : 'No pudimos guardar tu pedido. Probá de nuevo en un momento.'
+      error instanceof TooManyFormatRequests
+        ? error.message
+        : error && typeof error === 'object' && 'issues' in error
+          ? ((error as { issues: { message: string }[] }).issues[0]?.message ??
+            'Revisá lo que escribiste.')
+          : 'No pudimos guardar tu pedido. Probá de nuevo en un momento.'
 
     return formError(message, { detail })
   }
