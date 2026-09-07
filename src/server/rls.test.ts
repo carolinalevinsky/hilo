@@ -354,6 +354,47 @@ describe('the clinical tables', () => {
   })
 })
 
+describe('a child row pointing at somebody else’s patient', () => {
+  /**
+   * El hueco entre las dos defensas que había, y por qué se cerró en el esquema.
+   *
+   * La política de filas propias mira `practitioner_id`; la clave foránea mira
+   * que el paciente exista. Una fila con el `practitioner_id` de A y el
+   * `patient_id` de B pasaba las dos, y siete Server Actions escriben ese
+   * `patient_id` tal como llega del formulario.
+   *
+   * No filtraba nada —el lado de la lectura lo tapa RLS— pero ensucia
+   * estadísticas y cobros, y dependía de que nadie llamara esas lecturas con la
+   * clave de servicio. Ahora lo dice la base.
+   */
+  it('is refused by the database, not just by the policy', async () => {
+    const { error } = await service.from('sessions').insert({
+      practitioner_id: idA,
+      patient_id: patientB,
+      progress_note: 'La sesión de Ana sobre el paciente de Bruno',
+    })
+
+    // Con la clave de servicio, que saltea RLS por completo: lo que rechaza acá
+    // es la restricción, y ése es justamente el punto.
+    expect(error).not.toBeNull()
+    expect(error?.message ?? '').toContain('same_practitioner')
+  })
+
+  it('still lets a practitioner write about her own patient', async () => {
+    const { data: own } = await service
+      .from('patients')
+      .insert({ practitioner_id: idA, full_name: 'Paciente de Ana' })
+      .select()
+      .single()
+
+    const { error } = await service
+      .from('sessions')
+      .insert({ practitioner_id: idA, patient_id: own!.id })
+
+    expect(error).toBeNull()
+  })
+})
+
 describe('the materials library', () => {
   // `materials` is the only table in the schema whose policies are not the
   // standard one-liner, so it cannot ride along in `the clinical tables` above:
