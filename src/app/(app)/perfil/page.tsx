@@ -2,12 +2,14 @@ import type { Metadata } from 'next'
 
 import { signOutAction } from '@/app/(auth)/actions'
 import { disconnectGoogleAction } from '@/app/(app)/perfil/actions'
+import { listAuditLog } from '@/server/audit'
 import { findGoogleAccount } from '@/server/google'
 import { PageHeader } from '@/components/page-header'
 import { CalendarPrivacyForm } from '@/components/profile/calendar-privacy-form'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { auditPhrase, auditWhen } from '@/lib/audit-labels'
 import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Mi perfil · Hilo' }
@@ -33,9 +35,12 @@ const GOOGLE_RESULTS: Record<string, { ok: boolean; message: string }> = {
 
 export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>) {
   const { practitioner } = await currentSession()
-  const [google, params] = await Promise.all([
+  const [google, params, trail] = await Promise.all([
     findGoogleAccount(practitioner.id),
     searchParams,
+    // Las últimas treinta. El registro guarda todo; la pantalla muestra lo que
+    // alguien va a leer de verdad, y quien necesite ir más atrás tiene la tabla.
+    listAuditLog(practitioner.id, 30),
   ])
 
   const result =
@@ -120,6 +125,51 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           </div>
 
           <CalendarPrivacyForm value={practitioner.calendar_privacy} />
+        </CardContent>
+      </Card>
+
+      {/* ─── El registro de auditoría ────────────────────────────────────
+          Se escribía desde el primer día y no lo leía nadie: `listAuditLog` no
+          tenía llamador. Un registro que nadie puede mirar cumple la mitad de
+          lo que promete — la ley pide poder reconstruir qué se hizo con datos
+          de salud, y reconstruir implica que alguien lo vea.
+
+          Lo que no hace, y es una decisión: no registra lecturas. Anotar cada
+          apertura de ficha sería una fila por carga de pantalla, y eso pide
+          desduplicar por día y aceptar la escritura extra. Se puede agregar
+          después; lo que no se podía seguir haciendo era escribir para nadie. */}
+      <Card className="mb-5">
+        <CardHeader>
+          <CardTitle>Tu historial</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {trail.length === 0 ? (
+            <p className="text-[13px] text-muted-foreground">
+              Todavía no hay nada registrado. Acá van a aparecer los cambios que hagas
+              sobre pacientes, sesiones, informes y tu cuenta.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {trail.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 py-2"
+                >
+                  <span className="text-[13.5px]">
+                    {auditPhrase(entry.action, entry.entity)}
+                  </span>
+                  <span className="text-[12px] text-muted-foreground">
+                    {auditWhen(entry.created_at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+            Se guarda porque Hilo tiene datos de salud y hay que poder reconstruir qué
+            pasó con ellos. Nadie más que vos lo ve, y no se puede editar — ni por vos.
+          </p>
         </CardContent>
       </Card>
 

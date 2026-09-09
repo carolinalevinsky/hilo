@@ -6,6 +6,7 @@ import {
   parseFileDescription,
 } from '@/server/material-prompt'
 import { getMaterial, markMaterialAiWritten, readMaterialFile } from '@/server/materials'
+import { recordUsage } from '@/server/ai-usage'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -86,7 +87,14 @@ export async function POST(request: Request) {
   // and the tokens, and counting only what comes back would let somebody read
   // fifty files, keep none, and pay for all of them — the same reasoning that
   // makes `generateMaterialAction` save its row first.
-  if (!counted) await markMaterialAiWritten(user.id, material.id)
+  // `counted` mira `source === 'ai'`, que es lo que `markMaterialAiWritten`
+  // pone: sigue siendo el mismo criterio, sólo que ahora la unidad se anota
+  // aparte. Describir el mismo archivo dos veces es una corrección y no un
+  // material nuevo, así que la segunda vez no cuesta nada.
+  if (!counted) {
+    await markMaterialAiWritten(user.id, material.id)
+    await recordUsage(user.id, 'materials')
+  }
 
   const file = await readMaterialFile(material.file_path)
   if (!file) {

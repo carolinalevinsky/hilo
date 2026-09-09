@@ -105,7 +105,7 @@ beforeAll(async () => {
     analysis: 'Interpretación clínica de Bruno',
   })
 
-  await service.from('assistant_questions').insert({ practitioner_id: idB })
+  await service.from('ai_usage').insert({ practitioner_id: idB, kind: 'questions' })
 
   await service.from('session_plan_items').insert({
     practitioner_id: idB,
@@ -290,10 +290,10 @@ describe('the clinical tables', () => {
       // The prepared next session. It names a patient and quotes their goals,
       // so it is as clinical as the goals themselves.
       'session_plan_items',
-      // Holds no clinical text — only a timestamp, so the assistant's monthly
-      // quota has something to count — but it is still one practitioner's
-      // activity, and it gets the same case as everything else.
-      'assistant_questions',
+      // No guarda texto clínico —sólo qué se gastó y cuándo, para que la cuota
+      // tenga qué contar— pero sigue siendo la actividad de una profesional, y
+      // le toca el mismo caso que a todo lo demás.
+      'ai_usage',
       // What a family owes and has paid, per patient, per month. Not a clinical
       // note, and still nobody else's business.
       'payments',
@@ -830,6 +830,50 @@ describe('practitioner_by_slug', () => {
 
     expect(error).toBeNull()
     expect(data?.[0]?.full_name).toBe('Ana Prueba')
+  })
+})
+
+describe('the AI usage ledger', () => {
+  /**
+   * Mismo argumento que `audit_log`, del otro lado: **un contador que puede
+   * borrar quien está siendo contado no es un contador.**
+   *
+   * La cuota se contaba sobre `reports`, `assessments`, `materials` y una tabla
+   * `assistant_questions`, y las cuatro tienen política `for all`. Borrar un
+   * informe devolvía la unidad — con botón. `ai_usage` se lee y no se toca.
+   */
+  it('can be read by its owner and not by anyone else', async () => {
+    const { data, error } = await asA.from('ai_usage').select('practitioner_id')
+
+    expect(error).toBeNull()
+    expect(data).toEqual([])
+  })
+
+  it('cannot be written by a practitioner, not even her own', async () => {
+    const { error } = await asA
+      .from('ai_usage')
+      .insert({ practitioner_id: idA, kind: 'reports' })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('cannot be deleted by a practitioner, which is the whole point', async () => {
+    // Ésta es la que cierra el agujero: sin ella, gastar la cuota y devolvérsela
+    // es un DELETE por PostgREST con la anon key que viaja en el bundle.
+    const { data: mine } = await service
+      .from('ai_usage')
+      .insert({ practitioner_id: idA, kind: 'reports' })
+      .select()
+      .single()
+
+    const { error } = await asA.from('ai_usage').delete().eq('id', mine!.id)
+    expect(error).not.toBeNull()
+
+    const { count } = await service
+      .from('ai_usage')
+      .select('id', { count: 'exact', head: true })
+      .eq('id', mine!.id)
+    expect(count).toBe(1)
   })
 })
 

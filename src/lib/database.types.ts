@@ -34,6 +34,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          practitioner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          practitioner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          practitioner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           created_at: string
@@ -167,32 +196,6 @@ export type Database = {
           },
           {
             foreignKeyName: "assessments_practitioner_id_fkey"
-            columns: ["practitioner_id"]
-            isOneToOne: false
-            referencedRelation: "practitioners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      assistant_questions: {
-        Row: {
-          created_at: string
-          id: string
-          practitioner_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          practitioner_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          practitioner_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assistant_questions_practitioner_id_fkey"
             columns: ["practitioner_id"]
             isOneToOne: false
             referencedRelation: "practitioners"

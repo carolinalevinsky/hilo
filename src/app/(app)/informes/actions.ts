@@ -9,6 +9,7 @@ import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
 import { sendFormatRequestNotification } from '@/server/notifications'
+import { recordUsage } from '@/server/ai-usage'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
@@ -52,6 +53,10 @@ export async function createReportAction(
   }
 
   const context = await gatherReportContext(user.id, patientId)
+
+  // Una unidad por informe creado. Antes la contaba la fila de `reports`, que
+  // la profesional puede borrar; ahora la cuenta `ai_usage`, que no.
+  await recordUsage(user.id, 'reports')
 
   const report = await createReport(user.id, {
     patientId,

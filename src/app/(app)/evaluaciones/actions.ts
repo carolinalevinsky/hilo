@@ -17,6 +17,7 @@ import {
 } from '@/server/assessments'
 import { createGoal } from '@/server/goals'
 import { getPatient } from '@/server/patients'
+import { recordUsage } from '@/server/ai-usage'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -73,6 +74,10 @@ export async function createAssessmentAction(
 
   const patient = await getPatient(user.id, patientId)
   if (!patient) return formError('No encontramos ese paciente.')
+
+  // Ver el equivalente en `informes/actions.ts`: la unidad se anota donde se
+  // crea el documento, no donde se guarda la fila que antes hacía de contador.
+  await recordUsage(user.id, 'assessments')
 
   const assessment = await createAssessment(user.id, {
     patientId,

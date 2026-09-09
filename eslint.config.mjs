@@ -68,6 +68,7 @@ const SERVICE_DB_ALLOWED = [
   'src/server/audit.ts',       // a log the user can write is not a log
   'src/server/digest.ts',      // a cron run acts for every practitioner, as none
   'src/server/google.ts',      // google_accounts is using(false): no session reaches it
+  'src/server/ai-usage.ts',    // a counter the counted party can delete is not a counter
 ]
 
 const restrict = (options) => ({

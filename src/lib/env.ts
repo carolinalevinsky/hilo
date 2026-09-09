@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { mailFromAddress } from './mail-from'
+
 /**
  * Server-side environment variables, validated once when the app starts.
  *
@@ -22,7 +24,27 @@ const serverEnv = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   ANTHROPIC_API_KEY: z.string().min(1),
   RESEND_API_KEY: z.string().min(1),
-  MAIL_FROM: z.string().min(1),
+
+  /**
+   * Quién firma los correos. Se valida la dirección, no que la cadena exista.
+   *
+   * `z.email()` a secas no sirve porque la forma que documentamos lleva nombre
+   * visible —`Hilo <hola@hilo.uy>`— y `min(1)` no servía porque acepta
+   * cualquier cosa: el build arrancaba contento y después se caían todos los
+   * correos en silencio, incluido el de recuperar la contraseña. El porqué
+   * completo está en `mail-from.ts`.
+   *
+   * `.trim()` no es decorativo: guarda el valor ya recortado, así que el salto
+   * de línea que se cuela al pegarlo en Vercel no viaja hasta Resend.
+   */
+  MAIL_FROM: z
+    .string()
+    .trim()
+    .refine((value) => mailFromAddress(value) !== null, {
+      message:
+        'MAIL_FROM tiene que ser una dirección de correo, sola o con nombre visible: Hilo <hola@hilo.uy>',
+    }),
+
   CRON_SECRET: z.string().min(1),
   MP_WEBHOOK_SECRET: z.string().min(1),
 
