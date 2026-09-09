@@ -171,24 +171,62 @@ export class AiUnavailableError extends Error {
  * constraint entirely. It also means the practitioner watches the report being
  * written rather than staring at a spinner for thirty seconds — which, for a
  * document they are about to read carefully anyway, is the better experience.
+ *
+ * One question, one answer: this is what every flow that writes a *document*
+ * uses. A conversation goes through `streamChat`.
  */
 export async function* streamCompletion(
   taskInstructions: string,
   userPrompt: string,
   attachment?: Attachment,
 ): AsyncGenerator<string> {
+  yield* streamMessages(taskInstructions, [
+    {
+      role: 'user',
+      content: attachment
+        ? [attachmentBlock(attachment), { type: 'text', text: userPrompt }]
+        : userPrompt,
+    },
+  ])
+}
+
+/** A turn of a conversation, as the caller keeps it. Oldest first. */
+export type ChatMessage = {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+/**
+ * The same stream, with the turns that came before it.
+ *
+ * Only "Preguntale a Hilo" uses this, and only because the practitioner asked
+ * for a thread that remembers. The turns are the caller's — nothing here loads
+ * or stores them, and the server keeps no transcript. Whoever calls this is
+ * responsible for how many turns travel; see `HISTORY_LIMIT` in `assistant.ts`.
+ *
+ * No thinking blocks are carried back in the assistant turns. The model does not
+ * need its own reasoning replayed to continue a two-sentence answer, and sending
+ * it would mean holding it somewhere.
+ */
+export async function* streamChat(
+  taskInstructions: string,
+  messages: ChatMessage[],
+): AsyncGenerator<string> {
+  yield* streamMessages(
+    taskInstructions,
+    messages.map((message) => ({ role: message.role, content: message.content })),
+  )
+}
+
+async function* streamMessages(
+  taskInstructions: string,
+  messages: Anthropic.MessageParam[],
+): AsyncGenerator<string> {
   const stream = anthropic().messages.stream({
     model: MODEL,
     max_tokens: MAX_TOKENS,
     system: systemPrompt(taskInstructions),
-    messages: [
-      {
-        role: 'user',
-        content: attachment
-          ? [attachmentBlock(attachment), { type: 'text', text: userPrompt }]
-          : userPrompt,
-      },
-    ],
+    messages,
   })
 
   for await (const event of stream) {

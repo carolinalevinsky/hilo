@@ -1,11 +1,12 @@
 import { toDateInput } from '@/lib/dates'
-import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { AiUnavailableError, AI_MODEL, streamChat, type ChatMessage } from '@/server/ai'
 import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import {
-  assistantInstructions,
-  assistantUserPrompt,
+  assistantMessages,
+  assistantSystemPrompt,
   gatherAssistantContext,
   offlineAnswer,
+  parseHistory,
 } from '@/server/assistant'
 import { getUser } from '@/server/auth'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
@@ -21,6 +22,11 @@ import { sseResponse, type SseEvent } from '../sse'
  * monthly quota, then call Anthropic. v1's `/api/ia` had no authentication at
  * all (`legacy/api/ia.js:71`).
  *
+ * The other difference: this one is a conversation, so the request carries the
+ * turns before it. They come from the browser tab that has them — nothing here
+ * stores a transcript — and `parseHistory` is what decides how many of them are
+ * allowed through and in what shape.
+ *
  * The one thing this route does that the others do not: it answers even when the
  * AI cannot. An exhausted quota or a missing key returns the offline answer with
  * a 200 rather than an error, because `offlineAnswer` is a real answer computed
@@ -33,8 +39,12 @@ export async function POST(request: Request) {
     return Response.json({ error: 'No pudimos verificar tu sesión.' }, { status: 401 })
   }
 
-  const body = (await request.json().catch(() => ({}))) as { question?: string }
+  const body = (await request.json().catch(() => ({}))) as {
+    question?: string
+    history?: unknown
+  }
   const question = typeof body.question === 'string' ? body.question.trim() : ''
+  const history = parseHistory(body.history)
 
   if (!question) {
     return Response.json({ error: 'Escribí una pregunta.' }, { status: 400 })
@@ -68,8 +78,8 @@ export async function POST(request: Request) {
 
   return sseResponse(
     generate(
-      assistantInstructions(context.discipline),
-      assistantUserPrompt(context, question),
+      assistantSystemPrompt(context),
+      assistantMessages(history, question),
       fallback,
       () => releaseUsage(usageId),
     ),
@@ -78,14 +88,14 @@ export async function POST(request: Request) {
 
 async function* generate(
   instructions: string,
-  prompt: string,
+  messages: ChatMessage[],
   fallback: string,
   release: () => Promise<void>,
 ): AsyncGenerator<SseEvent> {
   let received = ''
 
   try {
-    for await (const chunk of streamCompletion(instructions, prompt)) {
+    for await (const chunk of streamChat(instructions, messages)) {
       received += chunk
       yield { event: 'delta', data: chunk }
     }
