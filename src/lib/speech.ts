@@ -6,9 +6,18 @@
  * names, a way to ask whether it exists that does not break hydration, and
  * types, because `SpeechRecognition` is not in the DOM lib.
  *
- * **Nothing here uploads audio.** The browser turns speech into text and only
- * text ever leaves the page. That is the property the session recorder is built
- * on; see `src/server/session-notes.ts`.
+ * **The audio does leave the page, and this file used to say it did not.**
+ * `SpeechRecognition` is server-based by default — MDN: "Your audio is sent to
+ * a web service for recognition processing, so it won't work offline" — and in
+ * Chrome that service is Google's. The API's `processLocally` opt-out defaults
+ * to `false` and `newRecognition` does not set it, so the default is what runs.
+ * The `network` case in `speechErrorMessage` was the evidence sitting in this
+ * same file.
+ *
+ * What is true is the narrower thing: only text reaches Hilo. The audio goes to
+ * the browser's own dictation service and never to a Hilo server. Both facts
+ * belong on screen together — see `src/components/sessions/record-session.tsx`,
+ * which is where the promise was printed and where the correction lives.
  *
  * Where the API is missing — Firefox, and most iOS browsers — callers render
  * nothing and the practitioner uses the microphone on their own keyboard, which
