@@ -41,6 +41,25 @@ async function authCookies(context: BrowserContext) {
   return all.filter((cookie) => cookie.name.includes('auth-token'))
 }
 
+/** La sesión que hay guardada en el navegador, decodificada. */
+async function readSession(context: BrowserContext) {
+  const cookies = await authCookies(context)
+  expect(cookies.length, 'no había cookie de sesión').toBeGreaterThan(0)
+
+  // Los trozos se concatenan en orden por el sufijo `.0`, `.1`, … antes de decodificar.
+  const ordered = [...cookies].sort((a, b) => a.name.localeCompare(b.name))
+  const raw = ordered.map((cookie) => cookie.value).join('')
+  const payload = raw.startsWith('base64-') ? raw.slice('base64-'.length) : raw
+  return {
+    ordered,
+    session: JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as {
+      expires_at: number
+      access_token: string
+      refresh_token: string
+    },
+  }
+}
+
 /**
  * Adelanta el reloj de la sesión sin esperar una hora.
  *
@@ -49,14 +68,7 @@ async function authCookies(context: BrowserContext) {
  * —que sigue siendo válido—, que es exactamente lo que pasa al otro día.
  */
 async function expireAccessToken(context: BrowserContext) {
-  const cookies = await authCookies(context)
-  expect(cookies.length, 'no había cookie de sesión para vencer').toBeGreaterThan(0)
-
-  // Los trozos se concatenan en orden por el sufijo `.0`, `.1`, … antes de decodificar.
-  const ordered = [...cookies].sort((a, b) => a.name.localeCompare(b.name))
-  const raw = ordered.map((cookie) => cookie.value).join('')
-  const payload = raw.startsWith('base64-') ? raw.slice('base64-'.length) : raw
-  const session = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'))
+  const { ordered, session } = await readSession(context)
 
   session.expires_at = Math.floor(Date.now() / 1000) - 60
   // Y un token que el servidor de Auth rechaza de verdad. Mover sólo la fecha no
@@ -117,35 +129,43 @@ test('entrar una vez alcanza: la sesión sobrevive al cierre del navegador y al 
     await expect(page).toHaveURL(/\/inicio/)
   })
 
-  await test.step('con el token vencido, entrar por la raíz también sigue adentro', async () => {
-    await expireAccessToken(context)
-
-    // La raíz es lo que se abre al escribir el dominio o tocar un favorito, y
-    // el proxy la redirige a /inicio. Si esa redirección pierde la cookie
-    // renovada, acá se cae a /entrar y hay que escribir la contraseña de nuevo.
-    await page.goto('/')
-    await expect(page).toHaveURL(/\/inicio/)
-
-    // Y la prueba de que no fue de casualidad: la sesión sigue viva después.
-    await page.goto('/pacientes')
-    await expect(page).toHaveURL(/\/pacientes/)
-  })
-
   await test.step('el redirect de la raíz escribe la cookie renovada', async () => {
     await expireAccessToken(context)
 
-    // Sin seguir el redirect, para poder mirar la respuesta que el proxy
-    // realmente devuelve. Si renovó el token y no lo escribió acá, el navegador
-    // se queda con el refresh token viejo —ya gastado— y la próxima renovación
-    // que caiga fuera de la ventana de reúso tira la sesión abajo.
-    const response = await page.request.get('/', { maxRedirects: 0 })
-    expect(response.status()).toBe(307)
+    // La raíz es lo que se abre al escribir el dominio o tocar un favorito, y
+    // el proxy la redirige a /inicio renovando el token por el camino.
+    const final = await page.goto('/')
+    await expect(page).toHaveURL(/\/inicio/)
 
-    const headers = await response.headersArray()
-    const setCookie = headers.filter((h) => h.name.toLowerCase() === 'set-cookie')
+    /**
+     * Y acá está la aserción que importa, sobre el 307 en sí y no sobre dónde
+     * terminamos.
+     *
+     * Llegar a /inicio no prueba nada, y es justamente lo que engaña: aunque el
+     * redirect tire la cookie renovada, Supabase tolera reusar el refresh token
+     * viejo unos segundos, así que la petición siguiente —la de /inicio, que no
+     * es un redirect— renueva de nuevo y guarda bien. La pantalla carga igual y
+     * el token del navegador igual terminó cambiando. Las dos formas obvias de
+     * mirarlo dan verde con el bug puesto; se comprobó.
+     *
+     * Lo único que separa un caso del otro es si *esta* respuesta trae la
+     * cookie. Si no la trae, el navegador se queda con el token que el servidor
+     * ya gastó, y la primera renovación que caiga fuera de esa ventana de
+     * gracia tira la sesión abajo: contraseña de nuevo.
+     */
+    const redirect = await final?.request().redirectedFrom()?.response()
+    expect(redirect?.status(), 'la raíz no redirigió').toBe(307)
+
+    const headers = (await redirect!.headersArray()).filter(
+      (header) => header.name.toLowerCase() === 'set-cookie',
+    )
     expect(
-      setCookie.map((h) => h.value).join(' | '),
+      headers.map((header) => header.value).join(' | '),
       'el redirect renovó el token pero no escribió la cookie',
     ).toContain('auth-token')
+
+    // Y la sesión sigue viva después, que es lo que se ve desde afuera.
+    await page.goto('/pacientes')
+    await expect(page).toHaveURL(/\/pacientes/)
   })
 })
