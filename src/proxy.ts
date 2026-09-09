@@ -67,6 +67,31 @@ function isPublic(pathname: string) {
   )
 }
 
+/**
+ * Un redirect que se lleva puesta la sesión recién renovada.
+ *
+ * `NextResponse.redirect()` construye una respuesta nueva y vacía: las cookies
+ * que `setAll` escribió más arriba viven en *otra* respuesta y se pierden si no
+ * se copian acá. El navegador se queda entonces con el refresh token viejo, que
+ * el servidor ya gastó al renovar.
+ *
+ * Supabase tolera reusar ese token durante unos segundos, así que el error se
+ * esconde: casi siempre la próxima petición vuelve a renovar y todo sigue. Casi.
+ * Cuando la ventana se pasa —una red lenta, una pestaña que quedó abierta, dos
+ * pedidos a la vez— la sesión se cae y hay que escribir la contraseña de nuevo.
+ *
+ * Y esto pasa justo en el camino más común que existe: abrir el dominio pelado,
+ * que es lo que hace un favorito. El token de acceso dura una hora, así que
+ * siempre está vencido cuando alguien abre Hilo a la mañana.
+ */
+function redirectKeepingSession(url: URL, carrying: NextResponse) {
+  const redirect = NextResponse.redirect(url)
+  for (const cookie of carrying.cookies.getAll()) {
+    redirect.cookies.set(cookie)
+  }
+  return redirect
+}
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
@@ -106,14 +131,14 @@ export async function proxy(request: NextRequest) {
     url.pathname = '/entrar'
     // So that signing in lands where they were headed.
     url.searchParams.set('volver', pathname)
-    return NextResponse.redirect(url)
+    return redirectKeepingSession(url, response)
   }
 
   if (user && (pathname === '/entrar' || pathname === '/crear-cuenta' || pathname === '/')) {
     const url = request.nextUrl.clone()
     url.pathname = '/inicio'
     url.search = ''
-    return NextResponse.redirect(url)
+    return redirectKeepingSession(url, response)
   }
 
   return response

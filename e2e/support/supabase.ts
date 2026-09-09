@@ -37,6 +37,38 @@ export function uniqueEmail(prefix: string) {
 }
 
 /**
+ * An account that already exists and is already confirmed, created without the
+ * browser.
+ *
+ * Only for tests whose subject is *not* the sign-up screen — the session test
+ * needs somebody to sign in as, and driving four fields and a checkbox to get
+ * there would make it fail for reasons that have nothing to do with sessions.
+ * `critical-path.spec.ts` is the one that signs up through the UI, on purpose.
+ *
+ * The metadata keys are the ones the sign-up trigger reads, so the practitioner
+ * row appears exactly as it would have.
+ */
+export async function createConfirmedUser(input: {
+  email: string
+  password: string
+  fullName: string
+  discipline: string
+}) {
+  const { url, serviceKey } = localConfig()
+  const admin = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  const { error } = await admin.auth.admin.createUser({
+    email: input.email,
+    password: input.password,
+    email_confirm: true,
+    user_metadata: { full_name: input.fullName, discipline: input.discipline },
+  })
+  if (error) throw error
+}
+
+/**
  * Removes the account the test created, and with it every row underneath.
  *
  * Never throws. This runs in `afterAll`, where a failure would replace the real

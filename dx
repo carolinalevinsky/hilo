@@ -26,6 +26,45 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE="hilo-dev:latest"
 
+# Los directorios de build, fuera del alcance de iCloud.
+#
+# El repo vive adentro de ~/Documents, que iCloud sincroniza. iCloud no entiende
+# un directorio que cambia miles de veces por minuto: cuando dos escrituras se le
+# cruzan no elige, deja las dos, y la segunda queda al lado como "archivo 2.ext".
+#
+# Eso rompe el build de verdad, no es ruido cosmético. `.next/types/**/*.ts` está
+# incluido en el tsconfig, así que un `cache-life.d 2.ts` es un archivo de tipos
+# que tsc abre y no entiende; y un `BUILD_ID 2` al lado del `BUILD_ID` deja al
+# servidor sin saber cuál es el build. Se pierde una tarde buscándolo en el
+# código, porque el código está bien.
+#
+# La marca hay que ponerla ANTES de que algo escriba adentro —por eso los
+# directorios se crean acá vacíos— y en cada corrida, porque un `rm -rf .next` se
+# lleva puesta la marca junto con el directorio.
+#
+# `#P` no es un comentario: es parte del nombre del atributo, y significa que no
+# se copia si copiás el directorio a otro lado.
+if command -v xattr >/dev/null 2>&1; then
+  for dir in .next .next-e2e node_modules test-results playwright-report; do
+    mkdir -p "$REPO/$dir"
+    xattr -w 'com.apple.fileprovider.ignore#P' 1 "$REPO/$dir" 2>/dev/null || true
+  done
+
+  # Y las copias que ya quedaron de antes, que la marca no borra.
+  #
+  # Sólo adentro de estos directorios, y `node_modules` no está: son todos
+  # descartables, así que acá un falso positivo no cuesta nada, mientras que el
+  # mismo barrido sobre el repo entero podría llevarse un "Informe 2.pdf" tuyo
+  # que se llama así porque vos lo llamaste así.
+  leftovers=$(find "$REPO/.next" "$REPO/.next-e2e" "$REPO/test-results" \
+    "$REPO/playwright-report" \
+    \( -name '* [0-9]' -o -name '* [0-9].*' \) -print 2>/dev/null || true)
+  if [ -n "$leftovers" ]; then
+    echo "iCloud dejó $(printf '%s\n' "$leftovers" | wc -l | tr -d ' ') copias de conflicto en los directorios de build. Las borro." >&2
+    printf '%s\n' "$leftovers" | while IFS= read -r stray; do rm -rf "$stray"; done
+  fi
+fi
+
 if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   echo "Falta la imagen $IMAGE. La construyo..." >&2
   docker build -f "$REPO/docker/Dockerfile.dev" -t "$IMAGE" "$REPO/docker"
