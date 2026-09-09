@@ -13,6 +13,7 @@ import {
   saveMaterialFile,
   updateMaterial,
 } from '@/server/materials'
+import { recordUsage } from '@/server/ai-usage'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -131,6 +132,11 @@ export async function generateMaterialAction(
     if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status))
     throw error
   }
+
+  // Una unidad por material generado con IA. Escribir uno a mano sigue sin
+  // costar nada — esta línea está acá y no dentro de `createMaterial`, que es
+  // también el camino del formulario.
+  await recordUsage(user.id, 'materials')
 
   const ageRange = String(formData.get('ageRange') ?? '').trim()
   let material

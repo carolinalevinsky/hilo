@@ -1,4 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { recordUsage } from '@/server/ai-usage'
 import { getUser } from '@/server/auth'
 import { getPatient } from '@/server/patients'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
@@ -73,6 +74,13 @@ export async function POST(request: Request) {
     }
     throw error
   }
+
+  // Esta ruta pedía la cuota de `questions` y no gastaba ninguna: el comentario
+  // de arriba decía que un borrador de sesión consume una allowance y era falso
+  // — el contador vivía en las filas que cada camino creaba, y éste no crea
+  // ninguna. Con el registro aparte, anotarlo es una línea y el comentario pasa
+  // a ser cierto.
+  await recordUsage(user.id, 'questions')
 
   return sseResponse(
     generate(

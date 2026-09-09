@@ -20,27 +20,6 @@ export type PlanId = keyof typeof PLAN_LIMITS
 /** The four things that cost an Anthropic call. */
 export type QuotaKind = 'reports' | 'assessments' | 'questions' | 'materials'
 
-/**
- * Three of the four are "every row this practitioner made this month".
- *
- * `materials` is not, which is why it is missing here and counted on its own
- * below: that table also holds materials typed by hand, and writing one must
- * never consume an allowance that exists to cap spending at Anthropic. It is
- * also the reason this is a fourth kind rather than a share of `questions` —
- * generating ten activities on a Sunday should not leave a practitioner without
- * the assistant on Monday.
- */
-const TABLE: Record<
-  Exclude<QuotaKind, 'materials'>,
-  'reports' | 'assessments' | 'assistant_questions'
-> = {
-  reports: 'reports',
-  assessments: 'assessments',
-  // A question leaves no document behind, so it is counted by a row that exists
-  // only to be counted. See the migration for why the text is not in it.
-  questions: 'assistant_questions',
-}
-
 export function planLimits(plan: string) {
   return PLAN_LIMITS[plan as PlanId] ?? PLAN_LIMITS.free
 }
@@ -53,38 +32,36 @@ function startOfMonth(): string {
 }
 
 /**
- * How many of these this practitioner has created in the current calendar month.
+ * Cuántas de estas gastó esta profesional en el mes en curso.
  *
- * `count(*)` over an index, not a counter column. A counter is a second copy of
- * the truth that drifts — and the drift is always found at the worst moment,
- * when someone is either blocked from a report they paid for or handed one they
- * should not have been.
+ * `count(*)` sobre un índice y no una columna contador, que es lo que decía este
+ * archivo desde el principio y sigue siendo cierto: un contador es una segunda
+ * copia de la verdad y se desincroniza, y la desincronización siempre aparece en
+ * el peor momento — cuando a alguien se le niega un informe que pagó, o se le
+ * entrega uno que no.
+ *
+ * Lo que cambió es **sobre qué** se cuenta. Antes eran las filas que el consumo
+ * produce: los informes, las evaluaciones, los materiales con `source = 'ai'` y
+ * una tabla `assistant_questions` que existía sólo para esto. Las cuatro tienen
+ * política `for all`, así que borrar un informe devolvía la cuota — con botón,
+ * incluso. Ahora se cuenta `ai_usage`, que la usuaria lee y no toca.
+ *
+ * La lectura sigue yendo por `getDb()`: la tabla tiene política de filas propias
+ * para `select`, así que RLS alcanza y esto no necesita la clave de servicio.
+ * La escritura sí, y vive sola en `src/server/ai-usage.ts`.
  */
 export async function countThisMonth(
   practitionerId: string,
   kind: QuotaKind,
 ): Promise<number> {
   const db = await getDb()
-  const since = startOfMonth()
-
-  if (kind === 'materials') {
-    const { count, error } = await db
-      .from('materials')
-      .select('id', { count: 'exact', head: true })
-      .eq('practitioner_id', practitionerId)
-      // The clause that keeps a hand-written material free.
-      .eq('source', 'ai')
-      .gte('created_at', since)
-
-    if (error) throw error
-    return count ?? 0
-  }
 
   const { count, error } = await db
-    .from(TABLE[kind])
+    .from('ai_usage')
     .select('id', { count: 'exact', head: true })
     .eq('practitioner_id', practitionerId)
-    .gte('created_at', since)
+    .eq('kind', kind)
+    .gte('created_at', startOfMonth())
 
   if (error) throw error
   return count ?? 0

@@ -1,12 +1,11 @@
 import { toDateInput } from '@/lib/dates'
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import {
   assistantInstructions,
   assistantUserPrompt,
   gatherAssistantContext,
   offlineAnswer,
-  questionReleaser,
-  recordQuestion,
 } from '@/server/assistant'
 import { getUser } from '@/server/auth'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
@@ -63,15 +62,16 @@ export async function POST(request: Request) {
     throw error
   }
 
-  const questionId = await recordQuestion(user.id)
-  const release = await questionReleaser(user.id, questionId)
+  // Se anota antes de llamar, como todas. Si no llega nada se devuelve — ver
+  // por qué en `src/server/ai-usage.ts`.
+  const usageId = await recordUsage(user.id, 'questions')
 
   return sseResponse(
     generate(
       assistantInstructions(context.discipline),
       assistantUserPrompt(context, question),
       fallback,
-      release,
+      () => releaseUsage(usageId),
     ),
   )
 }

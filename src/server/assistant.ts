@@ -277,59 +277,6 @@ export function offlineAnswer(context: AssistantContext, question: string): stri
     : 'Todavía no tenés pacientes cargados. Agregá el primero y te cuento cómo viene, qué trabajar y con qué material.'
 }
 
-/**
- * One row, so the question counts against the monthly quota.
- *
- * Written *before* the Anthropic call, like every other quota in this codebase —
- * counting after is a bill for something the practitioner was not allowed to
- * have, and it is what lets a burst of parallel questions walk past the limit.
- */
-export async function recordQuestion(practitionerId: string): Promise<string | null> {
-  const db = await getDb()
-
-  const { data, error } = await db
-    .from('assistant_questions')
-    .insert({ practitioner_id: practitionerId })
-    .select('id')
-    .single()
-
-  if (error) throw error
-  return data?.id ?? null
-}
-
-/**
- * Give the question back when Anthropic produced nothing.
- *
- * The count has to be taken before the call, but a question that fell through to
- * `offlineAnswer` did not cost one — and with no API key configured *every*
- * question would fall through, so a practitioner would burn a month's allowance
- * on answers this app computed itself. Released only when nothing arrived: a
- * truncated answer is still an answer and still cost tokens.
- *
- * Returns the release *function* rather than doing the work, and resolves the
- * database client now, because the caller runs it from inside a stream — after
- * the response has been returned and the request scope that owns the session
- * cookie is gone.
- */
-export async function questionReleaser(
-  practitionerId: string,
-  questionId: string | null,
-): Promise<() => Promise<void>> {
-  if (!questionId) return async () => {}
-
-  const db = await getDb()
-
-  return async () => {
-    const { error } = await db
-      .from('assistant_questions')
-      .delete()
-      .eq('id', questionId)
-      .eq('practitioner_id', practitionerId)
-
-    if (error) console.error('[assistant] no se pudo devolver la pregunta', { questionId, error })
-  }
-}
-
 function firstName(fullName: string): string {
   return fullName.trim().split(/\s+/)[0] ?? fullName
 }
