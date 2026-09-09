@@ -95,6 +95,17 @@ export function SignInForm({ back }: { back?: string }) {
           ref={rememberRef}
           type="checkbox"
           name="recordar"
+          /**
+           * Tildado de entrada. v1 lo tenía apagado y esto era paridad fiel,
+           * pero apagado significa que nadie escribe su correo dos veces: lo
+           * escribe siempre, porque la casilla que lo evitaría hay que
+           * descubrirla y tildarla primero.
+           *
+           * Lo que guarda es la dirección de quien la escribe, en su propio
+           * dispositivo — lo mismo que el autocompletado del navegador ya
+           * guarda. Nunca la contraseña, y nada de un paciente.
+           */
+          defaultChecked
           className="size-4 accent-violet"
         />
         Recordar mi correo en este dispositivo
