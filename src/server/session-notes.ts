@@ -9,17 +9,21 @@
  *
  * ─── What is recorded, and what leaves ─────────────────────────────────────
  *
- * The browser turns speech into text on its own — the same
- * `SpeechRecognition` the dictation button already uses. **No audio is uploaded,
- * stored, or sent anywhere**, and what reaches this module is text.
+ * What reaches this module is text, and no audio is ever uploaded to or stored
+ * by Hilo. That much was always true.
  *
- * That is a deliberate limit, not a shortcut. Audio of a therapy session with a
- * child is the most sensitive thing this product could hold; uploading it would
- * mean a new processor, a retention policy, and a line in the privacy notice.
- * Speech-to-text in the browser gets the same result — a written record the
- * practitioner reviews — without any of that. If real audio transcription is
- * ever wanted, it is a decision to take deliberately, and this file is where the
- * consequences start.
+ * What this block used to also claim — that the audio is not sent anywhere at
+ * all — was not. The browser's `SpeechRecognition` is server-based by default
+ * and streams the audio to its own dictation service, Google's in Chrome. See
+ * `src/lib/speech.ts`. So the processor, the retention policy and the line in
+ * the privacy notice that this comment said had been avoided are, in fact,
+ * owed — the decision was taken by the default value of a property nobody
+ * set, which is the worst way to take it.
+ *
+ * Audio of a therapy session with a child is the most sensitive thing this
+ * product touches. Until `processLocally` is turned on and proven, the screen
+ * that offers the recording says where the audio goes, and the privacy notice
+ * says it too.
  *
  * The draft is a draft. It goes into the field, the practitioner edits it, and
  * nothing is saved until they press the button — same as every other AI output

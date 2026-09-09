@@ -20,12 +20,30 @@ import {
  * and press stop at the end. What the browser heard becomes the session record,
  * in the field, for you to fix and save.
  *
- * ─── The audio never leaves this page ──────────────────────────────────────
+ * ─── Where the audio actually goes ─────────────────────────────────────────
  *
- * The browser turns speech into text itself; only the text is posted. That is
- * the whole reason this feature could be built at all — uploading audio of a
- * session with a child would mean a new processor, a retention policy and a new
- * line in the privacy notice, none of which this button is entitled to decide.
+ * This block used to say the audio never left the page. It was wrong, and the
+ * correction is the reason to read the rest of it carefully.
+ *
+ * `SpeechRecognition` does not transcribe on the device by default. MDN: "By
+ * default, using speech recognition on a web page involves a server-based
+ * recognition engine. Your audio is sent to a web service for recognition
+ * processing, so it won't work offline." In Chrome that web service is Google's.
+ * The tell was here all along — `speechErrorMessage` has a `network` case
+ * saying dictation needs the internet, which on-device recognition would not.
+ *
+ * So audio of a therapy session with a child reaches a third party that is not
+ * Hilo and is not in the privacy notice as a processor of it. Hilo itself still
+ * only ever receives and stores text — that part was true — but "the audio does
+ * not leave this device" was a promise this product could not keep, and it was
+ * printed under the button.
+ *
+ * `processLocally = true` (Chrome 139+) is the switch that would make the old
+ * sentence true. It is not flipped here yet: it needs a language pack the user
+ * may not have, `available()` crashes the renderer in current Chromium
+ * (crbug 444393111), and silently falling back to the server engine would put
+ * the same false promise back on the screen. Until that is worked out, the copy
+ * below says what actually happens.
  *
  * Nothing is saved automatically. The draft lands in the field and the
  * practitioner presses "Guardar sesión", the same as if they had typed it.
@@ -226,7 +244,7 @@ export function RecordSession({
       <p className="mt-2 text-[12px] text-muted-foreground">
         {state === 'recording'
           ? 'Estoy escuchando. Dejá el teléfono sobre la mesa y seguí con la sesión.'
-          : 'Grabás y Hilo arma el registro solo. El audio no sale de este dispositivo: se convierte en texto acá mismo.'}
+          : 'Grabás y Hilo arma el registro solo. Para pasar la voz a texto, el navegador manda el audio a su servicio de dictado (en Chrome, el de Google). Hilo recibe y guarda solo el texto.'}
       </p>
 
       {note ? (

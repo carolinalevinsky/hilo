@@ -46,11 +46,20 @@ export default function PrivacyPage() {
       <p>
         <b>Archivos enviados a la IA.</b> Al subir un material propio (un PDF o una imagen)
         y pedir que Hilo lo describa, ese archivo se envía al proveedor de IA para poder
-        leerlo. Es el único caso en que un archivo sale del servidor: en todo lo demás solo
-        viaja texto. La pantalla de carga lo advierte antes de elegir el archivo y
+        leerlo. La pantalla de carga lo advierte antes de elegir el archivo y
         recomienda que no contenga datos de ningún paciente. La descripción que devuelve la
         IA queda como borrador editable y no se guarda hasta que el/la profesional la
         confirma.
+      </p>
+      <p>
+        <b>Dictado y grabación de sesiones.</b> Los botones de dictar y de grabar una sesión
+        usan el reconocimiento de voz del propio navegador. Para convertir la voz en texto,
+        el navegador envía el audio a su servicio de dictado —en Chrome, el de Google; en
+        Safari, el de Apple— y devuelve el texto. Ese audio no pasa por los servidores de
+        Hilo ni queda guardado en Hilo: lo que se recibe y se guarda es únicamente el texto,
+        y sólo cuando el/la profesional lo confirma. Si preferís que el audio de una sesión
+        no salga del dispositivo, escribí la nota a mano o usá el dictado del teclado de tu
+        teléfono, que procesa la voz en el propio equipo.
       </p>
       <p>
         <b>Dónde se guardan y cómo se protegen.</b> Los datos se almacenan en servidores con

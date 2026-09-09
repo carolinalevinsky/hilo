@@ -272,9 +272,10 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
               nothing where the browser cannot listen, and the button still
               belongs on the right when it is the only one left. */}
           <div className="mt-2 flex items-center gap-2">
-            {/* The same dictation as every note field, in the browser: the audio
-                never leaves the page, only the text does. Icon only — this box
-                is often used with a patient still in the room. */}
+            {/* The same dictation as every note field. The audio goes to the
+                browser's dictation service, not to Hilo — see
+                `src/lib/speech.ts`. Icon only: this box is often used with a
+                patient still in the room. */}
             <DictateButton compact value={question} onText={setQuestion} />
             <Button
               type="submit"
