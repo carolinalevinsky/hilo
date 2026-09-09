@@ -225,7 +225,41 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
               )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          /* An empty panel is not an empty box. Hilo speaks first, and the four
+             questions under it are the answer to "¿y qué le pregunto?" — the
+             thing a first-time user actually gets stuck on.
+
+             Greeting and shortcuts at the top, the box you type in at the
+             bottom: the shape of every chat someone already uses. The composer
+             does not move when the conversation starts, so the one control the
+             practitioner reaches for is in the same place before and after.
+
+             The greeting belongs to the panel alone. On Inicio the card's
+             header already puts a line of grey text under the title, and two
+             greetings stacked is one too many. */
+          <div className={cn('space-y-3', fill && 'min-h-0 flex-1 overflow-y-auto')}>
+            {fill ? (
+              <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-[13.5px] leading-relaxed">
+                Hola, ¿cómo puedo ayudarte?
+              </p>
+            ) : null}
+
+            {/* Not decoration: tapping one asks it. */}
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK.map((text) => (
+                <button
+                  key={text}
+                  type="button"
+                  onClick={() => void ask(text)}
+                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  {text}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form
           onSubmit={(event) => {
@@ -286,21 +320,6 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             </Button>
           </div>
         </form>
-
-        {turns.length === 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {QUICK.map((text) => (
-              <button
-                key={text}
-                type="button"
-                onClick={() => void ask(text)}
-                className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
-              >
-                {text}
-              </button>
-            ))}
-          </div>
-        ) : null}
       </CardContent>
     </Card>
   )
