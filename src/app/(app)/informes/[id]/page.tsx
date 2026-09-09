@@ -17,7 +17,15 @@ import { getReport } from '@/server/reports'
 
 import { currentPractitioner, currentUser } from '../../session'
 
-export const metadata: Metadata = { title: 'Informe · Hilo' }
+/**
+ * Sin "· Hilo", a diferencia del resto de las pantallas.
+ *
+ * Esta se imprime. El navegador pone el título de la página en el encabezado
+ * del PDF y lo usa como nombre del archivo, así que el "· Hilo" que en una
+ * pestaña ubica, en un informe firmado que se entrega en un colegio es la marca
+ * de un proveedor metida en un documento clínico ajeno.
+ */
+export const metadata: Metadata = { title: 'Informe' }
 
 export default async function ReportPage({
   params,

@@ -55,7 +55,13 @@ export function PatientHeader({
           <Link
             href={`/pacientes/${patient.id}/editar`}
             aria-label={photoUrl ? 'Cambiar la foto' : 'Agregar una foto'}
-            className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-violet text-white ring-2 ring-white/70 hover:brightness-110"
+            // El círculo se queda en 24px: agrandarlo sería una mancha violeta
+            // sobre la cara del paciente. Lo que crece en teléfono es la zona
+            // que responde al dedo, con un `::after` invisible que lo lleva a
+            // 44px. Se ve un botón chico y se toca uno grande, que es lo que
+            // corresponde cuando el tamaño es una decisión de diseño y el
+            // problema es el pulgar.
+            className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-violet text-white ring-2 ring-white/70 hover:brightness-110 max-lg:after:absolute max-lg:after:-inset-2.5 max-lg:after:content-['']"
           >
             <Camera className="size-3.5" />
           </Link>

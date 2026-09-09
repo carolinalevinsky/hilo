@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
-import { PeriodSwitcher } from '@/components/period-switcher'
+import { PeriodNav } from '@/components/period-nav'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { MercadoPagoCard } from '@/components/payments/mercadopago-card'
 import { BillingDialog } from '@/components/payments/billing-dialog'
@@ -81,13 +81,19 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
         </Card>
       ) : (
         <>
-          <PeriodSwitcher
-            className="mb-4"
-            prevHref={`/cobros?mes=${shiftPeriod(period, -1)}`}
-            nextHref={period < now ? `/cobros?mes=${shiftPeriod(period, 1)}` : undefined}
-            label={periodLabel(period)}
-            caption={period === now ? 'Mes actual' : undefined}
-          />
+          {/* La misma barra que la Agenda en escritorio. Sin el "Mes actual"
+              chiquito que había debajo: el botón de la derecha ya lo dice, y
+              apagado cuando ya estás ahí. */}
+          <div className="mb-4 flex items-center gap-3">
+            <PeriodNav
+              prevHref={`/cobros?mes=${shiftPeriod(period, -1)}`}
+              nextHref={period < now ? `/cobros?mes=${shiftPeriod(period, 1)}` : undefined}
+              resetHref="/cobros"
+              label={periodLabel(period)}
+              isCurrent={period === now}
+              resetLabel="Este mes"
+            />
+          </div>
 
           {/* v1's three, in v1's order (`legacy/index.html:2435-2439`). There is
               no "Esperado" card because it is just these two added together, and

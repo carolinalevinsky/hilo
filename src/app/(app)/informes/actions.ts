@@ -3,9 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { formError, type FormState } from '@/lib/form-state'
+import { env } from '@/lib/env'
+import { formError, formOk, type FormState } from '@/lib/form-state'
 import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
+import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
+import { sendFormatRequestNotification } from '@/server/notifications'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
@@ -79,4 +82,56 @@ export async function deleteReportAction(formData: FormData) {
   await deleteReport(user.id, String(formData.get('reportId')))
   revalidatePath('/informes')
   redirect('/informes')
+}
+
+/**
+ * "Me falta este formato de informe."
+ *
+ * Guarda primero y avisa después, y el aviso no puede voltear lo guardado: si
+ * Resend está caído, el pedido igual queda en la tabla y se puede leer. Al revés
+ * —mandar el mail y que falle el insert— el pedido existiría sólo en una casilla
+ * de correo, que es el peor lugar donde puede vivir algo que hay que atender.
+ */
+export async function requestFormatAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const detail = String(formData.get('detail') ?? '')
+
+  try {
+    await createFormatRequest(user.id, { detail })
+  } catch (error) {
+    // El tope es una respuesta y se dice con sus palabras; un fallo de Zod
+    // también. Cualquier otra cosa es un problema nuestro y no se le cuenta a
+    // quien está del otro lado.
+    const message =
+      error instanceof TooManyFormatRequests
+        ? error.message
+        : error && typeof error === 'object' && 'issues' in error
+          ? ((error as { issues: { message: string }[] }).issues[0]?.message ??
+            'Revisá lo que escribiste.')
+          : 'No pudimos guardar tu pedido. Probá de nuevo en un momento.'
+
+    return formError(message, { detail })
+  }
+
+  // Sin `OWNER_EMAIL` configurado el pedido queda guardado igual y no se avisa.
+  // Ver la nota en `src/lib/env.ts`: es una notificación sin destinatario, no un
+  // control que se apaga solo.
+  if (env.OWNER_EMAIL) {
+    const practitioner = await getPractitioner(user.id)
+
+    await sendFormatRequestNotification({
+      to: env.OWNER_EMAIL,
+      practitionerName: practitioner.full_name,
+      practitionerEmail: practitioner.email,
+      discipline: practitioner.discipline,
+      detail: detail.trim(),
+    })
+  }
+
+  revalidatePath('/informes')
+
+  return formOk('Listo, nos llegó tu pedido. Te escribimos cuando esté.')
 }

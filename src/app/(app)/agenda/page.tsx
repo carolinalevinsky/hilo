@@ -2,7 +2,12 @@ import { CalendarDays } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { BookingChip } from '@/components/agenda/booking-chip'
+import { ConnectGoogle } from '@/components/agenda/connect-google'
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
+import { SessionPanel } from '@/components/agenda/session-panel'
+import { PeriodNav } from '@/components/period-nav'
+import { WeekViewSelect } from '@/components/agenda/week-view-select'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
 import { WeekCalendar } from '@/components/agenda/week-calendar'
 import { WeekGrid } from '@/components/agenda/week-grid'
@@ -23,12 +28,14 @@ import {
   materialiseAppointments,
 } from '@/server/appointments'
 import { listBookingRequests } from '@/server/booking'
+import { findGoogleAccount } from '@/server/google'
 import { listBusyBlocks, pullFromGoogle } from '@/server/google-calendar'
 import { listPatients } from '@/server/patients'
 import { planForRange } from '@/server/planning'
 
 import { deactivateScheduleAction } from './actions'
 
+import { currentOrigin } from '../origin'
 import { currentPractitioner, currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Agenda · Hilo' }
@@ -36,6 +43,11 @@ export const metadata: Metadata = { title: 'Agenda · Hilo' }
 export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>) {
   const params = await searchParams
   const user = await currentUser()
+
+  // La dirección real de esta petición, no la variable cargada a mano. Ver
+  // `currentOrigin`: la variable quedó apuntando a Supabase y el link que se le
+  // pasa a las familias no llevaba a ningún lado.
+  const origin = await currentOrigin()
 
   const offsetParam = typeof params.semana === 'string' ? Number(params.semana) : 0
   const offset = Number.isFinite(offsetParam) ? Math.trunc(offsetParam) : 0
@@ -87,6 +99,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     pendingBookings,
     tomorrowAppointments,
     practitioner,
+    googleAccount,
   ] = await Promise.all([
     listAppointments(user.id, first, last),
     listSchedules(user.id),
@@ -95,6 +108,8 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     listBookingRequests(user.id, 'pending'),
     listAppointments(user.id, tomorrow, tomorrow),
     currentPractitioner(user.id),
+    // Sólo para saber si hay que ofrecer conectar. No se usa nada de adentro.
+    findGoogleAccount(user.id),
   ])
 
   // Lo que ya está ocupado en Google y no lo puso Hilo: la reunión de trabajo, la
@@ -125,15 +140,89 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   )
   const phoneOf = new Map(patients.map((patient) => [patient.id, patient.phone]))
 
+  // ─── La sesión abierta en el panel ────────────────────────────────────────
+  //
+  // Vive en la URL (`?sesion=<id>`) y no en estado de cliente. Eso hace que el
+  // botón de atrás la cierre, que recargar no la pierda, y sobre todo que el
+  // panel pueda ser un componente de servidor con los datos de verdad al lado.
+  //
+  // Se busca dentro de la semana que ya está cargada: un id de otra semana —o
+  // inventado en la barra de direcciones— simplemente no encuentra nada y no
+  // abre el panel, sin consultar la base y sin error.
+  const weekHref = offset === 0 ? '/agenda' : `/agenda?semana=${offset}`
+  const hrefForSession = (appointmentId: string) =>
+    offset === 0
+      ? `/agenda?sesion=${appointmentId}`
+      : `/agenda?semana=${offset}&sesion=${appointmentId}`
+
+  const selected =
+    typeof params.sesion === 'string'
+      ? appointments.find((appointment) => appointment.id === params.sesion)
+      : undefined
+
+  // El objetivo más atrasado de cada sesión, que "Plan de la semana" ya calculó
+  // sobre estas mismas citas. Se reusa en vez de volver a pedirlo.
+  const goalOf = new Map(
+    weekSessions.map((session) => [session.appointmentId, session.focus?.title ?? null]),
+  )
+
+  // Las flechas, el rango y "Hoy". Se arma una sola vez y se usa en los dos
+  // lugares donde hace falta —adentro de la tarjeta en escritorio, suelto en
+  // teléfono— para que no se puedan desincronizar.
+  // En teléfono el período es el título de lo que hay abajo, así que va centrado
+  // entre las dos flechas. En escritorio es una barra de herramientas arriba de
+  // la grilla, y ahí los controles van juntos a la izquierda. Ver `WeekNav`.
+  const weekNavMobile = (
+    <>
+      <PeriodSwitcher
+        prevHref={`/agenda?semana=${offset - 1}`}
+        nextHref={`/agenda?semana=${offset + 1}`}
+        label={weekLabel(dates)}
+        // Sin "Esta semana": la columna de hoy ya viene pintada en la grilla, y
+        // cuando no estás en la semana actual aparece el botón "Hoy". Decirlo
+        // además con texto era la tercera vez.
+        className="min-w-0"
+      />
+      {offset !== 0 ? (
+        <Button asChild variant="outline" size="sm">
+          <Link href="/agenda">Hoy</Link>
+        </Button>
+      ) : null}
+    </>
+  )
+
+  // Cuántos días dibuja la grilla. "laboral" es el valor por defecto, así que la
+  // dirección sólo lleva el parámetro cuando se pidió la semana entera.
+  const weekView = params.vista === 'completa' ? 'completa' : 'laboral'
+
+  const weekNavDesktop = (
+    <PeriodNav
+      prevHref={`/agenda?semana=${offset - 1}`}
+      nextHref={`/agenda?semana=${offset + 1}`}
+      resetHref="/agenda"
+      label={weekLabel(dates)}
+      isCurrent={offset === 0}
+      resetLabel="Hoy"
+    />
+  )
+
   return (
     <>
       <PageHeader
         title="Agenda"
         subtitle="Tu semana de sesiones."
         action={
-          <ScheduleDialogs
-            patients={patients.map((p) => ({ id: p.id, full_name: p.full_name }))}
-          />
+          <div className="flex flex-wrap items-center gap-2.5 max-lg:w-full">
+            {/* El link de reservas, donde se lo necesita: acá es donde estás
+                cuando alguien te pregunta cómo pedir hora. La pantalla completa
+                sigue en /reservas. Sin slug todavía no hay link que copiar. */}
+            {practitioner.slug ? (
+              <BookingChip url={`${origin}/reservar/${practitioner.slug}`} />
+            ) : null}
+            <ScheduleDialogs
+              patients={patients.map((p) => ({ id: p.id, full_name: p.full_name }))}
+            />
+          </div>
         }
       />
 
@@ -182,24 +271,19 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                 </Link>
               </CardContent>
             </Card>
-          ) : (
-            /* Y cuando no hay ninguna pendiente, igual hay que poder llegar.
-               Esta rama era `null`, así que el único camino a /reservas vivía
-               adentro de la tarjeta de arriba — la que sólo existe cuando ya
-               tenés reservas. Para tener reservas hay que haber compartido el
-               link, y el link estaba detrás de tenerlas: un círculo cerrado que
-               dejaba la pantalla inalcanzable justo para quien recién empieza,
-               que es quien más la necesita.
+          ) : null}
+          {/* Acá vivía una línea suelta —"Tu link para que te reserven online
+              →"— que existía porque el único camino a /reservas estaba adentro
+              de la tarjeta de arriba, y esa tarjeta sólo aparece cuando ya
+              tenés reservas: un círculo cerrado que dejaba la pantalla
+              inalcanzable justo para quien recién empieza.
 
-               Discreto a propósito. Es una línea, no una tarjeta: cuando no hay
-               nada pendiente esto no es trabajo del día, es algo que se busca
-               una vez y se comparte. */
-            <p className="mb-3.5 text-center text-[12.5px] text-muted-foreground">
-              <Link href="/reservas" className="font-semibold text-violet hover:underline">
-                Tu link para que te reserven online →
-              </Link>
-            </p>
-          )}
+              El círculo lo abre ahora la tarjeta "Reservas online" del
+              encabezado, que está siempre. Dejar las dos era decir lo mismo dos
+              veces en la misma pantalla. */}
+
+          {/* Sólo si todavía no conectó. Ver `ConnectGoogle`. */}
+          {googleAccount ? null : <ConnectGoogle />}
 
           <TomorrowReminders
             date={tomorrow}
@@ -207,32 +291,52 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             phoneOf={phoneOf}
           />
 
-          <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5">
-            <PeriodSwitcher
-              prevHref={`/agenda?semana=${offset - 1}`}
-              nextHref={`/agenda?semana=${offset + 1}`}
-              label={weekLabel(dates)}
-              caption={offset === 0 ? 'Esta semana' : undefined}
-              className="min-w-0"
-            />
-            {offset !== 0 ? (
-              <Button asChild variant="outline" size="sm">
-                <Link href="/agenda">Hoy</Link>
-              </Button>
-            ) : null}
+          {/* En teléfono la navegación va suelta arriba de las tarjetas del día,
+              que es la vista que manda ahí. En escritorio entra adentro de la
+              tarjeta del calendario — ver el `header` de `WeekCalendar`. */}
+          <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5 lg:hidden">
+            {weekNavMobile}
           </div>
 
           {/* `calendarPrivacy` viaja hasta el menú de cada sesión, que es donde
               se arma el link a Google. Nace acá porque es lo único que conoce a
-              la profesional; abajo son todos componentes de presentación. */}
-          <WeekCalendar
-            dates={dates}
-            appointments={appointments}
-            today={todayString()}
-            ageOf={ageOf}
-            calendarPrivacy={practitioner.calendar_privacy}
-            busyBlocks={busyBlocks}
-          />
+              la profesional; abajo son todos componentes de presentación.
+
+              La grilla y el panel van en la misma fila: el panel se abre al
+              costado sin empujar la semana fuera de la pantalla, que es todo el
+              punto de que exista. Abajo de `lg` no hay panel — ahí manda
+              `WeekGrid`, que es la vista de teléfono. */}
+          <div className="flex items-start gap-3.5">
+            <div className="min-w-0 flex-1">
+              <WeekCalendar
+                dates={dates}
+                appointments={appointments}
+                today={todayString()}
+                ageOf={ageOf}
+                calendarPrivacy={practitioner.calendar_privacy}
+                busyBlocks={busyBlocks}
+                selectedId={selected?.id}
+                hrefForSession={hrefForSession}
+                header={weekNavDesktop}
+                headerEnd={<WeekViewSelect value={weekView} />}
+                showWeekend={weekView === 'completa'}
+              />
+            </div>
+
+            {selected ? (
+              <div className="max-lg:hidden">
+                <SessionPanel
+                  appointment={selected}
+                  age={
+                    selected.patients ? ageOf.get(selected.patients.id) : null
+                  }
+                  goal={goalOf.get(selected.id) ?? null}
+                  calendarPrivacy={practitioner.calendar_privacy}
+                  closeHref={weekHref}
+                />
+              </div>
+            ) : null}
+          </div>
           <WeekGrid
             dates={dates}
             appointments={appointments}

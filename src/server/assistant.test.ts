@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   assistantInstructions,
   assistantMessages,
+  assistantRoster,
   assistantSystemPrompt,
   HISTORY_LIMIT,
   offlineAnswer,
@@ -129,10 +130,43 @@ describe('assistantSystemPrompt', () => {
   const prompt = assistantSystemPrompt(CONTEXT)
 
   it('carries the roster the answer needs', () => {
-    expect(prompt).toContain('Tomás Pérez')
+    // The whole line, not three fragments of it: the shape of this string is
+    // what the model reads, and it used to open with a full name.
+    expect(prompt).toContain('- Tomás (5 años): avance 67%')
     expect(prompt).toContain('Conciencia fonológica 80%')
     expect(prompt).toContain('avance 67%')
     expect(prompt).toContain('Tomás 09:00')
+  })
+
+  it('carries first names and not surnames', () => {
+    // The prompt used to say "Tomás Pérez", against the promise at the top of
+    // `assistant.ts` — so the whole caseload of a practitioner left the country
+    // by name and surname on every question, including "hola". A first name is
+    // what the practitioner types and all the answer needs; the surname is the
+    // half that turns a roster into a list of identifiable children.
+    expect(prompt).not.toContain('Pérez')
+    expect(prompt).not.toContain('Rodríguez')
+  })
+
+  it('adds a surname initial only where two patients share a first name', () => {
+    // Not decoration. Two children called Tomás and one answer about "Tomás" is
+    // a clinical suggestion attached to the wrong one, which is the failure
+    // rule 1 of the instruction block exists to prevent. So the minimum extra,
+    // and only for the ones that collide.
+    const roster = assistantRoster({
+      ...CONTEXT,
+      patients: [
+        { ...CONTEXT.patients[0]!, id: 'p1', fullName: 'Tomás Pérez', firstName: 'Tomás' },
+        { ...CONTEXT.patients[0]!, id: 'p3', fullName: 'Tomas González', firstName: 'Tomas' },
+        { ...CONTEXT.patients[1]!, id: 'p2' },
+      ],
+    })
+
+    expect(roster).toContain('Tomás P.')
+    expect(roster).toContain('Tomas G.')
+    // The one with no namesake stays a first name and nothing more.
+    expect(roster).toContain('- Malena (')
+    expect(roster).not.toContain('Rodríguez')
   })
 
   it('carries nothing a progress note would be in', () => {

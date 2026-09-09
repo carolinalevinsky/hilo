@@ -7,9 +7,9 @@ import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/dates'
-import { publicConfig } from '@/lib/env'
 import { listBookingRequests } from '@/server/booking'
 
+import { currentOrigin } from '../origin'
 import { currentPractitioner, currentUser } from '../session'
 
 export const metadata: Metadata = { title: 'Reservas · Hilo' }
@@ -17,9 +17,13 @@ export const metadata: Metadata = { title: 'Reservas · Hilo' }
 export default async function BookingsPage() {
   const user = await currentUser()
 
-  const [practitioner, requests] = await Promise.all([
+  const [practitioner, requests, origin] = await Promise.all([
     currentPractitioner(user.id),
     listBookingRequests(user.id),
+    // La dirección real de esta petición y no la variable cargada a mano: es
+    // este link el que se pega en Instagram y se manda por WhatsApp. Ver
+    // `currentOrigin`.
+    currentOrigin(),
   ])
 
   const pending = requests.filter((request) => request.status === 'pending')
@@ -39,7 +43,7 @@ export default async function BookingsPage() {
         <CardContent>
           {practitioner.slug ? (
             <BookingLink
-              url={`${publicConfig.NEXT_PUBLIC_APP_URL}/reservar/${practitioner.slug}`}
+              url={`${origin}/reservar/${practitioner.slug}`}
               practitionerName={practitioner.full_name}
             />
           ) : (

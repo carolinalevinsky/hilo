@@ -41,6 +41,20 @@ const serverEnv = z.object({
    */
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
+
+  /**
+   * A dónde avisar cuando alguien pide un formato de informe que no existe.
+   *
+   * La única variable opcional de este archivo, y la excepción se explica: sin
+   * ella el pedido **igual se guarda** en `format_requests`, sólo no se manda el
+   * aviso. No es un guardia apagándose por falta de configuración —eso es lo que
+   * `legacy/api/aviso-reserva.js:22` hacía mal— es una notificación que no tiene
+   * destinatario todavía.
+   *
+   * Que sea obligatoria costaría que el build se caiga en cualquier entorno
+   * nuevo por una dirección de correo que no protege nada.
+   */
+  OWNER_EMAIL: z.email().optional(),
 })
 
 /**
@@ -68,6 +82,7 @@ export const env = serverEnv.parse({
   MP_WEBHOOK_SECRET: process.env.MP_WEBHOOK_SECRET,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  OWNER_EMAIL: process.env.OWNER_EMAIL,
 })
 
 export const publicConfig = publicEnv.parse({

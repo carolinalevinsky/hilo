@@ -32,7 +32,8 @@ import { getPhotoUrl, listPatients } from '@/server/patients'
 import { listPlanItems, planSuggestions } from '@/server/session-plans'
 import { currentSession } from '../session'
 
-export const metadata: Metadata = { title: 'Planificar sesión · Hilo' }
+/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+export const metadata: Metadata = { title: 'Planificar sesión' }
 
 /**
  * "Planificar sesión" — v1's, restored.

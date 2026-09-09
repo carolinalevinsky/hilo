@@ -67,6 +67,11 @@ export function BillingDialog({
           variant="ghost"
           title="Editar arancel o frecuencia"
           aria-label={`Editar arancel o frecuencia de ${patientName}`}
+          // 32px es cómodo con un mouse y chico para un pulgar. En teléfono pasa
+          // a 44, que es el mínimo de Apple. No se nota: el botón es `ghost`, no
+          // tiene fondo hasta que lo tocás, así que lo único que cambia es el
+          // aire alrededor de los tres puntos.
+          className="max-lg:size-11"
         >
           <MoreHorizontal className="size-[18px]" />
         </Button>

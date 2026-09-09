@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { AppointmentMenu } from '@/components/agenda/appointment-menu'
+import { NowLine } from '@/components/agenda/now-line'
 import { HOUR_HEIGHT, placeSpans, type Span } from '@/lib/agenda-layout'
 import { patientHex } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
@@ -73,6 +74,11 @@ export function WeekCalendar({
   ageOf,
   calendarPrivacy,
   busyBlocks = [],
+  selectedId,
+  hrefForSession,
+  header,
+  headerEnd,
+  showWeekend = false,
 }: {
   dates: string[]
   appointments: AppointmentWithPatient[]
@@ -83,6 +89,32 @@ export function WeekCalendar({
   calendarPrivacy?: string | null
   /** Lo que ya está ocupado en Google. Ver `listBusyBlocks`. */
   busyBlocks?: BusyBlock[]
+  /** La sesión abierta en el panel, para marcarla en la grilla. */
+  selectedId?: string
+  /**
+   * Cómo se arma el enlace de cada sesión. Lo decide la página, que es la que
+   * sabe en qué semana estamos y qué otros parámetros hay que conservar.
+   */
+  hrefForSession: (appointmentId: string) => string
+  /**
+   * Las flechas de semana y el botón "Hoy", adentro de la tarjeta del
+   * calendario y no flotando arriba. Entra como slot en vez de armarse acá
+   * porque los enlaces dependen de la URL, y esto no sabe nada de rutas.
+   */
+  header?: React.ReactNode
+  /** Contra el borde derecho de la misma barra: el selector de días. */
+  headerEnd?: React.ReactNode
+  /**
+   * Dibujar sábado y domingo.
+   *
+   * En `false` —lo normal— la grilla es de lunes a viernes y punto, aunque el
+   * fin de semana tenga algo. Casi nadie atiende sábado, y dos columnas
+   * permanentemente vacías son dos séptimos del ancho gastados en nada.
+   *
+   * Lo que no puede pasar es que algo desaparezca sin avisar, así que cuando hay
+   * sesiones escondidas la barra lo dice y ofrece el cambio. Ver `hiddenCount`.
+   */
+  showWeekend?: boolean
 }) {
   const byDate = new Map<string, AppointmentWithPatient[]>()
   for (const appointment of appointments) {
@@ -100,17 +132,21 @@ export function WeekCalendar({
     else bucket.set(block.date, [block])
   }
 
-  // Un sábado con una cena tiene que aparecer, igual que un sábado con una
-  // sesión: si el día trae algo, el día se dibuja.
-  const has = (date: string) =>
-    (byDate.get(date)?.length ?? 0) +
-      (busyByDate.get(date)?.length ?? 0) +
-      (allDayByDate.get(date)?.length ?? 0) >
-    0
-
+  // Lunes a viernes, salvo que se pida la semana entera. Antes el fin de semana
+  // se dibujaba solo cuando traía algo; ahora lo decide el selector de la barra,
+  // y lo que quedó afuera se anuncia en vez de dibujarse (ver `hiddenCount`).
   const days = dates
     .map((date, index) => ({ date, weekday: WEEK_ORDER[index]!, index }))
-    .filter((day) => day.index < 5 || has(day.date))
+    .filter((day) => day.index < 5 || showWeekend)
+
+  // Cuántas sesiones quedaron fuera de la vista por ser de fin de semana. Sólo
+  // las de Hilo: un cumpleaños en Google que no se vea no es un problema, una
+  // sesión que no se vea sí.
+  const hiddenCount = showWeekend
+    ? 0
+    : dates
+        .slice(5)
+        .reduce((total, date) => total + (byDate.get(date)?.length ?? 0), 0)
 
   // La franja se estira con las dos cosas, y con el final además del principio:
   // una cena que va de 20:30 a 22:30 necesita que la grilla llegue a las 22, o
@@ -137,7 +173,28 @@ export function WeekCalendar({
 
   return (
     <div className="max-lg:hidden">
-      <div className="overflow-x-auto rounded-lg bg-card shadow-card">
+      <div className="overflow-hidden rounded-lg bg-card shadow-card">
+        {header || headerEnd ? (
+          <div className="flex items-center gap-3 border-b border-border px-3.5 py-2.5">
+            {header}
+
+            <div className="ml-auto flex items-center gap-2.5">
+              {/* Nada se esconde en silencio. Si hay sesiones el fin de semana y
+                  la vista es de lunes a viernes, la barra lo dice; el selector
+                  está justo al lado para cambiarlo. */}
+              {hiddenCount > 0 ? (
+                <span className="text-[12px] font-semibold text-violet">
+                  {hiddenCount === 1
+                    ? '1 sesión el fin de semana'
+                    : `${hiddenCount} sesiones el fin de semana`}
+                </span>
+              ) : null}
+              {headerEnd}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="overflow-x-auto">
         <div
           className="grid min-w-[640px]"
           style={{
@@ -250,6 +307,12 @@ export function WeekCalendar({
                   />
                 ))}
 
+                {/* Sólo en la columna de hoy: una línea de "ahora" en el jueves
+                    que viene no marca nada. */}
+                {day.date === today ? (
+                  <NowLine firstHour={firstHour} lastHour={lastHour} />
+                ) : null}
+
                 <div className="absolute inset-0">
                   {placeSpans(pieces).map(({ span: piece, z, top, height, width, labelTop }) => (
                     <div
@@ -263,6 +326,8 @@ export function WeekCalendar({
                           ageOf={ageOf}
                           calendarPrivacy={calendarPrivacy}
                           labelTop={labelTop}
+                          href={hrefForSession(piece.appointment.id)}
+                          selected={piece.appointment.id === selectedId}
                         />
                       ) : (
                         <Busy block={piece.block} labelTop={labelTop} />
@@ -273,6 +338,7 @@ export function WeekCalendar({
               </div>
             )
           })}
+          </div>
         </div>
       </div>
     </div>
@@ -284,11 +350,16 @@ function Event({
   ageOf,
   calendarPrivacy,
   labelTop,
+  href,
+  selected,
 }: {
   appointment: AppointmentWithPatient
   ageOf?: Map<string, string | null>
   calendarPrivacy?: string | null
   labelTop: number
+  /** A dónde lleva el nombre: esta misma semana, con esta sesión abierta. */
+  href: string
+  selected: boolean
 }) {
   const patient = appointment.patients
   const name = patient ? firstName(patient.full_name) : 'Paciente'
@@ -299,13 +370,17 @@ function Event({
       className={cn(
         'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-[11.5px] leading-tight font-semibold text-white',
         appointment.status === 'cancelled' && 'opacity-55',
+        // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
+        // Sin esto no habría forma de saber cuál de las doce es la que estás
+        // mirando en el panel.
+        selected && 'ring-2 ring-foreground ring-offset-1',
       )}
       style={{ background: patientHex(patient?.color ?? null) }}
     >
       <div style={{ paddingTop: labelTop }}>
-        <LinkOrText patientId={patient?.id}>
+        <SelectLink href={href}>
           {formatTime(appointment.start_time)} · {name}
-        </LinkOrText>
+        </SelectLink>
         {age ? <div className="font-normal opacity-90">{age}</div> : null}
       </div>
 
@@ -341,16 +416,26 @@ function Busy({ block, labelTop }: { block: BusyBlock; labelTop: number }) {
   )
 }
 
-function LinkOrText({
-  patientId,
+/**
+ * El nombre, que abre la sesión al costado.
+ *
+ * Antes llevaba a la ficha del paciente, y eso sacaba la semana de la pantalla
+ * para responder algo que casi siempre es más chico: a qué hora era, cuánto
+ * dura, marcar que vino. Ahora eso pasa al lado de la grilla y la ficha sigue a
+ * un click, desde el panel.
+ *
+ * Es un enlace y no un botón porque el estado vive en la URL: se puede volver
+ * con el botón de atrás, se puede recargar, y anda sin JavaScript.
+ */
+function SelectLink({
+  href,
   children,
 }: {
-  patientId?: string
+  href: string
   children: React.ReactNode
 }) {
-  if (!patientId) return <span className="block">{children}</span>
   return (
-    <Link href={`/pacientes/${patientId}`} className="block hover:underline">
+    <Link href={href} scroll={false} className="block hover:underline">
       {children}
     </Link>
   )

@@ -26,65 +26,113 @@ import { WEEK_ORDER, weekdayName } from '@/lib/week'
 type PatientOption = { id: string; full_name: string }
 
 /**
- * The two ways something gets on the agenda, side by side, because the
- * difference between them is the thing a practitioner has to choose:
+ * Agendar, en un solo botón.
  *
- *   **A fixed slot** is the rule — "Tomás, Mondays at nine". It fills every week
- *   from now on and is what most of the agenda is made of.
+ * Antes eran dos, "Agendar" y "Horario fijo", y esa era la primera decisión que
+ * la pantalla te pedía: elegir un botón sabiendo de antemano en cuál de los dos
+ * mundos estabas. Pero no son dos cosas distintas — son la misma cosa, una vez o
+ * todas las semanas. Ahora se entra por un lado y la repetición se elige
+ * adentro, que es donde la pregunta tiene sentido.
  *
- *   **A one-off** is a single date. A make-up session, a first interview, an
- *   evaluation.
+ *   **Una vez** es una fecha sola: una recuperación, una primera entrevista, una
+ *   evaluación.
  *
- * v1 only had the first, and it had no dates, so a make-up session had nowhere
- * to go.
+ *   **Cada semana** es la regla — "Tomás, los lunes a las nueve" — y llena la
+ *   agenda sola de acá en adelante. Es de lo que está hecha la mayor parte de la
+ *   semana.
+ *
+ * Los horarios fijos que ya existen se siguen viendo y dando de baja en la
+ * tarjeta "Horarios fijos", al pie de la Agenda.
+ *
+ * Son dos formularios y no uno con campos que aparecen y desaparecen: cada uno
+ * postea a su propia Server Action, y los campos que piden no se parecen —una
+ * fecha contra un día de la semana más una frecuencia. Mezclarlos en un formulario
+ * obligaría a decidir en el servidor qué mitad ignorar.
  */
 export function ScheduleDialogs({ patients }: { patients: PatientOption[] }) {
-  const [openDialog, setOpenDialog] = useState<'schedule' | 'appointment' | null>(null)
+  const [open, setOpen] = useState(false)
+  const [repeats, setRepeats] = useState(false)
+
+  const close = () => setOpen(false)
 
   return (
-    <div className="flex gap-2 max-lg:w-full">
+    <div className="max-lg:w-full">
       <Button
         size="lg"
-        onClick={() => setOpenDialog('appointment')}
+        onClick={() => setOpen(true)}
         disabled={patients.length === 0}
-        className="max-lg:flex-1"
+        className="max-lg:w-full"
       >
         <Plus className="size-[18px]" />
-        Agendar
-      </Button>
-      <Button
-        size="lg"
-        variant="outline"
-        onClick={() => setOpenDialog('schedule')}
-        disabled={patients.length === 0}
-        className="max-lg:flex-1"
-      >
-        <CalendarClock className="size-[18px]" />
-        Horario fijo
+        Agendar sesión
       </Button>
 
-      <AppointmentDialog
-        patients={patients}
-        open={openDialog === 'appointment'}
-        onClose={() => setOpenDialog(null)}
-      />
-      <ScheduleDialog
-        patients={patients}
-        open={openDialog === 'schedule'}
-        onClose={() => setOpenDialog(null)}
-      />
+      <Dialog open={open} onOpenChange={(next) => !next && close()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Agendar una sesión</DialogTitle>
+          </DialogHeader>
+
+          {/* La elección arriba de todo, antes de cualquier campo: es lo que
+              decide qué campos tienen sentido abajo. */}
+          <div
+            role="radiogroup"
+            aria-label="¿Se repite?"
+            className="grid grid-cols-2 gap-1.5 rounded-xl bg-muted p-1"
+          >
+            <ModeButton selected={!repeats} onSelect={() => setRepeats(false)}>
+              <Plus className="size-4" />
+              Una sola vez
+            </ModeButton>
+            <ModeButton selected={repeats} onSelect={() => setRepeats(true)}>
+              <CalendarClock className="size-4" />
+              Cada semana
+            </ModeButton>
+          </div>
+
+          {repeats ? (
+            <ScheduleFields patients={patients} onDone={close} />
+          ) : (
+            <AppointmentFields patients={patients} onDone={close} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
-function AppointmentDialog({
+function ModeButton({
+  selected,
+  onSelect,
+  children,
+}: {
+  selected: boolean
+  onSelect: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={
+        selected
+          ? 'flex items-center justify-center gap-1.5 rounded-lg bg-card px-3 py-2 text-[13px] font-bold shadow-card'
+          : 'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-muted-foreground hover:text-foreground'
+      }
+    >
+      {children}
+    </button>
+  )
+}
+
+function AppointmentFields({
   patients,
-  open,
-  onClose,
+  onDone,
 }: {
   patients: PatientOption[]
-  open: boolean
-  onClose: () => void
+  onDone: () => void
 }) {
   const [state, formAction, pending] = useActionState(
     createAppointmentAction,
@@ -92,127 +140,110 @@ function AppointmentDialog({
   )
 
   useEffect(() => {
-    if (state.ok) onClose()
+    if (state.ok) onDone()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Agendar una sesión</DialogTitle>
-        </DialogHeader>
+    <form action={formAction} className="space-y-4">
+      <FormMessage message={state.message} />
 
-        <form action={formAction} className="space-y-4">
-          <FormMessage message={state.message} />
+      <PatientSelect patients={patients} />
 
-          <PatientSelect patients={patients} />
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Día" htmlFor="scheduledOn">
+          <Input
+            id="scheduledOn"
+            name="scheduledOn"
+            type="date"
+            defaultValue={today()}
+            required
+          />
+        </Field>
+        <Field label="Hora" htmlFor="startTime">
+          <Input id="startTime" name="startTime" type="time" defaultValue="09:00" required />
+        </Field>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Día" htmlFor="scheduledOn">
-              <Input
-                id="scheduledOn"
-                name="scheduledOn"
-                type="date"
-                defaultValue={today()}
-                required
-              />
-            </Field>
-            <Field label="Hora" htmlFor="startTime">
-              <Input id="startTime" name="startTime" type="time" defaultValue="09:00" required />
-            </Field>
-          </div>
+      <DurationField />
 
-          <DurationField />
+      <Field label="Nota" htmlFor="note" hint="opcional">
+        <Input id="note" name="note" placeholder="Ej: primera entrevista" />
+      </Field>
 
-          <Field label="Nota" htmlFor="note" hint="opcional">
-            <Input id="note" name="note" placeholder="Ej: primera entrevista" />
-          </Field>
-
-          <DialogFooter>
-            <Button type="submit" disabled={pending}>
-              {pending ? 'Agendando…' : 'Agendar'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <DialogFooter>
+        <Button type="submit" disabled={pending}>
+          {pending ? 'Agendando…' : 'Agendar'}
+        </Button>
+      </DialogFooter>
+    </form>
   )
 }
 
-function ScheduleDialog({
+function ScheduleFields({
   patients,
-  open,
-  onClose,
+  onDone,
 }: {
   patients: PatientOption[]
-  open: boolean
-  onClose: () => void
+  onDone: () => void
 }) {
   const [state, formAction, pending] = useActionState(createScheduleAction, EMPTY_FORM_STATE)
 
   useEffect(() => {
-    if (state.ok) onClose()
+    if (state.ok) onDone()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Horario fijo</DialogTitle>
-        </DialogHeader>
+    <form action={formAction} className="space-y-4">
+      <FormMessage message={state.message} />
 
-        <form action={formAction} className="space-y-4">
-          <FormMessage message={state.message} />
+      <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+        Se agenda solo, semana a semana. Podés cancelar una sesión suelta sin tocar el
+        horario, y darlo de baja cuando quieras desde “Horarios fijos”, al pie de la
+        Agenda.
+      </p>
 
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
-            Se agenda solo, semana a semana. Podés cancelar una sesión suelta sin tocar el
-            horario.
-          </p>
+      <PatientSelect patients={patients} />
 
-          <PatientSelect patients={patients} />
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Día de la semana" htmlFor="weekday">
+          <Select id="weekday" name="weekday" defaultValue="1">
+            {WEEK_ORDER.map((weekday) => (
+              <option key={weekday} value={weekday}>
+                {weekdayName(weekday)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Hora" htmlFor="scheduleTime">
+          <Input id="scheduleTime" name="startTime" type="time" defaultValue="09:00" required />
+        </Field>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Día de la semana" htmlFor="weekday">
-              <Select id="weekday" name="weekday" defaultValue="1">
-                {WEEK_ORDER.map((weekday) => (
-                  <option key={weekday} value={weekday}>
-                    {weekdayName(weekday)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Hora" htmlFor="scheduleTime">
-              <Input id="scheduleTime" name="startTime" type="time" defaultValue="09:00" required />
-            </Field>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Frecuencia" htmlFor="frequency">
+          <Select id="frequency" name="frequency" defaultValue="weekly">
+            {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Desde" htmlFor="startsOn">
+          <Input id="startsOn" name="startsOn" type="date" defaultValue={today()} required />
+        </Field>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Frecuencia" htmlFor="frequency">
-              <Select id="frequency" name="frequency" defaultValue="weekly">
-                {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Desde" htmlFor="startsOn">
-              <Input id="startsOn" name="startsOn" type="date" defaultValue={today()} required />
-            </Field>
-          </div>
+      <DurationField idPrefix="schedule" />
 
-          <DurationField idPrefix="schedule" />
-
-          <DialogFooter>
-            <Button type="submit" disabled={pending}>
-              {pending ? 'Guardando…' : 'Guardar horario'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <DialogFooter>
+        <Button type="submit" disabled={pending}>
+          {pending ? 'Guardando…' : 'Guardar horario'}
+        </Button>
+      </DialogFooter>
+    </form>
   )
 }
 

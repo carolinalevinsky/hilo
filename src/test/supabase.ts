@@ -54,6 +54,21 @@ export function serviceClient(): Db {
   })
 }
 
+/**
+ * A client with no session at all — what a stranger holds.
+ *
+ * The `anon` key is public by design: it ships in the JavaScript bundle every
+ * visitor downloads. So this is not a privileged test fixture, it is the exact
+ * client anybody on the internet can build, and the only honest way to ask
+ * "what does the public surface actually answer?"
+ */
+export function anonClient(): Db {
+  const config = localSupabaseConfig()
+  return createClient<Database>(config.url, config.anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
 /** A client carrying one practitioner's session — what `getDb()` builds at runtime. */
 export async function signedInAs(email: string, password = TEST_PASSWORD): Promise<Db> {
   const config = localSupabaseConfig()

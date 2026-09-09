@@ -19,7 +19,8 @@ import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { buildPatientExport } from '@/server/patient-export'
 import { currentSession } from '../../../session'
 
-export const metadata: Metadata = { title: 'Datos del paciente · Hilo' }
+/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+export const metadata: Metadata = { title: 'Datos del paciente' }
 
 /** Same shape as Cobros: "$ 1.500", no decimals. */
 const money = (value: number) =>

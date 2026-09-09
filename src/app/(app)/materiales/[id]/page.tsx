@@ -20,7 +20,8 @@ import {
 import { listPatients } from '@/server/patients'
 import { currentUser } from '../../session'
 
-export const metadata: Metadata = { title: 'Material · Hilo' }
+/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+export const metadata: Metadata = { title: 'Material' }
 
 /**
  * One material, ready to print.

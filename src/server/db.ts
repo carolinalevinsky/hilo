@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
+import { AUTH_COOKIE_OPTIONS } from '@/lib/auth-cookie'
 import type { Database } from '@/lib/database.types'
 import { env, publicConfig } from '@/lib/env'
 
@@ -31,6 +32,10 @@ export async function getDb() {
     publicConfig.NEXT_PUBLIC_SUPABASE_URL,
     publicConfig.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      // Not optional, and not the library's defaults. See `@/lib/auth-cookie`:
+      // this cookie carries the refresh token, and `@supabase/ssr` writes it
+      // without `HttpOnly` and without `Secure` unless told otherwise.
+      cookieOptions: AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll: (cookiesToSet) => {

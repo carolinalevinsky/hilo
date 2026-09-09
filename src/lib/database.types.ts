@@ -92,11 +92,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "appointments_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "appointments_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "appointments_practitioner_id_fkey"
@@ -159,11 +159,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "assessments_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "assessments_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "assessments_practitioner_id_fkey"
@@ -280,14 +280,43 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "booking_requests_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "booking_requests_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "booking_requests_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      format_requests: {
+        Row: {
+          created_at: string
+          detail: string
+          id: string
+          practitioner_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail: string
+          id?: string
+          practitioner_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string
+          id?: string
+          practitioner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "format_requests_practitioner_id_fkey"
             columns: ["practitioner_id"]
             isOneToOne: false
             referencedRelation: "practitioners"
@@ -332,11 +361,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "goal_progress_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "goal_progress_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "goal_progress_practitioner_id_fkey"
@@ -383,11 +412,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "goals_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "goals_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "goals_practitioner_id_fkey"
@@ -701,11 +730,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payments_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "payments_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "payments_practitioner_id_fkey"
@@ -806,11 +835,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "reports_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "reports_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "reports_practitioner_id_fkey"
@@ -866,11 +895,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "schedules_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "schedules_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "schedules_practitioner_id_fkey"
@@ -968,11 +997,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "session_plan_items_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "session_plan_items_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "session_plan_items_practitioner_id_fkey"
@@ -1026,11 +1055,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "sessions_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "sessions_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "id"]
           },
           {
             foreignKeyName: "sessions_practitioner_id_fkey"

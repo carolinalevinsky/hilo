@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import type { TablesUpdate } from '@/lib/database.types'
 import {
+  anonClient,
   createTestPractitioner,
   deleteTestPractitioner,
   serviceClient,
@@ -118,6 +120,33 @@ beforeAll(async () => {
     title: 'Informe de avance',
     content: 'Cuerpo del informe de Bruno',
   })
+
+  // The three that had no fixture, and therefore no case below, and therefore
+  // policies nobody had ever watched work. They are asserted rather than fired
+  // and forgotten: an insert that quietly failed would make the read cases pass
+  // because the table is empty, not because RLS filtered — which is a green
+  // test that proves nothing. Same reasoning as the storage fixtures further
+  // down, and the same trap.
+  const { error: latecomers } = await service.from('payments').insert({
+    practitioner_id: idB,
+    patient_id: patientB,
+    period: '2026-08',
+    amount: 1500,
+  })
+  expect(latecomers, 'the payments fixture itself failed').toBeNull()
+
+  const { error: bookingError } = await service.from('booking_requests').insert({
+    practitioner_id: idB,
+    name: 'Familia que le escribió a Bruno',
+    phone: '099 000 000',
+  })
+  expect(bookingError, 'the booking_requests fixture itself failed').toBeNull()
+
+  const { error: formatError } = await service.from('format_requests').insert({
+    practitioner_id: idB,
+    detail: 'Uno para presentar en el juzgado, con el motivo de derivación.',
+  })
+  expect(formatError, 'the format_requests fixture itself failed').toBeNull()
 }, 60_000)
 
 afterAll(async () => {
@@ -167,6 +196,66 @@ describe('row level security on practitioners', () => {
     expect(data?.map((row) => row.id)).toEqual([idA])
   })
 
+  /**
+   * The half this block did not watch, and the gap an audit walked through.
+   *
+   * Every test above asks whether A can reach B's row. None of them asked what A
+   * may write **in her own** — and the own-rows policy has no opinion on that:
+   * `using (id = auth.uid())` decides which row, never which column. The column
+   * privilege came from the table-level grant in M1, so it covered `plan`, and a
+   * PATCH to PostgREST with the anon key that ships in every bundle turned a
+   * free account into a Pro one.
+   *
+   * Note the shape: a refused **privilege** is an error, where a refused row is
+   * an empty result. Same distinction the `mp_accounts` block below relies on.
+   */
+  const refusedUpdate = async (patch: TablesUpdate<'practitioners'>) => {
+    const { error } = await asA.from('practitioners').update(patch).eq('id', idA)
+    return error
+  }
+
+  it('does not let a practitioner rewrite the columns the server owns', async () => {
+    expect(await refusedUpdate({ plan: 'pro' }), 'plan').not.toBeNull()
+    expect(await refusedUpdate({ slug: 'ana-elegida-a-mano' }), 'slug').not.toBeNull()
+    expect(await refusedUpdate({ email: 'otra@ejemplo.test' }), 'email').not.toBeNull()
+    expect(await refusedUpdate({ digest_sent_at: null }), 'digest_sent_at').not.toBeNull()
+
+    const { data } = await service
+      .from('practitioners')
+      .select('plan, slug, email')
+      .eq('id', idA)
+      .single()
+
+    expect(data?.plan).toBe('free')
+    expect(data?.slug).toMatch(/^ana-prueba(-\d+)?$/)
+    expect(data?.email).toBe(emailA)
+  })
+
+  it('still lets her write every column the app writes', async () => {
+    // The other direction, and it caught a real one: the first version of the
+    // column grants left `onboarded_at` out, because it was written against a
+    // branch where nothing wrote that column yet. Tightening too far does not
+    // fail at deploy — `app-tour.tsx` calls its action with `.catch(() => {})`,
+    // so the guided tour would simply have replayed on every load, forever,
+    // with nothing anywhere to say why.
+    //
+    // So this list is not "some fields": it is every column any function in
+    // `src/server/practitioners.ts` writes through the user's session, and it
+    // has to stay that way.
+    const { error } = await asA
+      .from('practitioners')
+      .update({
+        full_name: 'Ana Prueba',
+        discipline: 'psychopedagogy',
+        phone: '099 111 222',
+        calendar_privacy: 'initials',
+        onboarded_at: new Date().toISOString(),
+      })
+      .eq('id', idA)
+
+    expect(error).toBeNull()
+  })
+
   it('does not let a practitioner write to another one', async () => {
     const { data, error } = await asA
       .from('practitioners')
@@ -205,6 +294,16 @@ describe('the clinical tables', () => {
       // quota has something to count — but it is still one practitioner's
       // activity, and it gets the same case as everything else.
       'assistant_questions',
+      // What a family owes and has paid, per patient, per month. Not a clinical
+      // note, and still nobody else's business.
+      'payments',
+      // The phone number of a family that filled in a public form asking to be
+      // contacted. They gave it to one practitioner.
+      'booking_requests',
+      // The newest table in the schema, and the one this list existed to catch:
+      // its own test file only checks the Zod schema, so until this line the
+      // policy had never been watched from the outside.
+      'format_requests',
     ] as const) {
       const { data, error } = await asA.from(table).select('practitioner_id')
       expect(error, `${table} should read cleanly`).toBeNull()
@@ -227,11 +326,72 @@ describe('the clinical tables', () => {
     // The `with check` half of the policy. Without it a practitioner could
     // insert rows *into* someone else's record — invisible to them, and signed
     // with their name.
-    const { error } = await asA
+    //
+    // Four tables rather than one, because the consequence is different in each
+    // and none of them is theoretical: a patient nobody added, a payment against
+    // a family that never paid, a booking request in an inbox that answers real
+    // families, and a format request that arrives at OWNER_EMAIL under somebody
+    // else's name and discipline.
+    const planted = await asA
       .from('patients')
       .insert({ practitioner_id: idB, full_name: 'Paciente plantado' })
+    expect(planted.error, 'patients').not.toBeNull()
 
+    const payment = await asA
+      .from('payments')
+      .insert({ practitioner_id: idB, patient_id: patientB, period: '2026-08', amount: 1 })
+    expect(payment.error, 'payments').not.toBeNull()
+
+    const booking = await asA
+      .from('booking_requests')
+      .insert({ practitioner_id: idB, name: 'Reserva plantada', phone: '099 111 222' })
+    expect(booking.error, 'booking_requests').not.toBeNull()
+
+    const format = await asA
+      .from('format_requests')
+      .insert({ practitioner_id: idB, detail: 'Pedido plantado en la cuenta de Bruno.' })
+    expect(format.error, 'format_requests').not.toBeNull()
+  })
+})
+
+describe('a child row pointing at somebody else’s patient', () => {
+  /**
+   * El hueco entre las dos defensas que había, y por qué se cerró en el esquema.
+   *
+   * La política de filas propias mira `practitioner_id`; la clave foránea mira
+   * que el paciente exista. Una fila con el `practitioner_id` de A y el
+   * `patient_id` de B pasaba las dos, y siete Server Actions escriben ese
+   * `patient_id` tal como llega del formulario.
+   *
+   * No filtraba nada —el lado de la lectura lo tapa RLS— pero ensucia
+   * estadísticas y cobros, y dependía de que nadie llamara esas lecturas con la
+   * clave de servicio. Ahora lo dice la base.
+   */
+  it('is refused by the database, not just by the policy', async () => {
+    const { error } = await service.from('sessions').insert({
+      practitioner_id: idA,
+      patient_id: patientB,
+      progress_note: 'La sesión de Ana sobre el paciente de Bruno',
+    })
+
+    // Con la clave de servicio, que saltea RLS por completo: lo que rechaza acá
+    // es la restricción, y ése es justamente el punto.
     expect(error).not.toBeNull()
+    expect(error?.message ?? '').toContain('same_practitioner')
+  })
+
+  it('still lets a practitioner write about her own patient', async () => {
+    const { data: own } = await service
+      .from('patients')
+      .insert({ practitioner_id: idA, full_name: 'Paciente de Ana' })
+      .select()
+      .single()
+
+    const { error } = await service
+      .from('sessions')
+      .insert({ practitioner_id: idA, patient_id: own!.id })
+
+    expect(error).toBeNull()
   })
 })
 
@@ -626,6 +786,50 @@ describe('el refresh token de Google', () => {
 
     expect(stored?.refresh_token).toBe('1//refresh-token-secretisimo')
     expect(error ?? true).toBeTruthy()
+  })
+})
+
+describe('practitioner_by_slug', () => {
+  /**
+   * The one `security definer` function the public surface leans on, and the
+   * only thing standing between a stranger and the list of health professionals
+   * who use Hilo.
+   *
+   * It is reached through the service role — the booking page has no session,
+   * which is why the function exists at all — so nobody else needs EXECUTE. It
+   * was nonetheless callable by `anon` with the key that ships in every bundle,
+   * which turned a slug (generated from a name, so guessable) into a name, a
+   * discipline and a UUID.
+   *
+   * Both cases matter and the second is the one that bites: the revoke has to
+   * take EXECUTE away from PUBLIC, and `service_role` inherits from PUBLIC too.
+   * Getting the first half right and the second half wrong is a booking page
+   * that answers `permission denied` to every family.
+   */
+  it('cannot be called by a stranger holding the anon key', async () => {
+    const { error } = await anonClient().rpc('practitioner_by_slug', {
+      lookup_slug: 'ana-prueba',
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('cannot be called by a signed-in practitioner either', async () => {
+    const { error } = await asA.rpc('practitioner_by_slug', {
+      lookup_slug: 'ana-prueba',
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('still answers the booking page, which is what it is for', async () => {
+    // Through the service role, exactly as `practitionerBySlug` does it.
+    const { data, error } = await service.rpc('practitioner_by_slug', {
+      lookup_slug: 'ana-prueba',
+    })
+
+    expect(error).toBeNull()
+    expect(data?.[0]?.full_name).toBe('Ana Prueba')
   })
 })
 

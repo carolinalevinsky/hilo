@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { formError, formOk, type FormState } from '@/lib/form-state'
+import { firstName } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
 import {
   MercadoPagoError,
@@ -121,7 +122,17 @@ export async function createPaymentLinkAction(
   try {
     const link = await createPaymentLink(user.id, {
       amount,
-      title: `Sesiones de ${patientName}`,
+      // El nombre de pila y no el completo, y el motivo es el mismo que el de
+      // `calendar_privacy`: esto queda escrito en un servidor de Mercado Pago y
+      // se muestra en la pantalla de pago que abre la familia, que después se
+      // reenvía. "Sesiones de Tomás Pérez" deja asentado en un tercero que esa
+      // persona con nombre y apellido recibe sesiones de esta profesional; el
+      // nombre de pila alcanza para que la familia sepa qué está pagando.
+      //
+      // `external_reference` sigue llevando el `patient_id`, así que dos Tomás
+      // en el mismo mes se distinguen donde hace falta distinguirlos, que es
+      // del lado de Hilo y no del lado de Mercado Pago.
+      title: `Sesiones de ${firstName(patientName)}`,
       externalReference: buildExternalReference(user.id, patientId, period),
     })
     // The link travels back in the form message so the practitioner can copy it.

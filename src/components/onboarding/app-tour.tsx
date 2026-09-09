@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
+import { markTourSeenAction } from '@/app/(app)/inicio/actions'
 import { TOUR_STOPS } from '@/components/onboarding/tour-stops'
 import { Button } from '@/components/ui/button'
 
@@ -19,6 +20,12 @@ import { Button } from '@/components/ui/button'
  * left, and "Saltar" on every one of them. A tour that cannot be skipped gets
  * clicked through without reading, which is worse than not showing it.
  *
+ * "Once" quiere decir *una vez por cuenta*, y por eso `seen` llega desde el
+ * servidor en vez de leerse acá. Estuvo en `localStorage`, que es por navegador
+ * y por dominio: otra computadora, el teléfono, o simplemente otra URL de
+ * Vercel, y el recorrido volvía a empezar como si fuera la primera vez. Ver
+ * `markTourSeen` en `src/server/practitioners.ts`.
+ *
  * ─── When the target is not on screen ──────────────────────────────────────
  *
  * On a phone the sidebar does not exist: four items live in the bottom bar and
@@ -31,66 +38,32 @@ import { Button } from '@/components/ui/button'
  * degraded one, and it is why this never needs to know whether it is on a phone.
  */
 
-const SEEN_KEY = 'hilo:tour-visto'
-
 /** Dispatch this to start the tour from anywhere. See `TourButton`. */
 export const TOUR_EVENT = 'hilo:tour'
 
-/** Fired by this file when the flag changes, so the store below hears its own writes. */
-const SEEN_EVENT = 'hilo:tour-visto-cambio'
-
 type Box = { top: number; left: number; width: number; height: number }
 
-/**
- * Whether this browser has already been shown the tour.
- *
- * Read through `useSyncExternalStore` rather than an effect that calls
- * `setState`. localStorage *is* an external store, and reading it in an effect
- * to set state is the pattern `react-hooks/set-state-in-effect` exists to catch:
- * it renders once with the wrong answer and then again with the right one.
- *
- * The server snapshot says "already seen", so nothing renders during SSR and
- * the tour appears after hydration, when the flag can actually be read.
- */
-function subscribeSeen(onChange: () => void) {
-  window.addEventListener('storage', onChange)
-  window.addEventListener(SEEN_EVENT, onChange)
-  return () => {
-    window.removeEventListener('storage', onChange)
-    window.removeEventListener(SEEN_EVENT, onChange)
-  }
-}
-
-function readSeen() {
-  try {
-    return window.localStorage.getItem(SEEN_KEY) === '1'
-  } catch {
-    // Private browsing, or storage disabled. Offering the tour again next time
-    // is a much smaller problem than crashing.
-    return false
-  }
-}
-
-export function AppTour() {
-  const seen = useSyncExternalStore(subscribeSeen, readSeen, () => true)
-
+export function AppTour({ seen }: { seen: boolean }) {
   const [step, setStep] = useState(0)
   const [restarted, setRestarted] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
   const [box, setBox] = useState<Box | null>(null)
 
-  const running = !seen || restarted
+  const running = (!seen && !dismissed) || restarted
   const stop = running ? TOUR_STOPS[step] : undefined
 
   const close = useCallback(() => {
     setRestarted(false)
+    setDismissed(true)
     setStep(0)
     setBox(null)
-    try {
-      window.localStorage.setItem(SEEN_KEY, '1')
-      window.dispatchEvent(new Event(SEEN_EVENT))
-    } catch {
-      // See readSeen.
-    }
+
+    // Se cierra en la pantalla ahora y se anota en la cuenta después. Si la
+    // escritura falla —se cayó la red justo acá— lo peor que pasa es que el
+    // recorrido vuelva a ofrecerse la próxima vez. Hacer esperar a alguien que
+    // quiere salir de un recorrido, para confirmarle que efectivamente salió,
+    // sería el error más grande.
+    void markTourSeenAction().catch(() => {})
   }, [])
 
   /** "Siguiente" on the last stop is the same thing as finishing. */

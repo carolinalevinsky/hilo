@@ -149,23 +149,35 @@ export async function updateCalendarPrivacy(practitionerId: string, input: unkno
 }
 
 /**
- * There is no `markOnboarded` here, on purpose.
+ * Cuándo esta profesional terminó el recorrido guiado.
  *
- * There was one, and it was never called from anywhere. Its comment said a
- * timestamp would save recomputing the onboarding state on every page load,
- * which would have been true if anything had written it. Dead code that
- * describes behaviour the product does not have is worse than no code: the next
- * person reads the comment, believes `onboarded_at` means something, and builds
- * on a column that is always null.
+ * `onboarded_at` estuvo sin uso mucho tiempo y este archivo explicaba por qué:
+ * nadie lo escribía, y una columna siempre nula que dice significar algo es peor
+ * que ninguna columna. Ahora sí lo escribe alguien, y es justo para lo que
+ * existía.
  *
- * "Primeros pasos" works out its three steps from counts instead. Two of them
- * are `head: true` counts that read an index, and the patient list is already
- * being fetched for the screen, so the whole thing costs one extra query while
- * the card is on screen and none afterwards.
+ * **Va en la base y no en el navegador, y esa es toda la diferencia.** Antes
+ * vivía en `localStorage`, que es por navegador *y por dominio*: cambiabas de
+ * computadora, abrías el teléfono, o —lo que nos pasó a nosotros— entrabas por
+ * otra URL de Vercel, y el recorrido arrancaba de cero como si fuera tu primera
+ * vez. Contra la cuenta, la primera vez es una sola.
  *
- * The `onboarded_at` column stays in the schema. Dropping it needs a migration
- * and it is not in anybody's way.
+ * No pisa una marca anterior: quien ya lo vio conserva su fecha original.
+ *
+ * "Primeros pasos" es otra cosa y sigue calculándose de los conteos — es una
+ * lista de tareas que se completa sola a medida que trabajás, no algo que se vea
+ * una vez.
  */
+export async function markTourSeen(practitionerId: string) {
+  const db = await getDb()
+  const { error } = await db
+    .from('practitioners')
+    .update({ onboarded_at: new Date().toISOString() })
+    .eq('id', practitionerId)
+    .is('onboarded_at', null)
+
+  if (error) throw error
+}
 
 // ─── The repair path ────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import { getDb } from './db'
  */
 
 export const PLAN_LIMITS = {
-  free: { label: 'Gratis', reports: 5, assessments: 10, questions: 40, materials: 10 },
+  free: { label: 'Gratis', reports: 10, assessments: 10, questions: 40, materials: 10 },
   pro: { label: 'Pro', reports: 200, assessments: 400, questions: 1000, materials: 200 },
 } as const
 
@@ -148,15 +148,52 @@ export async function assertQuota(
   return status
 }
 
-/** Article and noun together: "los informes", "las evaluaciones". */
-const QUOTA_NOUN: Record<QuotaKind, { article: string; noun: string }> = {
-  reports: { article: 'los', noun: 'informes' },
-  assessments: { article: 'las', noun: 'evaluaciones' },
-  questions: { article: 'las', noun: 'preguntas' },
-  materials: { article: 'los', noun: 'materiales generados con IA' },
+/**
+ * Artículo, singular y plural de cada uno.
+ *
+ * Los tres escritos a mano y no derivados: el castellano no pluraliza sacando
+ * una ese —"evaluaciones" es "evaluación", "materiales" es "material"— y una
+ * regla que acierte los cuatro casos es más larga y más frágil que la tabla.
+ */
+const QUOTA_NOUN: Record<QuotaKind, { article: string; one: string; many: string }> = {
+  reports: { article: 'los', one: 'informe', many: 'informes' },
+  assessments: { article: 'las', one: 'evaluación', many: 'evaluaciones' },
+  questions: { article: 'las', one: 'pregunta', many: 'preguntas' },
+  materials: {
+    article: 'los',
+    one: 'material generado con IA',
+    many: 'materiales generados con IA',
+  },
 }
 
 export function quotaMessage(status: QuotaStatus): string {
-  const { article, noun } = QUOTA_NOUN[status.kind]
-  return `Con tu plan ya usaste ${article} ${status.limit} ${noun} de este mes. Se renueva el 1.º.`
+  const { article, many } = QUOTA_NOUN[status.kind]
+  return `Con tu plan ya usaste ${article} ${status.limit} ${many} de este mes. Se renueva el 1.º.`
+}
+
+/** A cuántos de distancia del límite se empieza a avisar. */
+const WARN_FROM = 3
+
+/**
+ * El aviso de que se está por acabar el mes, o `null` cuando todavía sobra.
+ *
+ * La pantalla no muestra un contador permanente: saber que se usaron 2 de 10 no
+ * le sirve a nadie y ocupa lugar arriba de lo que se vino a hacer. Lo que sí
+ * importa es enterarse *antes* de chocar, y por eso esto aparece recién en los
+ * últimos tres.
+ *
+ * Devuelve `null` también cuando ya no queda ninguno: ahí el aviso no
+ * corresponde porque el límite ya se aplica solo, con `quotaMessage`, en el
+ * momento en que se intenta crear. Dos textos distintos diciendo lo mismo en la
+ * misma pantalla se contradicen apenas uno de los dos se queda viejo.
+ */
+export function quotaWarning(status: QuotaStatus): string | null {
+  if (status.remaining === 0 || status.remaining > WARN_FROM) return null
+
+  const { one, many } = QUOTA_NOUN[status.kind]
+  const single = status.remaining === 1
+
+  return `Te ${single ? 'queda' : 'quedan'} ${status.remaining} ${
+    single ? one : many
+  } este mes. Se renueva el 1.º.`
 }

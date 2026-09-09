@@ -18,7 +18,8 @@ import { AssessmentResults, getAssessment, suggestedGoals } from '@/server/asses
 
 import { currentPractitioner, currentUser } from '../../session'
 
-export const metadata: Metadata = { title: 'Evaluación · Hilo' }
+/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+export const metadata: Metadata = { title: 'Evaluación' }
 
 export default async function AssessmentPage({
   params,

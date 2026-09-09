@@ -52,7 +52,9 @@ export default async function HomePage() {
       {/* Runs itself the first time somebody lands here and never again, unless
           they ask for it from "Primeros pasos". It renders nothing until it
           decides, so it costs nothing on every other visit. */}
-      <AppTour />
+      {/* Una vez por cuenta, no por navegador: la marca vive en
+          `practitioners.onboarded_at`. */}
+      <AppTour seen={practitioner.onboarded_at !== null} />
 
       <PageHeader
         title={`¡Hola, ${firstName(practitioner.full_name)}! 👋`}

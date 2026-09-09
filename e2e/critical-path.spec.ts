@@ -72,11 +72,25 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
     // A new account is the only time this screen is reachable, and it is the
     // first thing every practitioner sees. If it ever renders a broken list
     // instead, nobody would find out from a unit test.
-    await expect(page.getByText('Empecemos por tu primer paciente')).toBeVisible()
+    //
+    // "Primeros pasos" *is* the empty state: the card that used to sit under it
+    // repeating the same instruction was removed, and this assertion was left
+    // pointing at the deleted copy — which is why CI had been red since then.
+    await expect(page.getByRole('heading', { name: 'Primeros pasos' })).toBeVisible()
+  })
+
+  await test.step('skips the tour that opens on a new account', async () => {
+    // The six-step tour opens by itself the first time, and its backdrop covers
+    // the screen and swallows clicks. Skipping it is the first thing a real
+    // practitioner does, so the test does it too — and asserting it closes is
+    // worth the line on its own: a tour that could not be dismissed would block
+    // every new account from reaching the product at all.
+    await page.getByRole('button', { name: 'Saltar' }).click()
+    await expect(page.getByRole('dialog', { name: /Recorrido por Hilo/ })).toBeHidden()
   })
 
   await test.step('loads a patient', async () => {
-    await page.getByRole('link', { name: 'Cargar mi primer paciente' }).click()
+    await page.getByRole('link', { name: 'Cargar paciente' }).click()
 
     await page.getByLabel('Nombre y apellido').fill(PATIENT)
     await page.getByLabel('Fecha de nacimiento').fill('2019-04-12')
@@ -101,7 +115,10 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
   })
 
   await test.step('registers a session against that goal', async () => {
-    await page.getByRole('link', { name: /Registrar sesión/ }).click()
+    // En la ficha el botón dice "Sesión" a secas, junto a "Evaluar" y "Generar
+    // informe". "Registrar sesión" es como se llama en la Agenda y en Primeros
+    // pasos, que llevan al mismo formulario desde otro lado.
+    await page.getByRole('link', { name: 'Sesión', exact: true }).click()
 
     // Ticking the goal is what writes `session_goals` and moves the progress —
     // the join that the whole clinical model hangs from.
@@ -155,7 +172,14 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
   await test.step('leaves the report where it can be found again', async () => {
     await page.goto('/informes')
 
+    // El informe recién hecho, en la lista, con el nombre del paciente.
+    //
+    // Antes esto verificaba además el contador "1 de 5 informes". Se quitó de la
+    // pantalla: el plan ya no se muestra mientras no haya forma de cambiarlo, y
+    // el aviso de cuota aparece recién cuando quedan tres. Con un solo informe
+    // hecho no hay nada que avisar, así que no hay nada que verificar acá.
     await expect(page.getByText(PATIENT).first()).toBeVisible()
-    await expect(page.getByText(/1 de 5 informes/)).toBeVisible()
+    // `CardTitle` es un `div`, no un encabezado, así que va por texto.
+    await expect(page.getByText('Últimos informes generados')).toBeVisible()
   })
 })
