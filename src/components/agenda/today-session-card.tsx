@@ -1,4 +1,4 @@
-import { TriangleAlert, Wallet } from '@/components/icons'
+import { TriangleAlert, User, Wallet } from '@/components/icons'
 import Link from 'next/link'
 
 import { PatientAvatar } from '@/components/patients/patient-avatar'
@@ -41,8 +41,19 @@ export function TodaySessionCard({
 }) {
   return (
     <div className="mb-3 rounded-2xl border border-border bg-card px-4 py-3.5 last:mb-0">
-      <div className="flex items-center gap-3">
-        <div className="w-[46px] shrink-0 text-[14px] font-extrabold text-violet tabular-nums">
+      {/* ─── Por qué el nombre baja de renglón en teléfono ──────────────────
+          Esta fila mide 281 px adentro de la tarjeta de Inicio, no 375: la
+          página tiene su margen, la tarjeta el suyo y ésta el suyo. La hora se
+          lleva 46, el avatar 38, el botón 79 y los espacios 36 — al nombre le
+          quedaban 82 y necesitaba 237. "Renata Fernández Olivera · 11 años"
+          aparecía como "Renata …".
+
+          Acortar la etiqueta del botón no alcanzaba: le devolvía nueve píxeles.
+          Así que abajo de `sm` el nombre se lleva la línea entera y la hora, la
+          cara y el botón se quedan arriba. En escritorio, donde entra, no
+          cambia nada. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-[46px] shrink-0 text-item font-extrabold text-violet tabular-nums">
           {formatTime(session.startTime)}
         </div>
 
@@ -52,11 +63,11 @@ export function TodaySessionCard({
           size={38}
         />
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-bold">
+        <div className="min-w-0 flex-1 max-sm:order-last max-sm:w-full max-sm:flex-none">
+          <p className="truncate text-item font-bold">
             {session.patientName}
             {ageLabel ? (
-              <span className="text-[13px] font-medium text-muted-foreground">
+              <span className="text-body font-medium text-muted-foreground">
                 {' · '}
                 {ageLabel}
               </span>
@@ -64,12 +75,15 @@ export function TodaySessionCard({
           </p>
         </div>
 
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/pacientes/${session.patientId}`}>Abrir ficha</Link>
+        <Button asChild variant="outline" size="sm" className="max-sm:ml-auto">
+          <Link href={`/pacientes/${session.patientId}`}>
+            <User className="size-4" />
+            Abrir ficha
+          </Link>
         </Button>
       </div>
 
-      <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3 text-[13px] leading-[1.55] text-[#4a5163]">
+      <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3 text-body leading-[1.55] text-[#4a5163]">
         {session.lastNote ? (
           <p>
             <Label>Última vez</Label>
@@ -116,7 +130,7 @@ export function TodaySessionCard({
               <span
                 key={alert.kind}
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[11.5px] font-semibold',
+                  'inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-micro font-semibold',
                   ALERT_CLASSES[alert.kind],
                 )}
               >
@@ -133,7 +147,7 @@ export function TodaySessionCard({
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <span className="mr-[7px] inline-block text-[10.5px] font-bold tracking-[0.4px] text-muted-foreground uppercase">
+    <span className="mr-[7px] inline-block text-micro font-bold tracking-[0.4px] text-muted-foreground uppercase">
       {children}
     </span>
   )

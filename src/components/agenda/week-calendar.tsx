@@ -184,7 +184,7 @@ export function WeekCalendar({
                   la vista es de lunes a viernes, la barra lo dice; el selector
                   está justo al lado para cambiarlo. */}
               {hiddenCount > 0 ? (
-                <span className="text-[12px] font-semibold text-violet">
+                <span className="text-meta font-semibold text-violet">
                   {hiddenCount === 1
                     ? '1 sesión el fin de semana'
                     : `${hiddenCount} sesiones el fin de semana`}
@@ -210,14 +210,14 @@ export function WeekCalendar({
               <div
                 key={day.date}
                 className={cn(
-                  'border-b border-l border-border px-1.5 py-3 text-center text-[13px] font-bold',
+                  'border-b border-l border-border px-1.5 py-3 text-center text-body font-bold',
                   isToday ? 'bg-violet-soft' : 'bg-[#faf9ff]',
                 )}
               >
                 {weekdayName(day.weekday)}
                 <div
                   className={cn(
-                    'mt-0.5 text-[11px] font-semibold',
+                    'mt-0.5 text-micro font-semibold',
                     isToday ? 'text-violet' : 'text-muted-foreground',
                   )}
                 >
@@ -233,7 +233,7 @@ export function WeekCalendar({
               hay alguno. */}
           {anyAllDay ? (
             <>
-              <div className="border-b border-border px-1.5 py-1 text-right text-[10px] text-muted-foreground">
+              <div className="border-b border-border px-1.5 py-1 text-right text-micro text-muted-foreground">
                 Todo el día
               </div>
               {days.map((day) => (
@@ -244,7 +244,7 @@ export function WeekCalendar({
                   {(allDayByDate.get(day.date) ?? []).map((block) => (
                     <div
                       key={block.id}
-                      className="truncate rounded-[7px] border border-dashed border-border bg-muted px-1.5 py-1 text-[11px] font-semibold text-muted-foreground"
+                      className="truncate rounded-[7px] border border-dashed border-border bg-muted px-1.5 py-1 text-micro font-semibold text-muted-foreground"
                     >
                       {block.title}
                     </div>
@@ -258,7 +258,7 @@ export function WeekCalendar({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="border-b border-border px-1.5 pt-1 text-right text-[11px] text-muted-foreground"
+                className="border-b border-border px-1.5 pt-1 text-right text-micro text-muted-foreground"
                 style={{ height: HOUR_HEIGHT }}
               >
                 {String(hour).padStart(2, '0')}:00
@@ -369,7 +369,7 @@ function Event({
   return (
     <div
       className={cn(
-        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-[11.5px] leading-tight font-semibold text-white',
+        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-micro leading-tight font-semibold text-white',
         appointment.status === 'cancelled' && 'line-through opacity-55',
         // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
         // Sin esto no habría forma de saber cuál de las doce es la que estás
@@ -399,7 +399,7 @@ function Event({
         </span>
       ) : null}
 
-      {/* Dicho también en palabras, para quien no ve el marco ni el glifo. */}
+      {/* Dicho también en palabras, para quien no ve el anillo ni el glifo. */}
       <span className="sr-only">{appointmentStatusLabel(appointment.status)}</span>
 
       <div style={{ paddingTop: labelTop }}>
@@ -429,7 +429,7 @@ function Event({
  */
 function Busy({ block, labelTop }: { block: BusyBlock; labelTop: number }) {
   return (
-    <div className="h-full overflow-hidden rounded-[9px] border border-dashed border-border bg-muted px-1.5 py-1.5 text-[11.5px] leading-tight text-muted-foreground">
+    <div className="h-full overflow-hidden rounded-[9px] border border-dashed border-border bg-muted px-1.5 py-1.5 text-micro leading-tight text-muted-foreground">
       <div style={{ paddingTop: labelTop }}>
         <div className="truncate font-semibold">{block.title}</div>
         <div className="font-normal opacity-90">
