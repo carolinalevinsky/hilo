@@ -11,18 +11,28 @@
  * serves, and every phrase is something you can do with a child on a Tuesday.
  * Keep the wording; add rows if a discipline is missing one.
  *
- * The keys are accent-sensitive fragments matched against the lowercased goal,
- * longest-useful-prefix style: 'fonológ' catches "conciencia fonológica" and
- * "fonológico" both. Order matters only in that the first match wins, which is
- * why the specific '/r/' sits above the general 'articul'.
+ * The keys are fragments matched against the goal with accents stripped from
+ * both sides, longest-useful-prefix style: 'fonolog' catches "conciencia
+ * fonológica", "fonológico" and somebody who typed it without the accent. Order
+ * matters only in that the first match wins, which is why the specific '/r/'
+ * sits above the general 'articul'.
+ *
+ * Matching used to compare the raw lowercased title against accented keys, and
+ * two ordinary goals fell through to the fallback because of it: "cálculo" typed
+ * without its accent missed 'cálcul', and "leer un texto" missed 'lector', which
+ * only catches "lectora". A goal that reaches the fallback is told
+ * "actividades graduadas centradas en ese objetivo", which is a polite way of
+ * saying nothing. The rows below are unchanged clinical content — only their
+ * keys were widened.
  */
 const BANK: readonly (readonly [string, string])[] = [
   ['/r/', 'praxias linguales y repetición de la /r/ en palabras cortas'],
   ['articul', 'praxias y producción del fonema en sílaba, palabra y frase'],
   ['vocabul', 'lotería de imágenes por campo semántico'],
   ['oracion', 'armar frases con apoyo visual'],
-  ['fonológ', 'segmentar y unir sonidos con palmas'],
-  ['lector', 'lectura repetida de un texto breve'],
+  ['fonolog', 'segmentar y unir sonidos con palmas'],
+  ['lect', 'lectura repetida de un texto breve'],
+  ['leer', 'lectura repetida de un texto breve'],
   ['fluid', 'lectura cronometrada de listas de palabras'],
   ['atenci', 'tareas cortas de 10 minutos con pausa activa'],
   ['pinza', 'circuito de pinza: encastre, ensartado y pinzas'],
@@ -32,7 +42,7 @@ const BANK: readonly (readonly [string, string])[] = [
   ['avd', 'práctica guiada de la actividad de la vida diaria'],
   ['expres', 'juego de descripción de láminas'],
   ['enunci', 'ampliar frases sumando una palabra'],
-  ['cálcul', 'cálculo mental con material concreto'],
+  ['calcul', 'cálculo mental con material concreto'],
   ['concien', 'rimas y juegos con sonidos'],
   ['escrit', 'copia guiada respetando el renglón'],
   ['problem', 'resolver problemas cortos subrayando los datos'],
@@ -43,7 +53,7 @@ const BANK: readonly (readonly [string, string])[] = [
   ['ansied', 'respiración de la caja y registro de disparadores'],
   ['emocion', 'termómetro emocional y diario de emociones'],
   ['social', 'role-play de situaciones y semáforo social'],
-  ['sueño', 'pauta de higiene del sueño'],
+  ['sueno', 'pauta de higiene del sueño'],
   ['equilib', 'circuito de equilibrio estático y dinámico'],
   ['esquema', 'juego de reconocimiento del propio cuerpo'],
   ['lateral', 'juegos de derecha/izquierda y orientación espacial'],
@@ -59,6 +69,14 @@ const BANK: readonly (readonly [string, string])[] = [
 const FALLBACK = 'actividades graduadas centradas en ese objetivo'
 
 export function suggestedActivity(goalTitle: string): string {
-  const text = goalTitle.toLowerCase()
+  const text = withoutAccents(goalTitle)
   return BANK.find(([key]) => text.includes(key))?.[1] ?? FALLBACK
+}
+
+/** Lowercase with accents stripped, so "fonológica" and "fonologica" both match. */
+function withoutAccents(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
 }
