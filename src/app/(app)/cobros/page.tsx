@@ -135,11 +135,23 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     />
 
                     <div className="min-w-[140px] flex-1">
-                      <p className="text-[13.5px] font-bold">{row.fullName}</p>
+                      <p className="text-[13.5px] font-bold">
+                        {row.fullName}
+                        {/* Dicho, y no sólo insinuado por la fila más apagada:
+                            si el mes cierra con una cifra que no cuadra, esto
+                            es lo que la explica. */}
+                        {row.archived ? (
+                          <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                            Archivado
+                          </span>
+                        ) : null}
+                      </p>
                       <p className="text-[12px] text-muted-foreground">
-                        {row.expected === null
-                          ? 'Sin honorario cargado'
-                          : `${money(row.paid)} de ${money(row.expected)}`}
+                        {row.archived
+                          ? `${money(row.paid)} cobrado`
+                          : row.expected === null
+                            ? 'Sin honorario cargado'
+                            : `${money(row.paid)} de ${money(row.expected)}`}
                         {row.payments.length > 0
                           ? ` · ${row.payments
                               .map((payment) => formatDayMonth(payment.paid_on))

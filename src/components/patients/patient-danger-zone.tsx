@@ -28,13 +28,17 @@ export function PatientDangerZone({
   patientId,
   fullName,
   archived,
+  scheduleCount,
 }: {
   patientId: string
   fullName: string
   archived: boolean
+  /** Cuántos horarios fijos activos tiene. Cero significa no preguntar nada. */
+  scheduleCount: number
 }) {
   const [confirming, setConfirming] = useState(false)
   const [typed, setTyped] = useState('')
+  const [choosing, setChoosing] = useState(false)
 
   const expected = firstName(fullName)
   const matches = typed.trim().toLowerCase() === expected.toLowerCase()
@@ -58,27 +62,77 @@ export function PatientDangerZone({
         </p>
       </div>
 
+      {/* Archivar a alguien con horario fijo son dos decisiones, no una, y hasta
+          ahora la segunda se tomaba sola: la regla quedaba activa y le seguía
+          creando sesiones a un paciente archivado.
+
+          La elección viaja en el propio formulario —dos botones de submit con
+          el mismo `name`— así que no hay estado que sincronizar ni una petición
+          aparte que pueda quedar a medias. Sin horario fijo no hay nada que
+          preguntar y el botón archiva de una. */}
       <form action={setArchivedAction}>
         <input type="hidden" name="patientId" value={patientId} />
         <input type="hidden" name="archived" value={archived ? 'false' : 'true'} />
-        <Button type="submit" variant="outline" size="sm">
-          {archived ? (
-            <>
+
+        {archived ? (
+          <>
+            <Button type="submit" variant="outline" size="sm">
               <ArchiveRestore className="size-4" />
               Reactivar paciente
-            </>
-          ) : (
-            <>
+            </Button>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Vuelve a aparecer en tu lista de pacientes activos, con su horario fijo si lo
+              conservaste.
+            </p>
+          </>
+        ) : choosing ? (
+          <div className="space-y-2.5 rounded-xl bg-muted p-3.5">
+            <p className="text-[12.5px] leading-relaxed">
+              {expected} tiene{' '}
+              {scheduleCount === 1 ? 'un horario fijo' : `${scheduleCount} horarios fijos`}. Las
+              sesiones de hoy en adelante salen de la agenda en los dos casos. Lo que cambia
+              es qué pasa con la regla.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" name="schedules" value="keep" size="sm">
+                <Archive className="size-4" />
+                Archivar y conservar el horario
+              </Button>
+              <Button
+                type="submit"
+                name="schedules"
+                value="deactivate"
+                variant="outline"
+                size="sm"
+              >
+                Archivar y darlo de baja
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setChoosing(false)}>
+                Cancelar
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Conservarlo es lo reversible: si reactivás a {expected}, el horario vuelve solo.
+              Darlo de baja no se deshace — hay que cargarlo de nuevo.
+            </p>
+          </div>
+        ) : (
+          <>
+            <Button
+              type={scheduleCount > 0 ? 'button' : 'submit'}
+              variant="outline"
+              size="sm"
+              onClick={scheduleCount > 0 ? () => setChoosing(true) : undefined}
+            >
               <Archive className="size-4" />
               Archivar paciente
-            </>
-          )}
-        </Button>
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          {archived
-            ? 'Vuelve a aparecer en tu lista de pacientes activos.'
-            : 'Sale de tu lista del día a día. No se borra nada y podés reactivarlo cuando quieras.'}
-        </p>
+            </Button>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Sale de tu lista del día a día. No se borra nada y podés reactivarlo cuando
+              quieras.
+            </p>
+          </>
+        )}
       </form>
 
       {confirming ? (

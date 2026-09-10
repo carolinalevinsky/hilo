@@ -99,6 +99,8 @@ export type LedgerRow = {
   patientId: string
   fullName: string
   color: string | null
+  /** Terminó el tratamiento. La fila se muestra igual, dicho con todas las letras. */
+  archived: boolean
   /** What this patient is expected to pay for the month, if it can be worked out. */
   expected: number | null
   paid: number
@@ -142,10 +144,11 @@ export async function monthlyLedger(
   const [{ data: patients, error: patientsError }, payments] = await Promise.all([
     db
       .from('patients')
-      .select('id, full_name, color, session_fee, billing_frequency, expected_sessions_per_month')
+      .select(
+        'id, full_name, color, session_fee, billing_frequency, expected_sessions_per_month, archived_at',
+      )
       .eq('practitioner_id', practitionerId)
       .is('deleted_at', null)
-      .is('archived_at', null)
       .order('full_name'),
     listPayments(practitionerId, period),
   ])
@@ -159,26 +162,40 @@ export async function monthlyLedger(
     else byPatient.set(payment.patient_id, [payment])
   }
 
-  const rows: LedgerRow[] = (patients ?? []).map((patient) => {
-    const own = byPatient.get(patient.id) ?? []
-    const paid = own.reduce((sum, payment) => sum + Number(payment.amount), 0)
-    const expected = expectedForMonth(patient)
+  // Los archivados entran, pero sólo si ese mes tuvieron movimiento.
+  //
+  // Antes se los filtraba en la consulta, así que su plata quedaba en la tabla
+  // sin sumar a nada: registrabas un cobro, archivabas al paciente, y el total
+  // de agosto bajaba solo. Un libro contable no puede cambiar porque en octubre
+  // archivaste a alguien.
+  //
+  // Sin el `filter` estarían todos siempre, y la pantalla se llenaría de gente
+  // que terminó el tratamiento hace un año y no debe ni pagó nada.
+  const rows: LedgerRow[] = (patients ?? [])
+    .filter((patient) => !patient.archived_at || (byPatient.get(patient.id)?.length ?? 0) > 0)
+    .map((patient) => {
+      const own = byPatient.get(patient.id) ?? []
+      const paid = own.reduce((sum, payment) => sum + Number(payment.amount), 0)
+      // De alguien archivado no se espera nada más, así que no engrosa lo
+      // pendiente. Lo que pagó sí cuenta: eso ya entró.
+      const expected = patient.archived_at ? null : expectedForMonth(patient)
 
-    return {
-      patientId: patient.id,
-      fullName: patient.full_name,
-      color: patient.color,
-      expected,
-      paid,
-      outstanding: expected === null ? null : expected - paid,
-      payments: own,
-      billing: {
-        sessionFee: patient.session_fee === null ? null : Number(patient.session_fee),
-        frequency: patient.billing_frequency,
-        expectedSessionsPerMonth: patient.expected_sessions_per_month,
-      },
-    }
-  })
+      return {
+        patientId: patient.id,
+        fullName: patient.full_name,
+        color: patient.color,
+        archived: Boolean(patient.archived_at),
+        expected,
+        paid,
+        outstanding: expected === null ? null : expected - paid,
+        payments: own,
+        billing: {
+          sessionFee: patient.session_fee === null ? null : Number(patient.session_fee),
+          frequency: patient.billing_frequency,
+          expectedSessionsPerMonth: patient.expected_sessions_per_month,
+        },
+      }
+    })
 
   return {
     period,

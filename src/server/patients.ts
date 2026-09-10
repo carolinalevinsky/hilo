@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { Database } from '@/lib/database.types'
 import { searchPattern } from '@/lib/search'
 
+import { clearUpcomingFor, deactivateSchedulesFor } from './appointments'
 import { logAction } from './audit'
 import { getDb } from './db'
 
@@ -466,14 +467,35 @@ export async function countPatients(practitionerId: string) {
 
 // ─── Leaving ────────────────────────────────────────────────────────────────
 
+/** Qué se hace con los horarios fijos al archivar. Lo elige la profesional. */
+export type ArchiveSchedules = 'keep' | 'deactivate'
+
 /**
  * Archiving is for a patient who finished treatment: out of the daily list,
  * every record intact, reversible in one click.
+ *
+ * El horario fijo no se resolvía, y ese era el agujero: la regla quedaba activa
+ * y `materialiseAppointments` le seguía creando sesiones cada vez que alguien
+ * abría la Agenda. El paciente estaba archivado y aparecía la semana que viene
+ * igual.
+ *
+ * Ahora hay dos salidas y las elige quien archiva, porque son dos intenciones
+ * distintas y ninguna es obviamente la correcta:
+ *
+ *   `keep` — la regla queda guardada y deja de generar sola, porque
+ *   `listSchedules` mira el estado del paciente. Desarchivar la devuelve sin que
+ *   haya que cargar nada, que es lo que promete "reversible en un click".
+ *
+ *   `deactivate` — la regla se marca terminada. Más explícito, y no vuelve.
+ *
+ * En las dos, las sesiones futuras que la regla ya había creado se borran: de
+ * hoy en adelante, dejando el pasado quieto.
  */
 export async function setPatientArchived(
   practitionerId: string,
   patientId: string,
   archived: boolean,
+  schedules: ArchiveSchedules = 'keep',
 ) {
   const db = await getDb()
 
@@ -484,6 +506,17 @@ export async function setPatientArchived(
     .eq('practitioner_id', practitionerId)
 
   if (error) throw error
+
+  // Sólo al archivar. Desarchivar no resucita sesiones borradas —se vuelven a
+  // generar solas si la regla quedó viva— y menos todavía revive una regla que
+  // se dio de baja a propósito.
+  if (archived) {
+    await clearUpcomingFor(practitionerId, patientId)
+    if (schedules === 'deactivate') {
+      await deactivateSchedulesFor(practitionerId, patientId)
+    }
+  }
+
   await logAction(practitionerId, 'archive', 'patient', patientId)
 }
 
@@ -505,6 +538,13 @@ export async function softDeletePatient(practitionerId: string, patientId: strin
     .eq('practitioner_id', practitionerId)
 
   if (error) throw error
+
+  // Sin preguntar, a diferencia de archivar: acá no hay vuelta que preservar.
+  // Una familia que ejerció el derecho al olvido no puede seguir apareciendo en
+  // la agenda de la semana que viene porque una regla quedó viva.
+  await clearUpcomingFor(practitionerId, patientId)
+  await deactivateSchedulesFor(practitionerId, patientId)
+
   await logAction(practitionerId, 'delete', 'patient', patientId)
 }
 

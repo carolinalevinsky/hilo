@@ -115,9 +115,14 @@ export async function setArchivedAction(formData: FormData) {
   const user = await requireUser()
   const patientId = String(formData.get('patientId'))
   const archived = formData.get('archived') === 'true'
+  // `keep` por defecto: es la opción que no pierde nada, y es la que
+  // corresponde cuando el paciente no tiene ningún horario fijo y la pantalla
+  // no llegó a preguntar.
+  const schedules = formData.get('schedules') === 'deactivate' ? 'deactivate' : 'keep'
 
-  await setPatientArchived(user.id, patientId, archived)
+  await setPatientArchived(user.id, patientId, archived, schedules)
   revalidatePath('/pacientes')
+  revalidatePath('/agenda')
   revalidatePath(`/pacientes/${patientId}`)
 }
 
@@ -127,6 +132,7 @@ export async function deletePatientAction(formData: FormData) {
 
   await softDeletePatient(user.id, patientId)
   revalidatePath('/pacientes')
+  revalidatePath('/agenda')
   redirect('/pacientes')
 }
 

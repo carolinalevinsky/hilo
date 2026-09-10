@@ -29,6 +29,17 @@ function monthStart(offset = 0): string {
   return toDateInput(date)
 }
 
+/**
+ * Los números de la pantalla de Estadísticas.
+ *
+ * Todas las consultas excluyen a los pacientes borrados, y antes sólo lo hacía
+ * la de `activePatients`. Se podía llegar a "0 pacientes activos / 12 sesiones
+ * este mes", que no es un número mal calculado sino dos preguntas distintas
+ * contestadas sobre poblaciones distintas.
+ *
+ * Los archivados sí cuentan: esas sesiones ocurrieron y ese trabajo se hizo.
+ * Sólo salen de `activePatients`, que es lo que la palabra dice.
+ */
 export async function practitionerStats(practitionerId: string): Promise<PractitionerStats> {
   const db = await getDb()
 
@@ -45,28 +56,33 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
         .is('archived_at', null),
       db
         .from('sessions')
-        .select('id', { count: 'exact', head: true })
+        .select('id, patients!inner(id)', { count: 'exact', head: true })
         .eq('practitioner_id', practitionerId)
+        .is('patients.deleted_at', null)
         .gte('held_on', thisMonth),
       db
         .from('sessions')
-        .select('id', { count: 'exact', head: true })
+        .select('id, patients!inner(id)', { count: 'exact', head: true })
         .eq('practitioner_id', practitionerId)
+        .is('patients.deleted_at', null)
         .gte('held_on', lastMonth)
         .lt('held_on', thisMonth),
       db
         .from('goals')
-        .select('progress, is_active')
-        .eq('practitioner_id', practitionerId),
+        .select('progress, is_active, patients!inner(id)')
+        .eq('practitioner_id', practitionerId)
+        .is('patients.deleted_at', null),
       db
         .from('reports')
-        .select('id', { count: 'exact', head: true })
+        .select('id, patients!inner(id)', { count: 'exact', head: true })
         .eq('practitioner_id', practitionerId)
+        .is('patients.deleted_at', null)
         .gte('created_at', startOfDayInUruguay(thisMonth).toISOString()),
       db
         .from('appointments')
-        .select('status')
+        .select('status, patients!inner(id)')
         .eq('practitioner_id', practitionerId)
+        .is('patients.deleted_at', null)
         .gte('scheduled_on', lastMonth)
         .lt('scheduled_on', today()),
     ])

@@ -19,6 +19,7 @@ import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
+import { listSchedules } from '@/server/appointments'
 import { listAssessments } from '@/server/assessments'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
@@ -37,17 +38,29 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   const patient = await getPatient(user.id, id)
   if (!patient) notFound()
 
-  const [photoUrl, practitioner, goals, progress, sessions, planItems, assessments, reports] =
-    await Promise.all([
-      getPhotoUrl(patient.photo_path),
-      currentPractitioner(user.id),
-      listGoals(user.id, patient.id),
-      listGoalProgress(user.id, patient.id),
-      listSessions(user.id, patient.id),
-      listPlanItems(user.id, patient.id),
-      listAssessments(user.id, patient.id),
-      listReports(user.id, patient.id),
-    ])
+  const [
+    photoUrl,
+    practitioner,
+    goals,
+    progress,
+    sessions,
+    planItems,
+    assessments,
+    reports,
+    schedules,
+  ] = await Promise.all([
+    getPhotoUrl(patient.photo_path),
+    currentPractitioner(user.id),
+    listGoals(user.id, patient.id),
+    listGoalProgress(user.id, patient.id),
+    listSessions(user.id, patient.id),
+    listPlanItems(user.id, patient.id),
+    listAssessments(user.id, patient.id),
+    listReports(user.id, patient.id),
+    // Para saber si al archivar hay que preguntar algo. Sin horario fijo no hay
+    // nada que decidir y la pregunta sería ruido.
+    listSchedules(user.id, patient.id),
+  ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
   // that the practitioner is there. The content stays behind the login.
@@ -259,6 +272,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
                 patientId={patient.id}
                 fullName={patient.full_name}
                 archived={Boolean(patient.archived_at)}
+                scheduleCount={schedules.length}
               />
             </CardContent>
           </Card>

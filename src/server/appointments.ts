@@ -117,11 +117,18 @@ export async function listSchedules(
 ): Promise<ScheduleWithPatient[]> {
   const db = await getDb()
 
+  // El estado del paciente manda sobre la regla. `materialiseAppointments` va
+  // por acá, así que archivar a alguien alcanza para que su horario deje de
+  // crear sesiones — sin tocar la regla, que es lo que hace que desarchivar lo
+  // devuelva solo. La otra salida, dar el horario de baja, es una decisión
+  // aparte que se pregunta al archivar y escribe `is_active`.
   let query = db
     .from('schedules')
-    .select('*, patients(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color)')
     .eq('practitioner_id', practitionerId)
     .eq('is_active', true)
+    .is('patients.deleted_at', null)
+    .is('patients.archived_at', null)
 
   if (patientId) query = query.eq('patient_id', patientId)
 
@@ -131,6 +138,53 @@ export async function listSchedules(
 
   if (error) throw error
   return data
+}
+
+/**
+ * Saca de la agenda lo que todavía no pasó, para un paciente que se archiva o
+ * se borra.
+ *
+ * De hoy en adelante y sólo lo que sigue `scheduled`: el pasado queda intacto
+ * porque esas sesiones ocurrieron —o se faltó a ellas— y en cualquiera de los
+ * dos casos son historia. Una sesión ya marcada como asistida o ausente
+ * tampoco se toca, aunque estuviera fechada mañana: alguien la registró a
+ * mano y no es de este código deshacerlo.
+ */
+export async function clearUpcomingFor(practitionerId: string, patientId: string) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('appointments')
+    .delete()
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+
+  if (error) throw error
+}
+
+/**
+ * Da de baja todos los horarios fijos de un paciente.
+ *
+ * Es la salida explícita de las dos que ofrece el diálogo de archivar, y la
+ * única para un paciente borrado. A diferencia de archivar y conservar, esto no
+ * se deshace desarchivando: la regla queda marcada como terminada.
+ *
+ * No borra sesiones. Quien llama ya pasó por `clearUpcomingFor`, y hacerlo dos
+ * veces sólo serviría para que las dos mitades se desincronicen algún día.
+ */
+export async function deactivateSchedulesFor(practitionerId: string, patientId: string) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('schedules')
+    .update({ is_active: false, ends_on: today() })
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('is_active', true)
+
+  if (error) throw error
 }
 
 // ─── Materialising occurrences ──────────────────────────────────────────────
@@ -301,10 +355,18 @@ export async function listAppointments(
 ): Promise<AppointmentWithPatient[]> {
   const db = await getDb()
 
+  // `!inner` y no un filtro después: un paciente borrado sale de la grilla, no
+  // sale sin nombre. Es derecho al olvido (Ley N.º 18.331) y la fila entera es
+  // lo que no corresponde mostrar.
+  //
+  // Sólo `deleted_at`. Un paciente archivado terminó el tratamiento y sus
+  // sesiones pasadas son historia que se sigue pudiendo mirar; las futuras se
+  // borran al archivar, así que no hay nada que esconder acá.
   const { data, error } = await db
     .from('appointments')
-    .select('*, patients(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color)')
     .eq('practitioner_id', practitionerId)
+    .is('patients.deleted_at', null)
     .gte('scheduled_on', from)
     .lte('scheduled_on', to)
     .order('scheduled_on', { ascending: true })
