@@ -1,6 +1,6 @@
 import { MobileNav } from '@/components/app-shell/mobile-nav'
 import { Sidebar } from '@/components/app-shell/sidebar'
-import { AskHiloFab } from '@/components/assistant/ask-hilo-fab'
+import { AskHiloProvider } from '@/components/assistant/ask-hilo-dock'
 import { InstallPrompt } from '@/components/install-prompt'
 import { Toaster } from '@/components/ui/sonner'
 import { disciplineLabel } from '@/lib/disciplines'
@@ -39,22 +39,25 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
   if (!practitioner) redirect('/completar-perfil')
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[236px_minmax(0,1fr)]">
-      <Sidebar
-        fullName={practitioner.full_name}
-        disciplineLabel={disciplineLabel(practitioner.discipline)}
-      />
+    // The assistant panel is opened from two places — the sidebar on a desktop,
+    // the bottom bar on a phone — so the provider sits above both.
+    <AskHiloProvider>
+      <div className="grid min-h-dvh lg:grid-cols-[236px_minmax(0,1fr)]">
+        <Sidebar
+          fullName={practitioner.full_name}
+          disciplineLabel={disciplineLabel(practitioner.discipline)}
+        />
 
-      <main className="min-w-0 px-3.5 pt-4.5 pb-[calc(80px+env(safe-area-inset-bottom))] lg:px-8.5 lg:pt-11 lg:pb-16">
-        {/* Signed-in screens only. Offering to install the app to someone who
-            has not signed in yet is asking for a commitment before the value. */}
-        <InstallPrompt />
-        {children}
-      </main>
+        <main className="min-w-0 px-3.5 pt-4.5 pb-[calc(80px+env(safe-area-inset-bottom))] lg:px-8.5 lg:pt-11 lg:pb-16">
+          {/* Signed-in screens only. Offering to install the app to someone who
+              has not signed in yet is asking for a commitment before the value. */}
+          <InstallPrompt />
+          {children}
+        </main>
 
-      <AskHiloFab />
-      <MobileNav />
-      <Toaster position="top-center" />
-    </div>
+        <MobileNav />
+        <Toaster position="top-center" />
+      </div>
+    </AskHiloProvider>
   )
 }
