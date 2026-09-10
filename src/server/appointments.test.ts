@@ -78,6 +78,44 @@ describe('occurrencesBetween', () => {
     expect(dates).toEqual(['2026-08-03', '2026-08-10'])
   })
 
+  it('sigue generando para un horario de hace muchos años', () => {
+    // La guarda de 400 vueltas se contaba desde `starts_on`, así que la gastaba
+    // el tiempo transcurrido y no el trabajo pedido: un horario semanal de hace
+    // más de siete años y medio dejaba de generar sesiones, en silencio. Diez
+    // años de antigüedad son 520 lunes, muy por encima del tope viejo.
+    const dates = occurrencesBetween(
+      { weekday: MONDAY, frequency: 'weekly', starts_on: '2016-01-04', ends_on: null },
+      '2026-08-03',
+      '2026-08-31',
+    )
+    expect(dates).toEqual([
+      '2026-08-03',
+      '2026-08-10',
+      '2026-08-17',
+      '2026-08-24',
+      '2026-08-31',
+    ])
+  })
+
+  it('el salto hasta la ventana no corre la quincena', () => {
+    // Lo que el salto no puede romper: adelantarse de a `stepDays` mantiene la
+    // paridad del ancla. Si la corriera, cada sesión futura de un horario
+    // quincenal viejo quedaría una semana movida — plausible y equivocada.
+    const anchor = '2018-08-06'
+    const dates = occurrencesBetween(
+      { weekday: MONDAY, frequency: 'biweekly', starts_on: anchor, ends_on: null },
+      '2026-08-01',
+      '2026-08-31',
+    )
+
+    expect(dates.length).toBeGreaterThan(0)
+    const anchorTime = new Date(`${anchor}T00:00:00`).getTime()
+    for (const date of dates) {
+      const days = (new Date(`${date}T00:00:00`).getTime() - anchorTime) / 86_400_000
+      expect(days % 14).toBe(0)
+    }
+  })
+
   it('returns nothing for a window before the rule starts', () => {
     const dates = occurrencesBetween(
       { weekday: MONDAY, frequency: 'weekly', starts_on: '2026-09-07', ends_on: null },

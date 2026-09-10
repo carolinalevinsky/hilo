@@ -86,9 +86,17 @@ export async function createSchedule(practitionerId: string, input: unknown) {
 }
 
 /**
- * Turns a rule off and clears the occurrences it had already produced from today
- * onwards. The past is left exactly as it was — those appointments happened, or
- * were missed, and either way they are history.
+ * Turns a rule off and clears the occurrences it had already produced, from
+ * tomorrow onwards. The past is left exactly as it was — those appointments
+ * happened, or were missed, and either way they are history.
+ *
+ * **Desde mañana, no desde hoy.** `ends_on` se escribe con la fecha de hoy, o
+ * sea que la regla llega hasta hoy inclusive; borrar `>= hoy` se llevaba puesta
+ * la sesión de esta tarde, que según lo que la misma función acaba de escribir
+ * tenía que quedar. Las dos mitades decían cosas distintas y ganaba la de abajo.
+ *
+ * Archivar un paciente sí borra la de hoy, y no es una incoherencia con esto:
+ * ahí la decisión es sacarlo de la agenda ya. Ver `clearUpcomingFor`.
  */
 export async function deactivateSchedule(practitionerId: string, scheduleId: string) {
   const db = await getDb()
@@ -106,7 +114,7 @@ export async function deactivateSchedule(practitionerId: string, scheduleId: str
     .eq('practitioner_id', practitionerId)
     .eq('schedule_id', scheduleId)
     .eq('status', 'scheduled')
-    .gte('scheduled_on', today())
+    .gt('scheduled_on', today())
 
   if (cleanupError) throw cleanupError
 }
@@ -263,6 +271,21 @@ export function occurrencesBetween(
   // That is what a practitioner means by "once a month" for a standing session:
   // the slot stays the same, which a calendar-month rule would not preserve.
   const stepDays = schedule.frequency === 'weekly' ? 7 : schedule.frequency === 'biweekly' ? 14 : 28
+
+  // Saltar de una hasta la ventana, en vez de llegar paso a paso.
+  //
+  // La guarda de abajo contaba desde `starts_on`, así que la gastaba el tiempo
+  // transcurrido y no el trabajo a hacer: un horario semanal empezado hace más
+  // de siete años y medio agotaba las 400 vueltas antes de llegar a la semana
+  // que se está mirando, y dejaba de generar sesiones sin decir nada. Una
+  // profesional con un paciente de años lo habría visto; nadie más.
+  //
+  // Con el salto, la guarda cubre la ventana pedida —siete días, tres semanas,
+  // un año— que es lo que tiene que acotar.
+  if (cursor < start) {
+    const daysBehind = Math.floor((start.getTime() - cursor.getTime()) / 86_400_000)
+    cursor.setDate(cursor.getDate() + Math.floor(daysBehind / stepDays) * stepDays)
+  }
 
   // A guard, not a limit: any rule stepping at least a week reaches a year's
   // window in well under this. It exists so a bad `starts_on` cannot spin.

@@ -9,7 +9,7 @@ import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
 import { sendFormatRequestNotification } from '@/server/notifications'
-import { recordUsage } from '@/server/ai-usage'
+import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
@@ -56,20 +56,31 @@ export async function createReportAction(
 
   // Una unidad por informe creado. Antes la contaba la fila de `reports`, que
   // la profesional puede borrar; ahora la cuenta `ai_usage`, que no.
-  await recordUsage(user.id, 'reports')
+  const usageId = await recordUsage(user.id, 'reports')
 
-  const report = await createReport(user.id, {
-    patientId,
-    recipient,
-    title: titleFor(recipient, practitioner.discipline, context.patientName),
-    content: reportFallback({
-      context,
+  // Anotar antes y devolver si falla, y no anotar después. Al revés, un insert
+  // que falla se llevaba la unidad puesta; pero anotar después dejaría que un
+  // informe creado quede sin contar si el ledger es el que falla, y ése es el
+  // lado que no puede ceder — es el contador que la profesional no puede
+  // borrar.
+  let report
+  try {
+    report = await createReport(user.id, {
+      patientId,
       recipient,
-      disciplineId: practitioner.discipline,
-    }),
-    inputNotes,
-    aiGenerated: false,
-  })
+      title: titleFor(recipient, practitioner.discipline, context.patientName),
+      content: reportFallback({
+        context,
+        recipient,
+        disciplineId: practitioner.discipline,
+      }),
+      inputNotes,
+      aiGenerated: false,
+    })
+  } catch (error) {
+    await releaseUsage(usageId)
+    throw error
+  }
 
   revalidatePath('/informes')
   redirect(`/informes/${report.id}?ia=1`)

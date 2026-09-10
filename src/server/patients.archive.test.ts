@@ -32,9 +32,8 @@ vi.mock('./db', () => ({
 }))
 
 const { setPatientArchived, softDeletePatient } = await import('./patients')
-const { listAppointments, listSchedules, materialiseAppointments } = await import(
-  './appointments'
-)
+const { deactivateSchedule, listAppointments, listSchedules, materialiseAppointments } =
+  await import('./appointments')
 const { monthlyLedger } = await import('./payments')
 
 const service = serviceClient()
@@ -85,6 +84,15 @@ async function upcomingCountFor(patientId: string) {
     .select('id', { count: 'exact', head: true })
     .eq('patient_id', patientId)
     .gte('scheduled_on', today())
+  return count ?? 0
+}
+
+async function countOn(patientId: string, date: string) {
+  const { count } = await service
+    .from('appointments')
+    .select('id', { count: 'exact', head: true })
+    .eq('patient_id', patientId)
+    .eq('scheduled_on', date)
   return count ?? 0
 }
 
@@ -276,5 +284,24 @@ describe('el libro de Cobros', () => {
 
     const ledger = await monthlyLedger(practitionerId, period)
     expect(ledger.rows.some((row) => row.patientId === fabio)).toBe(false)
+  })
+})
+
+describe('dar de baja un horario', () => {
+  it('conserva la sesión de hoy, que es lo que dice ends_on', async () => {
+    const hugo = await newPatient('Hugo Prueba')
+    const scheduleId = await newSchedule(hugo)
+    await materialiseAppointments(practitionerId, from, to)
+
+    expect(await countOn(hugo, today())).toBe(1)
+    expect(await upcomingCountFor(hugo)).toBeGreaterThan(1)
+
+    await deactivateSchedule(practitionerId, scheduleId)
+
+    // `ends_on` se escribe con la fecha de hoy, o sea que la regla llega hasta
+    // hoy inclusive. La limpieza borraba desde hoy y se llevaba puesta la sesión
+    // de esta tarde: las dos mitades de la misma función decían cosas distintas.
+    expect(await countOn(hugo, today())).toBe(1)
+    expect(await upcomingCountFor(hugo)).toBe(1)
   })
 })
