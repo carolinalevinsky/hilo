@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/page-header'
 import { PeriodNav } from '@/components/period-nav'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { MercadoPagoCard } from '@/components/payments/mercadopago-card'
+import { FEATURES } from '@/lib/features'
 import { BillingDialog } from '@/components/payments/billing-dialog'
 import { PaymentDialog } from '@/components/payments/payment-dialog'
 import { PaymentLinkButton } from '@/components/payments/payment-link-button'
@@ -207,7 +208,15 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
             </CardContent>
           </Card>
 
-          <MercadoPagoCard connected={mpConnected} />
+          {/* Apagado para la v1 — ver `src/lib/features.ts`. El botón de generar
+              link ya desaparece solo, porque `isMercadoPagoConnected` devuelve
+              `false` con la bandera baja; esta tarjeta hay que esconderla
+              aparte, porque su versión "sin conectar" es justamente la que
+              invita a conectar.
+
+              Lo que sigue prendido es todo el registro: anotar un pago a mano,
+              subir el comprobante y este mismo libro. Eso no toca plata. */}
+          {FEATURES.mercadoPago ? <MercadoPagoCard connected={mpConnected} /> : null}
 
           {ledger.rows.some((row) => row.payments.length > 0) ? (
             <Card className="mt-4">

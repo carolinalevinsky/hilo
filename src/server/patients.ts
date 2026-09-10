@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { FEATURES } from '@/lib/features'
 import { searchPattern } from '@/lib/search'
 
 import { clearUpcomingFor, deactivateSchedulesFor } from './appointments'
@@ -248,6 +249,15 @@ export async function ensurePatientRoom(
   practitionerId: string,
   patientId: string,
 ): Promise<string | null> {
+  // Apagado para la v1. La sala de `meet.jit.si` es pública: cualquiera con la
+  // dirección entra, sin sala de espera ni autenticación, y no hay acuerdo de
+  // tratamiento de datos con el proveedor. Ver `src/lib/features.ts`.
+  //
+  // Devuelve `null`, que es lo que ya devuelve para un paciente que no existe,
+  // así que quien llama no necesita un camino nuevo. Y no crea la sala: apagado
+  // no puede seguir escribiendo `room_id` en las fichas.
+  if (!FEATURES.videoCalls) return null
+
   const db = await getDb()
 
   const { data: patient, error } = await db
@@ -301,6 +311,8 @@ export async function rotatePatientRoom(
   practitionerId: string,
   patientId: string,
 ): Promise<string | null> {
+  if (!FEATURES.videoCalls) return null
+
   const db = await getDb()
   const roomId = newRoomId()
 
