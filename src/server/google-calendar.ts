@@ -26,6 +26,9 @@ import { connectionFor, pullStateFor, saveSyncPoint } from './google'
 
 const API = 'https://www.googleapis.com/calendar/v3/calendars'
 
+/** Guarda contra un `nextPageToken` que no avanza. 250 por página. */
+const MAX_SYNC_PAGES = 40
+
 type AppointmentForSync = {
   id: string
   patient_id: string
@@ -283,8 +286,12 @@ async function pullOnce(
   calendarId: string,
   syncToken: string | null,
   retriedFromScratch = false,
+  pageToken?: string,
+  pageGuard = 0,
 ): Promise<number> {
   const params = new URLSearchParams({ maxResults: '250', showDeleted: 'true' })
+
+  if (pageToken) params.set('pageToken', pageToken)
 
   if (syncToken) {
     params.set('syncToken', syncToken)
@@ -317,11 +324,51 @@ async function pullOnce(
   const payload = (await response.json()) as {
     items?: GoogleEvent[]
     nextSyncToken?: string
+    nextPageToken?: string
   }
 
   let applied = 0
   for (const event of payload.items ?? []) {
     if (await applyEvent(practitionerId, event)) applied += 1
+  }
+
+  // ─── Por qué hay que leer `nextPageToken` ─────────────────────────────────
+  //
+  // Con más de 250 cambios, Google devuelve una página y un `nextPageToken`, y
+  // **no** manda `nextSyncToken` hasta la última. Sin esto pasaban dos cosas a
+  // la vez y las dos en silencio: las páginas siguientes no se pedían nunca, y
+  // el punto de sincronización se guardaba en `null`, así que la pasada
+  // siguiente arrancaba de cero desde hoy. Todo lo del medio se perdía.
+  //
+  // Se dispara justo cuando más duele: la primera sincronización de una agenda
+  // cargada, que es la que decide si la profesional confía en esto.
+  //
+  // El tope de páginas es una guarda, no un límite: 250 por página son 10.000
+  // cambios, que es muchísimo más que cualquier pasada real. Existe para que un
+  // token que vuelve sobre sí mismo no gire para siempre contra la API de
+  // Google. Si se llega ahí, no se guarda punto nuevo y la próxima pasada
+  // retoma — mejor lento que salteado.
+  if (payload.nextPageToken) {
+    if (pageGuard >= MAX_SYNC_PAGES) {
+      console.warn('[google] la sincronización superó el tope de páginas', {
+        practitionerId,
+        pages: pageGuard,
+      })
+      return applied
+    }
+
+    return (
+      applied +
+      (await pullOnce(
+        practitionerId,
+        accessToken,
+        calendarId,
+        syncToken,
+        retriedFromScratch,
+        payload.nextPageToken,
+        pageGuard + 1,
+      ))
+    )
   }
 
   await saveSyncPoint(practitionerId, payload.nextSyncToken ?? null)
@@ -368,7 +415,27 @@ async function applyEvent(
     .eq('id', appointmentId)
     .eq('practitioner_id', practitionerId)
 
-  return !error
+  if (error) return false
+
+  // Y se levanta la cancelación, si la había.
+  //
+  // Un evento borrado en Google y después restaurado vuelve por acá. Sin esto se
+  // le actualizaba la fecha y la hora pero no el estado, así que la sesión
+  // existía, decía cuándo era, y seguía tachada en Hilo para siempre.
+  //
+  // El `.eq('status', 'cancelled')` es lo que lo hace seguro: sólo levanta la
+  // cancelación que este mismo archivo escribió. Un "vino" o un "no vino" los
+  // puso una persona en Hilo, Google no sabe nada de eso, y no se tocan. Un
+  // evento cancelado ya salió por el camino de arriba, así que llegar hasta acá
+  // significa que en Google existe.
+  await db
+    .from('appointments')
+    .update({ status: 'scheduled' })
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .eq('status', 'cancelled')
+
+  return true
 }
 
 /**

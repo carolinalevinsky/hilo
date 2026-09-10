@@ -25,6 +25,33 @@ export function weekdayName(weekday: number) {
   return WEEKDAY_NAMES[weekday] ?? ''
 }
 
+/**
+ * Cuántas semanas de distancia pidió la barra de direcciones, acotado.
+ *
+ * `/agenda?semana=` aceptaba cualquier entero finito, y eso eran dos problemas
+ * en el mismo parámetro:
+ *
+ *   `semana=52` hacía que `materialiseAppointments` escribiera un año de
+ *   sesiones de una sola carga — hasta unas 400 filas por horario, por visita a
+ *   la página.
+ *
+ *   `semana=999999999` se pasaba del rango de `Date`, `toDateInput` devolvía
+ *   `"NaN-NaN-NaN"`, eso entraba a un `.gte('scheduled_on', …)` y Postgres tiraba
+ *   el error en la cara: pantalla rota desde la barra de direcciones.
+ *
+ * Dos años para cada lado. Es holgado para navegar de verdad —nadie agenda a
+ * tres años— y deja el paso de tres semanas de materialización en algo acotado.
+ * Un valor fuera de rango no es un error: se recorta y la Agenda muestra el
+ * borde, que es lo que alguien tipeando en la URL espera ver.
+ */
+const MAX_WEEK_OFFSET = 104
+
+export function weekOffsetFrom(param: string | string[] | undefined): number {
+  const raw = typeof param === 'string' ? Number(param) : 0
+  if (!Number.isFinite(raw)) return 0
+  return Math.max(-MAX_WEEK_OFFSET, Math.min(MAX_WEEK_OFFSET, Math.trunc(raw)))
+}
+
 /** The Monday of the week `offset` weeks from the one containing `from`. */
 export function mondayOf(from = todayDate(), offset = 0): Date {
   const day = from.getDay()

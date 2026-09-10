@@ -85,12 +85,24 @@ export async function digestRecipients(
       db
         .from('practitioners')
         .select('id, email, full_name')
-        .order('digest_sent_at', { ascending: true, nullsFirst: true }),
+        .order('digest_sent_at', { ascending: true, nullsFirst: true })
+        .limit(MAX_DIGEST_ROWS),
       'practitioners',
     ),
-    rows(db.from('sessions').select('practitioner_id').gte('held_on', since), 'sessions'),
     rows(
-      db.from('booking_requests').select('practitioner_id').eq('status', 'pending'),
+      db
+        .from('sessions')
+        .select('practitioner_id')
+        .gte('held_on', since)
+        .limit(MAX_DIGEST_ROWS),
+      'sessions',
+    ),
+    rows(
+      db
+        .from('booking_requests')
+        .select('practitioner_id')
+        .eq('status', 'pending')
+        .limit(MAX_DIGEST_ROWS),
       'booking_requests',
     ),
     // The unpaid figure needs the fee on the patient and the payments for the
@@ -101,11 +113,16 @@ export async function digestRecipients(
         .from('patients')
         .select('practitioner_id, id, session_fee, billing_frequency, expected_sessions_per_month')
         .is('deleted_at', null)
-        .is('archived_at', null),
+        .is('archived_at', null)
+        .limit(MAX_DIGEST_ROWS),
       'patients',
     ),
     rows(
-      db.from('payments').select('practitioner_id, patient_id, amount').eq('period', period),
+      db
+        .from('payments')
+        .select('practitioner_id, patient_id, amount')
+        .eq('period', period)
+        .limit(MAX_DIGEST_ROWS),
       'payments',
     ),
   ])
@@ -199,13 +216,46 @@ export async function markDigestSent(practitionerIds: string[], now = new Date()
  * mode the feature cannot signal on its own, so it throws and the run fails
  * loudly instead.
  */
+/**
+ * El tope explícito de filas por consulta del digest.
+ *
+ * PostgREST corta en 1000 filas por defecto **y no lo dice**: la respuesta
+ * llega completa, con 1000 filas, y nada distingue "hay 1000" de "hay 40.000 y
+ * te mando las primeras". El cron corre cada quince días, sin nadie mirando, y
+ * lo que sale del otro lado son números: profesionales con 0 sesiones que no
+ * reciben el mail, saldos impagos incompletos. Todo plausible.
+ *
+ * El comentario del archivo dice "cinco consultas, sin importar cuántos
+ * profesionales existan", y sigue siendo cierto — pero `DIGEST_BATCH_SIZE`
+ * limita los mails que se mandan, no las filas que se leen, y eran dos cosas
+ * distintas que parecían la misma.
+ *
+ * 20.000 es holgado para una quincena de toda la base y sigue siendo un techo.
+ * Lo importante no es el número: es que ahora se pide, y que si se toca se
+ * avisa.
+ */
+const MAX_DIGEST_ROWS = 20_000
+
 async function rows<T>(
   query: PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
   table: string,
 ): Promise<T[]> {
   const { data, error } = await query
   if (error) throw new Error(`[digest] ${table}: ${error.message}`)
-  return data ?? []
+
+  const list = data ?? []
+
+  // Un tope alcanzado se dice. Truncar en silencio es lo que hace que un número
+  // equivocado parezca un número.
+  if (list.length >= MAX_DIGEST_ROWS) {
+    console.warn('[digest] la lectura llegó al tope y puede estar incompleta', {
+      table,
+      rows: list.length,
+      limit: MAX_DIGEST_ROWS,
+    })
+  }
+
+  return list
 }
 
 function tally<T>(list: T[], key: (row: T) => string): Map<string, number> {

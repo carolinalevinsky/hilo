@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { frequencyLabel } from '@/lib/appointment-labels'
 import { toDateInput, today as todayString, todayDate } from '@/lib/dates'
-import { formatTime, weekDates, weekLabel, weekdayName } from '@/lib/week'
+import { formatTime, weekDates, weekLabel, weekdayName, weekOffsetFrom } from '@/lib/week'
 import {
   listAppointments,
   listSchedules,
@@ -49,8 +49,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // pasa a las familias no llevaba a ningún lado.
   const origin = await currentOrigin()
 
-  const offsetParam = typeof params.semana === 'string' ? Number(params.semana) : 0
-  const offset = Number.isFinite(offsetParam) ? Math.trunc(offsetParam) : 0
+  const offset = weekOffsetFrom(params.semana)
 
   const dates = weekDates(todayDate(), offset)
   const first = dates[0]!
