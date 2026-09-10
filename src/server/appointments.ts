@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
-import { toDateInput } from '@/lib/dates'
+import { today, toDateInput } from '@/lib/dates'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -44,7 +44,7 @@ export const ScheduleInput = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Revisá la hora.'),
   durationMinutes: z.coerce.number().int().min(5).max(480).default(45),
   frequency: z.enum(['weekly', 'biweekly', 'monthly']).default('weekly'),
-  startsOn: z.iso.date().default(() => toDateInput(new Date())),
+  startsOn: z.iso.date().default(() => today()),
 })
 
 export const AppointmentInput = z.object({
@@ -95,7 +95,7 @@ export async function deactivateSchedule(practitionerId: string, scheduleId: str
 
   const { error } = await db
     .from('schedules')
-    .update({ is_active: false, ends_on: toDateInput(new Date()) })
+    .update({ is_active: false, ends_on: today() })
     .eq('id', scheduleId)
     .eq('practitioner_id', practitionerId)
   if (error) throw error
@@ -106,7 +106,7 @@ export async function deactivateSchedule(practitionerId: string, scheduleId: str
     .eq('practitioner_id', practitionerId)
     .eq('schedule_id', scheduleId)
     .eq('status', 'scheduled')
-    .gte('scheduled_on', toDateInput(new Date()))
+    .gte('scheduled_on', today())
 
   if (cleanupError) throw cleanupError
 }

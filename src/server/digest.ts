@@ -1,4 +1,4 @@
-import { toDateInput } from '@/lib/dates'
+import { toDateInput, zonedDate } from '@/lib/dates'
 
 import { getServiceDb } from './db'
 import type { DigestSummary } from './notifications'
@@ -49,13 +49,13 @@ export const DIGEST_BATCH_SIZE = 40
  * changes there.
  */
 export function digestPeriod(now: Date): string {
-  const previousDay = new Date(now)
+  const previousDay = zonedDate(now)
   previousDay.setDate(previousDay.getDate() - 1)
   return toDateInput(previousDay).slice(0, 7)
 }
 
 function fortnightAgo(now: Date): string {
-  const date = new Date(now)
+  const date = zonedDate(now)
   date.setDate(date.getDate() - 14)
   return toDateInput(date)
 }

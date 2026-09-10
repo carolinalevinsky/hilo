@@ -1,4 +1,4 @@
-import { toDateInput } from '@/lib/dates'
+import { startOfDayInUruguay, today, toDateInput, todayDate } from '@/lib/dates'
 
 import { getDb } from './db'
 
@@ -23,7 +23,7 @@ export type PractitionerStats = {
 }
 
 function monthStart(offset = 0): string {
-  const date = new Date()
+  const date = todayDate()
   date.setDate(1)
   date.setMonth(date.getMonth() + offset)
   return toDateInput(date)
@@ -62,13 +62,13 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
         .from('reports')
         .select('id', { count: 'exact', head: true })
         .eq('practitioner_id', practitionerId)
-        .gte('created_at', `${thisMonth}T00:00:00`),
+        .gte('created_at', startOfDayInUruguay(thisMonth).toISOString()),
       db
         .from('appointments')
         .select('status')
         .eq('practitioner_id', practitionerId)
         .gte('scheduled_on', lastMonth)
-        .lt('scheduled_on', toDateInput(new Date())),
+        .lt('scheduled_on', today()),
     ])
 
   const activeGoals = (goals.data ?? []).filter((goal) => goal.is_active)

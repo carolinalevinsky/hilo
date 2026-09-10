@@ -1,4 +1,4 @@
-import { toDateInput } from '@/lib/dates'
+import { today, toDateInput, todayDate } from '@/lib/dates'
 import { currentPeriod } from '@/lib/periods'
 
 import { listAppointments } from './appointments'
@@ -51,10 +51,10 @@ export async function planUpcoming(
   discipline: string,
   days = 7,
 ): Promise<PlannedSession[]> {
-  const until = new Date()
+  const until = todayDate()
   until.setDate(until.getDate() + days)
 
-  return planForRange(practitionerId, discipline, toDateInput(new Date()), toDateInput(until))
+  return planForRange(practitionerId, discipline, today(), toDateInput(until))
 }
 
 /**
@@ -202,9 +202,9 @@ export async function todayBriefing(
   practitionerId: string,
   discipline: string,
 ): Promise<TodaySession[]> {
-  const today = toDateInput(new Date())
+  const todayInUruguay = today()
   const planned = (await planUpcoming(practitionerId, discipline, 0)).filter(
-    (session) => session.scheduledOn === today,
+    (session) => session.scheduledOn === todayInUruguay,
   )
   if (planned.length === 0) return []
 

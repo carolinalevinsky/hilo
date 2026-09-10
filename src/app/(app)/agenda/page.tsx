@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { frequencyLabel } from '@/lib/appointment-labels'
-import { toDateInput, today as todayString } from '@/lib/dates'
+import { toDateInput, today as todayString, todayDate } from '@/lib/dates'
 import { formatTime, weekDates, weekLabel, weekdayName } from '@/lib/week'
 import {
   listAppointments,
@@ -52,7 +52,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   const offsetParam = typeof params.semana === 'string' ? Number(params.semana) : 0
   const offset = Number.isFinite(offsetParam) ? Math.trunc(offsetParam) : 0
 
-  const dates = weekDates(new Date(), offset)
+  const dates = weekDates(todayDate(), offset)
   const first = dates[0]!
   const last = dates[dates.length - 1]!
 
@@ -66,10 +66,10 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // conjure five months of appointments marked "agendada", inventing a history
   // of sessions nobody recorded. Weeks before Hilo was in use are empty because
   // Hilo genuinely does not know what happened in them.
-  const horizon = weekDates(new Date(), Math.max(offset, 0) + 3)
+  const horizon = weekDates(todayDate(), Math.max(offset, 0) + 3)
   await materialiseAppointments(
     user.id,
-    weekDates(new Date(), 0)[0]!,
+    weekDates(todayDate(), 0)[0]!,
     horizon[horizon.length - 1]!,
   )
 
@@ -88,7 +88,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
 
   // Tomorrow, whichever week is on screen. The reminder is about the phone
   // calls tonight, not about the week you happen to be paging through.
-  const tomorrowDate = new Date()
+  const tomorrowDate = todayDate()
   tomorrowDate.setDate(tomorrowDate.getDate() + 1)
   const tomorrow = toDateInput(tomorrowDate)
 

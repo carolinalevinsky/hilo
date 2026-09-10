@@ -1,4 +1,4 @@
-import { toDateInput } from './dates'
+import { toDateInput, todayDate } from './dates'
 
 /**
  * Weeks, Uruguayan style: Monday first.
@@ -26,7 +26,7 @@ export function weekdayName(weekday: number) {
 }
 
 /** The Monday of the week `offset` weeks from the one containing `from`. */
-export function mondayOf(from = new Date(), offset = 0): Date {
+export function mondayOf(from = todayDate(), offset = 0): Date {
   const day = from.getDay()
   return new Date(
     from.getFullYear(),
@@ -37,7 +37,7 @@ export function mondayOf(from = new Date(), offset = 0): Date {
 }
 
 /** The seven dates of that week, Monday first, as `YYYY-MM-DD`. */
-export function weekDates(from = new Date(), offset = 0): string[] {
+export function weekDates(from = todayDate(), offset = 0): string[] {
   const monday = mondayOf(from, offset)
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(monday)

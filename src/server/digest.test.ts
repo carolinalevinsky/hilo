@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { toDateInput } from '@/lib/dates'
+import { toDateInput, todayDate } from '@/lib/dates'
 
 /**
  * The fortnightly digest. **Defect #12.**
@@ -129,7 +129,7 @@ const { DIGEST_BATCH_SIZE, digestPeriod, digestRecipients } = await import('./di
 
 /** Relative to today, so the fortnight window keeps meaning the same thing. */
 function daysAgo(days: number): string {
-  const date = new Date()
+  const date = todayDate()
   date.setDate(date.getDate() - days)
   return toDateInput(date)
 }

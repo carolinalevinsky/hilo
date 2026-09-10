@@ -1,5 +1,5 @@
 import { calendarEventTitle } from '@/lib/calendar-privacy'
-import { TIME_ZONE } from '@/lib/dates'
+import { TIME_ZONE, zonedParts } from '@/lib/dates'
 
 import { getDb } from './db'
 import { connectionFor, pullStateFor, saveSyncPoint } from './google'
@@ -97,28 +97,13 @@ export function eventBody(appointment: AppointmentForSync, title: string) {
  * en Montevideo se guardarían como las seis, en todas las sesiones, y nada
  * fallaría.
  *
- * `Intl.DateTimeFormat` con la zona explícita es lo que hace la conversión bien,
- * sin importar dónde corra esto. `hourCycle: 'h23'` y no `hour12: false`: el
- * segundo devuelve "24" para la medianoche en algunos entornos, y "24:00:00" no
- * es una hora válida para Postgres.
+ * El `Intl.DateTimeFormat` que hace bien esa conversión vivía acá, y era el
+ * único lugar de la aplicación que la hacía bien. Ahora es `zonedParts` en
+ * `src/lib/dates.ts`, donde lo alcanza el resto del código — que cometía este
+ * mismo error en la agenda, en las estadísticas y en la cuota mensual.
  */
 export function toLocalDateTime(iso: string): { date: string; time: string } {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(new Date(iso))
-
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? ''
-
-  return {
-    date: `${get('year')}-${get('month')}-${get('day')}`,
-    time: `${get('hour')}:${get('minute')}:00`,
-  }
+  return zonedParts(new Date(iso))
 }
 
 /** Cuántos minutos dura, redondeando hacia arriba al minuto. */
