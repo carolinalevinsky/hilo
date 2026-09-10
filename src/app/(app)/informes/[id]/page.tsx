@@ -9,6 +9,7 @@ import { DocumentEditor } from '@/components/documents/document-editor'
 import { Button } from '@/components/ui/button'
 import { ageLabel } from '@/lib/age'
 import { formatLongDate } from '@/lib/dates'
+import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
@@ -33,6 +34,8 @@ export default async function ReportPage({
 }: PageProps<'/informes/[id]'>) {
   const { id } = await params
   const query = await searchParams
+  // De dónde vino, para poder devolverlo ahí. Ver `backLink`.
+  const back = backLink(query.volver, '/informes', 'Volver a informes')
   const user = await currentUser()
 
   const [report, practitioner] = await Promise.all([
@@ -60,11 +63,11 @@ export default async function ReportPage({
     <>
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
-          href="/informes"
+          href={back.href}
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Volver a informes
+          {back.label}
         </Link>
 
         <div className="flex gap-2">

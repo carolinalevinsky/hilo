@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { AppointmentMenu } from '@/components/agenda/appointment-menu'
 import { NowLine } from '@/components/agenda/now-line'
 import { HOUR_HEIGHT, placeSpans, type Span } from '@/lib/agenda-layout'
+import { appointmentStatusLabel, appointmentStatusTile } from '@/lib/appointment-labels'
 import { patientHex } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
 import { WEEK_ORDER, formatTime, weekdayName } from '@/lib/week'
@@ -369,7 +370,7 @@ function Event({
     <div
       className={cn(
         'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-[11.5px] leading-tight font-semibold text-white',
-        appointment.status === 'cancelled' && 'opacity-55',
+        appointment.status === 'cancelled' && 'line-through opacity-55',
         // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
         // Sin esto no habría forma de saber cuál de las doce es la que estás
         // mirando en el panel.
@@ -377,6 +378,30 @@ function Event({
       )}
       style={{ background: patientHex(patient?.color ?? null) }}
     >
+      {/* Ver `APPOINTMENT_STATUS_TILE`: los cuatro estados se dibujaban igual
+          salvo el cancelado, así que marcar "Vino" no movía un pixel. */}
+      {appointmentStatusTile(appointment.status).frame ? (
+        <span
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute inset-0 rounded-[9px]',
+            appointmentStatusTile(appointment.status).frame,
+          )}
+        />
+      ) : null}
+
+      {appointmentStatusTile(appointment.status).glyph ? (
+        <span
+          aria-hidden
+          className="absolute top-0.5 right-1 text-[10px] leading-none opacity-95"
+        >
+          {appointmentStatusTile(appointment.status).glyph}
+        </span>
+      ) : null}
+
+      {/* Dicho también en palabras, para quien no ve el marco ni el glifo. */}
+      <span className="sr-only">{appointmentStatusLabel(appointment.status)}</span>
+
       <div style={{ paddingTop: labelTop }}>
         <SelectLink href={href}>
           {formatTime(appointment.start_time)} · {name}

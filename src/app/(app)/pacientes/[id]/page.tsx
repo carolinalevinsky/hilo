@@ -19,7 +19,7 @@ import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
-import { listSchedules } from '@/server/appointments'
+import { listSchedules, nextAppointmentFor } from '@/server/appointments'
 import { listAssessments } from '@/server/assessments'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
@@ -48,6 +48,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     assessments,
     reports,
     schedules,
+    nextAppointment,
   ] = await Promise.all([
     getPhotoUrl(patient.photo_path),
     currentPractitioner(user.id),
@@ -60,6 +61,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     // Para saber si al archivar hay que preguntar algo. Sin horario fijo no hay
     // nada que decidir y la pregunta sería ruido.
     listSchedules(user.id, patient.id),
+    nextAppointmentFor(user.id, patient.id),
   ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
@@ -171,6 +173,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               (`legacy/index.html:1674`). A plan is only worth making if it is on
               the screen you open with the child already in the room. */}
           <NextSessionCard
+            next={nextAppointment}
             patientId={patient.id}
             patientFirstName={firstName(patient.full_name)}
             items={planItems}

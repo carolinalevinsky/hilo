@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { internalPath } from './safe-path'
+import { backLink, internalPath } from './safe-path'
 
 describe('internalPath', () => {
   it('keeps a path inside the app', () => {
@@ -66,6 +66,36 @@ describe('internalPath', () => {
       expect(resolved.origin, `${JSON.stringify(attempt)} escaped the origin`).toBe(
         'https://app.hilo.uy',
       )
+    }
+  })
+})
+
+describe('backLink', () => {
+  it('vuelve a la ficha cuando el documento se abrió desde ahí', () => {
+    expect(backLink('/pacientes/abc-123', '/informes', 'Volver a informes')).toEqual({
+      href: '/pacientes/abc-123',
+      label: 'Volver a la ficha',
+    })
+  })
+
+  it('cae en la lista cuando no vino de ningún lado', () => {
+    expect(backLink(undefined, '/informes', 'Volver a informes')).toEqual({
+      href: '/informes',
+      label: 'Volver a informes',
+    })
+  })
+
+  it('no se deja llevar afuera', () => {
+    // El parámetro viene de la barra de direcciones y termina en un `href`: es
+    // la forma exacta de un redirect abierto. Lo cubre `internalPath`; esto fija
+    // que `backLink` no lo esquive.
+    for (const hostile of [
+      'https://evil.example/phishing',
+      '//evil.example',
+      'javascript:alert(1)',
+      '/\\evil.example',
+    ]) {
+      expect(backLink(hostile, '/informes', 'Volver a informes').href).toBe('/informes')
     }
   })
 })

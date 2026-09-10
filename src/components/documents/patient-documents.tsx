@@ -24,18 +24,23 @@ export function PatientDocuments({
   assessments: AssessmentWithPatient[]
   reports: ReportWithPatient[]
 }) {
+  // `?volver=` con la ficha de la que se sale, para que el botón de atrás del
+  // documento vuelva acá y no a la lista de todos los informes. La fila ya trae
+  // `patient_id`, así que no hace falta una prop nueva. Lo valida `backLink`
+  // del otro lado — un parámetro de la URL que termina en un `href` es la forma
+  // exacta de un redirect abierto.
   const documents = [
     ...assessments.map((assessment) => ({
       id: assessment.id,
       kind: 'assessment' as const,
-      href: `/evaluaciones/${assessment.id}`,
+      href: `/evaluaciones/${assessment.id}?volver=/pacientes/${assessment.patient_id}`,
       title: assessment.instrument,
       date: assessment.assessed_on,
     })),
     ...reports.map((report) => ({
       id: report.id,
       kind: 'report' as const,
-      href: `/informes/${report.id}`,
+      href: `/informes/${report.id}?volver=/pacientes/${report.patient_id}`,
       title: `Para ${RECIPIENT_LABELS[report.recipient as RecipientId] ?? report.recipient}`,
       date: report.created_at.slice(0, 10),
     })),

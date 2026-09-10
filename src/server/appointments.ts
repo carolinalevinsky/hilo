@@ -195,6 +195,38 @@ export async function deactivateSchedulesFor(practitionerId: string, patientId: 
   if (error) throw error
 }
 
+/**
+ * La próxima sesión agendada de un paciente, si hay alguna.
+ *
+ * La ficha decía "Próxima sesión" y no decía cuándo era, que es la única cosa
+ * que alguien va a mirar ahí. El dato existía en `appointments` y la pantalla no
+ * lo pedía.
+ *
+ * Sólo `scheduled`: una cancelada no es la próxima, y una ya marcada como
+ * asistida está en el pasado aunque su fecha diga otra cosa.
+ */
+export async function nextAppointmentFor(
+  practitionerId: string,
+  patientId: string,
+): Promise<{ scheduled_on: string; start_time: string } | null> {
+  const db = await getDb()
+
+  const { data, error } = await db
+    .from('appointments')
+    .select('scheduled_on, start_time')
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+    .order('scheduled_on', { ascending: true })
+    .order('start_time', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
 // ─── Materialising occurrences ──────────────────────────────────────────────
 
 /**

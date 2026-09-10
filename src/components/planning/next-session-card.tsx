@@ -1,6 +1,9 @@
 import { ClipboardList, Pencil, Plus } from '@/components/icons'
 import Link from 'next/link'
 
+import { formatLongDate } from '@/lib/dates'
+import { formatTime } from '@/lib/week'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { PlanItem } from '@/server/session-plans'
@@ -21,15 +24,26 @@ export function NextSessionCard({
   patientId,
   patientFirstName,
   items,
+  next,
 }: {
   patientId: string
   patientFirstName: string
   items: PlanItem[]
+  /** Cuándo es, si está agendada. La tarjeta decía "Próxima sesión" y no lo decía. */
+  next?: { scheduled_on: string; start_time: string } | null
 }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Próxima sesión</CardTitle>
+
+        {/* Antes que nada lo demás: es la única cosa que alguien viene a mirar
+            acá, y estaba en la base sin que la pantalla la pidiera. */}
+        <p className="text-[12.5px] font-semibold">
+          {next
+            ? `${formatLongDate(next.scheduled_on)} · ${formatTime(next.start_time)}`
+            : 'No hay ninguna agendada todavía.'}
+        </p>
         {items.length > 0 ? (
           <p className="text-[12.5px] text-muted-foreground">
             Dejaste preparada la próxima sesión con{' '}

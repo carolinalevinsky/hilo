@@ -52,6 +52,7 @@ export function MaterialForm({
     EMPTY_FORM_STATE,
   )
   const [area, setArea] = useState(material?.area ?? Object.keys(areas)[0] ?? '')
+  const [ownWork, setOwnWork] = useState(false)
   const [visibility, setVisibility] = useState<MaterialVisibility>(
     material?.visibility === 'public' ? 'public' : 'private',
   )
@@ -392,7 +393,13 @@ export function MaterialForm({
             htmlFor="ownWork"
             className="flex items-start gap-2.5 text-[12.5px] leading-relaxed font-normal"
           >
-            <Checkbox id="ownWork" name="ownWork" className="mt-0.5" />
+            <Checkbox
+              id="ownWork"
+              name="ownWork"
+              className="mt-0.5"
+              checked={ownWork}
+              onCheckedChange={(value) => setOwnWork(value === true)}
+            />
             <span>
               Declaro que este material es de mi autoría o tengo permiso para compartirlo, y
               que no incluye contenido con derechos de autor de terceros.
@@ -401,7 +408,16 @@ export function MaterialForm({
         ) : null}
       </fieldset>
 
-      <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
+      {/* Deshabilitado hasta marcar la declaración, en vez de dejar apretar y
+          contestar con un error. El servidor la sigue validando —`materials.ts`
+          es lo que manda, y una casilla del navegador no protege nada— pero
+          llegar al error después de intentar no le sirve a nadie. */}
+      <Button
+        type="submit"
+        size="lg"
+        disabled={pending || (visibility === 'public' && !ownWork)}
+        className="max-sm:w-full"
+      >
         {pending
           ? 'Guardando…'
           : visibility === 'public'
