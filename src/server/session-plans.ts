@@ -4,6 +4,7 @@ import { getDb } from './db'
 import {
   bestMaterialFor,
   listMaterials,
+  topMaterialsFor,
   type Material,
   type MaterialSummary,
 } from './materials'
@@ -60,13 +61,63 @@ export async function listPlanItems(
   }))
 }
 
+/**
+ * Every patient with a session prepared, and how much is in it.
+ *
+ * A plan was reachable from exactly two places: the planner, if you happened to
+ * have that patient selected, and that patient's own ficha. Neither answers the
+ * question you actually have on Tuesday morning — "what did I leave ready?" —
+ * and a plan you have to remember you made is one you re-make from memory.
+ *
+ * One query rather than one per patient: the rows carry `patient_id` already, so
+ * the grouping is done here instead of in the database. A practitioner has tens
+ * of patients, not thousands.
+ */
+export async function upcomingPlans(practitionerId: string) {
+  const db = await getDb()
+
+  const { data, error } = await db
+    .from('session_plan_items')
+    .select('patient_id, title, position, patients (id, full_name, color), materials (title)')
+    .eq('practitioner_id', practitionerId)
+    .order('position')
+
+  if (error) throw error
+
+  const byPatient = new Map<
+    string,
+    { patientId: string; fullName: string; color: string | null; items: string[] }
+  >()
+
+  for (const row of data ?? []) {
+    if (!row.patients) continue
+    const entry = byPatient.get(row.patient_id) ?? {
+      patientId: row.patient_id,
+      fullName: row.patients.full_name,
+      color: row.patients.color,
+      items: [],
+    }
+    entry.items.push(row.title ?? row.materials?.title ?? 'Actividad')
+    byPatient.set(row.patient_id, entry)
+  }
+
+  return [...byPatient.values()].sort((a, b) => a.fullName.localeCompare(b.fullName, 'es'))
+}
+
 export type PlanSuggestion = {
   goalId: string
   title: string
   progress: number
   /** What to actually do about it, from v1's activity bank. */
   activity: string
-  material: MaterialSummary | null
+  /**
+   * The materials that fit this goal, best first — up to three.
+   *
+   * It used to be one. One is an answer, and an answer you did not ask for is
+   * either right or useless; three is a choice, which is what a practitioner is
+   * actually making at this point. Empty when nothing in the library scores.
+   */
+  materials: MaterialSummary[]
   /** True when this goal is already in the plan, so the button says "Agregado". */
   added: boolean
 }
@@ -107,7 +158,7 @@ export async function planSuggestions(
     title: goal.title,
     progress: goal.progress,
     activity: suggestedActivity(goal.title),
-    material: bestMaterialFor(goal.title, materials),
+    materials: topMaterialsFor(goal.title, materials, 3),
     added: already.has(goal.id),
   }))
 }
@@ -129,18 +180,25 @@ async function nextPosition(practitionerId: string, patientId: string): Promise<
 }
 
 /**
- * Add a goal to the plan, with the material Hilo matched to it.
+ * Add a goal to the plan, with a material attached to it.
+ *
+ * `materialId` is the one the practitioner picked from the three offered. When
+ * it is absent — the goal was added without choosing, or from a screen that does
+ * not offer the choice — Hilo falls back to its own best match, which is what
+ * this function always used to do.
  *
  * The title is copied rather than read through `goal_id` — see the migration.
  * The goal is re-read here rather than trusted from the form because a form
  * field is whatever the browser sent, and `.eq('practitioner_id', …)` is what
- * makes "add goal X" mean "add a goal that is mine".
+ * makes "add goal X" mean "add a goal that is mine". The chosen material gets
+ * the same treatment for the same reason.
  */
 export async function addGoalToPlan(
   practitionerId: string,
   patientId: string,
   goalId: string,
   discipline: string,
+  materialId?: string | null,
 ) {
   const db = await getDb()
 
@@ -155,15 +213,61 @@ export async function addGoalToPlan(
   if (goalError) throw goalError
   if (!goal) throw new Error('Ese objetivo no existe.')
 
-  const materials = await listMaterials(practitionerId, { discipline })
-  const material = bestMaterialFor(goal.title, materials)
+  let chosenId: string | null = null
+
+  if (materialId) {
+    // Through RLS, so an id from somebody else's library resolves to nothing
+    // and the item is simply saved without a material.
+    const { data: material } = await db
+      .from('materials')
+      .select('id')
+      .eq('id', materialId)
+      .maybeSingle()
+    chosenId = material?.id ?? null
+  } else {
+    const materials = await listMaterials(practitionerId, { discipline })
+    chosenId = bestMaterialFor(goal.title, materials)?.id ?? null
+  }
 
   const { error } = await db.from('session_plan_items').insert({
     practitioner_id: practitionerId,
     patient_id: patientId,
     goal_id: goal.id,
-    material_id: material?.id ?? null,
+    material_id: chosenId,
     title: goal.title,
+    position: await nextPosition(practitionerId, patientId),
+  })
+
+  if (error) throw error
+}
+
+/**
+ * An activity the practitioner typed, belonging to no goal and no material.
+ *
+ * The planner could only assemble things Hilo already knew about: a goal, or a
+ * material from the library. Half of what goes into a session is neither — "el
+ * juego de la oca con sílabas", "terminar la lámina de la vez pasada" — and
+ * having nowhere to put it is what makes a planner feel like it is planning
+ * somebody else's session.
+ *
+ * `session_plan_items.title` already existed for the goal copy, so this needs no
+ * schema change: an item with a title and no goal and no material is exactly
+ * this.
+ */
+export async function addActivityToPlan(
+  practitionerId: string,
+  patientId: string,
+  title: string,
+) {
+  const clean = title.trim().slice(0, 200)
+  if (!clean) throw new Error('Escribí qué vas a hacer.')
+
+  const db = await getDb()
+
+  const { error } = await db.from('session_plan_items').insert({
+    practitioner_id: practitionerId,
+    patient_id: patientId,
+    title: clean,
     position: await nextPosition(practitionerId, patientId),
   })
 

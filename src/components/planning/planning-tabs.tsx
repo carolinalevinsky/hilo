@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 /**
- * The two halves of Planificación.
+ * The three parts of Planificación.
  *
  * In v1 these were tabs inside one screen (`legacy/index.html:611`) — the
  * library of materials and the session you are preparing, side by side, because
@@ -20,18 +20,27 @@ import { cn } from '@/lib/utils'
  * it should. The tab *look* is v1's; the mechanism underneath is not.
  */
 
+/**
+ * `exact` matters for `/planificacion`: without it the tab stays lit on
+ * `/planificacion/proximas`, and two tabs highlighted at once means neither of
+ * them tells you where you are. `/materiales` keeps the prefix match on purpose,
+ * because a material's own page is still the library.
+ */
 const TABS = [
-  { href: '/materiales', label: 'Materiales' },
-  { href: '/planificacion', label: 'Planificar sesión' },
+  { href: '/materiales', label: 'Materiales', exact: false },
+  { href: '/planificacion', label: 'Planificar sesión', exact: true },
+  { href: '/planificacion/proximas', label: 'Próximas sesiones', exact: false },
 ]
 
 export function PlanningTabs() {
   const pathname = usePathname()
 
   return (
-    <div role="tablist" className="mb-4 flex gap-2.5">
+    <div role="tablist" className="mb-4 flex flex-wrap gap-2.5">
       {TABS.map((tab) => {
-        const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`)
+        const active = tab.exact
+          ? pathname === tab.href
+          : pathname === tab.href || pathname.startsWith(`${tab.href}/`)
         return (
           <Link
             key={tab.href}
@@ -39,7 +48,7 @@ export function PlanningTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'rounded-full border px-4 py-2.5 text-[13.5px] font-bold transition-colors',
+              'rounded-full border px-4 py-2.5 text-body font-bold transition-colors',
               active
                 ? 'border-violet bg-violet-soft text-violet'
                 : 'border-border bg-card text-foreground hover:bg-muted',

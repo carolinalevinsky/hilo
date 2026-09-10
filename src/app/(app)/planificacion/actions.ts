@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { requireUser } from '@/server/auth'
 import { getPractitioner } from '@/server/practitioners'
 import {
+  addActivityToPlan,
   addGoalToPlan,
   addMaterialToPlan,
   clearPlan,
@@ -26,11 +27,28 @@ export async function addGoalToPlanAction(formData: FormData) {
   const user = await requireUser()
   const practitioner = await getPractitioner(user.id)
 
+  // Absent when the goal is added without picking one of the three offered
+  // materials; `addGoalToPlan` falls back to its own match in that case.
+  const materialId = formData.get('materialId')
+
   await addGoalToPlan(
     user.id,
     String(formData.get('patientId')),
     String(formData.get('goalId')),
     practitioner.discipline,
+    typeof materialId === 'string' && materialId ? materialId : null,
+  )
+  revalidatePath('/planificacion')
+}
+
+/** An activity the practitioner typed, that is neither a goal nor a material. */
+export async function addActivityToPlanAction(formData: FormData) {
+  const user = await requireUser()
+
+  await addActivityToPlan(
+    user.id,
+    String(formData.get('patientId')),
+    String(formData.get('activity') ?? ''),
   )
   revalidatePath('/planificacion')
 }

@@ -528,27 +528,45 @@ export function bestMaterialFor<T extends Pick<Material, 'title' | 'focus' | 'ar
   goalTitle: string,
   materials: T[],
 ): T | null {
+  return topMaterialsFor(goalTitle, materials, 1)[0] ?? null
+}
+
+/**
+ * The same match, ranked, for the screens that offer a choice rather than an
+ * answer.
+ *
+ * The planner used to show one material per goal with an "Agregar" beside it,
+ * which asks a practitioner to accept a guess or start a search from scratch.
+ * The scoring is unchanged — this is the same list `bestMaterialFor` was already
+ * computing and throwing away all but the head of.
+ *
+ * Ties keep the order `materials` arrived in, which is the order the library
+ * query chose; there is no meaningful second criterion and inventing one would
+ * only make the ranking look more considered than it is.
+ */
+export function topMaterialsFor<
+  T extends Pick<Material, 'title' | 'focus' | 'area' | 'objective'>,
+>(goalTitle: string, materials: T[], limit: number): T[] {
   const words = normalise(goalTitle)
     .split(/\s+/)
     .filter((word) => word.length > 3)
 
-  if (words.length === 0) return null
+  if (words.length === 0) return []
 
-  let best: T | null = null
-  let bestScore = 0
+  const scored: { material: T; score: number }[] = []
 
   for (const material of materials) {
     const haystack = normalise(
       `${material.title} ${material.focus ?? ''} ${material.area} ${material.objective ?? ''}`,
     )
     const score = words.filter((word) => haystack.includes(word)).length
-    if (score > bestScore) {
-      bestScore = score
-      best = material
-    }
+    if (score > 0) scored.push({ material, score })
   }
 
-  return bestScore > 0 ? best : null
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((entry) => entry.material)
 }
 
 /** Lowercase, accents stripped, so "fonológica" matches "fonologica". */

@@ -2,6 +2,7 @@ import {
   BookOpen,
   ClipboardList,
   type LucideIcon,
+  Plus,
   Sparkles,
   Target,
   User,
@@ -10,6 +11,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import {
+  addActivityToPlanAction,
   addGoalToPlanAction,
   addMaterialToPlanAction,
   clearPlanAction,
@@ -110,7 +112,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
           <div className="min-w-[200px] flex-1">
             <label
               htmlFor="plan-patient"
-              className="mb-1 block text-[12px] font-bold text-muted-foreground"
+              className="mb-1 block text-meta font-bold text-muted-foreground"
             >
               Paciente
             </label>
@@ -126,7 +128,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
             photoUrl={photoUrl}
           />
 
-          <p className="w-full text-[12.5px] text-muted-foreground">
+          <p className="w-full text-meta text-muted-foreground">
             {[age, ageGroupLabel(patient.age_group), `avance general ${average}%`]
               .filter(Boolean)
               .join(' · ')}
@@ -135,14 +137,20 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* `items-start`: see the same note in `estadisticas/page.tsx`. "Próxima
+          sesión" is short and the suggestions beside it are long, so the
+          stretched column left a third of a screen of empty card.
+
+          Below `lg` the two columns stack and the order flips — see the note on
+          the plan card itself. */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <Card>
             <CardContent>
               <PanelTitle icon={Sparkles}>Sugerencias de Hilo</PanelTitle>
 
               {suggestions.length === 0 ? (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   {firstName} todavía no tiene objetivos activos.{' '}
                   <Link
                     href={`/pacientes/${patient.id}`}
@@ -154,7 +162,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                 </p>
               ) : (
                 <>
-                  <p className="mb-2.5 text-[12.5px] text-muted-foreground">
+                  <p className="mb-2.5 text-meta text-muted-foreground">
                     Según los objetivos de {firstName}, Hilo prioriza los que menos se
                     movieron:
                   </p>
@@ -170,40 +178,93 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                         </span>
 
                         <div className="min-w-0 flex-1">
-                          <p className="text-[13.5px] font-bold">
-                            {goal.title}{' '}
-                            <span className="font-normal text-muted-foreground">
-                              ({goal.progress}%)
-                            </span>
-                          </p>
-                          <p className="text-[12px] text-muted-foreground">
-                            {goal.activity}
-                            {goal.material ? (
-                              <>
-                                {' · material: '}
-                                <Link
-                                  href={`/materiales/${goal.material.id}`}
-                                  className="font-bold hover:underline"
-                                >
-                                  {goal.material.title}
-                                </Link>
-                              </>
-                            ) : null}
-                          </p>
-                        </div>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-body font-bold">
+                              {goal.title}{' '}
+                              <span className="font-normal text-muted-foreground">
+                                ({goal.progress}%)
+                              </span>
+                            </p>
 
-                        <form action={addGoalToPlanAction}>
-                          <input type="hidden" name="patientId" value={patient.id} />
-                          <input type="hidden" name="goalId" value={goal.goalId} />
-                          <Button
-                            type="submit"
-                            size="sm"
-                            variant={goal.added ? 'outline' : 'default'}
-                            disabled={goal.added}
-                          >
-                            {goal.added ? 'Agregado' : 'Agregar'}
-                          </Button>
-                        </form>
+                            {/* Adding the goal on its own, with whatever Hilo
+                                matched. The three below add it with the one you
+                                picked instead. */}
+                            <form action={addGoalToPlanAction} className="shrink-0">
+                              <input type="hidden" name="patientId" value={patient.id} />
+                              <input type="hidden" name="goalId" value={goal.goalId} />
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant={goal.added ? 'outline' : 'default'}
+                                disabled={goal.added}
+                              >
+                                {goal.added ? 'Agregado' : 'Agregar'}
+                              </Button>
+                            </form>
+                          </div>
+
+                          <p className="mt-0.5 text-meta text-muted-foreground">
+                            {goal.activity}
+                          </p>
+
+                          {/* Three, not one. The material used to be a single
+                              guess printed at the end of the activity line, so
+                              the only two moves were to accept it or to go and
+                              search the library yourself. Each one opens — the
+                              title is a link — so you can read what it actually
+                              is before deciding. */}
+                          {goal.materials.length > 0 ? (
+                            <ul className="mt-2 space-y-1">
+                              {goal.materials.map((material) => (
+                                <li
+                                  key={material.id}
+                                  className="flex items-center gap-2 rounded-lg bg-card px-2 py-1.5"
+                                >
+                                  <Link
+                                    href={`/materiales/${material.id}`}
+                                    className="min-w-0 flex-1 hover:underline"
+                                  >
+                                    <span className="block truncate text-meta font-bold">
+                                      {material.title}
+                                    </span>
+                                    <span className="block truncate text-micro text-muted-foreground">
+                                      {[material.area, material.focus]
+                                        .filter(Boolean)
+                                        .join(' · ')}
+                                    </span>
+                                  </Link>
+
+                                  <form action={addGoalToPlanAction} className="shrink-0">
+                                    <input
+                                      type="hidden"
+                                      name="patientId"
+                                      value={patient.id}
+                                    />
+                                    <input type="hidden" name="goalId" value={goal.goalId} />
+                                    <input
+                                      type="hidden"
+                                      name="materialId"
+                                      value={material.id}
+                                    />
+                                    <Button
+                                      type="submit"
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={goal.added || inPlan.has(material.id)}
+                                    >
+                                      Con este
+                                    </Button>
+                                  </form>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="mt-1.5 text-micro text-muted-foreground">
+                              No encontré materiales para este objetivo. Buscá abajo o
+                              agregá una actividad tuya.
+                            </p>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -231,11 +292,11 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
 
               <div className="mt-3">
                 {!search ? (
-                  <p className="text-[12.5px] text-muted-foreground">
+                  <p className="text-meta text-muted-foreground">
                     Escribí para buscar en la biblioteca, por área, objetivo o título.
                   </p>
                 ) : results.length === 0 ? (
-                  <p className="text-[12.5px] text-muted-foreground">
+                  <p className="text-meta text-muted-foreground">
                     Sin resultados. Probá otra palabra, o generá uno con IA desde
                     Materiales.
                   </p>
@@ -248,13 +309,13 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                         key={material.id}
                         className="flex items-center gap-2.5 rounded-xl border border-border p-2.5"
                       >
-                        <span className="shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-[10.5px] font-bold text-violet">
+                        <span className="shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
                           {material.area}
                         </span>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13.5px] font-bold">{material.title}</p>
-                          <p className="truncate text-[11.5px] text-muted-foreground">
+                          <p className="truncate text-body font-bold">{material.title}</p>
+                          <p className="truncate text-micro text-muted-foreground">
                             {[material.focus, material.age_range].filter(Boolean).join(' · ')}
                           </p>
                         </div>
@@ -280,15 +341,25 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
           </Card>
         </div>
 
-        <Card className="hilo-doc h-fit">
+        {/* `max-lg:order-first`: on a phone this used to be last, and last is
+            below the fold — measured at 375 px it started at y 919 on an 816 px
+            screen. You pressed "Agregar", nothing on the screen moved, and the
+            item you had just added was 12 % of a screen past the bottom edge.
+            That is where "¿dónde quedan guardadas? falta botón de guardar" comes
+            from: they were saved, and invisible.
+
+            You are assembling a list. The list goes where you can see it, and
+            the things you add to it go underneath. */}
+        <Card className="hilo-doc h-fit max-lg:order-first">
           <CardContent>
             <PanelTitle icon={ClipboardList} hint={String(items.length)}>
               Próxima sesión de {firstName}
             </PanelTitle>
 
             {items.length === 0 ? (
-              <p className="text-[12.5px] text-muted-foreground">
-                Todavía no agregaste nada. Sumá desde las sugerencias, o buscá un material.
+              <p className="text-meta text-muted-foreground">
+                Todavía no agregaste nada. Sumá desde las sugerencias, buscá un material, o
+                escribí abajo una actividad tuya.
               </p>
             ) : (
               <ol className="space-y-2">
@@ -297,15 +368,15 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                     key={item.id}
                     className="flex items-center gap-2.5 rounded-xl bg-muted/60 p-2.5"
                   >
-                    <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-teal-soft text-[13px] font-extrabold text-[#12706a]">
+                    <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-teal-soft text-body font-extrabold text-[#12706a]">
                       {index + 1}
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-bold">
+                      <p className="text-item font-bold">
                         {item.title ?? item.material?.title ?? 'Actividad'}
                       </p>
-                      <p className="text-[12px] text-muted-foreground">
+                      <p className="text-meta text-muted-foreground">
                         {item.title && item.material
                           ? `Material: ${item.material.title}`
                           : item.material
@@ -327,20 +398,53 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
               </ol>
             )}
 
+            {/* Anything, in your own words. Not everything that goes into a
+                session is a goal or a library material, and until this existed
+                the planner could only assemble the parts Hilo already knew
+                about. */}
+            <form
+              action={addActivityToPlanAction}
+              className="no-print mt-3 flex flex-wrap gap-2"
+            >
+              <input type="hidden" name="patientId" value={patient.id} />
+              <input
+                name="activity"
+                required
+                maxLength={200}
+                placeholder="Ej: juego de la oca con sílabas"
+                aria-label="Agregar una actividad tuya"
+                className="h-9 min-w-[180px] flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              />
+              <Button type="submit" size="sm" variant="outline">
+                <Plus className="size-4" />
+                Sumar
+              </Button>
+            </form>
+
+            {/* "Registrar esta sesión" and "Imprimir" used to be here with an
+                empty plan too, which offers to register a session that has
+                nothing in it and to print a blank page. Both belong to a plan
+                that exists. */}
+            {/* "Guardar planificación" is the end of the task, not the moment
+                the rows are written — those went in as you added them. Planning
+                is something you finish, and a screen with no way to finish it
+                leaves you looking for the button that says you are done. So the
+                button exists and it is honest about what it does: it closes the
+                plan and takes you to the list of what you have ready.
+
+                "Registrar esta sesión" stays beside it for the Tuesday when you
+                are planning with the child already in the room. */}
             <div className="no-print mt-3.5 flex flex-wrap gap-2">
-              <Button asChild>
-                <Link href={`/pacientes/${patient.id}/sesiones/nueva?plan=1`}>
-                  Registrar esta sesión
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href={`/pacientes/${patient.id}`}>
-                  <User className="size-[15px]" />
-                  Ver ficha de {firstName}
-                </Link>
-              </Button>
               {items.length > 0 ? (
                 <>
+                  <Button asChild>
+                    <Link href="/planificacion/proximas">Guardar planificación</Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href={`/pacientes/${patient.id}/sesiones/nueva?plan=1`}>
+                      Registrar ahora
+                    </Link>
+                  </Button>
                   <PrintButton label="Imprimir" size="default" />
                   <form action={clearPlanAction}>
                     <input type="hidden" name="patientId" value={patient.id} />
@@ -349,14 +453,23 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                     </Button>
                   </form>
                 </>
-              ) : null}
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href={`/pacientes/${patient.id}`}>
+                    <User className="size-[15px]" />
+                    Ver ficha de {firstName}
+                  </Link>
+                </Button>
+              )}
             </div>
 
-            <p className="no-print mt-2.5 text-[12px] text-muted-foreground">
-              Esto queda guardado como la <b>próxima sesión</b> de {firstName}. Cuando la
-              tengas, la registrás y pasa al historial. El avance de cada objetivo lo ajustás
-              vos.
-            </p>
+            {items.length > 0 ? (
+              <p className="no-print mt-2.5 text-meta text-muted-foreground">
+                Se va guardando a medida que agregás, así que no hay nada que perder si
+                cerrás. Lo vas a encontrar en <b>Próximas sesiones</b> y en la ficha de{' '}
+                {firstName}, y desde ahí la registrás cuando la tengas.
+              </p>
+            ) : null}
           </CardContent>
         </Card>
       </div>
@@ -388,7 +501,7 @@ function PanelTitle({
   children: React.ReactNode
 }) {
   return (
-    <h2 className="mb-3 flex items-center gap-2 text-[14px] font-extrabold">
+    <h2 className="mb-3 flex items-center gap-2 text-item font-extrabold">
       <Icon className="size-[18px] text-violet" />
       {children}
       {hint ? <span className="font-normal text-muted-foreground">{hint}</span> : null}
