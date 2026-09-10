@@ -87,11 +87,10 @@ export function PatientDangerZone({
           </>
         ) : choosing ? (
           <div className="space-y-2.5 rounded-xl bg-muted p-3.5">
-            <p className="text-[12.5px] leading-relaxed">
-              {expected} tiene{' '}
-              {scheduleCount === 1 ? 'un horario fijo' : `${scheduleCount} horarios fijos`}. Las
-              sesiones de hoy en adelante salen de la agenda en los dos casos. Lo que cambia
-              es qué pasa con la regla.
+            <p className="text-meta leading-relaxed">
+              {expected} tiene {scheduleCount === 1 ? 'un horario fijo' : `${scheduleCount} horarios fijos`}.
+              Las sesiones de hoy en adelante salen de la agenda en los dos casos. Lo que
+              cambia es qué pasa con la regla.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button type="submit" name="schedules" value="keep" size="sm">
@@ -107,13 +106,18 @@ export function PatientDangerZone({
               >
                 Archivar y darlo de baja
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setChoosing(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setChoosing(false)}
+              >
                 Cancelar
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Conservarlo es lo reversible: si reactivás a {expected}, el horario vuelve solo.
-              Darlo de baja no se deshace — hay que cargarlo de nuevo.
+              Conservarlo es lo reversible: si reactivás a {expected}, el horario vuelve
+              solo. Darlo de baja no se deshace — hay que cargarlo de nuevo.
             </p>
           </div>
         ) : (
@@ -138,7 +142,7 @@ export function PatientDangerZone({
       {confirming ? (
         <form action={deletePatientAction} className="space-y-2 rounded-xl bg-coral-soft p-3.5">
           <input type="hidden" name="patientId" value={patientId} />
-          <p className="text-[12.5px] leading-relaxed text-[#c0392b]">
+          <p className="text-meta leading-relaxed text-[#c0392b]">
             Se borran la ficha, las sesiones, los objetivos y los informes de{' '}
             <b>{fullName}</b>. Esto no se puede deshacer desde la app. Escribí{' '}
             <b>{expected}</b> para confirmar.

@@ -1,4 +1,4 @@
-import { ArrowLeft, ChartPie, FileText, MessageCircle, Plus } from '@/components/icons'
+import { ArrowLeft, ChartPie, FileText, MessageCircle, Pencil, Plus } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { HiloMemory, PatientDocuments } from '@/components/documents/patient-documents'
 import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
+import { PatientActions } from '@/components/patients/patient-actions'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { OnlineConsultation } from '@/components/patients/online-consultation'
 import { NextSessionCard } from '@/components/planning/next-session-card'
@@ -68,11 +69,36 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   // that the practitioner is there. The content stays behind the login.
   const shareText = `Hola! Te escribo por ${firstName(patient.full_name)}. Cualquier cosa quedo a las órdenes. Saludos, ${firstName(practitioner.full_name)}.`
 
+  const fichaRows = [
+    { label: 'Edad', value: ageLabel(patient.date_of_birth) },
+    { label: 'Población', value: ageGroupLabel(patient.age_group) },
+    { label: 'Escolaridad', value: patient.school_level },
+    { label: 'Colegio', value: patient.school },
+    { label: 'Mutualista', value: patient.health_insurer },
+    // v1 stored the abordaje on the patient; here it is the practitioner's own
+    // discipline, because a practitioner has exactly one and every patient of
+    // theirs is being seen under it. It stays on the ficha because it is what
+    // the report says and what the mutualista reads.
+    { label: 'Abordaje', value: disciplineLabel(practitioner.discipline) },
+    { label: 'Teléfono', value: patient.phone },
+    { label: 'Inicio', value: formatDate(patient.start_date) },
+    {
+      label: 'Honorario',
+      value: patient.session_fee
+        ? `$ ${patient.session_fee} · ${billingFrequencyLabel(patient.billing_frequency).toLowerCase()}`
+        : null,
+    },
+  ]
+
+  const missingFicha = fichaRows
+    .filter((row) => !row.value)
+    .map((row) => row.label.toLowerCase())
+
   return (
     <>
       <Link
         href="/pacientes"
-        className="mb-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+        className="mb-3 inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
         Volver a pacientes
@@ -82,74 +108,121 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
         patient={patient}
         photoUrl={photoUrl}
         actions={
-          <>
-            {/* v1's row, in v1's order (`legacy/index.html:1188`): what you do
-                during the session, what you do to measure, what you send out.
-                "Generar informe" is the white one because it is the errand
-                somebody comes to this screen specifically to run. */}
-            <Button
-              asChild
-              variant="outline"
-              className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
-            >
-              <Link href={`/pacientes/${patient.id}/sesiones/nueva`}>
-                <Plus className="size-4" />
-                Sesión
-              </Link>
-            </Button>
+          // v1's row, in v1's order (`legacy/index.html:1188`): what you do
+          // during the session, what you do to measure, what you send out.
+          // "Generar informe" is the white one because it is the errand
+          // somebody comes to this screen specifically to run.
+          //
+          // On a phone only the first and the last stay out; the other four are
+          // behind "Más". Six of these filled 490 px of an 812 px screen before
+          // the child's age. See `PatientActions`.
+          <PatientActions
+            primary={
+              <>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+                >
+                  <Link href={`/pacientes/${patient.id}/sesiones/nueva`}>
+                    <Plus className="size-4" />
+                    Sesión
+                  </Link>
+                </Button>
 
-            {/* Second, as in v1 (`legacy/index.html:1188`), right after
-                "Sesión": both are ways of starting one. */}
-            <OnlineConsultation
-              patientId={patient.id}
-              patientName={patient.full_name}
-              patientPhone={patient.phone}
-              roomUrl={patient.room_id ? videoRoomUrl(patient.room_id) : null}
-              videoUrl={patient.video_url}
-            />
+                <Button
+                  asChild
+                  className="bg-white text-violet hover:bg-white/90 max-sm:flex-1"
+                >
+                  <Link href={`/informes/nuevo?paciente=${patient.id}`}>
+                    <FileText className="size-4" />
+                    Generar informe
+                  </Link>
+                </Button>
+              </>
+            }
+            secondary={
+              <>
+                {/* Second in v1 (`legacy/index.html:1188`), right after
+                    "Sesión": both are ways of starting one. */}
+                <OnlineConsultation
+                  patientId={patient.id}
+                  patientName={patient.full_name}
+                  patientPhone={patient.phone}
+                  roomUrl={patient.room_id ? videoRoomUrl(patient.room_id) : null}
+                  videoUrl={patient.video_url}
+                />
 
-            <Button
-              asChild
-              variant="outline"
-              className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
-            >
-              <Link href={`/evaluaciones/nueva?paciente=${patient.id}`}>
-                <ChartPie className="size-4" />
-                Evaluar
-              </Link>
-            </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+                >
+                  <Link href={`/evaluaciones/nueva?paciente=${patient.id}`}>
+                    <ChartPie className="size-4" />
+                    Evaluar
+                  </Link>
+                </Button>
 
-            <Button
-              asChild
-              variant="outline"
-              className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
-            >
-              <a
-                href={whatsappLink(patient.phone, shareText)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle className="size-4" />
-                Compartir con familia
-              </a>
-            </Button>
+                {/* Sin teléfono no hay a quién escribirle: el link saldría
+                    `wa.me/?text=…`, sin número, y WhatsApp abre sin
+                    destinatario. Entonces el botón dice lo que falta y lleva a
+                    cargarlo. Misma regla que "Recordar" en la Agenda. */}
+                {patient.phone ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+                  >
+                    <a
+                      href={whatsappLink(patient.phone, shareText)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="size-4" />
+                      Compartir con familia
+                    </a>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+                  >
+                    <Link href={`/pacientes/${patient.id}/editar`}>
+                      <MessageCircle className="size-4" />
+                      Cargar teléfono
+                    </Link>
+                  </Button>
+                )}
 
-            <Button asChild className="bg-white text-violet hover:bg-white/90 max-sm:flex-1">
-              <Link href={`/informes/nuevo?paciente=${patient.id}`}>
-                <FileText className="size-4" />
-                Generar informe
-              </Link>
-            </Button>
-          </>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
+                >
+                  <Link href={`/pacientes/${patient.id}/editar`}>
+                    <Pencil className="size-4" />
+                    Editar ficha
+                  </Link>
+                </Button>
+              </>
+            }
+          />
         }
       />
 
+      {/* En escritorio son dos columnas y la angosta va a la derecha. En
+          teléfono se apilan, y apilada la angosta caía al final: el motivo de
+          consulta arrancaba en y 1788 y la ficha en y 1916, o sea 2,4 pantallas
+          de scroll para llegar a quién es el chico. Es lo que no cambia nunca y
+          lo que más se mira, así que en teléfono sube primero. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-4">
+        <div className="space-y-4 max-lg:order-2">
           <Card>
             <CardHeader>
               <CardTitle>Evolución</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
+              <p className="text-meta text-muted-foreground">
                 {goals.length > 0
                   ? `Avance promedio: ${averageProgress(goals)}%`
                   : 'Avance por objetivo en el tiempo'}
@@ -195,7 +268,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
           <Card>
             <CardHeader>
               <CardTitle>Historial de sesiones</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
+              <p className="text-meta text-muted-foreground">
                 {sessions.length === 1 ? '1 sesión' : `${sessions.length} sesiones`}
               </p>
             </CardHeader>
@@ -205,12 +278,16 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4 max-lg:order-1">
           {/* v1 put this at the top of the right column. It looks like
               decoration and is not: it answers the doubt a practitioner has in
               month one, which is whether they are writing all this into a
-              hole. */}
-          <Card>
+              hole.
+
+              En teléfono se va al final de las tres: la columna entera sube
+              para que el motivo y la ficha queden arriba, y esto es lo único de
+              acá que no hace falta a los dos segundos de abrir la pantalla. */}
+          <Card className="max-lg:order-3">
             <CardHeader>
               <CardTitle>Memoria de Hilo</CardTitle>
             </CardHeader>
@@ -223,15 +300,15 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="max-lg:order-1">
             <CardHeader>
               <CardTitle>Motivo de consulta</CardTitle>
             </CardHeader>
             <CardContent>
               {patient.referral_reason ? (
-                <p className="text-[13.5px] leading-relaxed">{patient.referral_reason}</p>
+                <p className="text-body leading-relaxed">{patient.referral_reason}</p>
               ) : (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Todavía no cargaste el motivo.{' '}
                   <Link
                     href={`/pacientes/${patient.id}/editar`}
@@ -245,31 +322,35 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="max-lg:order-2">
             <CardHeader>
               <CardTitle>Ficha</CardTitle>
             </CardHeader>
             <CardContent>
-              <dl className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-[13px]">
-                <Row label="Edad">{ageLabel(patient.date_of_birth)}</Row>
-                <Row label="Población">{ageGroupLabel(patient.age_group)}</Row>
-                <Row label="Escolaridad">{patient.school_level}</Row>
-                <Row label="Colegio">{patient.school}</Row>
-                <Row label="Mutualista">{patient.health_insurer}</Row>
-                {/* v1 stored the abordaje on the patient; here it is the
-                    practitioner's own discipline, because a practitioner has
-                    exactly one and every patient of theirs is being seen under
-                    it. It stays on the ficha because it is what the report says
-                    and what the mutualista reads. */}
-                <Row label="Abordaje">{disciplineLabel(practitioner.discipline)}</Row>
-                <Row label="Teléfono">{patient.phone}</Row>
-                <Row label="Inicio">{formatDate(patient.start_date)}</Row>
-                <Row label="Honorario">
-                  {patient.session_fee
-                    ? `$ ${patient.session_fee} · ${billingFrequencyLabel(patient.billing_frequency).toLowerCase()}`
-                    : null}
-                </Row>
+              {/* Only the rows that have something in them. A ficha filled in
+                  during a first appointment is mostly empty, and nine labels
+                  each answered "Sin datos" is a wall that hides the two answers
+                  that exist. What is missing is still said — once, at the end,
+                  naming the fields and linking to where they are filled in. */}
+              <dl className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-body">
+                {fichaRows
+                  .filter((row) => row.value)
+                  .map((row) => (
+                    <Row key={row.label} label={row.label} value={row.value!} />
+                  ))}
               </dl>
+
+              {missingFicha.length > 0 ? (
+                <p className="mt-3 border-t border-border pt-3 text-meta leading-relaxed text-muted-foreground">
+                  Sin cargar: {listEs(missingFicha)}.{' '}
+                  <Link
+                    href={`/pacientes/${patient.id}/editar`}
+                    className="font-semibold text-violet underline"
+                  >
+                    Completar
+                  </Link>
+                </p>
+              ) : null}
 
               <PatientDangerZone
                 patientId={patient.id}
@@ -285,17 +366,19 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   )
 }
 
-/**
- * An em dash rather than a blank when a field is empty. A blank reads as a
- * rendering bug; a dash reads as "nobody has filled this in".
- */
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+/** One filled-in ficha field. Empty ones are not rendered at all — see the
+ *  "Sin cargar" line that replaces them. */
+function Row({ label, value }: { label: string; value: string }) {
   return (
     <>
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 break-words">
-        {children || <span className="text-muted-foreground">Sin datos</span>}
-      </dd>
+      <dd className="min-w-0 break-words">{value}</dd>
     </>
   )
+}
+
+/** "escolaridad, colegio y mutualista" — the Spanish list, with the "y" that a
+ *  join(', ') does not give you. */
+function listEs(items: string[]) {
+  return new Intl.ListFormat('es-UY', { style: 'long', type: 'conjunction' }).format(items)
 }

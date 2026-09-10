@@ -1,9 +1,8 @@
-import { Camera, Pencil } from '@/components/icons'
+import { Camera } from '@/components/icons'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { PatientAvatar } from '@/components/patients/patient-avatar'
-import { Button } from '@/components/ui/button'
 import { ageLabel } from '@/lib/age'
 import { patientHex } from '@/lib/patient-colors'
 import { ageGroupLabel } from '@/lib/patient-labels'
@@ -71,25 +70,16 @@ export function PatientHeader({
           <h1 className="truncate text-[24px] font-extrabold tracking-[-0.6px]">
             {patient.full_name}
           </h1>
-          <p className="mt-0.5 text-[13px] text-white/85">
+          <p className="mt-0.5 text-body text-white/85">
             {meta.join(' · ')}
             {patient.archived_at ? ' · Archivado' : ''}
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 max-sm:w-full">
-          {actions}
-          <Button
-            asChild
-            variant="outline"
-            className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
-          >
-            <Link href={`/pacientes/${patient.id}/editar`}>
-              <Pencil className="size-4" />
-              Editar ficha
-            </Link>
-          </Button>
-        </div>
+        {/* "Editar ficha" vivía acá y se fue con las demás a la página: los
+            seis botones se pliegan juntos en teléfono y eso sólo se puede
+            decidir en un lugar. Ver `PatientActions`. */}
+        <div className="flex flex-wrap gap-2 max-sm:w-full">{actions}</div>
       </div>
     </div>
   )
