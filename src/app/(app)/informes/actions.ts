@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { env } from '@/lib/env'
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
@@ -131,18 +131,16 @@ export async function requestFormatAction(
   try {
     await createFormatRequest(user.id, { detail })
   } catch (error) {
-    // El tope es una respuesta y se dice con sus palabras; un fallo de Zod
-    // también. Cualquier otra cosa es un problema nuestro y no se le cuenta a
-    // quien está del otro lado.
-    const message =
-      error instanceof TooManyFormatRequests
-        ? error.message
-        : error && typeof error === 'object' && 'issues' in error
-          ? ((error as { issues: { message: string }[] }).issues[0]?.message ??
-            'Revisá lo que escribiste.')
-          : 'No pudimos guardar tu pedido. Probá de nuevo en un momento.'
+    // El tope es una respuesta y se dice con sus palabras. El resto —un dato
+    // mal escrito, o un problema nuestro— lo separa `formErrorFor`, que además
+    // es la que deja constancia de lo segundo.
+    if (error instanceof TooManyFormatRequests) {
+      return formError(error.message, { detail })
+    }
 
-    return formError(message, { detail })
+    return formErrorFor(error, 'No pudimos guardar tu pedido. Probá de nuevo en un momento.', {
+      detail,
+    })
   }
 
   // Sin `OWNER_EMAIL` configurado el pedido queda guardado igual y no se avisa.

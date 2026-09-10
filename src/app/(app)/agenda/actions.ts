@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import {
   APPOINTMENT_STATUSES,
   createAppointment,
@@ -13,14 +13,6 @@ import {
 } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
 import { setAppointmentFocus } from '@/server/planning'
-
-function messageFor(error: unknown): string {
-  if (error && typeof error === 'object' && 'issues' in error) {
-    const issues = (error as { issues: { message: string }[] }).issues
-    return issues[0]?.message ?? 'Revisá los datos.'
-  }
-  return 'No pudimos guardar. Probá de nuevo.'
-}
 
 export async function createScheduleAction(
   _previous: FormState,
@@ -38,7 +30,7 @@ export async function createScheduleAction(
       startsOn: formData.get('startsOn'),
     })
   } catch (error) {
-    return formError(messageFor(error))
+    return formErrorFor(error, 'No pudimos guardar. Probá de nuevo.')
   }
 
   revalidatePath('/agenda')
@@ -60,7 +52,7 @@ export async function createAppointmentAction(
       note: formData.get('note'),
     })
   } catch (error) {
-    return formError(messageFor(error))
+    return formErrorFor(error, 'No pudimos guardar. Probá de nuevo.')
   }
 
   revalidatePath('/agenda')
