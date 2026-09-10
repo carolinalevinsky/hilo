@@ -47,7 +47,7 @@ export function GoalList({
   return (
     <div className="space-y-3.5">
       {goals.length === 0 ? (
-        <p className="text-[13px] leading-relaxed text-muted-foreground">
+        <p className="text-body leading-relaxed text-muted-foreground">
           Todavía no cargaste objetivos. Agregá el primero y su avance empieza a quedar
           registrado en cada sesión.
         </p>
@@ -119,11 +119,11 @@ function GoalRow({
 
   return (
     <li>
-      <div className="flex items-center justify-between gap-2 text-[13.5px]">
+      <div className="flex items-center justify-between gap-2 text-body">
         <span className="min-w-0 font-semibold">
           {goal.title}
           {goal.progress >= 100 ? (
-            <span className="ml-1.5 rounded-full bg-green-soft px-2 py-0.5 text-[11px] font-bold text-[#1a8f57]">
+            <span className="ml-1.5 rounded-full bg-green-soft px-2 py-0.5 text-micro font-bold text-[#1a8f57]">
               Logrado
             </span>
           ) : null}

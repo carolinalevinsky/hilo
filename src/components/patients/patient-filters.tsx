@@ -102,7 +102,7 @@ export function PatientFilters({
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-2.5 text-[13px] font-bold"
+        className="flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-2.5 text-body font-bold"
       >
         <span className="inline-flex items-center gap-2.5">
           <SlidersHorizontal className="size-[17px]" />
@@ -154,7 +154,7 @@ export function PatientFilters({
               value={sort}
               onChange={(event) => set('orden', event.target.value)}
               aria-label="Ordenar pacientes"
-              className="h-9 rounded-lg border border-input bg-background px-3 text-[13px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="h-9 rounded-lg border border-input bg-background px-3 text-body outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {Object.entries(SORT_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -166,7 +166,7 @@ export function PatientFilters({
         </div>
       ) : null}
 
-      <p className="text-[12.5px] text-muted-foreground">
+      <p className="text-meta text-muted-foreground">
         {total === 1 ? '1 paciente' : `${total} pacientes`}
       </p>
     </div>
@@ -187,7 +187,7 @@ function Group({
 }) {
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <span className="text-[12px] font-bold text-muted-foreground">{label}</span>
+      <span className="text-meta font-bold text-muted-foreground">{label}</span>
       <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   )

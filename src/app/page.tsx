@@ -19,7 +19,7 @@ export default function LandingPage() {
         Tus pacientes, tus sesiones y tus informes, en un solo lugar
       </h1>
 
-      <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/85">
+      <p className="mt-4 max-w-md text-lead leading-relaxed text-white/85">
         Hecho para fonoaudiólogas, psicopedagogas, terapeutas ocupacionales, psicólogas,
         psicomotricistas y kinesiólogas de Uruguay.
       </p>
@@ -38,7 +38,7 @@ export default function LandingPage() {
         </Button>
       </div>
 
-      <p className="mt-10 text-[12px] text-white/70">
+      <p className="mt-10 text-meta text-white/70">
         <Link href="/terminos" className="underline">
           Términos
         </Link>

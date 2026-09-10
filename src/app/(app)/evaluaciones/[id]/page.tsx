@@ -50,7 +50,7 @@ export default async function AssessmentPage({
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
           href={back.href}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           {back.label}
@@ -104,10 +104,10 @@ export default async function AssessmentPage({
           <input type="hidden" name="instrumentName" value={assessment.instrument} />
           <input type="hidden" name="results" value={JSON.stringify(results)} />
 
-          <p className="text-[13.5px] font-bold text-violet">
+          <p className="text-body font-bold text-violet">
             Objetivos sugeridos a partir de esta evaluación
           </p>
-          <ul className="mt-1.5 space-y-1 text-[13px] text-violet">
+          <ul className="mt-1.5 space-y-1 text-body text-violet">
             {proposals.map((proposal) => (
               <li key={proposal}>• {proposal}</li>
             ))}

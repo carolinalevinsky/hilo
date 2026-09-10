@@ -39,13 +39,13 @@ export function NextSessionCard({
 
         {/* Antes que nada lo demás: es la única cosa que alguien viene a mirar
             acá, y estaba en la base sin que la pantalla la pidiera. */}
-        <p className="text-[12.5px] font-semibold">
+        <p className="text-meta font-semibold">
           {next
             ? `${formatLongDate(next.scheduled_on)} · ${formatTime(next.start_time)}`
             : 'No hay ninguna agendada todavía.'}
         </p>
         {items.length > 0 ? (
-          <p className="text-[12.5px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             Dejaste preparada la próxima sesión con{' '}
             <b>{items.length === 1 ? '1 actividad' : `${items.length} actividades`}</b>.
             Cuando la tengas, registrala y pasa al historial.
@@ -56,7 +56,7 @@ export function NextSessionCard({
       <CardContent>
         {items.length === 0 ? (
           <>
-            <p className="mb-3 text-[13px] text-muted-foreground">
+            <p className="mb-3 text-body text-muted-foreground">
               Hilo ordena los objetivos de {patientFirstName} por los que menos se movieron
               y te sugiere con qué trabajarlos.
             </p>
@@ -74,14 +74,14 @@ export function NextSessionCard({
             <ol className="space-y-2">
               {items.map((item, index) => (
                 <li key={item.id} className="flex items-center gap-2.5">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-[12px] font-extrabold text-[#12706a]">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-meta font-extrabold text-[#12706a]">
                     {index + 1}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[13.5px] font-bold">
+                    <p className="text-body font-bold">
                       {item.title ?? item.material?.title ?? 'Actividad'}
                     </p>
-                    <p className="text-[12px] text-muted-foreground">
+                    <p className="text-meta text-muted-foreground">
                       {item.title && item.material
                         ? `Material: ${item.material.title}`
                         : item.material

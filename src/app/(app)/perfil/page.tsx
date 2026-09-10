@@ -66,7 +66,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
       <Card className="mb-5">
         <CardHeader>
           <CardTitle>Tu calendario</CardTitle>
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          <p className="text-meta leading-relaxed text-muted-foreground">
             Cuando agregás una sesión a Google Calendar, el título del evento
             queda guardado en un servidor de Google, fuera del país. Elegí cuánto
             de tu paciente viaja hasta ahí.{' '}
@@ -82,8 +82,8 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
               role="status"
               className={
                 result.ok
-                  ? 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-[12.5px] text-[#1a8f57]'
-                  : 'rounded-[11px] bg-red-soft px-3.5 py-2.5 text-[12.5px] text-[#c0392b]'
+                  ? 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]'
+                  : 'rounded-[11px] bg-red-soft px-3.5 py-2.5 text-meta text-[#c0392b]'
               }
             >
               {result.message}
@@ -94,8 +94,8 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             {google ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[13.5px] font-bold">Google Calendar conectado</p>
-                  <p className="truncate text-[12.5px] text-muted-foreground">
+                  <p className="text-body font-bold">Google Calendar conectado</p>
+                  <p className="truncate text-meta text-muted-foreground">
                     {google.googleEmail}
                   </p>
                 </div>
@@ -108,8 +108,8 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[13.5px] font-bold">Google Calendar</p>
-                  <p className="text-[12.5px] text-muted-foreground">
+                  <p className="text-body font-bold">Google Calendar</p>
+                  <p className="text-meta text-muted-foreground">
                     Tus sesiones aparecen en tu calendario, y si movés una desde
                     el celular se mueve acá. Borrar el evento en Google cancela la
                     hora; la sesión y su nota quedan.
@@ -144,7 +144,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
         </CardHeader>
         <CardContent>
           {trail.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-body text-muted-foreground">
               Todavía no hay nada registrado. Acá van a aparecer los cambios que hagas
               sobre pacientes, sesiones, informes y tu cuenta.
             </p>
@@ -155,10 +155,10 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
                   key={entry.id}
                   className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 py-2"
                 >
-                  <span className="text-[13.5px]">
+                  <span className="text-body">
                     {auditPhrase(entry.action, entry.entity)}
                   </span>
-                  <span className="text-[12px] text-muted-foreground">
+                  <span className="text-meta text-muted-foreground">
                     {auditWhen(entry.created_at)}
                   </span>
                 </li>
@@ -166,7 +166,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             </ul>
           )}
 
-          <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+          <p className="mt-3 text-meta leading-relaxed text-muted-foreground">
             Se guarda porque Hilo tiene datos de salud y hay que poder reconstruir qué
             pasó con ellos. Nadie más que vos lo ve, y no se puede editar — ni por vos.
           </p>
@@ -181,7 +181,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           {/* El plan no se muestra. Los límites siguen existiendo y se aplican
               en el servidor; lo que no hay todavía es forma de cambiar de plan,
               y un dato que no se puede accionar sólo ocupa lugar. */}
-          <dl className="grid gap-3 text-[13px]">
+          <dl className="grid gap-3 text-body">
             <div>
               <dt className="text-muted-foreground">Correo</dt>
               <dd className="font-semibold">{practitioner.email}</dd>

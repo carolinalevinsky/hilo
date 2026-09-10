@@ -19,7 +19,7 @@ export function DocumentDiff({ before, after }: { before: string; after: string 
   const blocks = diffLines(before, after)
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-3.5 text-[13px] leading-[1.65]">
+    <div className="space-y-3 rounded-xl border border-border bg-card p-3.5 text-body leading-[1.65]">
       {blocks.map((block, index) =>
         block.type === 'same' ? (
           <Lines key={index} lines={block.lines} tone="same" />
@@ -32,7 +32,7 @@ export function DocumentDiff({ before, after }: { before: string; after: string 
 
             {block.removed.length > 0 ? (
               <div className="space-y-1">
-                <p className="text-[12.5px] font-bold text-muted-foreground">
+                <p className="text-meta font-bold text-muted-foreground">
                   {block.added.length > 0 ? 'En lugar de:' : 'Saca esto:'}
                 </p>
                 <Lines lines={block.removed} tone="removed" />

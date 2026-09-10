@@ -63,8 +63,8 @@ export function BookingForm({ slug }: { slug: string }) {
   if (status === 'sent') {
     return (
       <div className="rounded-xl bg-green-soft px-4 py-5 text-center">
-        <p className="text-[15px] font-bold text-[#1a8f57]">¡Listo, llegó tu solicitud!</p>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-[#1a8f57]">
+        <p className="text-lead font-bold text-[#1a8f57]">¡Listo, llegó tu solicitud!</p>
+        <p className="mt-1.5 text-body leading-relaxed text-[#1a8f57]">
           Te vamos a escribir al teléfono que dejaste para confirmar el día y la hora.
         </p>
       </div>
@@ -144,7 +144,7 @@ export function BookingForm({ slug }: { slug: string }) {
         {status === 'sending' ? 'Enviando…' : 'Pedir un turno'}
       </Button>
 
-      <p className="text-center text-[11.5px] leading-relaxed text-muted-foreground">
+      <p className="text-center text-micro leading-relaxed text-muted-foreground">
         Tus datos se envían sólo a la profesional. No los compartimos con nadie más.
       </p>
     </form>

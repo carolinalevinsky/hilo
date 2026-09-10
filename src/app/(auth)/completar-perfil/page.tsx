@@ -25,14 +25,14 @@ export default async function CompleteProfilePage() {
   return (
     <>
       <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">Completá tu perfil</h1>
-      <p className="mt-1 mb-5 text-[13px] leading-relaxed text-muted-foreground">
+      <p className="mt-1 mb-5 text-body leading-relaxed text-muted-foreground">
         Tu cuenta existe, pero le falta la ficha profesional. Con estos dos datos
         queda lista y entrás.
       </p>
 
       <CompleteProfileForm />
 
-      <p className="mt-5 text-center text-[11.5px] text-muted-foreground">
+      <p className="mt-5 text-center text-micro text-muted-foreground">
         Los podés cambiar después desde tu perfil.
       </p>
     </>

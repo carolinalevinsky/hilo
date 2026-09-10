@@ -62,7 +62,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
         <form action={formAction} className="space-y-4">
           <FormMessage message={state.message} />
 
-          <p className="rounded-xl bg-amber-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
+          <p className="rounded-xl bg-amber-soft px-3 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
             Para describirlo, Hilo le manda el archivo al modelo de IA. Fijate que no
             tenga el nombre de ningún paciente escrito. Una foto sacada en el consultorio
             a veces lo tiene.
@@ -77,7 +77,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
               required
               accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif"
               onChange={(event) => setFileName(event.target.files?.[0]?.name ?? null)}
-              className="w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-[13px] file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-body file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
             <p className="text-xs text-muted-foreground">
               {fileName ?? 'PDF, JPG, PNG o HEIC. Hasta 10 MB.'}

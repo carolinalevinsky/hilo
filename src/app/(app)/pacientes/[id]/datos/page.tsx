@@ -49,7 +49,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
           href={`/pacientes/${patient.id}`}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           Volver a la ficha
@@ -73,7 +73,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px]">
             Datos de {patient.full_name}
           </h1>
-          <p className="mt-0.5 mb-6 text-[12.5px] text-muted-foreground">
+          <p className="mt-0.5 mb-6 text-meta text-muted-foreground">
             Todo lo que Hilo guarda sobre {patient.full_name.split(' ')[0]}, al{' '}
             {formatLongDate(data.generatedAt.slice(0, 10))} · {practitioner.full_name} ·{' '}
             {disciplineLabel(practitioner.discipline)}
@@ -121,7 +121,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
             ) : (
               <ul className="space-y-1.5">
                 {data.goals.map((goal) => (
-                  <li key={goal.id} className="text-[13px]">
+                  <li key={goal.id} className="text-body">
                     <b>{goal.title}</b> · {goal.progress}%
                     {goal.is_active ? '' : ' · retirado'}
                   </li>
@@ -137,11 +137,11 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               <ul className="space-y-3">
                 {data.sessions.map((session) => (
                   <li key={session.id}>
-                    <p className="text-[12px] font-bold text-muted-foreground">
+                    <p className="text-meta font-bold text-muted-foreground">
                       {formatDate(session.heldOn)}
                       {session.goals.length > 0 ? ` · ${session.goals.join(', ')}` : ''}
                     </p>
-                    <p className="text-[13px] leading-relaxed">
+                    <p className="text-body leading-relaxed">
                       {session.progressNote ?? 'Sin nota de progreso'}
                     </p>
                   </li>
@@ -157,10 +157,10 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               <ul className="space-y-3">
                 {data.assessments.map((assessment) => (
                   <li key={assessment.id}>
-                    <p className="text-[12px] font-bold text-muted-foreground">
+                    <p className="text-meta font-bold text-muted-foreground">
                       {formatDate(assessment.assessed_on)} · {assessment.instrument}
                     </p>
-                    <p className="text-[13px] leading-relaxed whitespace-pre-line">
+                    <p className="text-body leading-relaxed whitespace-pre-line">
                       {assessment.analysis}
                     </p>
                   </li>
@@ -176,12 +176,12 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               <ul className="space-y-3">
                 {data.reports.map((report) => (
                   <li key={report.id}>
-                    <p className="text-[12px] font-bold text-muted-foreground">
+                    <p className="text-meta font-bold text-muted-foreground">
                       {formatDate(report.created_at.slice(0, 10))} ·{' '}
                       {RECIPIENT_LABELS[report.recipient as RecipientId] ?? report.recipient}
                     </p>
-                    <p className="text-[13px] font-bold">{report.title}</p>
-                    <p className="text-[13px] leading-relaxed whitespace-pre-line">
+                    <p className="text-body font-bold">{report.title}</p>
+                    <p className="text-body leading-relaxed whitespace-pre-line">
                       {report.content}
                     </p>
                   </li>
@@ -196,7 +196,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
             ) : (
               <ul className="space-y-1.5">
                 {data.payments.map((payment) => (
-                  <li key={payment.id} className="text-[13px]">
+                  <li key={payment.id} className="text-body">
                     <b>{periodLabel(payment.period)}</b> · {money(Number(payment.amount))}
                     {payment.paidOn ? ` · pagado el ${formatDate(payment.paidOn)}` : ''}
                     {payment.method ? ` · ${paymentMethodLabel(payment.method)}` : ''}
@@ -209,7 +209,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
           {/* Said out loud rather than left out silently. See
               `src/server/patient-export.ts` for the reasoning. */}
           {data.privateNoteCount > 0 ? (
-            <p className="mt-6 rounded-xl bg-muted/60 px-4 py-3 text-[12.5px] leading-relaxed text-muted-foreground">
+            <p className="mt-6 rounded-xl bg-muted/60 px-4 py-3 text-meta leading-relaxed text-muted-foreground">
               Además de lo anterior, {data.privateNoteCount === 1 ? 'una' : data.privateNoteCount}{' '}
               {data.privateNoteCount === 1 ? 'sesión tiene' : 'sesiones tienen'} notas de
               trabajo de {practitioner.full_name}, que no forman parte de la historia clínica
@@ -225,7 +225,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-6 border-t border-border pt-4">
-      <h2 className="mb-2.5 text-[12.5px] font-extrabold tracking-[0.6px] text-violet uppercase">
+      <h2 className="mb-2.5 text-meta font-extrabold tracking-[0.6px] text-violet uppercase">
         {title}
       </h2>
       {children}
@@ -236,12 +236,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, value }: { label: string; value: string | number | null }) {
   if (value === null || value === undefined || value === '') return null
   return (
-    <p className="text-[13px]">
+    <p className="text-body">
       <span className="text-muted-foreground">{label}:</span> {value}
     </p>
   )
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-[13px] text-muted-foreground">{children}</p>
+  return <p className="text-body text-muted-foreground">{children}</p>
 }

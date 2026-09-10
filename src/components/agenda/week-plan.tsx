@@ -34,7 +34,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
     <Card className="mt-5">
       <CardHeader>
         <CardTitle>Plan de la semana</CardTitle>
-        <p className="text-[12.5px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {sessions.length === 0
             ? 'Sin sesiones esta semana.'
             : `${done}/${sessions.length} dadas · elegí el objetivo de cada sesión y marcá cuando la des`}
@@ -84,7 +84,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                     </button>
                   </form>
 
-                  <span className="w-[74px] shrink-0 text-[13px] text-muted-foreground">
+                  <span className="w-[74px] shrink-0 text-body text-muted-foreground">
                     <b className="text-foreground">
                       {weekdayName(new Date(`${session.scheduledOn}T12:00:00`).getDay())
                         .slice(0, 3)
@@ -102,7 +102,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                   <Link
                     href={`/pacientes/${session.patientId}`}
                     className={cn(
-                      'min-w-[90px] flex-1 text-[14px] font-bold hover:underline',
+                      'min-w-[90px] flex-1 text-item font-bold hover:underline',
                       attended && 'line-through',
                     )}
                   >
@@ -110,7 +110,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                   </Link>
 
                   {session.goals.length === 0 ? (
-                    <span className="text-[12.5px] text-muted-foreground">
+                    <span className="text-meta text-muted-foreground">
                       Sin objetivos cargados
                     </span>
                   ) : (
@@ -140,7 +140,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                       </Link>
                     </Button>
                   ) : (
-                    <span className="text-[12.5px] text-muted-foreground">Sin objetivo</span>
+                    <span className="text-meta text-muted-foreground">Sin objetivo</span>
                   )}
                 </li>
               )

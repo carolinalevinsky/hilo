@@ -33,7 +33,7 @@ export function MercadoPagoCard({ connected }: { connected: boolean }) {
     <Card>
       <CardHeader>
         <CardTitle>Cobrar por Mercado Pago</CardTitle>
-        <p className="text-[12.5px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           El dinero va directo a tu cuenta. Hilo sólo arma el link.
         </p>
       </CardHeader>
@@ -41,7 +41,7 @@ export function MercadoPagoCard({ connected }: { connected: boolean }) {
       <CardContent>
         {connected ? (
           <div className="space-y-3">
-            <p className="inline-flex items-center gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-[12.5px] text-[#1a8f57]">
+            <p className="inline-flex items-center gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]">
               Tu cuenta está conectada. Podés mandar links de pago desde la tabla de abajo.
             </p>
             <form action={disconnectMercadoPagoAction}>

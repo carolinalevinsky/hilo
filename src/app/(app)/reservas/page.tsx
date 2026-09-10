@@ -47,7 +47,7 @@ export default async function BookingsPage() {
               practitionerName={practitioner.full_name}
             />
           ) : (
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-body text-muted-foreground">
               Todavía no tenés un link. Escribinos y te lo activamos.
             </p>
           )}
@@ -57,7 +57,7 @@ export default async function BookingsPage() {
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>Sin confirmar</CardTitle>
-          <p className="text-[12.5px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             {pending.length === 0
               ? 'Nada pendiente'
               : pending.length === 1
@@ -88,12 +88,12 @@ export default async function BookingsPage() {
               {handled.map((request) => (
                 <li
                   key={request.id}
-                  className="flex items-center justify-between gap-2 py-2 text-[13px]"
+                  className="flex items-center justify-between gap-2 py-2 text-body"
                 >
                   <span>
                     <b>{request.name}</b> · {formatDate(request.created_at)}
                   </span>
-                  <span className="text-[12px] text-muted-foreground">
+                  <span className="text-meta text-muted-foreground">
                     {request.status === 'confirmed'
                       ? (request.patients?.full_name ?? 'Confirmada')
                       : 'Descartada'}

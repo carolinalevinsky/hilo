@@ -130,7 +130,7 @@ export function SignUpForm() {
 
       <Label
         htmlFor="acceptedTerms"
-        className="flex items-start gap-2 text-[12.5px] leading-relaxed font-normal"
+        className="flex items-start gap-2 text-meta leading-relaxed font-normal"
       >
         <Checkbox
           key={`terms-${attempt}`}

@@ -46,7 +46,7 @@ export function DocumentHistory({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+        className="text-body font-semibold text-muted-foreground hover:text-foreground"
       >
         {open ? 'Ocultar versiones anteriores' : `Versiones anteriores (${versions.length})`}
       </button>
@@ -59,14 +59,14 @@ export function DocumentHistory({
               className="flex flex-wrap items-start justify-between gap-2 rounded-xl border border-border px-3 py-2.5"
             >
               <div className="min-w-[200px] flex-1">
-                <p className="text-[12.5px] font-bold">
+                <p className="text-meta font-bold">
                   {formatDateTime(version.created_at)}
                   <span className="font-normal text-muted-foreground">
                     {' · '}
                     {REASONS[version.replaced_by] ?? 'antes de un cambio'}
                   </span>
                 </p>
-                <p className="mt-0.5 line-clamp-2 text-[12.5px] text-muted-foreground">
+                <p className="mt-0.5 line-clamp-2 text-meta text-muted-foreground">
                   {preview(version.body)}
                 </p>
               </div>

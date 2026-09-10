@@ -237,7 +237,7 @@ export function DocumentEditor({
           value={text}
           onChange={(event) => setText(event.target.value)}
           rows={24}
-          className="font-mono text-[13px] leading-relaxed"
+          className="font-mono text-body leading-relaxed"
           aria-label="Texto del documento"
         />
       ) : (
@@ -245,7 +245,7 @@ export function DocumentEditor({
       )}
 
       {streaming && !text && !pending ? (
-        <p className="text-[13px] text-muted-foreground">Redactando con IA…</p>
+        <p className="text-body text-muted-foreground">Redactando con IA…</p>
       ) : null}
 
       {pending ? (
@@ -263,7 +263,7 @@ export function DocumentEditor({
           one change you actually want. */}
       <div className="no-print flex flex-wrap items-end gap-2 border-t border-border pt-4">
         <div className="min-w-[240px] flex-1">
-          <label htmlFor="adjustment" className="text-[12.5px] font-medium">
+          <label htmlFor="adjustment" className="text-meta font-medium">
             ¿Querés ajustar algo?
           </label>
           <Input
@@ -318,7 +318,7 @@ function Proposal({
 }) {
   return (
     <div className="no-print space-y-3 rounded-xl border-2 border-violet p-3.5">
-      <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-violet">
+      <p className="flex items-start gap-2 text-meta leading-relaxed text-violet">
         <Sparkles className="mt-0.5 size-4 shrink-0" />
         <span>
           {pending.done
@@ -328,20 +328,20 @@ function Proposal({
       </p>
 
       {!pending.done ? (
-        <p className="whitespace-pre-wrap text-[13px] leading-[1.65] text-muted-foreground">
+        <p className="whitespace-pre-wrap text-body leading-[1.65] text-muted-foreground">
           {pending.text || 'Redactando…'}
         </p>
       ) : applicable ? (
         <DocumentDiff before={before} after={pending.text} />
       ) : (
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           La IA escribió lo mismo que ya tenías. No hay nada para aplicar.
         </p>
       )}
 
       {pending.done ? (
         <>
-          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+          <p className="text-meta leading-relaxed text-muted-foreground">
             Aplicar reemplaza el texto actual. Lo que hay ahora queda guardado en
             &quot;Versiones anteriores&quot;, así que siempre podés volver.
           </p>
@@ -370,7 +370,7 @@ function AiNote({
 }) {
   if (state === 'kept') {
     return (
-      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
+      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
         <span>
           {detail ?? 'La IA no respondió esta vez.'} No se cambió nada: tu texto quedó como
@@ -382,7 +382,7 @@ function AiNote({
 
   if (state === 'failed') {
     return (
-      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
+      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
         <span>
           {detail ?? 'La IA no respondió esta vez.'} Te dejamos un borrador base: revisalo y
@@ -394,7 +394,7 @@ function AiNote({
 
   if (state === 'saved') {
     return (
-      <p className="no-print flex items-start gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#1a8f57]">
+      <p className="no-print flex items-start gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#1a8f57]">
         <Check className="mt-0.5 size-4 shrink-0" />
         Guardado. Podés seguir editándolo cuando quieras.
       </p>
@@ -402,7 +402,7 @@ function AiNote({
   }
 
   return (
-    <p className="no-print flex items-start gap-2 rounded-xl bg-violet-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-violet">
+    <p className="no-print flex items-start gap-2 rounded-xl bg-violet-soft px-3.5 py-2.5 text-meta leading-relaxed text-violet">
       <Sparkles className="mt-0.5 size-4 shrink-0" />
       Borrador asistido por IA. Revisá y editá lo que corresponda: el criterio clínico y la
       firma son tuyos.

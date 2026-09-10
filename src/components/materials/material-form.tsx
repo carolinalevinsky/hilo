@@ -309,7 +309,7 @@ export function MaterialForm({
       <div className="space-y-1.5">
         <Label htmlFor="content">La actividad</Label>
         {generation ? (
-          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] text-violet">
+          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-3 py-2.5 text-meta text-violet">
             <Sparkles className="size-4 shrink-0" />
             {generation}
           </p>
@@ -382,7 +382,7 @@ export function MaterialForm({
         </div>
         <input type="hidden" name="visibility" value={visibility} />
 
-        <p className="rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] text-violet">
+        <p className="rounded-xl bg-violet-soft px-3 py-2.5 text-meta text-violet">
           {visibility === 'public'
             ? 'Público: cualquier profesional de Hilo lo ve en su biblioteca y puede copiarlo, con tu nombre. Vos seguís siendo quien lo edita.'
             : 'Privado: queda solo en tu biblioteca. Nadie más lo ve.'}
@@ -391,7 +391,7 @@ export function MaterialForm({
         {visibility === 'public' ? (
           <Label
             htmlFor="ownWork"
-            className="flex items-start gap-2.5 text-[12.5px] leading-relaxed font-normal"
+            className="flex items-start gap-2.5 text-meta leading-relaxed font-normal"
           >
             <Checkbox
               id="ownWork"
@@ -451,7 +451,7 @@ function VisibilityOption({
       onClick={() => onPick(value)}
       aria-pressed={active}
       className={cn(
-        'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12.5px] font-bold transition-colors',
+        'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-meta font-bold transition-colors',
         active ? 'bg-card text-violet shadow-card' : 'text-muted-foreground hover:text-foreground',
       )}
     >

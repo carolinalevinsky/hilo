@@ -202,13 +202,13 @@ export function AppTour({ seen }: { seen: boolean }) {
         {/* El saludo no lleva contador: no es una de las cinco pantallas, y
             numerarlo haría que "1 de 6" empiece antes de mostrar nada. */}
         {step > 0 ? (
-          <p className="mb-1 text-[11.5px] font-semibold tracking-wide text-violet uppercase">
+          <p className="mb-1 text-micro font-semibold tracking-wide text-violet uppercase">
             {step} de {TOUR_STOPS.length - 1}
           </p>
         ) : null}
 
         <h2 className="text-[17px] font-extrabold tracking-[-0.3px]">{stop.title}</h2>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+        <p className="mt-1.5 text-body leading-relaxed text-muted-foreground">
           {stop.body}
         </p>
 
@@ -228,7 +228,7 @@ export function AppTour({ seen }: { seen: boolean }) {
           <button
             type="button"
             onClick={close}
-            className="ml-auto text-[12.5px] text-muted-foreground underline hover:text-foreground"
+            className="ml-auto text-meta text-muted-foreground underline hover:text-foreground"
           >
             Saltar
           </button>

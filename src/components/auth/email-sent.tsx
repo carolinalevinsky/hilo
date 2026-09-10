@@ -11,8 +11,8 @@ export function EmailSent({ title, children }: { title: string; children: React.
   return (
     <div className="rounded-[16px] bg-green-soft px-4 py-5 text-center">
       <MailCheck className="mx-auto size-7 text-green" aria-hidden />
-      <p className="mt-2.5 text-[14px] font-bold">{title}</p>
-      <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">{children}</p>
+      <p className="mt-2.5 text-item font-bold">{title}</p>
+      <p className="mt-1.5 text-meta leading-relaxed text-muted-foreground">{children}</p>
     </div>
   )
 }

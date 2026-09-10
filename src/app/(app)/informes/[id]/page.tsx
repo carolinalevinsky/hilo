@@ -69,7 +69,7 @@ export default async function ReportPage({
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
           href={back.href}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           {back.label}

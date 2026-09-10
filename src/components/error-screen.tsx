@@ -64,7 +64,7 @@ export function ErrorScreen({
             </div>
 
             {error.digest ? (
-              <p className="text-[11.5px] text-muted-foreground">
+              <p className="text-micro text-muted-foreground">
                 Si vuelve a pasar, pasanos este código:{' '}
                 <span className="font-mono">{error.digest}</span>
               </p>

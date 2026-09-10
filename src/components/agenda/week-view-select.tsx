@@ -41,7 +41,7 @@ export function WeekViewSelect({ value }: { value: 'laboral' | 'completa' }) {
           // en vez de escribirse: una URL limpia para el caso normal.
           set({ vista: event.target.value === 'completa' ? 'completa' : '' })
         }
-        className="h-8 appearance-none rounded-lg border border-border bg-card py-0 pr-8 pl-3 text-[12.5px] font-semibold outline-none hover:border-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-8 appearance-none rounded-lg border border-border bg-card py-0 pr-8 pl-3 text-meta font-semibold outline-none hover:border-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <option value="laboral">Semana laboral</option>
         <option value="completa">Semana completa</option>

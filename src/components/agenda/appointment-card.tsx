@@ -38,11 +38,11 @@ export function AppointmentCard({
       // It is what makes a week of eight names scannable.
       style={{ borderLeftColor: patientHex(patient?.color ?? null) }}
     >
-      <p className="text-[12.5px] font-extrabold tabular-nums">
+      <p className="text-meta font-extrabold tabular-nums">
         {formatTime(appointment.start_time)}
       </p>
 
-      <p className="truncate text-[12.5px]">
+      <p className="truncate text-meta">
         {patient ? (
           <Link href={`/pacientes/${patient.id}`} className="hover:underline">
             {name}
@@ -56,7 +56,7 @@ export function AppointmentCard({
       {appointment.status !== 'scheduled' ? (
         <span
           className={cn(
-            'mt-1 inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+            'mt-1 inline-block rounded-full px-1.5 py-0.5 text-micro font-bold',
             appointmentStatusClasses(appointment.status),
           )}
         >

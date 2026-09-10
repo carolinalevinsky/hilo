@@ -20,16 +20,16 @@ export default function LegalLayout({ children }: LayoutProps<'/'>) {
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-8 pb-16">
-        <div className="mb-4 rounded-xl bg-amber-soft px-4 py-3 text-[12.5px] leading-relaxed text-[#8a5a12]">
+        <div className="mb-4 rounded-xl bg-amber-soft px-4 py-3 text-meta leading-relaxed text-[#8a5a12]">
           Documento modelo, orientativo. Antes de usarse con pacientes reales conviene una
           revisión legal, sobre todo por tratarse de datos de salud de menores.
         </div>
 
-        <article className="space-y-3.5 text-[14px] leading-[1.65] [&_h1]:mb-4 [&_h1]:text-[22px] [&_h1]:font-extrabold [&_h1]:tracking-[-0.5px]">
+        <article className="space-y-3.5 text-item leading-[1.65] [&_h1]:mb-4 [&_h1]:text-[22px] [&_h1]:font-extrabold [&_h1]:tracking-[-0.5px]">
           {children}
         </article>
 
-        <p className="mt-10 text-[12.5px] text-muted-foreground">
+        <p className="mt-10 text-meta text-muted-foreground">
           <Link href="/terminos" className="text-violet underline">
             Términos y Condiciones
           </Link>

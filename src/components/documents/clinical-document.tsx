@@ -25,10 +25,10 @@ export function ClinicalDocument({
   return (
     <article className="hilo-doc mx-auto max-w-[720px] rounded-lg bg-card px-6 py-8 shadow-card sm:px-10">
       <h1 className="text-center text-[20px] font-extrabold tracking-[-0.4px]">{title}</h1>
-      <p className="mt-1 text-center text-[12.5px] text-muted-foreground">{subtitle}</p>
+      <p className="mt-1 text-center text-meta text-muted-foreground">{subtitle}</p>
 
       {meta && meta.length > 0 ? (
-        <dl className="mt-5 grid gap-x-5 gap-y-1 border-y border-border py-3 text-[12.5px] sm:grid-cols-2">
+        <dl className="mt-5 grid gap-x-5 gap-y-1 border-y border-border py-3 text-meta sm:grid-cols-2">
           {meta.map((entry) => (
             <div key={entry.label} className="flex gap-1.5">
               <dt className="font-bold">{entry.label}:</dt>
@@ -42,8 +42,8 @@ export function ClinicalDocument({
 
       <div className="mt-12 text-center">
         <div className="mx-auto mb-1.5 h-px w-52 bg-foreground/60" />
-        <p className="text-[13px] font-bold">{footer.name}</p>
-        <p className="text-[12px] text-muted-foreground">{footer.discipline}</p>
+        <p className="text-body font-bold">{footer.name}</p>
+        <p className="text-meta text-muted-foreground">{footer.discipline}</p>
       </div>
     </article>
   )
@@ -68,10 +68,10 @@ export function DocumentBody({ text }: { text: string }) {
     .filter(Boolean)
 
   return (
-    <div className="space-y-2.5 text-[14px] leading-[1.65]">
+    <div className="space-y-2.5 text-item leading-[1.65]">
       {blocks.map((line, index) =>
         isHeading(line) ? (
-          <h2 key={index} className="pt-2 text-[14px] font-extrabold">
+          <h2 key={index} className="pt-2 text-item font-extrabold">
             {line}
           </h2>
         ) : (

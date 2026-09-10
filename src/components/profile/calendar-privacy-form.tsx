@@ -37,7 +37,7 @@ export function CalendarPrivacyForm({ value }: { value: string }) {
       {state.ok ? (
         <p
           role="status"
-          className="rounded-[11px] bg-green-soft px-3.5 py-2.5 text-[12.5px] text-[#1a8f57]"
+          className="rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]"
         >
           {state.message}
         </p>
@@ -62,14 +62,14 @@ export function CalendarPrivacyForm({ value }: { value: string }) {
             />
             <span className="min-w-0">
               <span className="flex flex-wrap items-baseline gap-2">
-                <span className="text-[13.5px] font-bold">
+                <span className="text-body font-bold">
                   {CALENDAR_PRIVACY_LABELS[option]}
                 </span>
-                <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11.5px]">
+                <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-micro">
                   {CALENDAR_PRIVACY_EXAMPLES[option]}
                 </span>
               </span>
-              <span className="mt-1 block text-[12.5px] leading-relaxed text-muted-foreground">
+              <span className="mt-1 block text-meta leading-relaxed text-muted-foreground">
                 {CALENDAR_PRIVACY_HINTS[option]}
               </span>
             </span>

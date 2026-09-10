@@ -21,7 +21,7 @@ export function BookingLink({ url, practitionerName }: { url: string; practition
 
   return (
     <div className="space-y-2.5">
-      <code className="block overflow-x-auto rounded-xl bg-muted px-3.5 py-2.5 text-[13px] whitespace-nowrap">
+      <code className="block overflow-x-auto rounded-xl bg-muted px-3.5 py-2.5 text-body whitespace-nowrap">
         {url}
       </code>
 

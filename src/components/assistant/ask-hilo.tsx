@@ -171,7 +171,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             is being seen for the first time, and it is where the promise that
             nothing is written down still gets made. */}
         {fill ? null : (
-          <p className="text-[12.5px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             {turns.length
               ? 'Se acuerda de esta charla. Cuando la cerrás, no queda guardada.'
               : 'Sobre cualquier paciente o sobre tu práctica.'}
@@ -196,26 +196,26 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
                 turn.role === 'user' ? (
                   <p
                     key={index}
-                    className="ml-auto w-fit max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-[13.5px] leading-relaxed"
+                    className="ml-auto w-fit max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-body leading-relaxed"
                   >
                     {turn.content}
                   </p>
                 ) : (
                   <div key={index} className="space-y-2">
                     {turn.content ? (
-                      <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                      <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-body leading-relaxed whitespace-pre-wrap">
                         {turn.content}
                       </p>
                     ) : null}
 
                     {!turn.content && asking && index === turns.length - 1 ? (
-                      <p className="text-[13px] text-muted-foreground">Pensando…</p>
+                      <p className="text-body text-muted-foreground">Pensando…</p>
                     ) : null}
 
                     {/* Beside the answer, not instead of it: the answer above is
                         real either way, it just did not come from the model. */}
                     {turn.note ? (
-                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
+                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
                         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
                         <span>{turn.note}</span>
                       </p>

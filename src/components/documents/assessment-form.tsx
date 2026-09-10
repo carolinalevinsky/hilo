@@ -115,7 +115,7 @@ export function AssessmentForm({
             <div className="grid gap-2 sm:grid-cols-2">
               {selected.fields.map((field) => (
                 <div key={field} className="flex items-center gap-2">
-                  <span className="flex-1 text-[12.5px]">{field}</span>
+                  <span className="flex-1 text-meta">{field}</span>
                   <Input
                     name={`score:${field}`}
                     inputMode="decimal"

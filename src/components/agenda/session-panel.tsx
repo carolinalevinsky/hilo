@@ -77,15 +77,15 @@ export function SessionPanel({
       <div className="mb-4 flex items-start gap-3">
         <span
           aria-hidden
-          className="flex size-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full text-body font-bold text-white"
           style={{ background: patientHex(patient?.color ?? null) }}
         >
           {monogram(name)}
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-extrabold tracking-[-0.3px]">{name}</p>
-          {age ? <p className="text-[12.5px] text-muted-foreground">{age}</p> : null}
+          <p className="truncate text-lead font-extrabold tracking-[-0.3px]">{name}</p>
+          {age ? <p className="text-meta text-muted-foreground">{age}</p> : null}
         </div>
 
         <Button asChild variant="ghost" size="sm" className="-mt-1 -mr-1 shrink-0">
@@ -95,7 +95,7 @@ export function SessionPanel({
         </Button>
       </div>
 
-      <dl className="space-y-2.5 text-[13px]">
+      <dl className="space-y-2.5 text-body">
         <Row icon={<CalendarDays className="size-4" />} label="Cuándo">
           {longDate(appointment.scheduled_on)}
         </Row>
@@ -105,7 +105,7 @@ export function SessionPanel({
       </dl>
 
       <span
-        className={`mt-3.5 inline-block rounded-full px-2.5 py-1 text-[11.5px] font-bold ${
+        className={`mt-3.5 inline-block rounded-full px-2.5 py-1 text-micro font-bold ${
           STATUS_STYLE[status] ?? STATUS_STYLE.scheduled
         }`}
       >
@@ -114,11 +114,11 @@ export function SessionPanel({
 
       {goal ? (
         <div className="mt-3.5 rounded-xl bg-muted p-3">
-          <p className="flex items-center gap-1.5 text-[11.5px] font-bold text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-micro font-bold text-muted-foreground">
             <Target className="size-3.5" />
             Objetivo más atrasado
           </p>
-          <p className="mt-1 text-[12.5px] leading-relaxed">{goal}</p>
+          <p className="mt-1 text-meta leading-relaxed">{goal}</p>
         </div>
       ) : null}
 
@@ -142,7 +142,7 @@ export function SessionPanel({
           Es el mismo menú que en la grilla, no una copia: si mañana se agrega
           una acción, aparece en los dos lados sola. */}
       <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-        <span className="text-[12px] text-muted-foreground">Más acciones</span>
+        <span className="text-meta text-muted-foreground">Más acciones</span>
         <AppointmentMenu
           appointment={appointment}
           calendarPrivacy={calendarPrivacy}

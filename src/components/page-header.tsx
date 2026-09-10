@@ -24,7 +24,7 @@ export function PageHeader({
           {title}
         </h1>
         {subtitle ? (
-          <p className="mt-0.5 text-[12.5px] text-muted-foreground lg:text-[13.5px]">
+          <p className="mt-0.5 text-meta text-muted-foreground lg:text-body">
             {subtitle}
           </p>
         ) : null}

@@ -73,9 +73,9 @@ export function FirstSteps({
       <CardContent className="px-5 py-4.5">
         <div className="mb-0.5 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-[16px] font-extrabold">Primeros pasos</h2>
-          <span className="text-[12.5px] text-muted-foreground">{done} de 3</span>
+          <span className="text-meta text-muted-foreground">{done} de 3</span>
         </div>
-        <p className="mb-3 text-[12.5px] text-muted-foreground">
+        <p className="mb-3 text-meta text-muted-foreground">
           Tres pasos para empezar a usar Hilo.
         </p>
 
@@ -106,7 +106,7 @@ export function FirstSteps({
             ) : (
               // Said rather than left blank: an inert row reads as broken, and
               // "after the first one" reads as a sequence.
-              <span className="shrink-0 text-[12px] text-muted-foreground">
+              <span className="shrink-0 text-meta text-muted-foreground">
                 Después del paso 1
               </span>
             )
@@ -124,7 +124,7 @@ export function FirstSteps({
                 <Link href={`/pacientes/${firstPatientId}`}>Ir a la ficha</Link>
               </Button>
             ) : (
-              <span className="shrink-0 text-[12px] text-muted-foreground">
+              <span className="shrink-0 text-meta text-muted-foreground">
                 Después del paso 1
               </span>
             )
@@ -135,7 +135,7 @@ export function FirstSteps({
         {materialCount > 0 ? (
           <Link
             href="/materiales"
-            className="mt-3 flex items-center gap-2.5 rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-violet transition-opacity hover:opacity-85"
+            className="mt-3 flex items-center gap-2.5 rounded-xl bg-violet-soft px-3 py-2.5 text-meta leading-relaxed text-violet transition-opacity hover:opacity-85"
           >
             <BookOpen className="size-4 shrink-0" />
             <span>
@@ -157,12 +157,12 @@ export function FirstSteps({
           {/* The tour runs itself on the first visit and then never again. This
               is its only way back, and it lives here because this card is the
               one thing on the screen that is already about getting started. */}
-          <p className="mb-3 text-[12.5px] text-muted-foreground">
+          <p className="mb-3 text-meta text-muted-foreground">
             ¿Querés que te muestre dónde está cada cosa?{' '}
             <TourButton>Ver el recorrido</TourButton>
           </p>
 
-          <p className="mb-2 text-[12.5px] text-muted-foreground">
+          <p className="mb-2 text-meta text-muted-foreground">
             Con lo que cargás, Hilo te arma:
           </p>
           <ul className="grid gap-2 sm:grid-cols-3">
@@ -193,7 +193,7 @@ function Step({
     <div className="flex items-center gap-2.5 border-b border-border py-2.5 last:border-b-0">
       <span
         className={cn(
-          'flex size-7 shrink-0 items-center justify-center rounded-full text-[12.5px] font-extrabold',
+          'flex size-7 shrink-0 items-center justify-center rounded-full text-meta font-extrabold',
           done ? 'bg-green-soft text-[#1a8f57]' : 'bg-violet-soft text-violet',
         )}
       >
@@ -203,14 +203,14 @@ function Step({
       <div className="min-w-0 flex-1">
         <p
           className={cn(
-            'text-[14.5px] font-bold',
+            'text-item font-bold',
             done && 'text-muted-foreground line-through',
           )}
         >
           {title}
         </p>
         {done ? null : (
-          <p className="mt-0.5 text-[12.5px] text-muted-foreground">{text}</p>
+          <p className="mt-0.5 text-meta text-muted-foreground">{text}</p>
         )}
       </div>
 
@@ -227,7 +227,7 @@ function Promise({
   text: string
 }) {
   return (
-    <li className="flex items-start gap-2 rounded-xl bg-muted/60 px-2.5 py-2 text-[12px] leading-snug">
+    <li className="flex items-start gap-2 rounded-xl bg-muted/60 px-2.5 py-2 text-meta leading-snug">
       <Icon className="mt-0.5 size-4 shrink-0 text-violet" />
       {text}
     </li>

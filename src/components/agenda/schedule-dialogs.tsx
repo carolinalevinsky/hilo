@@ -118,8 +118,8 @@ function ModeButton({
       onClick={onSelect}
       className={
         selected
-          ? 'flex items-center justify-center gap-1.5 rounded-lg bg-card px-3 py-2 text-[13px] font-bold shadow-card'
-          : 'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-muted-foreground hover:text-foreground'
+          ? 'flex items-center justify-center gap-1.5 rounded-lg bg-card px-3 py-2 text-body font-bold shadow-card'
+          : 'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-body font-semibold text-muted-foreground hover:text-foreground'
       }
     >
       {children}
@@ -198,7 +198,7 @@ function ScheduleFields({
     <form action={formAction} className="space-y-4">
       <FormMessage message={state.message} />
 
-      <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+      <p className="text-meta leading-relaxed text-muted-foreground">
         Se agenda solo, semana a semana. Podés cancelar una sesión suelta sin tocar el
         horario, y darlo de baja cuando quieras desde “Horarios fijos”, al pie de la
         Agenda.

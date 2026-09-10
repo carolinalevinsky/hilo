@@ -22,14 +22,14 @@ export default async function NewPasswordPage() {
     return (
       <>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">Ese enlace ya no sirve</h1>
-        <p className="mt-1 mb-5 text-[13px] leading-relaxed text-muted-foreground">
+        <p className="mt-1 mb-5 text-body leading-relaxed text-muted-foreground">
           Los enlaces para cambiar la contraseña se usan una sola vez y vencen en una hora.
           Pedí uno nuevo y listo.
         </p>
 
         <Link
           href="/recuperar"
-          className="flex h-11 w-full items-center justify-center rounded-lg bg-violet text-[14px] font-bold text-white"
+          className="flex h-11 w-full items-center justify-center rounded-lg bg-violet text-item font-bold text-white"
         >
           Pedir un enlace nuevo
         </Link>
@@ -40,7 +40,7 @@ export default async function NewPasswordPage() {
   return (
     <>
       <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">Poné tu contraseña nueva</h1>
-      <p className="mt-1 mb-5 text-[13px] text-muted-foreground">
+      <p className="mt-1 mb-5 text-body text-muted-foreground">
         Elegí una que no uses en otro lado.
       </p>
 

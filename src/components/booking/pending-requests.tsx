@@ -29,8 +29,8 @@ export function PendingBookingRequests({
       {requests.map((request) => (
         <li key={request.id} className="flex flex-wrap items-center gap-3 py-3">
           <div className="min-w-[180px] flex-1">
-            <p className="text-[14px] font-bold">{request.name}</p>
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-item font-bold">{request.name}</p>
+            <p className="text-meta text-muted-foreground">
               {request.phone}
               {request.preferred_weekday !== null
                 ? ` · pidió ${weekdayName(request.preferred_weekday).toLowerCase()}`
@@ -40,7 +40,7 @@ export function PendingBookingRequests({
               {formatDate(request.created_at)}
             </p>
             {request.note ? (
-              <p className="mt-1 text-[13px] leading-relaxed">{request.note}</p>
+              <p className="mt-1 text-body leading-relaxed">{request.note}</p>
             ) : null}
           </div>
 
