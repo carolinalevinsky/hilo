@@ -48,7 +48,7 @@ export function PatientDocuments({
 
   if (documents.length === 0) {
     return (
-      <p className="text-[13px] text-muted-foreground">
+      <p className="text-body text-muted-foreground">
         Todavía no generaste evaluaciones ni informes para este paciente. Aparecen acá
         cuando los creás.
       </p>
@@ -66,18 +66,18 @@ export function PatientDocuments({
             <span
               className={
                 document.kind === 'assessment'
-                  ? 'shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-[10.5px] font-bold text-violet'
-                  : 'shrink-0 rounded-full bg-green-soft px-2 py-0.5 text-[10.5px] font-bold text-[#1a8f57]'
+                  ? 'shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet'
+                  : 'shrink-0 rounded-full bg-green-soft px-2 py-0.5 text-micro font-bold text-[#1a8f57]'
               }
             >
               {document.kind === 'assessment' ? 'Evaluación' : 'Informe'}
             </span>
 
-            <span className="min-w-0 flex-1 truncate text-[13.5px] font-bold">
+            <span className="min-w-0 flex-1 truncate text-body font-bold">
               {document.title}
             </span>
 
-            <span className="shrink-0 text-[11.5px] text-muted-foreground">
+            <span className="shrink-0 text-micro text-muted-foreground">
               abrir · {formatDate(document.date)}
             </span>
           </Link>
@@ -95,6 +95,15 @@ export function PatientDocuments({
  * and the answer is that the sessions and goals accumulating here are exactly
  * what the report is built from later. v1 put it on the ficha because that is
  * where the doubt occurs.
+ *
+ * It used to answer with a count: "por ahora 1 sesión y 2 objetivos". Both
+ * numbers are already on the same screen — the session list states one and the
+ * goal list is the other — so the card spent its two lines repeating what was
+ * two centimetres away instead of saying the thing only it says. The count was
+ * evidence for a claim; the claim is what is worth reading.
+ *
+ * `sessions` and `goals` are still taken, because whether anything exists at
+ * all is a different message.
  */
 export function HiloMemory({
   firstName,
@@ -108,7 +117,7 @@ export function HiloMemory({
   const nothingYet = sessions === 0 && goals === 0
 
   return (
-    <p className="rounded-xl bg-violet-soft px-3.5 py-3 text-[12.5px] leading-relaxed text-violet">
+    <p className="rounded-xl bg-violet-soft px-3.5 py-3 text-meta leading-relaxed text-violet">
       {nothingYet ? (
         <>
           Todavía no cargaste nada de {firstName}. A medida que registres sesiones y
@@ -117,10 +126,8 @@ export function HiloMemory({
         </>
       ) : (
         <>
-          Hilo va guardando todo lo de {firstName}: por ahora{' '}
-          <b>{sessions === 1 ? '1 sesión' : `${sessions} sesiones`}</b> y{' '}
-          <b>{goals === 1 ? '1 objetivo' : `${goals} objetivos`}</b>. Con esto arma los
-          informes sin que escribas de cero.
+          Cada sesión que registrás de {firstName} y cada objetivo que marcás quedan
+          guardados acá. De eso salen después los informes, sin que escribas de cero.
         </>
       )}
     </p>

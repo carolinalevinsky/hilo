@@ -32,6 +32,9 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
 
   const areas = Object.keys(areasFor(practitioner.discipline))
 
+  /** Whether anything is narrowing the list right now. */
+  const isFiltered = Boolean(search || area || onlyMine || onlyCommunity)
+
   const materials = await listMaterials(user.id, {
     discipline: practitioner.discipline,
     area,
@@ -78,6 +81,18 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
           hasta que llega la respuesta. La lista sigue siendo servidor: entra
           como `children` y no se vuelve cliente por pasar por ahí. */}
       <MaterialFilters areas={areas}>
+      {/* Only while something is narrowing the list. The size of the whole
+          library is a number nobody acts on; whether the filter you just
+          touched found three things or thirty is the whole question, and
+          without it a shorter grid is indistinguishable from a grid that
+          happens to fit on screen. Inside `children`, so it dims along with
+          the list while the next search is in flight. */}
+      {isFiltered ? (
+        <p className="mb-2.5 text-meta text-muted-foreground">
+          {materials.length === 1 ? '1 material' : `${materials.length} materiales`}
+        </p>
+      ) : null}
+
       {materials.length === 0 ? (
         <Card>
           <EmptyState
@@ -104,38 +119,38 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
                 className="flex h-full flex-col rounded-lg bg-card p-4 shadow-card transition-shadow hover:shadow-[0_8px_24px_rgb(30_36_54_/_9%)]"
               >
                 <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-                  <span className="rounded-full bg-violet-soft px-2 py-0.5 text-[10.5px] font-bold text-violet">
+                  <span className="rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
                     {materialKindLabel(material.kind)}
                   </span>
                   {materialOrigin(material, user.id) === 'mine' ? (
-                    <span className="rounded-full bg-teal-soft px-2 py-0.5 text-[10.5px] font-bold text-teal">
+                    <span className="rounded-full bg-teal-soft px-2 py-0.5 text-micro font-bold text-teal">
                       {material.visibility === 'public' ? 'Tuyo · publicado' : 'Tuyo'}
                     </span>
                   ) : null}
                   {materialOrigin(material, user.id) === 'community' ? (
-                    <span className="rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-bold text-[#2f6fd6]">
+                    <span className="rounded-full bg-blue-soft px-2 py-0.5 text-micro font-bold text-[#2f6fd6]">
                       De la comunidad
                     </span>
                   ) : null}
                   {material.source === 'ai' ? (
-                    <span className="rounded-full bg-amber-soft px-2 py-0.5 text-[10.5px] font-bold text-[#8a5a12]">
+                    <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-[#8a5a12]">
                       IA
                     </span>
                   ) : null}
                   {material.age_range ? (
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-micro text-muted-foreground">
                       {material.age_range}
                     </span>
                   ) : null}
                 </div>
 
-                <p className="text-[14px] font-bold">{material.title}</p>
-                <p className="mt-0.5 text-[12px] text-muted-foreground">
+                <p className="text-item font-bold">{material.title}</p>
+                <p className="mt-0.5 text-meta text-muted-foreground">
                   {material.area}
                   {material.focus ? ` › ${material.focus}` : ''}
                 </p>
                 {material.objective ? (
-                  <p className="mt-2 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">
+                  <p className="mt-2 line-clamp-2 text-meta leading-relaxed text-muted-foreground">
                     {material.objective}
                   </p>
                 ) : null}

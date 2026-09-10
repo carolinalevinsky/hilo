@@ -107,19 +107,16 @@ export default async function HomePage() {
           </StatCardGrid>
 
           <Card className="mb-4">
+            {/* No line counting the sessions any more: the "Sesiones hoy" card
+                is an inch above and states the same number, and the list itself
+                is right below. The same fact three times on one screen does not
+                inform better, it just makes the screen harder to read. */}
             <CardHeader>
               <CardTitle>Hoy</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
-                {todaySessions.length === 0
-                  ? 'Sin sesiones agendadas'
-                  : todaySessions.length === 1
-                    ? '1 sesión'
-                    : `${todaySessions.length} sesiones`}
-              </p>
             </CardHeader>
             <CardContent>
               {todaySessions.length === 0 ? (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Hoy tenés el día libre.{' '}
                   <Link href="/agenda" className="font-semibold text-violet underline">
                     Ver la semana

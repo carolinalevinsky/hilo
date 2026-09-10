@@ -31,7 +31,7 @@ function Chip({ children, className }: { children: React.ReactNode; className?: 
   return (
     <span
       className={cn(
-        'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold',
+        'shrink-0 rounded-full px-2.5 py-1 text-micro font-bold',
         className,
       )}
     >
@@ -127,8 +127,8 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
                   href={`/pacientes/${patient.id}`}
                   className="flex h-full flex-col rounded-lg bg-card p-3.5 shadow-card transition-shadow hover:shadow-[0_8px_24px_rgb(30_36_54_/_9%)]"
                 >
-                  <p className="truncate text-[15.5px] font-bold">{patient.full_name}</p>
-                  <p className="mt-0.5 mb-3 truncate text-[12.5px] text-muted-foreground">
+                  <p className="truncate text-lead font-bold">{patient.full_name}</p>
+                  <p className="mt-0.5 mb-3 truncate text-meta text-muted-foreground">
                     {[ageLabel(patient.date_of_birth), patient.school_level]
                       .filter(Boolean)
                       .join(' · ') || 'Sin datos todavía'}
@@ -143,7 +143,7 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
                     </Chip>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5 text-[12px] text-muted-foreground">
+                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5 text-meta text-muted-foreground">
                     <span className="truncate">{patient.school ?? 'Sin escuela'}</span>
                     <span
                       className="shrink-0 font-bold"
@@ -175,10 +175,10 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
                     />
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14.5px] font-bold">
+                      <p className="truncate text-item font-bold">
                         {patient.full_name}
                       </p>
-                      <p className="truncate text-[12.5px] text-muted-foreground">
+                      <p className="truncate text-meta text-muted-foreground">
                         {[
                           ageLabel(patient.date_of_birth),
                           patient.school_level,
@@ -195,15 +195,21 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
                       {ageGroupLabel(patient.age_group)}
                     </Chip>
 
-                    <span className="min-w-[78px] shrink-0 text-right text-[12.5px] text-muted-foreground max-sm:hidden">
+                    <span className="min-w-[78px] shrink-0 text-right text-meta text-muted-foreground max-sm:hidden">
                       {sessionsLabel(summary?.sessions ?? 0)}
                     </span>
 
-                    <span
-                      className="min-w-[52px] shrink-0 text-right text-[14px] font-extrabold"
-                      style={{ color: patientHex(patient.color) }}
-                    >
-                      {summary?.averageProgress ?? 0}%
+                    {/* The card view says "42% avance"; this one said "42%" and
+                        left you to guess which of the numbers on a ficha it
+                        was. Same word, stacked so the row does not get wider. */}
+                    <span className="min-w-[62px] shrink-0 text-right">
+                      <span
+                        className="block text-item font-extrabold"
+                        style={{ color: patientHex(patient.color) }}
+                      >
+                        {summary?.averageProgress ?? 0}%
+                      </span>
+                      <span className="block text-micro text-muted-foreground">avance</span>
                     </span>
                   </Link>
                 </li>
