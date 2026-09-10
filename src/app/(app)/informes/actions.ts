@@ -10,6 +10,7 @@ import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
 import { sendFormatRequestNotification } from '@/server/notifications'
 import { recordUsage, releaseUsage } from '@/server/ai-usage'
+import { listVersions, type VersionReason } from '@/server/document-versions'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
@@ -86,10 +87,22 @@ export async function createReportAction(
   redirect(`/informes/${report.id}?ia=1`)
 }
 
-export async function saveReportAction(reportId: string, content: string) {
+/**
+ * Guardar el texto del informe, venga de la mano o de una propuesta aplicada.
+ *
+ * `reason` viaja hasta el historial y es lo que después distingue "antes de
+ * aplicar la IA" de "antes de tu edición" en la lista de versiones. Devuelve el
+ * historial ya actualizado para que el editor lo muestre sin recargar.
+ */
+export async function saveReportAction(
+  reportId: string,
+  content: string,
+  reason: VersionReason = 'edit',
+) {
   const user = await requireUser()
-  await updateReportContent(user.id, reportId, content)
+  await updateReportContent(user.id, reportId, content, reason)
   revalidatePath(`/informes/${reportId}`)
+  return listVersions(user.id, 'report', reportId)
 }
 
 export async function deleteReportAction(formData: FormData) {

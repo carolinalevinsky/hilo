@@ -5,6 +5,7 @@ import { instrument, SCORE_SCALES, type ScoreScale } from '@/lib/instruments'
 
 import { logAction } from './audit'
 import { getDb } from './db'
+import { replaceDocumentBody, type VersionReason } from './document-versions'
 
 /**
  * Assessments — administering an instrument and interpreting the result.
@@ -87,21 +88,14 @@ export async function createAssessment(
   return data
 }
 
+/** Igual que `updateReportContent`: pasa por el historial. */
 export async function updateAssessmentAnalysis(
   practitionerId: string,
   assessmentId: string,
   analysis: string,
+  reason: VersionReason = 'edit',
 ) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('assessments')
-    .update({ analysis })
-    .eq('id', assessmentId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'update', 'assessment', assessmentId)
+  await replaceDocumentBody(practitionerId, 'assessment', assessmentId, analysis, reason)
 }
 
 export async function getAssessment(practitionerId: string, assessmentId: string) {

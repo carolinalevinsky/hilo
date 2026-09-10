@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { restoreVersionAction } from '@/app/(app)/document-actions'
 import {
   adoptSuggestedGoalsAction,
   deleteAssessmentAction,
@@ -16,6 +17,7 @@ import { formatLongDate } from '@/lib/dates'
 import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { AssessmentResults, getAssessment, suggestedGoals } from '@/server/assessments'
+import { listVersions } from '@/server/document-versions'
 
 import { currentPractitioner, currentUser } from '../../session'
 
@@ -37,6 +39,8 @@ export default async function AssessmentPage({
     currentPractitioner(user.id),
   ])
   if (!assessment) notFound()
+
+  const versions = await listVersions(user.id, 'assessment', assessment.id)
 
   const results = AssessmentResults.parse(assessment.results)
   const proposals = suggestedGoals(results, assessment.instrument)
@@ -79,10 +83,12 @@ export default async function AssessmentPage({
         <DocumentEditor
           documentId={assessment.id}
           initialText={assessment.analysis ?? ''}
+          initialVersions={versions}
           endpoint="/api/ai/evaluacion"
           idField="assessmentId"
           autoStart={query.ia === '1'}
           onSave={saveAssessmentAction.bind(null, assessment.id)}
+          onRestore={restoreVersionAction}
         />
       </ClinicalDocument>
 

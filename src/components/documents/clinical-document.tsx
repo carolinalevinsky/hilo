@@ -86,7 +86,12 @@ export function DocumentBody({ text }: { text: string }) {
  * A heading is a short line that ends in a colon. Both halves matter: without
  * the length limit, "Se sugiere lo siguiente:" at the end of a paragraph would
  * become a heading.
+ *
+ * Exportada porque el panel de propuesta de la IA dibuja el mismo texto y tiene
+ * que partirlo igual. Con dos reglas, el documento y su comparación se irían
+ * separando de a poco y el diff mostraría una estructura que el informe no
+ * tiene.
  */
-function isHeading(line: string): boolean {
+export function isHeading(line: string): boolean {
   return line.endsWith(':') && line.length <= 60
 }

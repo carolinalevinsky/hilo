@@ -48,6 +48,20 @@ export function formatDayMonth(value: string | null | undefined): string | null 
   return toLocalDate(value).toLocaleDateString(LOCALE, { day: '2-digit', month: 'short' })
 }
 
+/**
+ * "11 ago 2026, 21:30" — un instante, dicho en la hora de Uruguay.
+ *
+ * Con zona explícita y no con la del navegador, por lo mismo que el resto de
+ * este archivo: la lista donde se usa es el historial de un documento clínico,
+ * y una versión guardada a las 21:30 que aparece fechada al día siguiente hace
+ * dudar de cuál es cuál justo cuando hay que elegir una.
+ */
+export function formatDateTime(value: string | null | undefined): string | null {
+  if (!value) return null
+  const { date, time } = zonedParts(new Date(value))
+  return `${formatDate(date)}, ${time.slice(0, 5)}`
+}
+
 /** "martes 11 de agosto" */
 export function formatLongDate(value: string | null | undefined): string | null {
   if (!value) return null

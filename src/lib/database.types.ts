@@ -298,6 +298,58 @@ export type Database = {
           },
         ]
       }
+      document_versions: {
+        Row: {
+          assessment_id: string | null
+          body: string
+          created_at: string
+          id: string
+          practitioner_id: string
+          replaced_by: string
+          report_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          practitioner_id: string
+          replaced_by: string
+          report_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          practitioner_id?: string
+          replaced_by?: string
+          report_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       format_requests: {
         Row: {
           created_at: string

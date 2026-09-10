@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { restoreVersionAction } from '@/app/(app)/document-actions'
 import { deleteReportAction, saveReportAction } from '@/app/(app)/informes/actions'
 import { ClinicalDocument } from '@/components/documents/clinical-document'
 import { DocumentEditor } from '@/components/documents/document-editor'
@@ -13,6 +14,7 @@ import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
+import { listVersions } from '@/server/document-versions'
 import { getPatient } from '@/server/patients'
 import { getReport } from '@/server/reports'
 
@@ -44,7 +46,10 @@ export default async function ReportPage({
   ])
   if (!report) notFound()
 
-  const patient = await getPatient(user.id, report.patient_id)
+  const [patient, versions] = await Promise.all([
+    getPatient(user.id, report.patient_id),
+    listVersions(user.id, 'report', report.id),
+  ])
 
   const meta = [
     { label: 'Paciente', value: report.patients?.full_name ?? 'Sin datos' },
@@ -105,10 +110,12 @@ export default async function ReportPage({
         <DocumentEditor
           documentId={report.id}
           initialText={report.content ?? ''}
+          initialVersions={versions}
           endpoint="/api/ai/informe"
           idField="reportId"
           autoStart={query.ia === '1'}
           onSave={saveReportAction.bind(null, report.id)}
+          onRestore={restoreVersionAction}
         />
       </ClinicalDocument>
     </>

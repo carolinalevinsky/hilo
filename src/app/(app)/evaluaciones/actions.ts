@@ -18,6 +18,7 @@ import {
 import { createGoal } from '@/server/goals'
 import { getPatient } from '@/server/patients'
 import { recordUsage } from '@/server/ai-usage'
+import { listVersions, type VersionReason } from '@/server/document-versions'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -99,10 +100,16 @@ export async function createAssessmentAction(
   redirect(`/evaluaciones/${assessment.id}?ia=1`)
 }
 
-export async function saveAssessmentAction(assessmentId: string, analysis: string) {
+/** Igual que `saveReportAction`: ver la nota ahí. */
+export async function saveAssessmentAction(
+  assessmentId: string,
+  analysis: string,
+  reason: VersionReason = 'edit',
+) {
   const user = await requireUser()
-  await updateAssessmentAnalysis(user.id, assessmentId, analysis)
+  await updateAssessmentAnalysis(user.id, assessmentId, analysis, reason)
   revalidatePath(`/evaluaciones/${assessmentId}`)
+  return listVersions(user.id, 'assessment', assessmentId)
 }
 
 export async function deleteAssessmentAction(formData: FormData) {
