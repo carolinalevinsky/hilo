@@ -21,7 +21,7 @@ export function SessionTimeline({
 }) {
   if (sessions.length === 0) {
     return (
-      <p className="text-[13px] leading-relaxed text-muted-foreground">
+      <p className="text-body leading-relaxed text-muted-foreground">
         Todavía no registraste sesiones. La primera que cargues empieza la historia clínica.
       </p>
     )
@@ -34,7 +34,7 @@ export function SessionTimeline({
           <span className="absolute top-1.5 -left-[21px] size-2.5 rounded-full bg-violet" />
 
           <div className="flex items-baseline justify-between gap-2">
-            <p className="text-[12.5px] font-bold text-muted-foreground">
+            <p className="text-meta font-bold text-muted-foreground">
               {formatDate(session.held_on)}
             </p>
             <Link
@@ -47,7 +47,7 @@ export function SessionTimeline({
           </div>
 
           {session.progress_note ? (
-            <p className="mt-0.5 text-[14px] leading-relaxed">{session.progress_note}</p>
+            <p className="mt-0.5 text-item leading-relaxed">{session.progress_note}</p>
           ) : null}
 
           {session.session_goals.length > 0 ? (
@@ -55,7 +55,7 @@ export function SessionTimeline({
               {session.session_goals.map((link) => (
                 <li
                   key={link.goal_id}
-                  className="rounded-full bg-violet-soft px-2.5 py-1 text-[11px] font-bold text-violet"
+                  className="rounded-full bg-violet-soft px-2.5 py-1 text-micro font-bold text-violet"
                 >
                   {link.goals?.title ?? 'Objetivo'}
                 </li>
@@ -63,9 +63,14 @@ export function SessionTimeline({
             </ul>
           ) : null}
 
+          {/* Only sessions written before the form dropped the private note have
+              one. It still shows, because it is the only place left to read it;
+              it says it cannot be edited, because the edit form no longer has
+              the field and looking for it would otherwise be a dead end. */}
           {session.private_note ? (
-            <p className="mt-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-[12.5px] text-muted-foreground">
-              <span className="font-bold">Nota privada:</span> {session.private_note}
+            <p className="mt-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-meta text-muted-foreground">
+              <span className="font-bold">Nota privada (ya no se edita):</span>{' '}
+              {session.private_note}
             </p>
           ) : null}
         </li>

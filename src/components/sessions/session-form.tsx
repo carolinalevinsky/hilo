@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 
 import { saveSessionAction } from '@/app/(app)/pacientes/session-actions'
 import { FormMessage } from '@/components/auth/form-message'
@@ -23,9 +23,22 @@ import type { Goal } from '@/server/goals'
  * Monday for Friday's appointment was filed on the wrong day, and the year was
  * never recorded at all.
  *
- * Which goals were worked is a checkbox list rather than a per-goal progress
- * field. Marking "we touched this" takes a second; deciding a new percentage for
- * each one does not, and the slider on the patient's page is where that belongs.
+ * ─── Why the progress field is here after all ─────────────────────────────
+ *
+ * This used to be a plain checkbox list, on the argument that marking "we
+ * touched this" takes a second and deciding a new percentage does not, so the
+ * slider on the patient's page was the right home for it.
+ *
+ * Walking the whole flow as a practitioner is what settled it the other way.
+ * You register the session, you tick the goal, the note describes exactly how it
+ * went — and the number stays where it was. Fixing it means leaving the form,
+ * opening the ficha and moving a slider from memory, at which point most people
+ * do not, and the chart stops meaning anything.
+ *
+ * The compromise the old argument was really protecting is kept: the field only
+ * appears for a goal you actually ticked, it arrives pre-filled with the current
+ * number, and leaving it alone writes nothing. Three ticked goals cost three
+ * glances, not three decisions.
  */
 export function SessionForm({
   patientId,
@@ -41,7 +54,6 @@ export function SessionForm({
     id: string
     held_on: string
     progress_note: string | null
-    private_note: string | null
   }
   selectedGoalIds?: string[]
   /** Opened from the planner, so saving retires the prepared session. */
@@ -86,66 +98,120 @@ export function SessionForm({
         </legend>
 
         {goals.length === 0 ? (
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             Sin objetivos todavía. Podés registrar la sesión igual y cargarlos después.
           </p>
         ) : (
           <div className="space-y-1">
             {goals.map((goal) => (
-              <Label
+              <GoalRow
                 key={goal.id}
-                htmlFor={`goal-${goal.id}`}
-                className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 font-normal hover:bg-muted"
-              >
-                <Checkbox
-                  id={`goal-${goal.id}`}
-                  name="goalIds"
-                  value={goal.id}
-                  defaultChecked={selectedGoalIds.includes(goal.id)}
-                />
-                {goal.title}
-              </Label>
+                goal={goal}
+                defaultChecked={selectedGoalIds.includes(goal.id)}
+              />
             ))}
           </div>
         )}
       </fieldset>
 
+      {/* One note per session. There used to be a second, private field kept out
+          of reports and out of the patient's data export; two textareas one
+          above the other read as the same question asked twice. What is written
+          here is clinical record: the AI reads it to draft reports, and it is
+          handed over if the patient exercises their right of access. The hint
+          says so, because the field no longer has a private counterpart to
+          imply it. */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="progressNote">Cómo salió la sesión</Label>
+          <Label htmlFor="progressNote">Comentarios</Label>
           <DictateButton targetId="progressNote" />
         </div>
+        {/* No `rows`: the component sets `field-sizing-content`, so the box grows
+            with what is typed and `rows` is ignored. As the only field on the
+            screen it should look like it expects a paragraph, so the floor is
+            raised from `min-h-16` instead. */}
         <Textarea
           id="progressNote"
           name="progressNote"
-          rows={5}
+          className="min-h-40"
           required
           defaultValue={session?.progress_note ?? noteDraft}
           placeholder="Logró la /r/ en posición inicial de forma consistente, muy conectado al juego."
         />
         <p className="text-xs text-muted-foreground">
-          Esto es lo que Hilo lee después para armar los informes. Cuanto más concreto,
-          mejor sale el borrador.
+          Esto es lo que Hilo lee después para armar los informes, y lo que se entrega
+          si la familia pide sus datos. Cuanto más concreto, mejor sale el borrador.
         </p>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="privateNote">
-          Nota privada
-          <span className="font-normal text-muted-foreground"> · opcional</span>
-        </Label>
-        <Textarea
-          id="privateNote"
-          name="privateNote"
-          rows={2}
-          defaultValue={session?.private_note ?? ''}
-          placeholder="Para vos. No entra en ningún informe."
-        />
       </div>
 
       <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
         {pending ? 'Guardando…' : session ? 'Guardar cambios' : 'Guardar sesión'}
       </Button>
     </form>
+  )
+}
+
+/**
+ * One goal: whether it was worked, and where its number stands afterwards.
+ *
+ * The percentage input is rendered only while the box is ticked, so an untouched
+ * goal submits nothing at all and cannot move by accident. `progressWas` travels
+ * with it so the server can tell "she left it alone" from "she set it to the
+ * same number on purpose" — see `session-actions.ts`.
+ */
+function GoalRow({ goal, defaultChecked }: { goal: Goal; defaultChecked: boolean }) {
+  const [checked, setChecked] = useState(defaultChecked)
+
+  return (
+    <div className="rounded-lg px-1 py-1.5 hover:bg-muted">
+      <Label
+        htmlFor={`goal-${goal.id}`}
+        className="flex items-center gap-2.5 font-normal"
+      >
+        <Checkbox
+          id={`goal-${goal.id}`}
+          name="goalIds"
+          value={goal.id}
+          checked={checked}
+          onCheckedChange={(next) => setChecked(next === true)}
+        />
+        {goal.title}
+        <span className="ml-auto shrink-0 text-meta text-muted-foreground tabular-nums">
+          {goal.progress}%
+        </span>
+      </Label>
+
+      {checked ? (
+        <div className="mt-1.5 flex items-center gap-2.5 pl-8">
+          <input type="hidden" name={`progressWas-${goal.id}`} value={goal.progress} />
+          <Label
+            htmlFor={`progress-${goal.id}`}
+            className="shrink-0 text-meta font-normal text-muted-foreground"
+          >
+            ¿Cómo quedó?
+          </Label>
+          <input
+            id={`progress-${goal.id}`}
+            name={`progress-${goal.id}`}
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            defaultValue={goal.progress}
+            onInput={(event) => {
+              const output = event.currentTarget.nextElementSibling
+              if (output) output.textContent = `${event.currentTarget.value}%`
+            }}
+            className="h-1.5 min-w-0 flex-1 cursor-pointer accent-violet"
+          />
+          <output
+            htmlFor={`progress-${goal.id}`}
+            className="w-10 shrink-0 text-right text-meta font-bold tabular-nums"
+          >
+            {goal.progress}%
+          </output>
+        </div>
+      ) : null}
+    </div>
   )
 }

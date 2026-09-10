@@ -16,6 +16,13 @@ import { getDb } from './db'
  * `progress_note` is the most valuable text in the database: it is what the AI
  * reads when it drafts a report, and it is the reason a report can be drafted at
  * all rather than written from memory.
+ *
+ * The form used to offer a second note, `private_note`, held out of reports and
+ * out of the patient's data export. It is no longer written: two textareas in a
+ * row read as one question asked twice, and a distinction nobody notices is one
+ * nobody relies on. The column and the rows already in it are left alone — the
+ * timeline still shows them and `patient-export.ts` still declares them — but
+ * nothing new lands there. Everything written now is clinical record.
  */
 
 export type Session = Database['public']['Tables']['sessions']['Row']
@@ -27,12 +34,6 @@ export type SessionWithGoals = Session & {
 export const SessionInput = z.object({
   heldOn: z.iso.date('Revisá la fecha de la sesión.'),
   progressNote: z.string().trim().min(1, 'Contá cómo salió la sesión.'),
-  privateNote: z
-    .string()
-    .trim()
-    .optional()
-    .nullable()
-    .transform((value) => (value ? value : null)),
   /** The goals worked in this session. */
   goalIds: z.array(z.uuid()).default([]),
 })
@@ -52,7 +53,6 @@ export async function createSession(
       patient_id: patientId,
       held_on: data.heldOn,
       progress_note: data.progressNote,
-      private_note: data.privateNote,
     })
     .select()
     .single()
@@ -77,7 +77,6 @@ export async function updateSession(
     .update({
       held_on: data.heldOn,
       progress_note: data.progressNote,
-      private_note: data.privateNote,
     })
     .eq('id', sessionId)
     .eq('practitioner_id', practitionerId)

@@ -123,7 +123,7 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
     // Ticking the goal is what writes `session_goals` and moves the progress —
     // the join that the whole clinical model hangs from.
     await page.getByRole('checkbox', { name: GOAL }).check()
-    await page.getByLabel('Cómo salió la sesión').fill(NOTE)
+    await page.getByLabel('Comentarios').fill(NOTE)
 
     await page.getByRole('button', { name: 'Guardar sesión' }).click()
 
