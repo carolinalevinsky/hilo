@@ -76,17 +76,30 @@ export default async function ReportPage({
         </Link>
 
         <div className="flex gap-2">
+          {/* Sin teléfono el link salía `wa.me/?text=…`, sin número, y
+              WhatsApp abría sin destinatario. El botón dice lo que falta y
+              lleva a cargarlo — la misma regla que "Recordar" en la Agenda y
+              "Compartir con familia" en la ficha. */}
           {shareable && patient ? (
-            <Button asChild variant="outline" size="sm">
-              <a
-                href={whatsappLink(patient.phone, shareText)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle className="size-4" />
-                Avisar por WhatsApp
-              </a>
-            </Button>
+            patient.phone ? (
+              <Button asChild variant="outline" size="sm">
+                <a
+                  href={whatsappLink(patient.phone, shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="size-4" />
+                  Avisar por WhatsApp
+                </a>
+              </Button>
+            ) : (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/pacientes/${patient.id}/editar`}>
+                  <MessageCircle className="size-4" />
+                  Cargar teléfono
+                </Link>
+              </Button>
+            )
           ) : null}
 
           <form action={deleteReportAction}>

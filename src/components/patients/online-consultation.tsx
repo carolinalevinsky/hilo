@@ -1,6 +1,7 @@
 'use client'
 
 import { Globe, MessageCircle, Video } from '@/components/icons'
+import Link from 'next/link'
 import { useActionState, useState } from 'react'
 
 import {
@@ -103,19 +104,31 @@ export function OnlineConsultation({
                 </a>
               </Button>
 
-              <Button
-                asChild
-                className="w-full bg-[#25d366] text-white hover:bg-[#25d366]/90"
-              >
-                <a
-                  href={whatsappLink(patientPhone, message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {/* Sin teléfono, `whatsappLink` arma `wa.me/?text=…` sin número y
+                  WhatsApp abre sin destinatario. Acá se ofrece cargarlo, igual
+                  que en "Recordar" y "Compartir con familia". */}
+              {patientPhone ? (
+                <Button
+                  asChild
+                  className="w-full bg-[#25d366] text-white hover:bg-[#25d366]/90"
                 >
-                  <MessageCircle className="size-4" />
-                  Enviar el link a la familia
-                </a>
-              </Button>
+                  <a
+                    href={whatsappLink(patientPhone, message)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="size-4" />
+                    Enviar el link a la familia
+                  </a>
+                </Button>
+              ) : (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/pacientes/${patientId}/editar`}>
+                    <MessageCircle className="size-4" />
+                    Cargar el teléfono para mandarlo
+                  </Link>
+                </Button>
+              )}
 
               <p className="text-xs leading-relaxed text-muted-foreground">
                 El link es siempre el mismo, así que la familia puede guardarlo. Se abre
