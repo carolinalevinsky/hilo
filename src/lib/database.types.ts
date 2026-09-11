@@ -247,6 +247,7 @@ export type Database = {
           patient_id: string | null
           phone: string
           practitioner_id: string
+          preferred_date: string | null
           preferred_time: string | null
           preferred_weekday: number | null
           status: string
@@ -261,6 +262,7 @@ export type Database = {
           patient_id?: string | null
           phone: string
           practitioner_id: string
+          preferred_date?: string | null
           preferred_time?: string | null
           preferred_weekday?: number | null
           status?: string
@@ -275,6 +277,7 @@ export type Database = {
           patient_id?: string | null
           phone?: string
           practitioner_id?: string
+          preferred_date?: string | null
           preferred_time?: string | null
           preferred_weekday?: number | null
           status?: string

@@ -59,6 +59,24 @@ describe('sendBookingNotification', () => {
     expect(sent[0]?.html).toContain('https://hilo.uy/reservas')
   })
 
+  it('says the date the family asked for, when there is one (P7)', async () => {
+    await sendBookingNotification({
+      to: 'lucia@hilo.test',
+      practitionerName: 'Lucía Fernández',
+      request: {
+        ...request,
+        preferred_weekday: null,
+        preferred_date: '2026-09-17',
+        preferred_time: '14:15:00',
+      },
+      appUrl: 'https://hilo.uy',
+    })
+
+    expect(sent[0]?.html).toContain('17 de setiembre')
+    expect(sent[0]?.html).toContain('14:15')
+    expect(sent[0]?.html).not.toContain('Lunes')
+  })
+
   it('escapes what the sender typed', async () => {
     // The name and the note come from a public form that anyone can reach. This
     // is the one place in the codebase that builds markup by concatenation, so

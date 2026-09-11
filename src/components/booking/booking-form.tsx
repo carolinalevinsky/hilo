@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { WEEK_ORDER, weekdayName } from '@/lib/week'
+import { today } from '@/lib/dates'
 
 /**
  * The form a family fills in.
@@ -38,7 +38,7 @@ export function BookingForm({ slug }: { slug: string }) {
         slug,
         name: formData.get('name'),
         phone: formData.get('phone'),
-        preferredWeekday: formData.get('preferredWeekday'),
+        preferredDate: formData.get('preferredDate'),
         preferredTime: formData.get('preferredTime'),
         note: formData.get('note'),
       }),
@@ -93,36 +93,28 @@ export function BookingForm({ slug }: { slug: string }) {
         />
       </div>
 
+      {/* A date, not a weekday (P7): "martes" did not say which Tuesday, and a
+          first interview is one appointment on one day. Quarter hours, because
+          nobody books the 14:37 — `step` makes the browser say so before
+          sending, and `PublicBooking` says it again on the server. */}
       <fieldset className="grid grid-cols-2 gap-3">
         <legend className="mb-1.5 text-sm font-medium">
-          ¿Qué día te queda mejor?
+          ¿Qué día y a qué hora te queda mejor?
           <span className="font-normal text-muted-foreground"> · opcional</span>
         </legend>
 
         <div className="space-y-1.5">
-          <Label htmlFor="preferredWeekday" className="sr-only">
-            Día
+          <Label htmlFor="preferredDate" className="sr-only">
+            Fecha
           </Label>
-          <select
-            id="preferredWeekday"
-            name="preferredWeekday"
-            defaultValue=""
-            className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <option value="">Cualquier día</option>
-            {WEEK_ORDER.map((weekday) => (
-              <option key={weekday} value={weekday}>
-                {weekdayName(weekday)}
-              </option>
-            ))}
-          </select>
+          <Input id="preferredDate" name="preferredDate" type="date" min={today()} />
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="preferredTime" className="sr-only">
             Hora
           </Label>
-          <Input id="preferredTime" name="preferredTime" type="time" />
+          <Input id="preferredTime" name="preferredTime" type="time" step={900} />
         </div>
       </fieldset>
 

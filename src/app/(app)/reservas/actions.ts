@@ -9,7 +9,8 @@ import {
   getBookingRequest,
   markBookingConfirmed,
 } from '@/server/booking'
-import { createSchedule } from '@/server/appointments'
+import { today } from '@/lib/dates'
+import { createAppointment, createSchedule } from '@/server/appointments'
 import { createPatient } from '@/server/patients'
 
 export async function dismissBookingAction(formData: FormData) {
@@ -28,10 +29,15 @@ export async function dismissBookingAction(formData: FormData) {
  * exactly the sort of small friction that makes someone stop using the booking
  * link and go back to WhatsApp.
  *
- * The preferred slot becomes a standing weekly schedule when the family gave
- * both a day and a time — which is what a first appointment usually turns into
- * in this practice. If they only said "any day", nothing is scheduled and the
- * practitioner arranges it themselves.
+ * What the family asked for goes on the agenda when it says enough:
+ *
+ *   - **A date and a time** (the form since P7): one appointment on that day —
+ *     a first interview is one meeting, not a standing slot. Unless the date
+ *     has already passed by the time the request is answered; then nothing is
+ *     scheduled rather than something in the past.
+ *   - **A weekday and a time** (requests from before P7): a standing weekly
+ *     schedule, as it always did.
+ *   - Anything less: nothing is scheduled and the practitioner arranges it.
  */
 export async function confirmBookingAction(formData: FormData) {
   const user = await requireUser()
@@ -46,7 +52,15 @@ export async function confirmBookingAction(formData: FormData) {
     referralReason: request.note,
   })
 
-  if (request.preferred_weekday !== null && request.preferred_time) {
+  if (request.preferred_date && request.preferred_time) {
+    if (request.preferred_date >= today()) {
+      await createAppointment(user.id, {
+        patientId: patient.id,
+        scheduledOn: request.preferred_date,
+        startTime: request.preferred_time.slice(0, 5),
+      })
+    }
+  } else if (request.preferred_weekday !== null && request.preferred_time) {
     await createSchedule(user.id, {
       patientId: patient.id,
       weekday: request.preferred_weekday,

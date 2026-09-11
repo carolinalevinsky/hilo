@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { today, toDateInput, todayDate } from '@/lib/dates'
 import { env } from '@/lib/env'
 
 import { getDb, getServiceDb } from './db'
@@ -26,6 +27,19 @@ export type BookingRequestWithPatient = BookingRequest & {
   patients: { id: string; full_name: string } | null
 }
 
+/** 00, 15, 30 or 45 past any hour of the day. */
+const QUARTER_HOUR = /^([01]\d|2[0-3]):(00|15|30|45)$/
+
+function emptyToNull(value: unknown) {
+  return value === '' || value === undefined ? null : value
+}
+
+function aYearFromToday() {
+  const date = todayDate()
+  date.setFullYear(date.getFullYear() + 1)
+  return toDateInput(date)
+}
+
 export const PublicBooking = z.object({
   name: z.string().trim().min(2, 'Escribí el nombre.').max(120),
   phone: z
@@ -33,12 +47,51 @@ export const PublicBooking = z.object({
     .trim()
     .min(6, 'Dejanos un teléfono para poder responderte.')
     .max(30),
+  // Still accepted, no longer asked (P7): the form sends a date now. Kept so a
+  // page cached from before the change still submits instead of failing.
+  //
+  // `.optional()` is what makes that true. The form used to send this key
+  // always, even empty; now it does not send it at all, and in zod 4 a union
+  // containing `z.undefined()` is still a required key — every booking from the
+  // new form was refused. The test "entra sin día de la semana" holds it.
+  //
+  // The empty string goes first. A union keeps the first option that matches,
+  // and `z.coerce.number()` turns '' into 0 — which is Sunday. With the number
+  // first, every "Cualquier día" from the old form was saved as "pidió domingo",
+  // and confirming it with a time created a standing Sunday schedule.
   preferredWeekday: z
-    .union([z.coerce.number().int().min(0).max(6), z.literal(''), z.null(), z.undefined()])
+    .union([z.literal(''), z.null(), z.coerce.number().int().min(0).max(6)])
+    .optional()
     .transform((value) => (value === '' || value === null || value === undefined ? null : value)),
+  // A real date (P7). "Martes" did not say which Tuesday, and a first interview
+  // is one appointment on one day. From today — in Uruguay — up to a year ahead.
+  //
+  // `.optional()` outside the preprocess: in zod 4 a preprocessed key is
+  // required, so a request with no date at all was refused before `emptyToNull`
+  // ever ran. Absent and empty both end as `null`.
+  preferredDate: z
+    .preprocess(
+      emptyToNull,
+      z.iso
+        .date('Revisá la fecha.')
+        .refine((value) => value >= today(), 'Elegí una fecha de hoy en adelante.')
+        .refine((value) => value <= aYearFromToday(), 'Elegí una fecha dentro del próximo año.')
+        .nullable(),
+    )
+    .optional()
+    .transform((value) => value ?? null),
+  // Quarter hours (P7). The browser's `step` is a convenience a hand-made
+  // request does not have to honour; this is the rule.
   preferredTime: z
-    .union([z.string().regex(/^\d{2}:\d{2}$/), z.literal(''), z.null(), z.undefined()])
-    .transform((value) => (value ? value : null)),
+    .preprocess(
+      emptyToNull,
+      z
+        .string()
+        .regex(QUARTER_HOUR, 'Elegí una hora de a 15 minutos, por ejemplo 14:00 o 14:15.')
+        .nullable(),
+    )
+    .optional()
+    .transform((value) => value ?? null),
   note: z
     .string()
     .trim()
@@ -86,6 +139,7 @@ export async function createBookingRequest(
       name: data.name,
       phone: data.phone,
       preferred_weekday: data.preferredWeekday,
+      preferred_date: data.preferredDate,
       preferred_time: data.preferredTime,
       note: data.note,
       submitter_hash: submitterHash ?? null,
