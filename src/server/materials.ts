@@ -126,13 +126,64 @@ export type MaterialSummary = Pick<
 const SUMMARY_COLUMNS =
   'id, practitioner_id, discipline, title, area, focus, kind, objective, age_range, visibility, source, author_name'
 
+/**
+ * Every material that matches, in one list.
+ *
+ * What the planner's suggestions and the Agenda's matched material need: they
+ * score the whole library against a goal, so a page of it would miss the best
+ * match. The Materiales screen itself pages — see `pageMaterials`.
+ */
 export async function listMaterials(
   practitionerId: string,
   filters: MaterialFilters,
 ): Promise<MaterialSummary[]> {
   const db = await getDb()
 
-  let query = db.from('materials').select(SUMMARY_COLUMNS)
+  const { data, error } = await filteredMaterials(db, practitionerId, filters).order('title')
+  if (error) throw error
+  return data
+}
+
+/** How many the Materiales screen shows at first, and how many "Ver más" adds. */
+export const MATERIALS_PAGE = 30
+
+/**
+ * The first `shown` materials that match, and how many match in total (P18).
+ *
+ * Thomas's QA: the screen loaded the whole library at once — the discipline's
+ * own plus the practitioner's plus the community's — which does not scale. The
+ * search and the filters run in the query before the page is cut, so both the
+ * total and "Ver más" are about the whole library, never about what happened to
+ * be loaded.
+ *
+ * Ordered by title and then id: two materials with the same title would
+ * otherwise swap places between two requests, and one of them could appear on
+ * both sides of "Ver más" while the other appeared on neither.
+ */
+export async function pageMaterials(
+  practitionerId: string,
+  filters: MaterialFilters,
+  shown: number = MATERIALS_PAGE,
+): Promise<{ materials: MaterialSummary[]; total: number }> {
+  const db = await getDb()
+
+  const { data, error, count } = await filteredMaterials(db, practitionerId, filters, 'exact')
+    .order('title')
+    .order('id')
+    .range(0, Math.max(shown, 1) - 1)
+
+  if (error) throw error
+  return { materials: data, total: count ?? data.length }
+}
+
+/** The filters both lists share, so the page and the whole list can never disagree. */
+function filteredMaterials(
+  db: Awaited<ReturnType<typeof getDb>>,
+  practitionerId: string,
+  filters: MaterialFilters,
+  count?: 'exact',
+) {
+  let query = db.from('materials').select(SUMMARY_COLUMNS, count ? { count } : undefined)
 
   if (filters.onlyMine) {
     query = query.eq('practitioner_id', practitionerId)
@@ -160,9 +211,7 @@ export async function listMaterials(
     query = query.ilike('search_text', searchPattern(filters.search.trim()))
   }
 
-  const { data, error } = await query.order('title')
-  if (error) throw error
-  return data
+  return query
 }
 
 // ─── The attached file ──────────────────────────────────────────────────────

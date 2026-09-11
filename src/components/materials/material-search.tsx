@@ -25,7 +25,9 @@ export function MaterialSearch({ initial }: { initial: string }) {
     const current = params.get('q') ?? ''
     if (value === current) return
 
-    const timer = setTimeout(() => set({ q: value }), 250)
+    // `ver` back to the first page (P18): a new search is a new list. On the
+    // planner, which has no pages, clearing it changes nothing.
+    const timer = setTimeout(() => set({ q: value, ver: '' }), 250)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])

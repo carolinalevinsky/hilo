@@ -12,7 +12,7 @@ import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { areasFor, materialKindLabel } from '@/lib/material-areas'
-import { listMaterials, materialOrigin } from '@/server/materials'
+import { MATERIALS_PAGE, materialOrigin, pageMaterials } from '@/server/materials'
 import { currentSession } from '../session'
 
 export const metadata: Metadata = { title: 'Materiales · Hilo' }
@@ -35,13 +35,28 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
   /** Whether anything is narrowing the list right now. */
   const isFiltered = Boolean(search || area || onlyMine || onlyCommunity)
 
-  const materials = await listMaterials(user.id, {
-    discipline: practitioner.discipline,
-    area,
-    onlyMine,
-    onlyCommunity,
-    search,
-  })
+  // How many are on screen (P18): 30, and 30 more each time "Ver más" is
+  // pressed. It lives in the URL so a reload keeps what you had open. Rounded to
+  // whole pages and capped, so a hand-typed `?ver=` cannot ask for the whole
+  // library at once — which is the thing this replaced.
+  const asked = Number(readParam(params.ver))
+  const shown = Math.min(
+    Math.max(Math.ceil((Number.isFinite(asked) ? asked : 0) / MATERIALS_PAGE), 1) * MATERIALS_PAGE,
+    MATERIALS_PAGE * 20,
+  )
+
+  const { materials, total } = await pageMaterials(
+    user.id,
+    { discipline: practitioner.discipline, area, onlyMine, onlyCommunity, search },
+    shown,
+  )
+
+  // "Ver más" keeps the search and the filter it was pressed under.
+  const more = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === 'string' && value) more.set(key, value)
+  }
+  more.set('ver', String(shown + MATERIALS_PAGE))
 
   return (
     <>
@@ -89,7 +104,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
           the list while the next search is in flight. */}
       {isFiltered ? (
         <p className="mb-2.5 text-meta text-muted-foreground">
-          {materials.length === 1 ? '1 material' : `${materials.length} materiales`}
+          {total === 1 ? '1 material' : `${total} materiales`}
         </p>
       ) : null}
 
@@ -159,6 +174,22 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
           ))}
         </ul>
       )}
+
+      {/* A link, not a button with state: the next page is a URL, so the back
+          button and a reload both land where you were. `scroll={false}` keeps
+          you at the bottom of the list, where the new ones appear. */}
+      {materials.length < total ? (
+        <div className="mt-4 flex flex-col items-center gap-1.5">
+          <Button asChild variant="outline">
+            <Link href={`/materiales?${more.toString()}`} scroll={false}>
+              Ver más
+            </Link>
+          </Button>
+          <p className="text-meta text-muted-foreground">
+            Estás viendo {materials.length} de {total}.
+          </p>
+        </div>
+      ) : null}
       </MaterialFilters>
     </>
   )

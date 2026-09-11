@@ -34,9 +34,10 @@ export function MaterialFilters({
 
   // Los tres son excluyentes entre sí, como cuando eran links: cada uno armaba
   // su dirección desde cero. Lo que sí se conserva es `q`, porque ir acotando
-  // una búsqueda con los filtros es exactamente para lo que están.
+  // una búsqueda con los filtros es exactamente para lo que están. `ver` no:
+  // otro filtro es otra lista, y vuelve a empezar por los primeros 30 (P18).
   function only(values: Record<string, string>) {
-    set({ area: '', mios: '', comunidad: '', ...values })
+    set({ area: '', mios: '', comunidad: '', ver: '', ...values })
   }
 
   return (
