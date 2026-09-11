@@ -214,12 +214,12 @@ export async function deactivateSchedulesFor(practitionerId: string, patientId: 
 export async function nextAppointmentFor(
   practitionerId: string,
   patientId: string,
-): Promise<{ scheduled_on: string; start_time: string } | null> {
+): Promise<NextAppointment | null> {
   const db = await getDb()
 
   const { data, error } = await db
     .from('appointments')
-    .select('scheduled_on, start_time')
+    .select('id, scheduled_on, start_time')
     .eq('practitioner_id', practitionerId)
     .eq('patient_id', patientId)
     .eq('status', 'scheduled')
@@ -231,6 +231,49 @@ export async function nextAppointmentFor(
 
   if (error) throw error
   return data
+}
+
+export type NextAppointment = { id: string; scheduled_on: string; start_time: string }
+
+/**
+ * La próxima sesión de cada uno de estos pacientes, en una sola consulta.
+ *
+ * Misma regla que `nextAppointmentFor` —sólo `scheduled`, de hoy en adelante—
+ * y tiene que seguir siéndolo: es la que decide a qué sesión pertenece lo que se
+ * preparó sin sesión (ver `session-plans.ts`), y si las dos dijeran distinto la
+ * ficha y la Agenda mostrarían planes distintos para la misma sesión.
+ */
+export async function nextAppointments(
+  practitionerId: string,
+  patientIds: string[],
+): Promise<Map<string, NextAppointment>> {
+  const next = new Map<string, NextAppointment>()
+  if (patientIds.length === 0) return next
+
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('id, patient_id, scheduled_on, start_time')
+    .eq('practitioner_id', practitionerId)
+    .in('patient_id', patientIds)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+    .order('scheduled_on', { ascending: true })
+    .order('start_time', { ascending: true })
+
+  if (error) throw error
+
+  // Ordered soonest first, so the first one seen for a patient is theirs.
+  for (const row of data ?? []) {
+    if (!next.has(row.patient_id)) {
+      next.set(row.patient_id, {
+        id: row.id,
+        scheduled_on: row.scheduled_on,
+        start_time: row.start_time,
+      })
+    }
+  }
+  return next
 }
 
 // ─── Materialising occurrences ──────────────────────────────────────────────

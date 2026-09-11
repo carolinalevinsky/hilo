@@ -5,6 +5,7 @@ import { listAppointments } from './appointments'
 import { getDb } from './db'
 import { bestMaterialFor, listMaterials, type MaterialSummary } from './materials'
 import { monthlyLedger } from './payments'
+import { plansForAppointments, type PlanLine } from './session-plans'
 
 /**
  * The session planner.
@@ -30,11 +31,17 @@ export type PlannedSession = {
   status: string
   goals: { id: string; title: string; progress: number }[]
   /**
-   * What this session is for: the goal chosen in "Plan de la semana", or the one
-   * that has moved least. Null when the patient has no goals yet.
+   * What is prepared for this session in Planificación — the same rows the
+   * planner writes (P14). Empty when nothing is.
+   */
+  plan: PlanLine[]
+  /**
+   * What this session is for: the first goal in its plan; failing that, the goal
+   * picked in the old "Plan de la semana" selector; failing that, the one that
+   * has moved least. Null when the patient has no goals yet.
    */
   focus: { id: string; title: string; progress: number } | null
-  /** True when `focus` was picked deliberately rather than suggested. */
+  /** True when `focus` was decided — by the plan or the old selector — rather than suggested. */
   focusChosen: boolean
   suggestedMaterial: MaterialSummary | null
 }
@@ -86,13 +93,16 @@ export async function planForRange(
   if (upcoming.length === 0) return []
 
   const db = await getDb()
-  const { data: goals } = await db
-    .from('goals')
-    .select('id, patient_id, title, progress')
-    .eq('practitioner_id', practitionerId)
-    .eq('is_active', true)
-    .in('patient_id', [...new Set(upcoming.map((appointment) => appointment.patient_id))])
-    .order('position')
+  const [{ data: goals }, plans] = await Promise.all([
+    db
+      .from('goals')
+      .select('id, patient_id, title, progress')
+      .eq('practitioner_id', practitionerId)
+      .eq('is_active', true)
+      .in('patient_id', [...new Set(upcoming.map((appointment) => appointment.patient_id))])
+      .order('position'),
+    plansForAppointments(practitionerId, upcoming),
+  ])
 
   const goalsByPatient = new Map<string, { id: string; title: string; progress: number }[]>()
   for (const goal of goals ?? []) {
@@ -113,13 +123,20 @@ export async function planForRange(
             goal.progress < lowest.progress ? goal : lowest,
           )
 
-    // A choice made in "Plan de la semana" wins over the suggestion. v1's
-    // default was the lowest-scoring goal and it came back on every reload
-    // because nothing was stored; here the suggestion is only what you get
-    // until you decide otherwise.
-    const chosen = appointment.focus_goal_id
+    // What was prepared decides what the session is for (P14): the first goal
+    // in its plan. Before plans had a session, "Plan de la semana" kept its own
+    // pick in `focus_goal_id`; the selector that wrote it is hidden now, but a
+    // pick already made still counts until a plan says otherwise. The
+    // suggestion is only what you get until you decide.
+    const plan = plans.get(appointment.id) ?? []
+    const planned =
+      plan
+        .map((line) => own.find((goal) => goal.id === line.goalId))
+        .find((goal) => goal !== undefined) ?? null
+    const picked = appointment.focus_goal_id
       ? (own.find((goal) => goal.id === appointment.focus_goal_id) ?? null)
       : null
+    const chosen = planned ?? picked
     const focus = chosen ?? suggested
 
     return {
@@ -131,6 +148,7 @@ export async function planForRange(
       startTime: appointment.start_time,
       status: appointment.status,
       goals: own,
+      plan,
       focus,
       focusChosen: chosen !== null,
       suggestedMaterial: focus ? bestMaterialFor(focus.title, materials) : null,

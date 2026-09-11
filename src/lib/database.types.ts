@@ -1007,6 +1007,7 @@ export type Database = {
       }
       session_plan_items: {
         Row: {
+          appointment_id: string | null
           created_at: string
           goal_id: string | null
           id: string
@@ -1017,6 +1018,7 @@ export type Database = {
           title: string | null
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           goal_id?: string | null
           id?: string
@@ -1027,6 +1029,7 @@ export type Database = {
           title?: string | null
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           goal_id?: string | null
           id?: string
@@ -1037,6 +1040,13 @@ export type Database = {
           title?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "session_plan_items_appointment_same_patient"
+            columns: ["practitioner_id", "patient_id", "appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["practitioner_id", "patient_id", "id"]
+          },
           {
             foreignKeyName: "session_plan_items_goal_id_fkey"
             columns: ["goal_id"]

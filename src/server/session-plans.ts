@@ -1,5 +1,8 @@
+import { z } from 'zod'
+
 import { suggestedActivity } from '@/lib/activity-bank'
 
+import { nextAppointmentFor, nextAppointments } from './appointments'
 import { getDb } from './db'
 import {
   bestMaterialFor,
@@ -10,7 +13,7 @@ import {
 } from './materials'
 
 /**
- * The prepared next session.
+ * What is prepared for a session.
  *
  * v1's "Planificar sesión" (`legacy/index.html:2855`), which is the half of
  * Planificación the rewrite dropped. The rewrite put a read-only list of the
@@ -20,8 +23,8 @@ import {
  * The idea worth keeping is that planning is the part of this job that takes the
  * longest, and almost all of it is deciding. So: the goals that have moved least
  * are already sorted and each has a suggested activity and a matched material,
- * one click adds it, and what you assemble persists on the patient as "the next
- * session" until you register it.
+ * one click adds it, and what you assemble persists until you register the
+ * session.
  *
  * Nothing here is automatic. Hilo proposes an order; the practitioner builds the
  * list.
@@ -35,11 +38,83 @@ export type PlanItem = {
   material: Pick<Material, 'id' | 'title' | 'area' | 'focus'> | null
 }
 
-/** What is currently planned for one patient, in the order it will be worked. */
+// ─── Which session a plan is for ────────────────────────────────────────────
+//
+// A plan is for one session in the agenda (P14). It used to be one list per
+// patient, and "Plan de la semana" in the Agenda kept a separate goal per
+// appointment; the two never saw each other. The rule that joins them:
+//
+//   - A row tied to a session (`appointment_id`) belongs to that session.
+//   - A row tied to none belongs to the patient's **next** session. Those are the
+//     rows prepared before plans had a session, and the ones prepared for a
+//     patient with nothing scheduled yet. Once there is a next session they are
+//     for it, which is what "Próxima sesión de Tomás" always meant.
+//
+// It is written twice, and the two must agree: `scopeFilter` says it to Postgres
+// for one patient, `belongsTo` says it to rows already in memory for many. The
+// tests in `session-plans.test.ts` hold them to the same cases.
+
+type Scope = {
+  /** The session, or `null` for a patient with nothing scheduled. */
+  appointmentId: string | null
+  /** Whether rows with no session count: only for the patient's next one. */
+  includesLoose: boolean
+}
+
+const AppointmentId = z.uuid()
+
+/**
+ * The scope of "the plan" for a patient's session.
+ *
+ * `appointmentId` left out means the next session, which is what every screen
+ * that only knows the patient — the ficha, "Sumar a la sesión" from a material —
+ * means by "the plan".
+ */
+async function scopeFor(
+  practitionerId: string,
+  patientId: string,
+  appointmentId?: string | null,
+): Promise<Scope> {
+  const next = await nextAppointmentFor(practitionerId, patientId)
+  const target =
+    appointmentId === undefined
+      ? (next?.id ?? null)
+      : appointmentId === null
+        ? null
+        : // Validated because it goes into a PostgREST filter string below.
+          AppointmentId.parse(appointmentId)
+
+  return { appointmentId: target, includesLoose: target === null || target === next?.id }
+}
+
+function scopeFilter(scope: Scope) {
+  if (!scope.appointmentId) return 'appointment_id.is.null'
+  const own = `appointment_id.eq.${scope.appointmentId}`
+  return scope.includesLoose ? `${own},appointment_id.is.null` : own
+}
+
+/** `scopeFilter`'s rule, for rows already loaded. */
+function belongsTo(
+  row: { appointment_id: string | null },
+  appointmentId: string,
+  nextOfPatient: string | undefined,
+) {
+  return (
+    row.appointment_id === appointmentId ||
+    (row.appointment_id === null && nextOfPatient === appointmentId)
+  )
+}
+
+/**
+ * What is planned for one of a patient's sessions, in the order it will be
+ * worked. Without `appointmentId`, the next session's.
+ */
 export async function listPlanItems(
   practitionerId: string,
   patientId: string,
+  appointmentId?: string | null,
 ): Promise<PlanItem[]> {
+  const scope = await scopeFor(practitionerId, patientId, appointmentId)
   const db = await getDb()
 
   const { data, error } = await db
@@ -47,6 +122,7 @@ export async function listPlanItems(
     .select('id, title, position, goal_id, materials (id, title, area, focus)')
     .eq('practitioner_id', practitionerId)
     .eq('patient_id', patientId)
+    .or(scopeFilter(scope))
     .order('position')
     .order('created_at')
 
@@ -61,47 +137,123 @@ export async function listPlanItems(
   }))
 }
 
+/** One line of a plan, as the Agenda and Inicio show it. */
+export type PlanLine = { goalId: string | null; title: string }
+
 /**
- * Every patient with a session prepared, and how much is in it.
+ * The plan of each of these sessions, in two queries rather than one per row.
+ *
+ * What "Plan de la semana" and Inicio read: the same rows the planner writes, so
+ * preparing a session in Planificación is what the Agenda shows for it.
+ */
+export async function plansForAppointments(
+  practitionerId: string,
+  appointments: { id: string; patient_id: string }[],
+): Promise<Map<string, PlanLine[]>> {
+  const plans = new Map<string, PlanLine[]>()
+  if (appointments.length === 0) return plans
+
+  const patientIds = [...new Set(appointments.map((appointment) => appointment.patient_id))]
+  const db = await getDb()
+
+  const [{ data: rows, error }, next] = await Promise.all([
+    db
+      .from('session_plan_items')
+      .select('patient_id, appointment_id, goal_id, title, materials (title)')
+      .eq('practitioner_id', practitionerId)
+      .in('patient_id', patientIds)
+      .order('position')
+      .order('created_at'),
+    nextAppointments(practitionerId, patientIds),
+  ])
+
+  if (error) throw error
+
+  for (const appointment of appointments) {
+    const nextId = next.get(appointment.patient_id)?.id
+    plans.set(
+      appointment.id,
+      (rows ?? [])
+        .filter(
+          (row) =>
+            row.patient_id === appointment.patient_id &&
+            belongsTo(row, appointment.id, nextId),
+        )
+        .map((row) => ({
+          goalId: row.goal_id,
+          title: row.title ?? row.materials?.title ?? 'Actividad',
+        })),
+    )
+  }
+
+  return plans
+}
+
+export type PreparedPlan = {
+  patientId: string
+  fullName: string
+  color: string | null
+  /** The session it is for, or `null` when the patient has none scheduled. */
+  appointment: { id: string; scheduledOn: string; startTime: string } | null
+  items: string[]
+}
+
+/**
+ * Every session with something prepared, soonest first.
  *
  * A plan was reachable from exactly two places: the planner, if you happened to
  * have that patient selected, and that patient's own ficha. Neither answers the
  * question you actually have on Tuesday morning — "what did I leave ready?" —
  * and a plan you have to remember you made is one you re-make from memory.
  *
- * One query rather than one per patient: the rows carry `patient_id` already, so
- * the grouping is done here instead of in the database. A practitioner has tens
- * of patients, not thousands.
+ * Grouped by session, not by patient: two sessions of the same child in one
+ * week are two plans. Rows with no session join the patient's next one, by the
+ * rule at the top of this file; a patient with nothing scheduled goes last.
  */
-export async function upcomingPlans(practitionerId: string) {
+export async function upcomingPlans(practitionerId: string): Promise<PreparedPlan[]> {
   const db = await getDb()
 
   const { data, error } = await db
     .from('session_plan_items')
-    .select('patient_id, title, position, patients (id, full_name, color), materials (title)')
+    .select(
+      'patient_id, appointment_id, title, position, patients (id, full_name, color), materials (title), appointments (id, scheduled_on, start_time)',
+    )
     .eq('practitioner_id', practitionerId)
     .order('position')
+    .order('created_at')
 
   if (error) throw error
 
-  const byPatient = new Map<
-    string,
-    { patientId: string; fullName: string; color: string | null; items: string[] }
-  >()
+  const rows = (data ?? []).filter((row) => row.patients)
+  const next = await nextAppointments(practitionerId, [
+    ...new Set(rows.map((row) => row.patient_id)),
+  ])
 
-  for (const row of data ?? []) {
-    if (!row.patients) continue
-    const entry = byPatient.get(row.patient_id) ?? {
+  const plans = new Map<string, PreparedPlan>()
+
+  for (const row of rows) {
+    const session = row.appointments ?? next.get(row.patient_id) ?? null
+    const key = `${row.patient_id}:${session?.id ?? 'none'}`
+
+    const entry = plans.get(key) ?? {
       patientId: row.patient_id,
-      fullName: row.patients.full_name,
-      color: row.patients.color,
+      fullName: row.patients!.full_name,
+      color: row.patients!.color,
+      appointment: session
+        ? { id: session.id, scheduledOn: session.scheduled_on, startTime: session.start_time }
+        : null,
       items: [],
     }
     entry.items.push(row.title ?? row.materials?.title ?? 'Actividad')
-    byPatient.set(row.patient_id, entry)
+    plans.set(key, entry)
   }
 
-  return [...byPatient.values()].sort((a, b) => a.fullName.localeCompare(b.fullName, 'es'))
+  const when = (plan: PreparedPlan) =>
+    plan.appointment ? `${plan.appointment.scheduledOn} ${plan.appointment.startTime}` : '~'
+
+  return [...plans.values()].sort(
+    (a, b) => when(a).localeCompare(when(b)) || a.fullName.localeCompare(b.fullName, 'es'),
+  )
 }
 
 export type PlanSuggestion = {
@@ -134,6 +286,7 @@ export async function planSuggestions(
   practitionerId: string,
   patientId: string,
   discipline: string,
+  appointmentId?: string | null,
 ): Promise<PlanSuggestion[]> {
   const db = await getDb()
 
@@ -146,7 +299,7 @@ export async function planSuggestions(
       .eq('is_active', true)
       .order('progress'),
     listMaterials(practitionerId, { discipline }),
-    listPlanItems(practitionerId, patientId),
+    listPlanItems(practitionerId, patientId, appointmentId),
   ])
 
   if (error) throw error
@@ -180,7 +333,7 @@ async function nextPosition(practitionerId: string, patientId: string): Promise<
 }
 
 /**
- * Add a goal to the plan, with a material attached to it.
+ * Add a goal to a session's plan, with a material attached to it.
  *
  * `materialId` is the one the practitioner picked from the three offered. When
  * it is absent — the goal was added without choosing, or from a screen that does
@@ -191,7 +344,8 @@ async function nextPosition(practitionerId: string, patientId: string): Promise<
  * The goal is re-read here rather than trusted from the form because a form
  * field is whatever the browser sent, and `.eq('practitioner_id', …)` is what
  * makes "add goal X" mean "add a goal that is mine". The chosen material gets
- * the same treatment for the same reason.
+ * the same treatment for the same reason. The session needs no such read: the
+ * composite foreign key refuses one that is not this patient's.
  */
 export async function addGoalToPlan(
   practitionerId: string,
@@ -199,6 +353,7 @@ export async function addGoalToPlan(
   goalId: string,
   discipline: string,
   materialId?: string | null,
+  appointmentId?: string | null,
 ) {
   const db = await getDb()
 
@@ -229,9 +384,12 @@ export async function addGoalToPlan(
     chosenId = bestMaterialFor(goal.title, materials)?.id ?? null
   }
 
+  const scope = await scopeFor(practitionerId, patientId, appointmentId)
+
   const { error } = await db.from('session_plan_items').insert({
     practitioner_id: practitionerId,
     patient_id: patientId,
+    appointment_id: scope.appointmentId,
     goal_id: goal.id,
     material_id: chosenId,
     title: goal.title,
@@ -258,15 +416,18 @@ export async function addActivityToPlan(
   practitionerId: string,
   patientId: string,
   title: string,
+  appointmentId?: string | null,
 ) {
   const clean = title.trim().slice(0, 200)
   if (!clean) throw new Error('Escribí qué vas a hacer.')
 
+  const scope = await scopeFor(practitionerId, patientId, appointmentId)
   const db = await getDb()
 
   const { error } = await db.from('session_plan_items').insert({
     practitioner_id: practitionerId,
     patient_id: patientId,
+    appointment_id: scope.appointmentId,
     title: clean,
     position: await nextPosition(practitionerId, patientId),
   })
@@ -279,6 +440,7 @@ export async function addMaterialToPlan(
   practitionerId: string,
   patientId: string,
   materialId: string,
+  appointmentId?: string | null,
 ) {
   const db = await getDb()
 
@@ -293,9 +455,12 @@ export async function addMaterialToPlan(
   if (materialError) throw materialError
   if (!material) throw new Error('Ese material no existe.')
 
+  const scope = await scopeFor(practitionerId, patientId, appointmentId)
+
   const { error } = await db.from('session_plan_items').insert({
     practitioner_id: practitionerId,
     patient_id: patientId,
+    appointment_id: scope.appointmentId,
     material_id: material.id,
     position: await nextPosition(practitionerId, patientId),
   })
@@ -315,7 +480,17 @@ export async function removePlanItem(practitionerId: string, itemId: string) {
   if (error) throw error
 }
 
-export async function clearPlan(practitionerId: string, patientId: string) {
+/**
+ * Empties one session's plan — the one registering it just used, or the one
+ * "Vaciar" was pressed on. Never the patient's whole list: the plan for next
+ * week's session is not what you just finished.
+ */
+export async function clearPlan(
+  practitionerId: string,
+  patientId: string,
+  appointmentId?: string | null,
+) {
+  const scope = await scopeFor(practitionerId, patientId, appointmentId)
   const db = await getDb()
 
   const { error } = await db
@@ -323,6 +498,7 @@ export async function clearPlan(practitionerId: string, patientId: string) {
     .delete()
     .eq('practitioner_id', practitionerId)
     .eq('patient_id', patientId)
+    .or(scopeFilter(scope))
 
   if (error) throw error
 }

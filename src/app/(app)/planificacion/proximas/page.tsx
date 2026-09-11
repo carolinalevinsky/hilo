@@ -8,6 +8,8 @@ import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { PlanningTabs } from '@/components/planning/planning-tabs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { formatLongDate } from '@/lib/dates'
+import { formatTime } from '@/lib/week'
 import { upcomingPlans } from '@/server/session-plans'
 import { currentUser } from '../../session'
 
@@ -54,7 +56,7 @@ export default async function UpcomingPlansPage() {
       ) : (
         <ul className="grid gap-3 lg:grid-cols-2">
           {plans.map((plan) => (
-            <li key={plan.patientId}>
+            <li key={`${plan.patientId}-${plan.appointment?.id ?? 'sin-sesion'}`}>
               <Card>
                 <CardContent>
                   <div className="flex items-center gap-2.5">
@@ -65,6 +67,13 @@ export default async function UpcomingPlansPage() {
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-item font-bold">{plan.fullName}</p>
+                      {/* When, first: a plan is for a session now (P14), and
+                          two sessions of the same child are two cards. */}
+                      <p className="text-meta font-semibold">
+                        {plan.appointment
+                          ? `${formatLongDate(plan.appointment.scheduledOn)} · ${formatTime(plan.appointment.startTime)}`
+                          : 'Sin sesión agendada todavía'}
+                      </p>
                       <p className="text-meta text-muted-foreground">
                         {plan.items.length === 1
                           ? '1 actividad preparada'
