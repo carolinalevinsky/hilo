@@ -46,6 +46,7 @@ export function SessionForm({
   session,
   selectedGoalIds = [],
   fromPlan = false,
+  appointment,
   noteDraft = '',
 }: {
   patientId: string
@@ -58,6 +59,11 @@ export function SessionForm({
   selectedGoalIds?: string[]
   /** Opened from the planner, so saving retires the prepared session. */
   fromPlan?: boolean
+  /**
+   * Opened from a slot in the agenda: the record is tied to it, and saving marks
+   * it as attended. `startTime` arrives already formatted.
+   */
+  appointment?: { id: string; scheduledOn: string; startTime: string }
   /** A first sentence to edit, built from what was planned. Never saved as-is. */
   noteDraft?: string
 }) {
@@ -68,6 +74,9 @@ export function SessionForm({
       <input type="hidden" name="patientId" value={patientId} />
       {session ? <input type="hidden" name="sessionId" value={session.id} /> : null}
       {fromPlan ? <input type="hidden" name="clearPlan" value="1" /> : null}
+      {appointment ? (
+        <input type="hidden" name="appointmentId" value={appointment.id} />
+      ) : null}
 
       <FormMessage message={state.message} />
 
@@ -79,14 +88,24 @@ export function SessionForm({
 
       <div className="max-w-[200px] space-y-1.5">
         <Label htmlFor="heldOn">Fecha de la sesión</Label>
+        {/* From the agenda, the slot's own date and not today: the record of
+            Friday's session written up on Monday belongs to Friday — the bug
+            this field was added to fix in the first place. */}
         <Input
           id="heldOn"
           name="heldOn"
           type="date"
-          defaultValue={session?.held_on ?? today()}
+          defaultValue={session?.held_on ?? appointment?.scheduledOn ?? today()}
           required
         />
       </div>
+
+      {appointment ? (
+        <p className="-mt-3 text-meta text-muted-foreground">
+          Es el registro de la sesión de las {appointment.startTime} en tu agenda. Al
+          guardarlo, esa sesión queda marcada como que vino.
+        </p>
+      ) : null}
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">

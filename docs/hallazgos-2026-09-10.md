@@ -58,6 +58,16 @@ con trabajo tuyo sin commitear (15 y 134 líneas).
 
 El punto 3 es el que hace que la agenda y el cuaderno dejen de poder contradecirse.
 
+> **Hecho el 11 de septiembre de 2026**, con una diferencia respecto del
+> esbozo: la regla de que la sesión de la agenda sea **de la misma profesional
+> y del mismo paciente** también quedó en la base. La foránea de M4 sólo miraba
+> que la cita existiera, y las foráneas no pasan por RLS, así que un formulario
+> tocado a mano podía atar un registro a la cita de otra profesional. Ahora es
+> una foránea compuesta
+> (`20260911090000_session_belongs_to_its_appointment.sql`). Además, la agenda
+> ofrece "Ver registro" en vez de "Registrar sesión" cuando la sesión ya tiene el
+> suyo. Los tests están en `src/server/sessions.test.ts`.
+
 ---
 
 ## 2. Si Google Calendar falla, la agenda dice que tenés el día libre

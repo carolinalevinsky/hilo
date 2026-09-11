@@ -3,11 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { formError, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { setGoalProgress } from '@/server/goals'
 import { clearPlan } from '@/server/session-plans'
-import { createSession, deleteSession, updateSession } from '@/server/sessions'
+import {
+  createSession,
+  deleteSession,
+  SessionLinkError,
+  updateSession,
+} from '@/server/sessions'
 
 export async function saveSessionAction(
   _previous: FormState,
@@ -22,6 +27,8 @@ export async function saveSessionAction(
     progressNote: formData.get('progressNote'),
     // Every checked goal arrives under the same name.
     goalIds: formData.getAll('goalIds').map(String),
+    // Only present when the form was opened from the agenda.
+    appointmentId: formData.get('appointmentId') || undefined,
   }
 
   // Read before the session is written, so a failure here fails the whole form
@@ -35,11 +42,8 @@ export async function saveSessionAction(
       await createSession(user.id, patientId, input)
     }
   } catch (error) {
-    if (error && typeof error === 'object' && 'issues' in error) {
-      const issues = (error as { issues: { message: string }[] }).issues
-      return formError(issues[0]?.message ?? 'Revisá los datos.')
-    }
-    return formError('No pudimos guardar la sesión. Probá de nuevo.')
+    if (error instanceof SessionLinkError) return formError(error.message)
+    return formErrorFor(error, 'No pudimos guardar la sesión. Probá de nuevo.')
   }
 
   // After the session, not before: the numbers describe how the session that was

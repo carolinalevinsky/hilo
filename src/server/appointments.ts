@@ -25,6 +25,12 @@ export type Appointment = Database['public']['Tables']['appointments']['Row']
 
 export type AppointmentWithPatient = Appointment & {
   patients: { id: string; full_name: string; color: string | null } | null
+  /**
+   * El registro escrito de esta sesión, si ya existe. Es una lista porque así lo
+   * devuelve PostgREST, pero tiene uno como mucho: lo garantiza el único parcial
+   * de `20260911090000_session_belongs_to_its_appointment.sql`.
+   */
+  sessions: { id: string }[]
 }
 
 export type ScheduleWithPatient = Schedule & {
@@ -363,6 +369,34 @@ export async function createAppointment(practitionerId: string, input: unknown) 
   return row
 }
 
+/**
+ * Una cita de este paciente, o `null`.
+ *
+ * El id llega de la URL (`?agenda=`), así que puede ser cualquier cosa: lo que no
+ * es un uuid se descarta antes de preguntarle a Postgres, que si no contesta con
+ * un error de sintaxis y la página se cae. Y se filtra por paciente además de
+ * por profesional, porque el registro que se abre con ella es el de ese paciente.
+ */
+export async function getAppointmentFor(
+  practitionerId: string,
+  patientId: string,
+  appointmentId: string,
+) {
+  if (!z.uuid().safeParse(appointmentId).success) return null
+
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('*')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
 export async function setAppointmentStatus(
   practitionerId: string,
   appointmentId: string,
@@ -419,7 +453,7 @@ export async function listAppointments(
   // borran al archivar, así que no hay nada que esconder acá.
   const { data, error } = await db
     .from('appointments')
-    .select('*, patients!inner(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color), sessions(id)')
     .eq('practitioner_id', practitionerId)
     .is('patients.deleted_at', null)
     .gte('scheduled_on', from)

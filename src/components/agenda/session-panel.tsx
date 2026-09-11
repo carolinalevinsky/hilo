@@ -1,7 +1,7 @@
 import { CalendarDays, Clock, Target, User, X } from '@/components/icons'
 import Link from 'next/link'
 
-import { AppointmentMenu } from '@/components/agenda/appointment-menu'
+import { AppointmentMenu, recordLink } from '@/components/agenda/appointment-menu'
 import { Button } from '@/components/ui/button'
 import { patientHex } from '@/lib/patient-colors'
 import { formatTime } from '@/lib/week'
@@ -126,7 +126,7 @@ export function SessionPanel({
         {patient ? (
           <>
             <Button asChild className="w-full">
-              <Link href={`/pacientes/${patient.id}/sesiones/nueva`}>Registrar sesión</Link>
+              <Link href={recordLink(appointment).href}>{recordLink(appointment).label}</Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
               <Link href={`/pacientes/${patient.id}`}>

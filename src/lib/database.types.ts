@@ -1103,11 +1103,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "sessions_appointment_id_fkey"
-            columns: ["appointment_id"]
+            foreignKeyName: "sessions_appointment_same_patient"
+            columns: ["practitioner_id", "patient_id", "appointment_id"]
             isOneToOne: false
             referencedRelation: "appointments"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "patient_id", "id"]
           },
           {
             foreignKeyName: "sessions_patient_same_practitioner"
