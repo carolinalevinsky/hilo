@@ -16,6 +16,19 @@ import { getDb } from './db'
 
 export type Material = Database['public']['Tables']['materials']['Row']
 
+/**
+ * A refusal written to be read — "Ese material ya es tuyo." — as opposed to
+ * anything else that can go wrong in here.
+ *
+ * The action used to show `error.message` for any `Error`, to keep these
+ * sentences. But `PostgrestError` extends `Error` too, so a database failure
+ * reached the screen verbatim: "duplicate key value violates unique
+ * constraint", in English, telling a practitioner she had done something wrong.
+ * Same shape as `QuotaExceededError` and `SessionLinkError`: only this class is
+ * shown as is, and everything else gets a neutral sentence and a log line.
+ */
+export class MaterialError extends Error {}
+
 export const MATERIAL_KINDS = ['activity', 'game', 'worksheet', 'text', 'guide'] as const
 
 export const MATERIAL_VISIBILITIES = ['private', 'public'] as const
@@ -216,7 +229,7 @@ export async function saveMaterialFile(
     .maybeSingle()
 
   if (error) throw error
-  if (!row) throw new Error('Ese material no es tuyo, o ya no existe.')
+  if (!row) throw new MaterialError('Ese material no es tuyo, o ya no existe.')
   return row
 }
 
@@ -445,7 +458,7 @@ export async function updateMaterial(
     .maybeSingle()
 
   if (error) throw error
-  if (!row) throw new Error('Ese material no es tuyo, o ya no existe.')
+  if (!row) throw new MaterialError('Ese material no es tuyo, o ya no existe.')
   return row
 }
 
@@ -469,9 +482,9 @@ export async function copyMaterial(
   const db = await getDb()
 
   const original = await getMaterial(materialId)
-  if (!original) throw new Error('Ese material no existe.')
+  if (!original) throw new MaterialError('Ese material no existe.')
   if (original.practitioner_id === practitionerId) {
-    throw new Error('Ese material ya es tuyo.')
+    throw new MaterialError('Ese material ya es tuyo.')
   }
 
   const { data: row, error } = await db
