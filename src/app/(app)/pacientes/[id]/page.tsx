@@ -22,6 +22,7 @@ import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
 import { listSchedules, nextAppointmentFor } from '@/server/appointments'
 import { listAssessments } from '@/server/assessments'
+import { GoalHistory } from '@/components/goals/goal-history'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { listReports } from '@/server/reports'
@@ -230,6 +231,8 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
             </CardHeader>
             <CardContent>
               <ProgressChart goals={goals} points={progress} />
+              {/* When each goal moved, and a way to take back a mistake (P17). */}
+              <GoalHistory patientId={patient.id} goals={goals} points={progress} />
             </CardContent>
           </Card>
 

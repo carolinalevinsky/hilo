@@ -179,6 +179,38 @@ export async function listGoalProgress(practitionerId: string, patientId: string
   return data
 }
 
+/**
+ * Borra un avance cargado por error (P17).
+ *
+ * Por la función de la base y no con un `delete` de acá: si era la última
+ * medición, el objetivo vuelve al valor anterior, y hacerlo desde acá dispararía
+ * el trigger que escribe la serie y dejaría un punto de hoy con el valor
+ * corregido. Ver `20260911200000_delete_goal_point.sql`.
+ *
+ * Se lee antes por dos razones: saber de qué objetivo era, para la auditoría, y
+ * que un id ajeno o inventado no llegue a la base como si fuera propio — aunque
+ * RLS ya lo pararía adentro de la función.
+ */
+export async function deleteGoalPoint(practitionerId: string, pointId: string) {
+  if (!z.uuid().safeParse(pointId).success) return
+
+  const db = await getDb()
+  const { data: point, error: readError } = await db
+    .from('goal_progress')
+    .select('goal_id')
+    .eq('id', pointId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (readError) throw readError
+  if (!point) return
+
+  const { error } = await db.rpc('delete_goal_point', { point_id: pointId })
+  if (error) throw error
+
+  await logAction(practitionerId, 'update', 'goal', point.goal_id)
+}
+
 /** 0–100 across a patient's active goals, for the list and the statistics. */
 export function averageProgress(goals: Pick<Goal, 'progress'>[]): number {
   if (goals.length === 0) return 0

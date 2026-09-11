@@ -1182,6 +1182,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_goal_point: { Args: { point_id: string }; Returns: undefined }
       practitioner_by_slug: {
         Args: { lookup_slug: string }
         Returns: {

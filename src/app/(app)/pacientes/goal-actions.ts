@@ -4,7 +4,13 @@ import { revalidatePath } from 'next/cache'
 
 import { formError, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
-import { createGoal, setGoalActive, setGoalProgress, updateGoal } from '@/server/goals'
+import {
+  createGoal,
+  deleteGoalPoint,
+  setGoalActive,
+  setGoalProgress,
+  updateGoal,
+} from '@/server/goals'
 
 /**
  * Server Actions for goals.
@@ -50,6 +56,16 @@ export async function setGoalProgressAction(formData: FormData) {
 
   await setGoalProgress(user.id, String(formData.get('goalId')), Number(formData.get('progress')))
   revalidatePath(`/pacientes/${patientId}`)
+}
+
+/** A progress point entered by mistake (P17). See `deleteGoalPoint`. */
+export async function deleteGoalPointAction(formData: FormData) {
+  const user = await requireUser()
+  const patientId = String(formData.get('patientId'))
+
+  await deleteGoalPoint(user.id, String(formData.get('pointId')))
+  revalidatePath(`/pacientes/${patientId}`)
+  revalidatePath('/estadisticas')
 }
 
 export async function setGoalActiveAction(formData: FormData) {
