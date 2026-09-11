@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { formatDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
-import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
+import { ageGroupLabel, billingFrequencyLabel, guardianSummary } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
 import { listSchedules, nextAppointmentFor } from '@/server/appointments'
@@ -80,6 +80,17 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     // theirs is being seen under it. It stays on the ficha because it is what
     // the report says and what the mutualista reads.
     { label: 'Abordaje', value: disciplineLabel(practitioner.discipline) },
+    // Only for a minor. An adult is their own responsable, and a "Responsable"
+    // row would then sit in the "Sin cargar" line forever, naming something
+    // that does not apply.
+    ...(patient.age_group === 'adults'
+      ? []
+      : [
+          {
+            label: 'Responsable',
+            value: guardianSummary(patient.guardian_name, patient.guardian_relationship),
+          },
+        ]),
     { label: 'Teléfono', value: patient.phone },
     { label: 'Inicio', value: formatDate(patient.start_date) },
     {

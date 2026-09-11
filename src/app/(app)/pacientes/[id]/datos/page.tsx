@@ -9,11 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { formatDate, formatLongDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
-import {
-  ageGroupLabel,
-  billingFrequencyLabel,
-  paymentMethodLabel,
-} from '@/lib/patient-labels'
+import { ageGroupLabel, billingFrequencyLabel, guardianSummary, paymentMethodLabel } from '@/lib/patient-labels'
 import { periodLabel } from '@/lib/periods'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { buildPatientExport } from '@/server/patient-export'
@@ -93,6 +89,11 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
             <Field label="Escolaridad" value={patient.school_level} />
             <Field label="Institución" value={patient.school} />
             <Field label="Prestador de salud" value={patient.health_insurer} />
+            <Field
+              label="Responsable"
+              value={guardianSummary(patient.guardian_name, patient.guardian_relationship)}
+            />
+            <Field label="Correo del responsable" value={patient.guardian_email} />
             <Field label="Teléfono" value={patient.phone} />
             <Field label="Motivo de consulta" value={patient.referral_reason} />
             <Field label="Inicio del tratamiento" value={formatDate(patient.start_date)} />

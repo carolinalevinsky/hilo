@@ -25,6 +25,8 @@ export type Patient = Database['public']['Tables']['patients']['Row']
 
 export const AGE_GROUPS = ['children', 'adolescents', 'adults'] as const
 export const BILLING_FREQUENCIES = ['monthly', 'biweekly', 'weekly', 'per_session'] as const
+/** Who the responsable is to the patient. Labels in `@/lib/patient-labels`. */
+export const GUARDIAN_RELATIONSHIPS = ['mother', 'father', 'guardian', 'other'] as const
 
 /** The six accent colours, as the database stores them. */
 export const PATIENT_COLORS = [
@@ -66,6 +68,16 @@ export const PatientInput = z.object({
   schoolLevel: optionalText,
   healthInsurer: optionalText,
   phone: optionalText,
+  // The adult responsible for the patient. See the migration
+  // `20260911164646_patient_guardian.sql` for why it is one person and three
+  // columns rather than a contacts table.
+  guardianName: optionalText,
+  guardianRelationship: z
+    .preprocess(blankToNull, z.enum(GUARDIAN_RELATIONSHIPS).nullable())
+    .default(null),
+  guardianEmail: z
+    .preprocess(blankToNull, z.email('Revisá el correo del responsable.').nullable())
+    .default(null),
   referralReason: optionalText,
   startDate: optionalDate,
   color: z.enum(PATIENT_COLORS).optional(),
@@ -86,6 +98,9 @@ function toRow(data: PatientInputData) {
     school_level: data.schoolLevel,
     health_insurer: data.healthInsurer,
     phone: data.phone,
+    guardian_name: data.guardianName,
+    guardian_relationship: data.guardianRelationship,
+    guardian_email: data.guardianEmail,
     referral_reason: data.referralReason,
     start_date: data.startDate,
     session_fee: data.sessionFee,

@@ -663,6 +663,9 @@ export type Database = {
           deleted_at: string | null
           expected_sessions_per_month: number | null
           full_name: string
+          guardian_email: string | null
+          guardian_name: string | null
+          guardian_relationship: string | null
           health_insurer: string | null
           id: string
           phone: string | null
@@ -689,6 +692,9 @@ export type Database = {
           deleted_at?: string | null
           expected_sessions_per_month?: number | null
           full_name: string
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
           health_insurer?: string | null
           id?: string
           phone?: string | null
@@ -715,6 +721,9 @@ export type Database = {
           deleted_at?: string | null
           expected_sessions_per_month?: number | null
           full_name?: string
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
           health_insurer?: string | null
           id?: string
           phone?: string | null
