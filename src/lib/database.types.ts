@@ -1114,6 +1114,70 @@ export type Database = {
           },
         ]
       }
+      scale_responses: {
+        Row: {
+          answers: number[]
+          difficulty: number | null
+          form_id: string
+          id: string
+          patient_id: string
+          practitioner_id: string
+          reviewed_at: string | null
+          scale: string
+          self_harm_flag: boolean | null
+          submitted_at: string
+          total: number
+        }
+        Insert: {
+          answers: number[]
+          difficulty?: number | null
+          form_id: string
+          id?: string
+          patient_id: string
+          practitioner_id: string
+          reviewed_at?: string | null
+          scale: string
+          self_harm_flag?: boolean | null
+          submitted_at?: string
+          total: number
+        }
+        Update: {
+          answers?: number[]
+          difficulty?: number | null
+          form_id?: string
+          id?: string
+          patient_id?: string
+          practitioner_id?: string
+          reviewed_at?: string | null
+          scale?: string
+          self_harm_flag?: boolean | null
+          submitted_at?: string
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scale_responses_form_same_practitioner"
+            columns: ["practitioner_id", "form_id"]
+            isOneToOne: false
+            referencedRelation: "patient_forms"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "scale_responses_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "scale_responses_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schedules: {
         Row: {
           created_at: string
@@ -1339,16 +1403,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      practitioner_by_slug: {
-        Args: { lookup_slug: string }
-        Returns: {
-          discipline: string
-          full_name: string
-          id: string
-        }[]
-      }
-      slugify: { Args: { input: string }; Returns: string }
-      unaccent_fallback: { Args: { input: string }; Returns: string }
       patient_form_by_token: {
         Args: { raw_token: string }
         Returns: {
@@ -1361,15 +1415,15 @@ export type Database = {
           state: string
         }[]
       }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      practitioner_by_slug: {
+        Args: { lookup_slug: string }
+        Returns: {
+          discipline: string
+          full_name: string
+          id: string
+        }[]
+      }
+      slugify: { Args: { input: string }; Returns: string }
       submit_intake: {
         Args: {
           p_date_of_birth?: string
@@ -1401,6 +1455,20 @@ export type Tables<
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
+      submit_scale: {
+        Args: { p_answers: number[]; p_difficulty?: number; raw_token: string }
+        Returns: string
+      }
+      unaccent_fallback: { Args: { input: string }; Returns: string }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &

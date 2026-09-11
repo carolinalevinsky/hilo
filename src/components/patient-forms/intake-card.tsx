@@ -1,5 +1,5 @@
-import { applyIntakeAction } from '@/app/(app)/pacientes/intake-actions'
-import { IntakeLinkButton } from '@/components/patient-forms/intake-link-button'
+import { applyIntakeAction, createIntakeLinkAction } from '@/app/(app)/pacientes/intake-actions'
+import { SendLinkButton } from '@/components/patient-forms/send-link-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GUARDIAN_RELATIONSHIP_LABELS } from '@/lib/patient-labels'
@@ -163,12 +163,13 @@ export function IntakeCard({
               primera sesión.
             </p>
           ) : null}
-          <IntakeLinkButton
-            patientId={patientId}
+          <SendLinkButton
+            create={createIntakeLinkAction.bind(null, patientId)}
             phone={phone}
-            patientFirstName={patientFirstName}
-            practitionerFirstName={practitionerFirstName}
+            message={`¡Hola! Antes de la primera sesión de ${patientFirstName}, te pido que completes estos datos y firmes el consentimiento. Lleva unos minutos: {url} Gracias, ${practitionerFirstName}.`}
+            label="Mandar “Antes de empezar”"
             again={Boolean(openLinkSince || consent || response)}
+            lifetime="14 días"
           />
         </div>
       </CardContent>

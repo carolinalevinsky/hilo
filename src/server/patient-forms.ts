@@ -44,8 +44,17 @@ function hashToken(token: string) {
 }
 
 /** 32 random bytes in base64url are 43 characters. Anything else is not ours. */
-function looksLikeToken(token: string) {
+export function looksLikeToken(token: string) {
   return /^[A-Za-z0-9_-]{43}$/.test(token)
+}
+
+/**
+ * A new link secret: the token that goes in the URL, and its hash, which is
+ * the only thing stored. Shared by every kind of link — see `scales.ts`.
+ */
+export function newLinkToken() {
+  const token = randomBytes(32).toString('base64url')
+  return { token, hash: hashToken(token) }
 }
 
 // ─── The practitioner's side ────────────────────────────────────────────────
@@ -91,7 +100,7 @@ export async function createIntakeLink(practitionerId: string, patientId: string
     .gt('expires_at', now.toISOString())
   if (retireError) throw retireError
 
-  const token = randomBytes(32).toString('base64url')
+  const { token, hash } = newLinkToken()
   const expiresAt = new Date(now.getTime() + LINK_LIFETIME_DAYS * 24 * 60 * 60 * 1000)
 
   const { data: row, error } = await db
@@ -100,7 +109,7 @@ export async function createIntakeLink(practitionerId: string, patientId: string
       practitioner_id: practitionerId,
       patient_id: patientId,
       kind: 'intake',
-      token_hash: hashToken(token),
+      token_hash: hash,
       consent_text: fillConsent(practitioner.consent_template, {
         practitionerName: practitioner.full_name,
         discipline: disciplineLabel(practitioner.discipline),

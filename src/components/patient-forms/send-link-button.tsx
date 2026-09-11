@@ -3,60 +3,67 @@
 import { Copy, MessageCircle, Send } from '@/components/icons'
 import { useState, useTransition } from 'react'
 
-import { createIntakeLinkAction } from '@/app/(app)/pacientes/intake-actions'
 import { Button } from '@/components/ui/button'
 import { whatsappLink } from '@/lib/whatsapp'
 
 /**
- * Makes the "Antes de empezar" link and offers the two ways to send it.
+ * Makes a link for the family or the patient, and offers the two ways to send
+ * it. Used by "Antes de empezar" and by each questionnaire.
  *
  * The link is shown once. Only its hash is stored, so after a reload it cannot
  * be shown again — and saying so, next to it, is cheaper than a practitioner
  * wondering where it went. Making another one retires this one.
  *
- * The WhatsApp message says who it is about and what to do, and nothing
- * clinical — same rule as every other message Hilo writes (`@/lib/whatsapp`).
+ * `create` is a Server Action already bound to its patient (and scale), handed
+ * down from a Server Component. `message` has `{url}` where the link goes, and
+ * nothing clinical — same rule as every other message Hilo writes
+ * (`@/lib/whatsapp`).
  */
-export function IntakeLinkButton({
-  patientId,
+export function SendLinkButton({
+  create,
+  message,
   phone,
-  patientFirstName,
-  practitionerFirstName,
+  label,
+  againLabel = 'Mandar un link nuevo',
   again = false,
+  lifetime,
 }: {
-  patientId: string
+  create: () => Promise<{ url: string } | { error: string }>
+  message: string
   phone: string | null
-  patientFirstName: string
-  practitionerFirstName: string
-  /** A link was already sent: the button says it replaces that one. */
+  label: string
+  againLabel?: string
+  /** A link was already sent: the button is quieter and says it replaces it. */
   again?: boolean
+  /** "14 días", for the line under the link. */
+  lifetime: string
 }) {
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  function create() {
+  function makeLink() {
     setError(null)
     startTransition(async () => {
-      const result = await createIntakeLinkAction(patientId)
+      const result = await create()
       if ('url' in result) setUrl(result.url)
       else setError(result.error)
     })
   }
 
   if (url) {
-    const message = `¡Hola! Antes de la primera sesión de ${patientFirstName}, te pido que completes estos datos y firmes el consentimiento. Lleva unos minutos: ${url} Gracias, ${practitionerFirstName}.`
+    const text = message.replace('{url}', url)
 
     return (
       <div className="space-y-2.5 rounded-xl bg-violet-soft px-3.5 py-3">
         <p className="text-meta font-semibold text-violet">
-          Link listo. Vence en 14 días y se muestra sólo esta vez.
+          Link listo. Vence en {lifetime} y se muestra sólo esta vez.
         </p>
         <div className="flex flex-wrap gap-2">
           {phone ? (
             <Button asChild size="sm" className="bg-[#25d366] text-white hover:bg-[#25d366]/90">
-              <a href={whatsappLink(phone, message)} target="_blank" rel="noopener noreferrer">
+              <a href={whatsappLink(phone, text)} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="size-4" />
                 Mandar por WhatsApp
               </a>
@@ -67,7 +74,7 @@ export function IntakeLinkButton({
             size="sm"
             variant="outline"
             onClick={() => {
-              void navigator.clipboard.writeText(message)
+              void navigator.clipboard.writeText(text)
               setCopied(true)
               setTimeout(() => setCopied(false), 1600)
             }}
@@ -87,9 +94,15 @@ export function IntakeLinkButton({
 
   return (
     <div className="space-y-1.5">
-      <Button type="button" size="sm" variant={again ? 'outline' : 'default'} onClick={create} disabled={pending}>
+      <Button
+        type="button"
+        size="sm"
+        variant={again ? 'outline' : 'default'}
+        onClick={makeLink}
+        disabled={pending}
+      >
         <Send className="size-4" />
-        {pending ? 'Creando…' : again ? 'Mandar un link nuevo' : 'Mandar “Antes de empezar”'}
+        {pending ? 'Creando…' : again ? againLabel : label}
       </Button>
       {error ? <p className="text-meta text-[#c0392b]">{error}</p> : null}
     </div>

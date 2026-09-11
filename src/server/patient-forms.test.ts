@@ -36,6 +36,9 @@ const { applyIntakeResponse, createIntakeLink, formByToken, submitIntake } = awa
   './patient-forms'
 )
 
+// Names no other test file uses. The sign-up trigger picks a free slug by
+// looking, and two files creating the same name at the same moment race for
+// it — `practitioners_slug_key` — which failed whichever suite lost.
 const service = serviceClient()
 const anon = anonClient()
 const email = testEmail('antes-de-empezar')
@@ -58,8 +61,8 @@ async function newLink() {
 
 beforeAll(async () => {
   holder.service = service
-  practitionerId = await createTestPractitioner(email, 'Valeria Sosa', 'psychology')
-  otherId = await createTestPractitioner(otherEmail, 'Otra Profesional', 'psychology')
+  practitionerId = await createTestPractitioner(email, 'Valeria Antes', 'psychology')
+  otherId = await createTestPractitioner(otherEmail, 'Otra Antes', 'psychology')
   asPractitioner = await signedInAs(email)
   asOther = await signedInAs(otherEmail)
 
@@ -89,7 +92,7 @@ describe('Antes de empezar', () => {
 
     expect(data!.token_hash).not.toBe(token)
     expect(data!.token_hash).toMatch(/^[0-9a-f]{64}$/)
-    expect(data!.consent_text).toContain('Valeria Sosa')
+    expect(data!.consent_text).toContain('Valeria Antes')
     expect(data!.consent_text).toContain('Tomás Rivero')
   })
 
@@ -101,7 +104,7 @@ describe('Antes de empezar', () => {
     expect(form).toMatchObject({
       kind: 'intake',
       patientFirstName: 'Tomás',
-      practitionerName: 'Valeria Sosa',
+      practitionerName: 'Valeria Antes',
       state: 'open',
     })
     expect(JSON.stringify(form)).not.toContain('2016')

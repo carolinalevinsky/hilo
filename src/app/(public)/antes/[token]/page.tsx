@@ -3,10 +3,14 @@ import { notFound } from 'next/navigation'
 
 import { Brandmark } from '@/components/brandmark'
 import { IntakeForm } from '@/components/patient-forms/intake-form'
+import { ScaleForm } from '@/components/patient-forms/scale-form'
+import { SCALE_IDS, scaleIsReady, type ScaleId } from '@/lib/scales'
 import { formByToken } from '@/server/patient-forms'
 
 export const metadata: Metadata = {
-  title: 'Antes de empezar · Hilo',
+  // Neutral: the same page serves the questionnaires, and a tab title is read
+  // by whoever glances at the phone.
+  title: 'Formulario · Hilo',
   // A page behind a secret link has no business in a search engine, and a
   // crawler that followed a pasted link would be one more place it ended up.
   robots: { index: false, follow: false },
@@ -25,8 +29,17 @@ export const metadata: Metadata = {
 export default async function IntakePage({ params }: PageProps<'/antes/[token]'>) {
   const { token } = await params
   const form = await formByToken(token)
-  // Scales (the other kind of link) get their own page when they exist.
-  if (!form || form.kind !== 'intake' || !form.consentText) notFound()
+  if (!form) notFound()
+
+  // A questionnaire link whose wording is not in place yet is not shown at all —
+  // see `scaleIsReady`. The practitioner cannot make one either, so reaching
+  // this means an old link.
+  const scale =
+    form.kind === 'scale' && SCALE_IDS.includes(form.scale as ScaleId)
+      ? (form.scale as ScaleId)
+      : null
+  if (form.kind === 'scale' && (!scale || !scaleIsReady(scale))) notFound()
+  if (form.kind === 'intake' && !form.consentText) notFound()
 
   return (
     <div className="min-h-dvh bg-background px-4 py-10">
@@ -39,26 +52,31 @@ export default async function IntakePage({ params }: PageProps<'/antes/[token]'>
         <div className="rounded-lg bg-card px-6 py-6 shadow-card">
           <p className="text-meta font-semibold text-violet">{form.practitionerName}</p>
           <h1 className="mt-1 text-[21px] font-extrabold tracking-[-0.4px]">
-            Antes de empezar con {form.patientFirstName}
+            {scale
+              ? `Hola, ${form.patientFirstName}: un cuestionario breve`
+              : `Antes de empezar con ${form.patientFirstName}`}
           </h1>
 
           <div className="mt-5">
             {form.state === 'submitted' ? (
               <Notice tone="done">
-                Esta ficha ya se envió. {form.practitionerName} tiene los datos y el
-                consentimiento firmado.
+                {scale
+                  ? `Estas respuestas ya se enviaron. Le llegaron a ${form.practitionerName}.`
+                  : `Esta ficha ya se envió. ${form.practitionerName} tiene los datos y el consentimiento firmado.`}
               </Notice>
             ) : form.state === 'expired' ? (
               <Notice tone="expired">
                 Este link venció. Pedile a {form.practitionerName} que te mande uno nuevo.
               </Notice>
+            ) : scale ? (
+              <ScaleForm token={token} scale={scale} practitionerName={form.practitionerName} />
             ) : (
               <IntakeForm
                 token={token}
                 practitionerName={form.practitionerName}
                 patientFirstName={form.patientFirstName}
                 ageGroup={form.ageGroup}
-                consentText={form.consentText}
+                consentText={form.consentText!}
               />
             )}
           </div>

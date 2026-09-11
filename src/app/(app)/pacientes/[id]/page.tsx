@@ -10,6 +10,7 @@ import { PatientActions } from '@/components/patients/patient-actions'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { OnlineConsultation } from '@/components/patients/online-consultation'
 import { IntakeCard } from '@/components/patient-forms/intake-card'
+import { ScalesCard } from '@/components/patient-forms/scales-card'
 import { NextSessionCard } from '@/components/planning/next-session-card'
 import { PatientHeader } from '@/components/patients/patient-header'
 import { SessionTimeline } from '@/components/sessions/session-timeline'
@@ -25,6 +26,8 @@ import { listSchedules, nextAppointmentFor } from '@/server/appointments'
 import { listAssessments } from '@/server/assessments'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
 import { intakeStatus } from '@/server/patient-forms'
+import { scaleHistory } from '@/server/scales'
+import { SCALE_IDS, scaleIsReady } from '@/lib/scales'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { listReports } from '@/server/reports'
 import { listPlanItems } from '@/server/session-plans'
@@ -53,6 +56,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     schedules,
     nextAppointment,
     intake,
+    scales,
   ] = await Promise.all([
     getPhotoUrl(patient.photo_path),
     currentPractitioner(user.id),
@@ -67,6 +71,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     listSchedules(user.id, patient.id),
     nextAppointmentFor(user.id, patient.id),
     intakeStatus(user.id, patient.id),
+    scaleHistory(user.id, patient.id),
   ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
@@ -256,6 +261,21 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               <GoalList patientId={patient.id} goals={goals} />
             </CardContent>
           </Card>
+
+          {/* Right under the goals: the goals say what is being worked on, the
+              scales say how the patient reports feeling while it is. Not for
+              children — PHQ-9 and GAD-7 are answered by the person themselves,
+              and they are validated from adolescence on. */}
+          {patient.age_group === 'children' ? null : (
+            <ScalesCard
+              patientId={patient.id}
+              phone={patient.phone}
+              patientFirstName={firstName(patient.full_name)}
+              practitionerFirstName={firstName(practitioner.full_name)}
+              history={scales}
+              ready={Object.fromEntries(SCALE_IDS.map((id) => [id, scaleIsReady(id)])) as Record<(typeof SCALE_IDS)[number], boolean>}
+            />
+          )}
 
           {/* v1 put what you prepared right here, above the history
               (`legacy/index.html:1674`). A plan is only worth making if it is on
