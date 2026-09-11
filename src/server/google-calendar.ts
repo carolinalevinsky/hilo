@@ -2,7 +2,7 @@ import { calendarEventTitle } from '@/lib/calendar-privacy'
 import { TIME_ZONE, zonedParts } from '@/lib/dates'
 
 import { getDb } from './db'
-import { connectionFor, pullStateFor, saveSyncPoint } from './google'
+import { connectionFor, findGoogleAccount, pullStateFor, saveSyncPoint } from './google'
 
 /**
  * Escribir en el calendario de Google lo que pasa en Hilo.
@@ -462,8 +462,21 @@ async function applyEvent(
  *
  * Se leen, se dibujan, se olvidan.
  *
- * Vale la misma regla que el resto del archivo: si Google falla, esto devuelve
- * una lista vacía y la Agenda se ve como se veía antes de conectar. Nunca tira.
+ * Vale la misma regla que el resto del archivo: si Google falla, esto no tira y
+ * la Agenda se sigue viendo. Lo que no hace es callarlo.
+ *
+ * ─── "No sé" no es "libre" ─────────────────────────────────────────────────
+ *
+ * Antes devolvía una lista vacía en cuatro casos y sólo uno quería decir "no
+ * hay nada ocupado": que no hubiera cuenta conectada. Los otros tres —la red se
+ * cayó, Google contestó con error (un token vencido, casi siempre), la respuesta
+ * no se pudo leer— eran "no pude averiguarlo", y la pantalla los recibía igual.
+ * Google figuraba conectado, la semana se veía limpia, y el jueves a las 15:00
+ * donde estaba el dentista aparecía disponible. Ahí se agenda un paciente.
+ *
+ * Por eso `unavailable`: verdadero sólo cuando hay conexión y aun así no se pudo
+ * traer. La Agenda lo dice en una línea. No se reintenta en silencio: si es un
+ * token vencido, no se arregla solo.
  */
 export type BusyBlock = {
   id: string
@@ -475,13 +488,28 @@ export type BusyBlock = {
   endTime: string | null
 }
 
+export type BusyWeek = {
+  blocks: BusyBlock[]
+  /** Hay Google conectado y no se pudo leer. Ver "No sé no es libre" arriba. */
+  unavailable: boolean
+}
+
+const UNAVAILABLE: BusyWeek = { blocks: [], unavailable: true }
+
 export async function listBusyBlocks(
   practitionerId: string,
   from: string,
   to: string,
-): Promise<BusyBlock[]> {
+): Promise<BusyWeek> {
   const connection = await connectionFor(practitionerId)
-  if (!connection) return []
+  if (!connection) {
+    // `connectionFor` da null en dos casos que no se parecen: no hay cuenta
+    // conectada, o la hay y el permiso no se pudo renovar. El segundo es el
+    // "token vencido" de casi siempre, y contestarlo como "no hay nada" era el
+    // mismo "libre" de antes por otro camino. La consulta extra sólo corre acá.
+    const account = await findGoogleAccount(practitionerId)
+    return account ? UNAVAILABLE : { blocks: [], unavailable: false }
+  }
 
   // La ventana se pide con un día de más de cada lado, en UTC, y después se
   // filtra por fecha local. Es a propósito: armar el instante exacto en que
@@ -510,13 +538,13 @@ export async function listBusyBlocks(
     { method: 'GET' },
   )
 
-  if (!response || !response.ok) return []
+  if (!response || !response.ok) return UNAVAILABLE
 
   try {
     const payload = (await response.json()) as { items?: GoogleEvent[] }
-    return toBusyBlocks(payload.items ?? [], from, to)
+    return { blocks: toBusyBlocks(payload.items ?? [], from, to), unavailable: false }
   } catch {
-    return []
+    return UNAVAILABLE
   }
 }
 

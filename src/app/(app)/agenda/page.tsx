@@ -130,9 +130,13 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   //
   // Va después del `Promise.all` y no adentro porque sólo hace falta la semana
   // que está en pantalla, y `first`/`last` ya la delimitan. Si la cuenta no está
-  // conectada o Google falla, devuelve una lista vacía y la Agenda se ve igual
-  // que antes.
-  const busyBlocks = await listBusyBlocks(user.id, first, last)
+  // conectada no hay nada que traer. Si está conectada y Google falla, la Agenda
+  // se sigue viendo pero lo dice: ver `googleUnavailable` más abajo.
+  const { blocks: busyBlocks, unavailable: googleUnavailable } = await listBusyBlocks(
+    user.id,
+    first,
+    last,
+  )
 
   // The week read as work rather than as a calendar. It needs the goals and the
   // matched material, which the grid does not — but it needs the same
@@ -341,6 +345,30 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5 lg:hidden">
               {weekNavMobile}
             </div>
+
+            {/* Google está conectado y no se pudo leer. Sin esta línea la semana
+                se veía limpia y un turno con el dentista aparecía libre — ahí
+                se agenda un paciente. Va adentro del bloque de la semana y
+                arriba de la grilla, porque es la grilla la que puede estar
+                mintiendo. "Volver a conectar" porque la causa de casi siempre
+                es un permiso vencido, y eso no se arregla esperando. */}
+            {googleUnavailable ? (
+              <div
+                role="status"
+                className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-soft px-4 py-3 text-body text-[#8a5a12]"
+              >
+                <p className="min-w-[200px] flex-1">
+                  <b>No pudimos leer tu Google Calendar.</b> Lo que tenés ahí puede no
+                  estar en esta semana: miralo antes de agendar.
+                </p>
+                <a
+                  href="/api/google/conectar"
+                  className="shrink-0 font-bold underline underline-offset-2"
+                >
+                  Volver a conectar
+                </a>
+              </div>
+            ) : null}
 
             {/* `calendarPrivacy` viaja hasta el menú de cada sesión, que es donde
                 se arma el link a Google. Nace acá porque es lo único que conoce a
