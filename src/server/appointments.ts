@@ -480,6 +480,24 @@ export function occurrencesBetween(
 
 // ─── Appointments ───────────────────────────────────────────────────────────
 
+/**
+ * Whether this practitioner has anything on the agenda yet, ever.
+ *
+ * For "Primeros pasos" on Inicio (P21), the same way `hasAnyGoal` is: `head:
+ * true` reads an index and returns no rows.
+ */
+export async function hasAnyAppointment(practitionerId: string): Promise<boolean> {
+  const db = await getDb()
+  const { count, error } = await db
+    .from('appointments')
+    .select('id', { count: 'exact', head: true })
+    .eq('practitioner_id', practitionerId)
+    .limit(1)
+
+  if (error) throw error
+  return (count ?? 0) > 0
+}
+
 export async function createAppointment(practitionerId: string, input: unknown) {
   const data = AppointmentInput.parse(input)
   const db = await getDb()
