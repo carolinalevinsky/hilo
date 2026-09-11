@@ -141,7 +141,11 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                         {/* Dicho, y no sólo insinuado por la fila más apagada:
                             si el mes cierra con una cifra que no cuadra, esto
                             es lo que la explica. */}
-                        {row.archived ? (
+                        {row.deleted ? (
+                          <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
+                            Borrado
+                          </span>
+                        ) : row.archived ? (
                           <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
                             Archivado
                           </span>
@@ -153,7 +157,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                           la que se lee de un vistazo bajando la lista— y esta
                           línea pasa a ser lo único que falta hacer. */}
                       <p className="text-meta text-muted-foreground">
-                        {row.archived ? (
+                        {row.archived || row.deleted ? (
                           `${money(row.paid)} cobrado`
                         ) : row.expected === null ? (
                           <BillingDialog
@@ -184,6 +188,9 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
 
                     <Status row={row} />
 
+                    {/* Nothing to do on a deleted patient's row: the payments are
+                        history, and there is nobody to charge or bill anymore. */}
+                    {row.deleted ? null : (
                     <div className="flex flex-wrap gap-1.5">
                       {mpConnected && row.outstanding !== null && row.outstanding > 0 ? (
                         <PaymentLinkButton
@@ -232,6 +239,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                         expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
                       />
                     </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -290,7 +298,15 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
  * to fill in and a settled account are different things, and conflating them is
  * how a month quietly looks collected when it is not.
  */
-function Status({ row }: { row: { expected: number | null; outstanding: number | null } }) {
+function Status({
+  row,
+}: {
+  row: { expected: number | null; outstanding: number | null; deleted?: boolean }
+}) {
+  // A deleted patient's row already says "Borrado" and what they paid; "Sin
+  // honorario" beside it would ask for a fee nobody is going to charge.
+  if (row.deleted) return null
+
   if (row.expected === null) {
     return (
       <span className="rounded-full bg-muted px-2.5 py-1 text-micro font-bold text-muted-foreground">
