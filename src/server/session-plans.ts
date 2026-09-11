@@ -481,9 +481,42 @@ export async function removePlanItem(practitionerId: string, itemId: string) {
 }
 
 /**
- * Empties one session's plan — the one registering it just used, or the one
- * "Vaciar" was pressed on. Never the patient's whole list: the plan for next
- * week's session is not what you just finished.
+ * Retires the rows a session record was drafted from, by id.
+ *
+ * By id and not by `clearPlan`'s scope, on purpose. Saving the record marks the
+ * session "Vino" first (`createSession`), and from that instant it is no longer
+ * the patient's next session — so the rows prepared with no session stop
+ * belonging to it and a scoped delete skips them. They then show up as next
+ * week's plan, having just been used for today's note. The harness found it; the
+ * test "retira exactamente lo que se leyó" holds it. The ids are the rows the
+ * form was built from, which is exactly what registering should retire.
+ *
+ * Scoped by practitioner and patient, so an id from a tampered form can only
+ * name rows that are already this practitioner's, for this patient.
+ */
+export async function removePlanItems(
+  practitionerId: string,
+  patientId: string,
+  itemIds: string[],
+) {
+  const ids = itemIds.filter((id) => AppointmentId.safeParse(id).success)
+  if (ids.length === 0) return
+
+  const db = await getDb()
+  const { error } = await db
+    .from('session_plan_items')
+    .delete()
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .in('id', ids)
+
+  if (error) throw error
+}
+
+/**
+ * Empties one session's plan — the one "Vaciar" was pressed on. Never the
+ * patient's whole list: the plan for next week's session is not this one.
+ * Registering a session does not use this; see `removePlanItems`.
  */
 export async function clearPlan(
   practitionerId: string,

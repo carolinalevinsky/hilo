@@ -236,6 +236,34 @@ export async function nextAppointmentFor(
 export type NextAppointment = { id: string; scheduled_on: string; start_time: string }
 
 /**
+ * Una cita por su id, o `null`.
+ *
+ * Para Planificación, que la recibe de la URL (`?sesion=`) desde "Preparar" en
+ * la Agenda. La Agenda pagina semanas hacia adelante sin límite, así que puede
+ * ser una sesión que el selector de Planificación no alcanza a listar.
+ *
+ * Lo que no es un uuid se descarta antes de preguntarle a Postgres, igual que en
+ * `getAppointmentFor`.
+ */
+export async function getAppointment(
+  practitionerId: string,
+  appointmentId: string,
+): Promise<(NextAppointment & { patient_id: string }) | null> {
+  if (!z.uuid().safeParse(appointmentId).success) return null
+
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('id, patient_id, scheduled_on, start_time')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+/**
  * La próxima sesión de cada uno de estos pacientes, en una sola consulta.
  *
  * Misma regla que `nextAppointmentFor` —sólo `scheduled`, de hoy en adelante—

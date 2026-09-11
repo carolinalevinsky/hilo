@@ -31,10 +31,10 @@ vi.mock('./google-calendar', () => ({
   removeAppointment: async () => {},
 }))
 
-const { addActivityToPlan, clearPlan, listPlanItems, upcomingPlans } = await import(
-  './session-plans'
-)
+const { addActivityToPlan, clearPlan, listPlanItems, removePlanItems, upcomingPlans } =
+  await import('./session-plans')
 const { planForRange } = await import('./planning')
+const { createSession } = await import('./sessions')
 
 const service = serviceClient()
 const email = testEmail('plan-sesion')
@@ -192,6 +192,58 @@ describe('lo preparado es para una sesión', () => {
       })
       expect(error?.code).toBe('23503')
     }
+  })
+})
+
+describe('registrar la sesión retira su plan', () => {
+  it('retira exactamente lo que se leyó, aunque al marcarla "vino" deje de ser la próxima', async () => {
+    // Lo que encontró el recorrido de punta a punta: guardar el registro marca
+    // la sesión "Vino" antes de retirar el plan, y desde ese instante lo
+    // preparado sin sesión pasa a ser de la sesión siguiente. Un borrado por
+    // alcance lo salteaba y lo dejaba colgado de la semana que viene.
+    const nina = await newPatient(me, 'Nina Prueba')
+    const hoy = await newAppointment(me, nina, SOON)
+    const despues = await newAppointment(me, nina, LATER)
+    await looseItem(nina, 'Preparado sin sesión')
+    await addActivityToPlan(me, nina, 'Preparado para hoy', hoy)
+    await addActivityToPlan(me, nina, 'Para la semana que viene', despues)
+
+    // Lo que hace la página de registrar: leer el plan de esa sesión.
+    const read = await listPlanItems(me, nina, hoy)
+    expect(titles(read)).toEqual(['Preparado sin sesión', 'Preparado para hoy'])
+
+    // Lo que hace guardar: el registro, que marca "Vino"...
+    await createSession(me, nina, {
+      heldOn: SOON,
+      progressNote: 'Se trabajó lo preparado.',
+      appointmentId: hoy,
+    })
+    // ...y después retirar lo que se leyó.
+    await removePlanItems(
+      me,
+      nina,
+      read.map((item) => item.id),
+    )
+
+    expect(titles(await listPlanItems(me, nina, despues))).toEqual([
+      'Para la semana que viene',
+    ])
+    const { count } = await service
+      .from('session_plan_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('patient_id', nina)
+    expect(count).toBe(1)
+  })
+
+  it('no retira filas de otro paciente aunque el formulario traiga su id', async () => {
+    const a = await newPatient(me, 'Paciente A Prueba')
+    const b = await newPatient(me, 'Paciente B Prueba')
+    await addActivityToPlan(me, b, 'De B')
+    const [deB] = await listPlanItems(me, b)
+
+    await removePlanItems(me, a, [deB!.id, 'no-es-un-uuid'])
+
+    expect(titles(await listPlanItems(me, b))).toEqual(['De B'])
   })
 })
 

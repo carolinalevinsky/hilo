@@ -47,12 +47,20 @@ export default async function NewSessionPage({
   // already returns newest first, so the limit is the whole query.
   const [previous] = await listSessions(user.id, patient.id, 1)
 
-  // Arriving from the planner: the prepared session fills the form in. The
-  // sentence and the ticked goals are a starting point in an editable field —
-  // what gets saved is whatever the practitioner leaves there, which is why the
-  // plan is read here and not written into a session anywhere.
-  const fromPlan = plan === '1'
-  const items = fromPlan ? await listPlanItems(user.id, patient.id) : []
+  // What was prepared fills the form in. The sentence and the ticked goals are a
+  // starting point in an editable field — what gets saved is whatever the
+  // practitioner leaves there, which is why the plan is read here and not
+  // written into a session anywhere.
+  //
+  // Which plan (P14): the one for the session being registered, wherever you
+  // came from — the Agenda, the planner, the ficha all carry it now. `?plan=1`
+  // without a session is a patient with nothing scheduled, and means the plan
+  // prepared for them. Saving retires exactly the rows read here, by id.
+  const items = appointment
+    ? await listPlanItems(user.id, patient.id, appointment.id)
+    : plan === '1'
+      ? await listPlanItems(user.id, patient.id)
+      : []
 
   const age = ageLabel(patient.date_of_birth)
 
@@ -80,7 +88,7 @@ export default async function NewSessionPage({
             <SessionForm
               patientId={patient.id}
               goals={goals}
-              fromPlan={fromPlan}
+              planItemIds={items.map((item) => item.id)}
               appointment={
                 appointment
                   ? {

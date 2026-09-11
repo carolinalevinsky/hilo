@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { formError, formErrorFor, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { setGoalProgress } from '@/server/goals'
-import { clearPlan } from '@/server/session-plans'
+import { removePlanItems } from '@/server/session-plans'
 import {
   createSession,
   deleteSession,
@@ -60,12 +60,17 @@ export async function saveSessionAction(
 
   // Registering the session you had prepared retires the plan, as it did in v1
   // (`registrarSesionPreparada`): the prepared session became history and
-  // `p.plan` was emptied. Only when the form was opened from the planner —
-  // writing up an unrelated session must not quietly wipe what you planned for
-  // next week.
-  if (formData.get('clearPlan') === '1') {
-    await clearPlan(user.id, patientId)
+  // `p.plan` was emptied. Exactly the rows the draft was built from, by id —
+  // writing up today must not quietly wipe what you prepared for next week, and
+  // it must not leave today's behind either. Not by session: `createSession` has
+  // just marked this one "Vino", so it is no longer the patient's next and a
+  // scoped delete would skip the rows prepared with no session. See
+  // `removePlanItems`.
+  const planItemIds = formData.getAll('planItemId').map(String)
+  if (planItemIds.length > 0) {
+    await removePlanItems(user.id, patientId, planItemIds)
     revalidatePath('/planificacion')
+    revalidatePath('/agenda')
   }
 
   revalidatePath(`/pacientes/${patientId}`)

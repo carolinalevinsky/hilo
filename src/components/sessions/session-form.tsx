@@ -45,7 +45,7 @@ export function SessionForm({
   goals,
   session,
   selectedGoalIds = [],
-  fromPlan = false,
+  planItemIds = [],
   appointment,
   noteDraft = '',
 }: {
@@ -57,8 +57,11 @@ export function SessionForm({
     progress_note: string | null
   }
   selectedGoalIds?: string[]
-  /** Opened from the planner, so saving retires the prepared session. */
-  fromPlan?: boolean
+  /**
+   * The prepared rows the draft was built from. Saving retires exactly these —
+   * see `removePlanItems` for why by id and not by session.
+   */
+  planItemIds?: string[]
   /**
    * Opened from a slot in the agenda: the record is tied to it, and saving marks
    * it as attended. `startTime` arrives already formatted.
@@ -73,7 +76,9 @@ export function SessionForm({
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="patientId" value={patientId} />
       {session ? <input type="hidden" name="sessionId" value={session.id} /> : null}
-      {fromPlan ? <input type="hidden" name="clearPlan" value="1" /> : null}
+      {planItemIds.map((id) => (
+        <input key={id} type="hidden" name="planItemId" value={id} />
+      ))}
       {appointment ? (
         <input type="hidden" name="appointmentId" value={appointment.id} />
       ) : null}
