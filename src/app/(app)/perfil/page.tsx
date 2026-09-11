@@ -6,6 +6,7 @@ import { listAuditLog } from '@/server/audit'
 import { findGoogleAccount } from '@/server/google'
 import { PageHeader } from '@/components/page-header'
 import { CalendarPrivacyForm } from '@/components/profile/calendar-privacy-form'
+import { ConsentTemplateForm } from '@/components/profile/consent-template-form'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,6 +61,26 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             discipline={practitioner.discipline}
             phone={practitioner.phone}
           />
+        </CardContent>
+      </Card>
+
+      {/* Lo que firma la familia desde "Antes de empezar". Acá y no en cada
+          link: se escribe una vez. Ver `@/lib/consent-template` para qué es el
+          modelo y qué no. */}
+      <Card className="mb-5">
+        <CardHeader>
+          <CardTitle>Consentimiento informado</CardTitle>
+          <p className="text-meta text-muted-foreground">
+            Lo que firma la familia desde el link «Antes de empezar». Donde escribas
+            {' {profesional}, {disciplina} o {paciente} '}se completa solo.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+            Es un modelo escrito a partir de las leyes 19.529, 18.335 y 18.331, y no lo
+            revisó un abogado. Leelo y ajustalo a tu práctica antes de mandarlo.
+          </p>
+          <ConsentTemplateForm current={practitioner.consent_template} />
         </CardContent>
       </Card>
 

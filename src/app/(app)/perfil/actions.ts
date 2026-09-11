@@ -2,10 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { DEFAULT_CONSENT_TEMPLATE } from '@/lib/consent-template'
 import { formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { disconnect } from '@/server/google'
 import { updateCalendarPrivacy, updatePractitioner } from '@/server/practitioners'
+import { updateConsentTemplate } from '@/server/patient-forms'
 
 export async function updateProfileAction(
   _previous: FormState,
@@ -67,4 +69,34 @@ export async function disconnectGoogleAction(): Promise<void> {
   const user = await requireUser()
   await disconnect(user.id)
   revalidatePath('/perfil')
+}
+
+/**
+ * Guarda el texto del consentimiento, o vuelve al modelo de Hilo.
+ *
+ * Guardar un texto idéntico al modelo es lo mismo que no haberlo tocado: se
+ * guarda null, y así quien nunca lo cambió sigue recibiendo las correcciones
+ * que se le hagan al modelo.
+ */
+export async function updateConsentTemplateAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const reset = formData.get('reset') === '1'
+  const written = String(formData.get('template') ?? '')
+  const template = reset || written.trim() === DEFAULT_CONSENT_TEMPLATE.trim() ? null : written
+
+  try {
+    await updateConsentTemplate(user.id, { template })
+  } catch (error) {
+    return formErrorFor(error, 'No pudimos guardar el texto. Probá de nuevo.')
+  }
+
+  revalidatePath('/perfil')
+  return formOk(
+    reset
+      ? 'Listo, volviste al modelo de Hilo.'
+      : 'Listo. Los links que mandes desde ahora llevan este texto.',
+  )
 }

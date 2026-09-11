@@ -298,6 +298,64 @@ export type Database = {
           },
         ]
       }
+      consents: {
+        Row: {
+          consent_text: string
+          form_id: string | null
+          id: string
+          patient_id: string
+          practitioner_id: string
+          signed_at: string
+          signer_name: string
+          signer_relationship: string
+          user_agent: string | null
+        }
+        Insert: {
+          consent_text: string
+          form_id?: string | null
+          id?: string
+          patient_id: string
+          practitioner_id: string
+          signed_at?: string
+          signer_name: string
+          signer_relationship: string
+          user_agent?: string | null
+        }
+        Update: {
+          consent_text?: string
+          form_id?: string | null
+          id?: string
+          patient_id?: string
+          practitioner_id?: string
+          signed_at?: string
+          signer_name?: string
+          signer_relationship?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consents_form_same_practitioner"
+            columns: ["practitioner_id", "form_id"]
+            isOneToOne: false
+            referencedRelation: "patient_forms"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "consents_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "consents_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_versions: {
         Row: {
           assessment_id: string | null
@@ -538,6 +596,91 @@ export type Database = {
           },
         ]
       }
+      intake_responses: {
+        Row: {
+          applied_at: string | null
+          date_of_birth: string | null
+          form_id: string
+          guardian_email: string | null
+          guardian_name: string | null
+          guardian_relationship: string | null
+          health_insurer: string | null
+          history: string | null
+          id: string
+          medication: string | null
+          other_professionals: string | null
+          patient_id: string
+          phone: string | null
+          practitioner_id: string
+          reason: string | null
+          school: string | null
+          school_level: string | null
+          submitted_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          date_of_birth?: string | null
+          form_id: string
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
+          health_insurer?: string | null
+          history?: string | null
+          id?: string
+          medication?: string | null
+          other_professionals?: string | null
+          patient_id: string
+          phone?: string | null
+          practitioner_id: string
+          reason?: string | null
+          school?: string | null
+          school_level?: string | null
+          submitted_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          date_of_birth?: string | null
+          form_id?: string
+          guardian_email?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
+          health_insurer?: string | null
+          history?: string | null
+          id?: string
+          medication?: string | null
+          other_professionals?: string | null
+          patient_id?: string
+          phone?: string | null
+          practitioner_id?: string
+          reason?: string | null
+          school?: string | null
+          school_level?: string | null
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_responses_form_same_practitioner"
+            columns: ["practitioner_id", "form_id"]
+            isOneToOne: false
+            referencedRelation: "patient_forms"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "intake_responses_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "intake_responses_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           age_range: string | null
@@ -646,6 +789,60 @@ export type Database = {
             foreignKeyName: "mp_accounts_practitioner_id_fkey"
             columns: ["practitioner_id"]
             isOneToOne: true
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_forms: {
+        Row: {
+          consent_text: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          patient_id: string
+          practitioner_id: string
+          scale: string | null
+          submitted_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          consent_text?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          kind: string
+          patient_id: string
+          practitioner_id: string
+          scale?: string | null
+          submitted_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          consent_text?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          patient_id?: string
+          practitioner_id?: string
+          scale?: string | null
+          submitted_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_forms_patient_same_practitioner"
+            columns: ["practitioner_id", "patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+          {
+            foreignKeyName: "patient_forms_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
             referencedRelation: "practitioners"
             referencedColumns: ["id"]
           },
@@ -812,6 +1009,7 @@ export type Database = {
       practitioners: {
         Row: {
           calendar_privacy: string
+          consent_template: string | null
           created_at: string
           digest_sent_at: string | null
           discipline: string
@@ -826,6 +1024,7 @@ export type Database = {
         }
         Insert: {
           calendar_privacy?: string
+          consent_template?: string | null
           created_at?: string
           digest_sent_at?: string | null
           discipline: string
@@ -840,6 +1039,7 @@ export type Database = {
         }
         Update: {
           calendar_privacy?: string
+          consent_template?: string | null
           created_at?: string
           digest_sent_at?: string | null
           discipline?: string
@@ -1149,6 +1349,18 @@ export type Database = {
       }
       slugify: { Args: { input: string }; Returns: string }
       unaccent_fallback: { Args: { input: string }; Returns: string }
+      patient_form_by_token: {
+        Args: { raw_token: string }
+        Returns: {
+          age_group: string
+          consent_text: string
+          kind: string
+          patient_first_name: string
+          practitioner_name: string
+          scale: string
+          state: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1158,6 +1370,27 @@ export type Database = {
     }
   }
 }
+      submit_intake: {
+        Args: {
+          p_date_of_birth?: string
+          p_guardian_email?: string
+          p_guardian_name?: string
+          p_guardian_relationship?: string
+          p_health_insurer?: string
+          p_history?: string
+          p_medication?: string
+          p_other_professionals?: string
+          p_phone?: string
+          p_reason?: string
+          p_school?: string
+          p_school_level?: string
+          p_signer_name: string
+          p_signer_relationship: string
+          p_user_agent?: string
+          raw_token: string
+        }
+        Returns: string
+      }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 

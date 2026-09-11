@@ -9,6 +9,7 @@ import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientActions } from '@/components/patients/patient-actions'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { OnlineConsultation } from '@/components/patients/online-consultation'
+import { IntakeCard } from '@/components/patient-forms/intake-card'
 import { NextSessionCard } from '@/components/planning/next-session-card'
 import { PatientHeader } from '@/components/patients/patient-header'
 import { SessionTimeline } from '@/components/sessions/session-timeline'
@@ -23,6 +24,7 @@ import { videoRoomUrl } from '@/lib/video'
 import { listSchedules, nextAppointmentFor } from '@/server/appointments'
 import { listAssessments } from '@/server/assessments'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
+import { intakeStatus } from '@/server/patient-forms'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { listReports } from '@/server/reports'
 import { listPlanItems } from '@/server/session-plans'
@@ -50,6 +52,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     reports,
     schedules,
     nextAppointment,
+    intake,
   ] = await Promise.all([
     getPhotoUrl(patient.photo_path),
     currentPractitioner(user.id),
@@ -63,6 +66,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     // nada que decidir y la pregunta sería ruido.
     listSchedules(user.id, patient.id),
     nextAppointmentFor(user.id, patient.id),
+    intakeStatus(user.id, patient.id),
   ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
@@ -332,6 +336,19 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               )}
             </CardContent>
           </Card>
+
+          {/* Right under the motivo, and on a phone right under it too: the
+              consent and the family's answers are what you look for before a
+              first session, and the answers waiting for review are the one
+              thing on this column that asks you to do something. */}
+          <IntakeCard
+            className="max-lg:order-1"
+            patientId={patient.id}
+            phone={patient.phone}
+            patientFirstName={firstName(patient.full_name)}
+            practitionerFirstName={firstName(practitioner.full_name)}
+            status={intake}
+          />
 
           <Card className="max-lg:order-2">
             <CardHeader>

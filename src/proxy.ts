@@ -40,6 +40,7 @@ const PUBLIC_PREFIXES = [
   '/recuperar', // asking for a "cambiá tu contraseña" email
   '/confirmar', // where every emailed link comes back to
   '/reservar', // the public booking link a family opens
+  '/antes', // "Antes de empezar": details and consent, from a link with a token
   '/terminos',
   '/privacidad',
 ]

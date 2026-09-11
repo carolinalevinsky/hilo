@@ -43,6 +43,7 @@ const THING: Record<string, string> = {
   booking_request: 'una reserva',
   material: 'un material',
   google_account: 'Google Calendar',
+  patient_form: 'un link «Antes de empezar»',
 }
 
 /**
