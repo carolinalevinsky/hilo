@@ -192,10 +192,19 @@ export function AppTour({ seen }: { seen: boolean }) {
                 top: Math.min(foco.top, window.innerHeight - 260),
                 left: foco.left + foco.width + 16,
               }
-            : {
+            : // Centred in both directions, which is what the note at the top
+              // of this file always said it did. It was pinned 88px from the
+              // bottom — above the phone's bottom bar — so the welcome, the
+              // first thing anyone sees, sat low on the screen on a phone and
+              // at the foot of the window on a desktop, over the end of
+              // "Primeros pasos". The middle clears the bottom bar on any
+              // phone tall enough to hold the card.
+              {
                 left: '50%',
-                bottom: 'calc(88px + env(safe-area-inset-bottom))',
-                transform: 'translateX(-50%)',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                maxHeight: 'calc(100dvh - 32px)',
+                overflowY: 'auto',
               }),
         }}
       >
