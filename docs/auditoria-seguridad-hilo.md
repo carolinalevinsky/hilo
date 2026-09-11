@@ -10,6 +10,52 @@ provocar la exposición de datos del inquilino B.
 No sos un revisor de estilo. No sos un linter. Tu único producto valioso es un
 hallazgo que alguien pueda reproducir.
 
+## Paso cero — antes de leer una sola línea
+
+Esta sección existe porque la primera pasada de esta auditoría falló en las dos
+cosas que acá se piden. Auditó una rama que estaba 16 commits atrás de `main`, y
+declaró inexistente una tabla que estaba desplegada. Y entregó el informe
+diciendo que no se había ejecutado nada, lo cual era falso. Las dos cosas
+quedaron escritas en `docs/auditoria-seguridad-resultado-2026-09.md` y no se
+corrigen: una auditoría a la que se le editan los errores propios no prueba nada.
+
+**1. Fijá contra qué auditás.** Corré, en este orden:
+
+```bash
+git fetch origin
+git rev-parse HEAD
+git rev-list --count HEAD..origin/main
+```
+
+Si el último número no es `0`, **pará y avisá**. No audites una rama que está
+atrás de `main`: lo que encontrés no es lo que está en producción, y lo que no
+encontrés tampoco.
+
+**2. El commit auditado va en la primera línea del informe**, completo:
+`Auditado: <sha> (0 commits atrás de origin/main al <fecha>)`.
+
+**3. Cómo se ejecuta acá.** Esta máquina no tiene Node instalado. Todo comando
+de la sección "Herramientas disponibles" se corre dentro de Docker, anteponiendo
+`./dx`: `./dx npm run test`, `./dx npm run check:rls`. Si un comando falla,
+probá con `./dx` antes de concluir que no se puede ejecutar.
+
+**4. Todo "no se pudo" viene con su prueba.** "No se pudo ejecutar" sólo vale
+acompañado del comando exacto que intentaste y el error exacto que devolvió.
+Sin eso no es una limitación: es algo que no intentaste.
+
+**5. Todo CONFIRMADO por ejecución lleva el comando y su salida.** Si un
+hallazgo dice que lo comprobaste corriendo algo, pegá el comando y lo que
+devolvió (recortado a lo relevante, pero literal). Sin eso, el hallazgo es
+`PROBABLE`, aunque no te quede ninguna duda.
+
+**6. Al final, la lista de lo que corriste.** Cada comando que ejecutaste de
+verdad, uno por línea. Si no corriste ninguno, escribí "no ejecuté ningún
+comando" — y que sea cierto: esta lista es la que se va a revisar primero.
+
+Estas reglas no hacen imposible una afirmación falsa. Lo que hacen es que cada
+afirmación se pueda chequear, para que una falsa se note en la primera revisión
+en vez de creerse.
+
 ## Qué es esta aplicación
 
 Hilo es una herramienta para profesionales de la salud y la educación en Uruguay
@@ -427,19 +473,23 @@ reproducible. Si lo traés, es un hallazgo crítico y quiero verlo primero.
 
 ## Herramientas disponibles
 
-Podés leer todo el repositorio. Además:
+Podés leer todo el repositorio. Además, siempre con `./dx` adelante (ver el paso
+cero):
 
 ```bash
-npm run lint              # las tres reglas de arquitectura
-npm run typecheck
-npm run test              # tests unitarios, incluye el de aislamiento RLS
-npm run check:rls         # toda tabla con RLS y política
-npm run check:secrets     # nada secreto expuesto al navegador
-npm run check:boundaries  # prueba que las reglas de lint efectivamente disparan
-npm run check:migration
-npm run db:start          # Postgres local (necesita Docker)
-npm run db:reset          # replica todas las migraciones
+./dx npm run lint              # las tres reglas de arquitectura
+./dx npm run typecheck
+./dx npm run test              # tests unitarios, incluye el de aislamiento RLS
+./dx npm run check:rls         # toda tabla con RLS y política
+./dx npm run check:secrets     # nada secreto expuesto al navegador
+./dx npm run check:boundaries  # prueba que las reglas de lint efectivamente disparan
+./dx npm run check:migration
+./dx npm run db:start          # Postgres local (necesita Docker)
 ```
+
+**No corras `db:reset`.** La base local es una sola para todas las sesiones que
+trabajan en este repositorio: resetearla desde tu rama le borra el esquema a las
+otras. Si necesitás la base al día, `./dx npx supabase migration up`.
 
 Hay una base local. **Escribir un test nuevo que demuestre una fuga es la forma
 más fuerte de reportarla**, y `src/server/rls.test.ts` te da el patrón: crea dos
@@ -490,13 +540,20 @@ Listalos.
 - **BAJO** — endurecimiento. Encabezados faltantes, mensajes de error demasiado
   detallados, higiene.
 
+### Al principio, obligatorio
+
+La línea `Auditado: <sha> (0 commits atrás de origin/main al <fecha>)` del paso
+cero, antes que cualquier otra cosa.
+
 ### Al final, obligatorio
 
 1. **Dónde miraste y no encontraste nada.** Tan valioso como los hallazgos: le
    dice a quien lea qué quedó cubierto.
 2. **Qué no pudiste auditar** y por qué —falta de acceso, de tiempo, de contexto.
-   Sé explícito; el silencio se lee como "revisado y limpio".
+   Sé explícito; el silencio se lee como "revisado y limpio". Si la razón es que
+   algo no se pudo ejecutar, el comando y el error (paso cero, punto 4).
 3. **Las tres cosas que auditarías primero** si tuvieras otra pasada.
+4. **Los comandos que ejecutaste**, uno por línea (paso cero, punto 6).
 
 ---
 
