@@ -905,6 +905,45 @@ export type Database = {
           },
         ]
       }
+      schedule_skips: {
+        Row: {
+          created_at: string
+          id: string
+          practitioner_id: string
+          schedule_id: string
+          skipped_on: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          practitioner_id: string
+          schedule_id: string
+          skipped_on: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          practitioner_id?: string
+          schedule_id?: string
+          skipped_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_skips_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_skips_schedule_same_practitioner"
+            columns: ["practitioner_id", "schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["practitioner_id", "id"]
+          },
+        ]
+      }
       schedules: {
         Row: {
           created_at: string

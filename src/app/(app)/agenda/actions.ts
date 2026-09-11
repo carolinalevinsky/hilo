@@ -8,7 +8,7 @@ import {
   createAppointment,
   createSchedule,
   deactivateSchedule,
-  deleteAppointment,
+  removeFromAgenda,
   setAppointmentStatus,
 } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
@@ -91,12 +91,19 @@ export async function setAppointmentFocusAction(formData: FormData) {
   revalidatePath('/planificacion')
 }
 
+/**
+ * "Quitar de la agenda". `scope` sólo llega desde una sesión de horario fijo,
+ * que pregunta "sólo esta vez" o "todas las de este horario" (P5); cualquier
+ * otro valor es "sólo esta vez", que para una sesión suelta es borrarla.
+ */
 export async function deleteAppointmentAction(formData: FormData) {
   const user = await requireUser()
+  const scope = formData.get('scope') === 'series' ? 'series' : 'once'
 
-  await deleteAppointment(user.id, String(formData.get('appointmentId')))
+  await removeFromAgenda(user.id, String(formData.get('appointmentId')), scope)
   revalidatePath('/agenda')
   revalidatePath('/inicio')
+  revalidatePath('/planificacion')
 }
 
 export async function deactivateScheduleAction(formData: FormData) {

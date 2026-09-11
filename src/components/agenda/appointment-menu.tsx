@@ -1,5 +1,6 @@
 import { CalendarPlus, Check, MoreHorizontal, Trash2, X } from '@/components/icons'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import {
   deleteAppointmentAction,
@@ -10,6 +11,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -32,6 +36,33 @@ export function recordLink(appointment: AppointmentWithPatient) {
   return recorded
     ? { href: `${base}/${recorded.id}`, label: 'Ver registro' }
     : { href: `${base}/nueva?agenda=${appointment.id}`, label: 'Registrar sesión' }
+}
+
+/**
+ * One way of removing an appointment, as its own form — for the same reason every
+ * other item in this menu is one (see below). `scope` is what the server acts on:
+ * "sólo esta vez" or "todas las de este horario".
+ */
+function RemoveItem({
+  appointmentId,
+  scope,
+  children,
+}: {
+  appointmentId: string
+  scope: 'once' | 'series'
+  children: ReactNode
+}) {
+  return (
+    <form action={deleteAppointmentAction}>
+      <input type="hidden" name="appointmentId" value={appointmentId} />
+      <input type="hidden" name="scope" value={scope} />
+      <DropdownMenuItem asChild variant="destructive">
+        <button type="submit" className="w-full">
+          {children}
+        </button>
+      </DropdownMenuItem>
+    </form>
+  )
 }
 
 /**
@@ -128,15 +159,31 @@ export function AppointmentMenu({
 
         <DropdownMenuSeparator />
 
-        <form action={deleteAppointmentAction}>
-          <input type="hidden" name="appointmentId" value={appointment.id} />
-          <DropdownMenuItem asChild variant="destructive">
-            <button type="submit" className="w-full">
+        {/* A session from a standing schedule asks, as any calendar does with
+            repeating events (P5). It used to be deleted and come back on the
+            next load, because the rule recreated it. A one-off session has
+            nothing to ask. */}
+        {appointment.schedule_id ? (
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="text-destructive">
               <Trash2 className="size-4" />
               Quitar de la agenda
-            </button>
-          </DropdownMenuItem>
-        </form>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <RemoveItem appointmentId={appointment.id} scope="once">
+                Sólo esta vez
+              </RemoveItem>
+              <RemoveItem appointmentId={appointment.id} scope="series">
+                Todas las de este horario
+              </RemoveItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        ) : (
+          <RemoveItem appointmentId={appointment.id} scope="once">
+            <Trash2 className="size-4" />
+            Quitar de la agenda
+          </RemoveItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

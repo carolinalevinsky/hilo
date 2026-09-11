@@ -344,11 +344,81 @@ export async function materialiseAppointments(
   if (rows.length === 0) return
 
   const db = await getDb()
+
+  // Las fechas que se quitaron "sólo esta vez" (P5). Sin esto, una sesión de
+  // horario fijo borrada volvía en la próxima carga: la deduplicación de abajo es
+  // por la fila, y una fila borrada no deja nada contra qué deduplicar.
+  const { data: skips, error: skipsError } = await db
+    .from('schedule_skips')
+    .select('schedule_id, skipped_on')
+    .eq('practitioner_id', practitionerId)
+    .gte('skipped_on', from)
+    .lte('skipped_on', to)
+
+  if (skipsError) throw skipsError
+
+  const skipped = new Set((skips ?? []).map((skip) => `${skip.schedule_id}:${skip.skipped_on}`))
+  const wanted = rows.filter((row) => !skipped.has(`${row.schedule_id}:${row.scheduled_on}`))
+  if (wanted.length === 0) return
+
   const { error } = await db
     .from('appointments')
-    .upsert(rows, { onConflict: 'schedule_id,scheduled_on', ignoreDuplicates: true })
+    .upsert(wanted, { onConflict: 'schedule_id,scheduled_on', ignoreDuplicates: true })
 
   if (error) throw error
+}
+
+export type RemoveScope = 'once' | 'series'
+
+/**
+ * "Quitar de la agenda" (P5).
+ *
+ * Una sesión suelta se borra y listo. Una que vino de un horario fijo pregunta,
+ * como cualquier calendario con eventos que se repiten:
+ *
+ *   - **Sólo esta vez** (`once`): se anota la fecha en `schedule_skips` y se
+ *     borra la sesión. La regla sigue; esta fecha no vuelve.
+ *   - **Todas las de este horario** (`series`): se da de baja la regla
+ *     (`deactivateSchedule`, que saca las de mañana en adelante) y se borra esta
+ *     también — aunque sea de hoy, que la baja deja a propósito. La fecha se
+ *     anota igual: la regla termina hoy inclusive, y sin la excepción la sesión
+ *     de hoy volvería a aparecer.
+ *
+ * Lo pasado no se toca en ningún caso: esas sesiones ocurrieron, o se faltó a
+ * ellas, y son historia.
+ */
+export async function removeFromAgenda(
+  practitionerId: string,
+  appointmentId: string,
+  scope: RemoveScope = 'once',
+) {
+  const db = await getDb()
+
+  const { data: appointment, error } = await db
+    .from('appointments')
+    .select('id, schedule_id, scheduled_on')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!appointment) return
+
+  if (appointment.schedule_id) {
+    const { error: skipError } = await db.from('schedule_skips').upsert(
+      {
+        practitioner_id: practitionerId,
+        schedule_id: appointment.schedule_id,
+        skipped_on: appointment.scheduled_on,
+      },
+      { onConflict: 'schedule_id,skipped_on', ignoreDuplicates: true },
+    )
+    if (skipError) throw skipError
+
+    if (scope === 'series') await deactivateSchedule(practitionerId, appointment.schedule_id)
+  }
+
+  await deleteAppointment(practitionerId, appointmentId)
 }
 
 /**
