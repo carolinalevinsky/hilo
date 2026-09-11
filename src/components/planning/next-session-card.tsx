@@ -30,8 +30,18 @@ export function NextSessionCard({
   patientFirstName: string
   items: PlanItem[]
   /** Cuándo es, si está agendada. La tarjeta decía "Próxima sesión" y no lo decía. */
-  next?: { scheduled_on: string; start_time: string } | null
+  next?: { id: string; scheduled_on: string; start_time: string } | null
 }) {
+  // Los links llevan la sesión (P14): lo preparado es para una sesión, y abrir
+  // Planificación o el registro sin decir cuál dejaba que eligiera otra cosa.
+  // Sin sesión agendada, el paciente — lo preparado queda para la próxima.
+  const planHref = next
+    ? `/planificacion?sesion=${next.id}`
+    : `/planificacion?paciente=${patientId}`
+  const recordHref = next
+    ? `/pacientes/${patientId}/sesiones/nueva?agenda=${next.id}`
+    : `/pacientes/${patientId}/sesiones/nueva?plan=1`
+
   return (
     <Card>
       <CardHeader>
@@ -63,7 +73,7 @@ export function NextSessionCard({
             <Button asChild size="sm">
               {/* The patient is already chosen: arriving at the planner and
                   having to pick them from a list is the friction v1 avoided. */}
-              <Link href={`/planificacion?paciente=${patientId}`}>
+              <Link href={planHref}>
                 <Plus className="size-4" />
                 Preparar la próxima sesión
               </Link>
@@ -97,13 +107,13 @@ export function NextSessionCard({
 
             <div className="mt-3.5 flex flex-wrap gap-2">
               <Button asChild size="sm">
-                <Link href={`/pacientes/${patientId}/sesiones/nueva?plan=1`}>
+                <Link href={recordHref}>
                   <ClipboardList className="size-4" />
                   Registrar esta sesión
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/planificacion?paciente=${patientId}`}>
+                <Link href={planHref}>
                   <Pencil className="size-4" />
                   Editar
                 </Link>

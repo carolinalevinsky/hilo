@@ -99,16 +99,29 @@ export default async function UpcomingPlansPage() {
                   </ol>
 
                   <div className="mt-3.5 flex flex-wrap gap-2">
+                    {/* Both carry the session the plan is for (P14). Without
+                        it they meant "the patient's next", which for the plan
+                        of the session after that opened the wrong list. */}
                     <Button asChild size="sm">
                       <Link
-                        href={`/pacientes/${plan.patientId}/sesiones/nueva?plan=1`}
+                        href={
+                          plan.appointment
+                            ? `/pacientes/${plan.patientId}/sesiones/nueva?agenda=${plan.appointment.id}`
+                            : `/pacientes/${plan.patientId}/sesiones/nueva?plan=1`
+                        }
                       >
                         <ClipboardList className="size-4" />
                         Registrar esta sesión
                       </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">
-                      <Link href={`/planificacion?paciente=${plan.patientId}`}>
+                      <Link
+                        href={
+                          plan.appointment
+                            ? `/planificacion?sesion=${plan.appointment.id}`
+                            : `/planificacion?paciente=${plan.patientId}`
+                        }
+                      >
                         <Pencil className="size-4" />
                         Editar
                       </Link>
