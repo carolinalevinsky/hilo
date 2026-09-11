@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
-import { AUTH_COOKIE_OPTIONS } from '@/lib/auth-cookie'
+import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE, withLifetime } from '@/lib/auth-cookie'
 import type { Database } from '@/lib/database.types'
 import { env, publicConfig } from '@/lib/env'
 
@@ -40,8 +40,12 @@ export async function getDb() {
         getAll: () => cookieStore.getAll(),
         setAll: (cookiesToSet) => {
           try {
+            // Read at write time, not when the client is built: on sign-in the
+            // action sets this marker a moment before Supabase writes the
+            // session. See "How long it lives" in `@/lib/auth-cookie`.
+            const sessionOnly = cookieStore.get(SESSION_ONLY_COOKIE)?.value === '1'
             for (const { name, value, options } of cookiesToSet) {
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, withLifetime(options, sessionOnly))
             }
           } catch {
             // Called from a Server Component, where cookies are read-only.

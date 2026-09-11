@@ -96,19 +96,28 @@ export function SignInForm({ back }: { back?: string }) {
           type="checkbox"
           name="recordar"
           /**
-           * Tildado de entrada. v1 lo tenía apagado y esto era paridad fiel,
-           * pero apagado significa que nadie escribe su correo dos veces: lo
-           * escribe siempre, porque la casilla que lo evitaría hay que
-           * descubrirla y tildarla primero.
+           * Decide dos cosas, y las dos por el mismo motivo: si esta
+           * computadora es tuya.
            *
-           * Lo que guarda es la dirección de quien la escribe, en su propio
-           * dispositivo — lo mismo que el autocompletado del navegador ya
-           * guarda. Nunca la contraseña, y nada de un paciente.
+           * Tildada, la sesión queda abierta —los 400 días de siempre— y el
+           * correo queda escrito para la próxima. Destildada, la sesión se
+           * cierra cuando cerrás el navegador y el correo no se guarda: es la
+           * computadora del colegio o del consultorio compartido. Lo de la
+           * sesión lo hace `signInAction`; ver `@/lib/auth-cookie`.
+           *
+           * Antes decía "Recordar mi correo" y hacía sólo eso, mientras la
+           * sesión quedaba abierta igual. Quien la destildaba en una
+           * computadora ajena se iba creyendo que había dejado todo cerrado.
+           *
+           * Tildada de entrada: el caso de todos los días es la computadora
+           * propia. Lo que se guarda del correo es la dirección de quien la
+           * escribe, en su dispositivo. Nunca la contraseña, y nada de un
+           * paciente.
            */
           defaultChecked
           className="size-4 accent-violet"
         />
-        Recordar mi correo en este dispositivo
+        Mantener la sesión abierta en este dispositivo
       </label>
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>

@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE } from '@/lib/auth-cookie'
 import { formError, formOk, type FormState } from '@/lib/form-state'
 import { internalPath } from '@/lib/safe-path'
 import {
@@ -70,6 +71,18 @@ export async function signInAction(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  // The box decides how long the session lives, and it has to be decided
+  // before Supabase writes the session, which happens inside `signIn`. Ticked:
+  // the 400 days `@supabase/ssr` gives every cookie. Unticked: a marker with no
+  // expiry, which makes every auth cookie written from here on die with the
+  // browser too. See "How long it lives" in `@/lib/auth-cookie`.
+  const cookieStore = await cookies()
+  if (formData.get('recordar') === 'on') {
+    cookieStore.delete(SESSION_ONLY_COOKIE)
+  } else {
+    cookieStore.set(SESSION_ONLY_COOKIE, '1', AUTH_COOKIE_OPTIONS)
+  }
+
   const result = await signIn({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -84,6 +97,8 @@ export async function signInAction(
 
 export async function signOutAction() {
   await signOut()
+  // The choice belongs to the session it was made for.
+  ;(await cookies()).delete(SESSION_ONLY_COOKIE)
   redirect('/entrar')
 }
 
