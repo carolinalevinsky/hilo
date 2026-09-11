@@ -1,6 +1,7 @@
 'use client'
 
 import { CalendarClock, Plus } from '@/components/icons'
+import { useRouter } from 'next/navigation'
 import { useActionState, useEffect, useState } from 'react'
 
 import {
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { type AgendaSlot, slotWeekday } from '@/lib/agenda-slot'
 import { FREQUENCY_LABELS } from '@/lib/appointment-labels'
 import { today } from '@/lib/dates'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
@@ -49,11 +51,41 @@ type PatientOption = { id: string; full_name: string }
  * fecha contra un día de la semana más una frecuencia. Mezclarlos en un formulario
  * obligaría a decidir en el servidor qué mitad ignorar.
  */
-export function ScheduleDialogs({ patients }: { patients: PatientOption[] }) {
-  const [open, setOpen] = useState(false)
+export function ScheduleDialogs({
+  patients,
+  slot = null,
+  closeHref = '/agenda',
+}: {
+  patients: PatientOption[]
+  /**
+   * A half hour clicked in the week grid (P6): the dialog opens by itself with
+   * that day and time filled in, in both modes.
+   */
+  slot?: AgendaSlot | null
+  /** Where closing goes, so the slot leaves the URL and a reload does not reopen it. */
+  closeHref?: string
+}) {
+  const router = useRouter()
+  const [open, setOpen] = useState(slot !== null && patients.length > 0)
   const [repeats, setRepeats] = useState(false)
 
-  const close = () => setOpen(false)
+  // Clicking another slot is a new URL, not a new mount, so the dialog opens
+  // for it here. By value, not by object: every server render sends a fresh
+  // `slot`, and comparing references would reopen the dialog after each save.
+  const slotKey = slot ? `${slot.date} ${slot.time}` : ''
+  const [lastSlotKey, setLastSlotKey] = useState(slotKey)
+  if (slotKey !== lastSlotKey) {
+    setLastSlotKey(slotKey)
+    if (slot && patients.length > 0) {
+      setOpen(true)
+      setRepeats(false)
+    }
+  }
+
+  const close = () => {
+    setOpen(false)
+    if (slot) router.replace(closeHref, { scroll: false })
+  }
 
   return (
     <div className="max-lg:w-full">
@@ -91,9 +123,9 @@ export function ScheduleDialogs({ patients }: { patients: PatientOption[] }) {
           </div>
 
           {repeats ? (
-            <ScheduleFields patients={patients} onDone={close} />
+            <ScheduleFields patients={patients} onDone={close} slot={slot} />
           ) : (
-            <AppointmentFields patients={patients} onDone={close} />
+            <AppointmentFields patients={patients} onDone={close} slot={slot} />
           )}
         </DialogContent>
       </Dialog>
@@ -130,9 +162,11 @@ function ModeButton({
 function AppointmentFields({
   patients,
   onDone,
+  slot,
 }: {
   patients: PatientOption[]
   onDone: () => void
+  slot: AgendaSlot | null
 }) {
   const [state, formAction, pending] = useActionState(
     createAppointmentAction,
@@ -156,12 +190,18 @@ function AppointmentFields({
             id="scheduledOn"
             name="scheduledOn"
             type="date"
-            defaultValue={today()}
+            defaultValue={slot?.date ?? today()}
             required
           />
         </Field>
         <Field label="Hora" htmlFor="startTime">
-          <Input id="startTime" name="startTime" type="time" defaultValue="09:00" required />
+          <Input
+            id="startTime"
+            name="startTime"
+            type="time"
+            defaultValue={slot?.time ?? '09:00'}
+            required
+          />
         </Field>
       </div>
 
@@ -183,9 +223,11 @@ function AppointmentFields({
 function ScheduleFields({
   patients,
   onDone,
+  slot,
 }: {
   patients: PatientOption[]
   onDone: () => void
+  slot: AgendaSlot | null
 }) {
   const [state, formAction, pending] = useActionState(createScheduleAction, EMPTY_FORM_STATE)
 
@@ -208,7 +250,11 @@ function ScheduleFields({
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Día de la semana" htmlFor="weekday">
-          <Select id="weekday" name="weekday" defaultValue="1">
+          <Select
+            id="weekday"
+            name="weekday"
+            defaultValue={slot ? String(slotWeekday(slot)) : '1'}
+          >
             {WEEK_ORDER.map((weekday) => (
               <option key={weekday} value={weekday}>
                 {weekdayName(weekday)}
@@ -217,7 +263,13 @@ function ScheduleFields({
           </Select>
         </Field>
         <Field label="Hora" htmlFor="scheduleTime">
-          <Input id="scheduleTime" name="startTime" type="time" defaultValue="09:00" required />
+          <Input
+            id="scheduleTime"
+            name="startTime"
+            type="time"
+            defaultValue={slot?.time ?? '09:00'}
+            required
+          />
         </Field>
       </div>
 
@@ -232,7 +284,13 @@ function ScheduleFields({
           </Select>
         </Field>
         <Field label="Desde" htmlFor="startsOn">
-          <Input id="startsOn" name="startsOn" type="date" defaultValue={today()} required />
+          <Input
+            id="startsOn"
+            name="startsOn"
+            type="date"
+            defaultValue={slot?.date ?? today()}
+            required
+          />
         </Field>
       </div>
 

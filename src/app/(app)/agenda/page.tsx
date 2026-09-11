@@ -7,6 +7,7 @@ import { cookies } from 'next/headers'
 import { BookingChip } from '@/components/agenda/booking-chip'
 import { ConnectGoogle } from '@/components/agenda/connect-google'
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
+import { readAgendaSlot } from '@/lib/agenda-slot'
 import { SessionPanel } from '@/components/agenda/session-panel'
 import { PeriodNav } from '@/components/period-nav'
 import { WeekViewSelect } from '@/components/agenda/week-view-select'
@@ -211,6 +212,30 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // dirección sólo lleva el parámetro cuando se pidió la semana entera.
   const weekView = params.vista === 'completa' ? 'completa' : 'laboral'
 
+  // ─── Agendar clickeando la grilla (P6) ────────────────────────────────────
+  //
+  // Una media hora vacía es un enlace a `?agendar=<fecha>&hora=<hh:mm>`, y con
+  // eso "Agendar sesión" abre con los dos datos puestos. En la URL por lo mismo
+  // que la sesión abierta: el botón de atrás lo cierra y es un componente de
+  // servidor el que dibuja la grilla. Lo que no es una fecha real y una media
+  // hora se descarta y no abre nada — ver `readAgendaSlot`.
+  const slot = readAgendaSlot(params.agendar, params.hora)
+  const weekParams = () => {
+    const query = new URLSearchParams()
+    if (offset !== 0) query.set('semana', String(offset))
+    if (weekView === 'completa') query.set('vista', 'completa')
+    return query
+  }
+  const hrefForSlot = (date: string, time: string) => {
+    const query = weekParams()
+    query.set('agendar', date)
+    query.set('hora', time)
+    return `/agenda?${query.toString()}`
+  }
+  const closeSlotHref = weekParams().toString()
+    ? `/agenda?${weekParams().toString()}`
+    : '/agenda'
+
   // "Ahora no", de hasta un mes atrás. Se lee acá y no en el componente para que
   // el aviso no llegue a pintarse: ver la nota en `ConnectGoogle`.
   const googleNoticeHidden = (await cookies()).get(GOOGLE_NOTICE_COOKIE)?.value === 'off'
@@ -239,8 +264,11 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             {practitioner.slug ? (
               <BookingChip url={`${origin}/reservar/${practitioner.slug}`} />
             ) : null}
+            {/* The one that opens for a slot clicked in the grid (P6). */}
             <ScheduleDialogs
               patients={patients.map((p) => ({ id: p.id, full_name: p.full_name }))}
+              slot={slot}
+              closeHref={closeSlotHref}
             />
           </div>
         }
@@ -420,6 +448,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                   busyBlocks={busyBlocks}
                   selectedId={selected?.id}
                   hrefForSession={hrefForSession}
+                  hrefForSlot={patients.length > 0 ? hrefForSlot : undefined}
                   header={weekNavDesktop}
                   headerEnd={<WeekViewSelect value={weekView} />}
                   showWeekend={weekView === 'completa'}

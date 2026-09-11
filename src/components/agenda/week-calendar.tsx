@@ -77,6 +77,7 @@ export function WeekCalendar({
   busyBlocks = [],
   selectedId,
   hrefForSession,
+  hrefForSlot,
   header,
   headerEnd,
   showWeekend = false,
@@ -97,6 +98,12 @@ export function WeekCalendar({
    * sabe en qué semana estamos y qué otros parámetros hay que conservar.
    */
   hrefForSession: (appointmentId: string) => string
+  /**
+   * El enlace de una media hora vacía, que abre "Agendar sesión" con ese día y
+   * esa hora puestos (P6). Lo arma la página por la misma razón que el de cada
+   * sesión. Sin él —sin pacientes todavía— la grilla no ofrece nada.
+   */
+  hrefForSlot?: (date: string, time: string) => string
   /**
    * Las flechas de semana y el botón "Hoy", adentro de la tarjeta del
    * calendario y no flotando arriba. Entra como slot en vez de armarse acá
@@ -300,12 +307,34 @@ export function WeekCalendar({
                 className="relative border-l border-border"
                 style={{ height: dayHeight }}
               >
+                {/* Each hour is two half-hour links (P6): click the slot and
+                    "Agendar sesión" opens with that day and time, as in any
+                    calendar. Links, not handlers — the grid stays a Server
+                    Component and the slot is a URL. The sessions drawn on top
+                    keep their own clicks; see the overlay below. */}
                 {hours.map((hour) => (
                   <div
                     key={hour}
-                    className="border-b border-border"
+                    className="flex flex-col border-b border-border"
                     style={{ height: HOUR_HEIGHT }}
-                  />
+                  >
+                    {hrefForSlot
+                      ? (['00', '30'] as const).map((minutes) => {
+                          const time = `${String(hour).padStart(2, '0')}:${minutes}`
+                          return (
+                            <Link
+                              key={minutes}
+                              href={hrefForSlot(day.date, time)}
+                              scroll={false}
+                              aria-label={`Agendar el ${weekdayName(day.weekday).toLowerCase()} ${Number(day.date.slice(8, 10))}/${Number(day.date.slice(5, 7))} a las ${time}`}
+                              className="flex flex-1 items-start px-1.5 pt-0.5 text-micro font-semibold text-violet opacity-0 transition-opacity hover:bg-violet-soft/60 hover:opacity-100 focus-visible:opacity-100"
+                            >
+                              + {time}
+                            </Link>
+                          )
+                        })
+                      : null}
+                  </div>
                 ))}
 
                 {/* Sólo en la columna de hoy: una línea de "ahora" en el jueves
@@ -314,11 +343,14 @@ export function WeekCalendar({
                   <NowLine firstHour={firstHour} lastHour={lastHour} />
                 ) : null}
 
-                <div className="absolute inset-0">
+                {/* `pointer-events-none` on the layer and back on each piece: the
+                    layer covers the whole column, and without this it swallowed
+                    every click meant for the empty slots underneath. */}
+                <div className="pointer-events-none absolute inset-0">
                   {placeSpans(pieces).map(({ span: piece, z, top, height, width, labelTop }) => (
                     <div
                       key={piece.key}
-                      className="absolute left-0 px-[3px] py-px"
+                      className="pointer-events-auto absolute left-0 px-[3px] py-px"
                       style={{ top, height, width: `${width}%`, zIndex: z }}
                     >
                       {piece.kind === 'session' ? (
