@@ -1,5 +1,7 @@
 import { ageLabel } from '@/lib/age'
 import { formatDate } from '@/lib/dates'
+
+import { customInstructionsBlock } from './prompt-templates'
 import { disciplineAdjective, recipientTone, type RecipientId } from '@/lib/recipients'
 import { joinEs } from '@/lib/text'
 import { firstName } from '@/lib/whatsapp'
@@ -107,12 +109,15 @@ export function reportUserPrompt({
   recipient,
   disciplineId,
   practitionerNotes,
+  customInstructions,
   adjustment,
 }: {
   context: ReportContext
   recipient: RecipientId
   disciplineId: string
   practitionerNotes?: string | null
+  /** Her own instructions (P20), fenced and below the rules — see `prompt-templates.ts`. */
+  customInstructions?: string | null
   adjustment?: string | null
 }): string {
   const tone = recipientTone(recipient, {
@@ -152,6 +157,9 @@ export function reportUserPrompt({
       `Notas de la profesional para este informe (tenelas muy en cuenta): ${practitionerNotes.trim()}`,
     )
   }
+
+  const own = customInstructionsBlock(customInstructions)
+  if (own) parts.push('', own)
 
   if (adjustment?.trim()) {
     parts.push('', `Ajuste solicitado por el/la profesional (respetalo): ${adjustment.trim()}`)

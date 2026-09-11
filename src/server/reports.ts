@@ -66,6 +66,8 @@ export async function createReport(
     title: string
     content: string
     inputNotes?: string | null
+    /** Her own instructions for this report (P20), copied so regenerating reuses them. */
+    customInstructions?: string | null
     aiGenerated: boolean
     aiModel?: string | null
   },
@@ -81,6 +83,7 @@ export async function createReport(
       title: input.title,
       content: input.content,
       input_notes: input.inputNotes ?? null,
+      custom_instructions: input.customInstructions ?? null,
       ai_generated: input.aiGenerated,
       // Stored per document. When the pinned model is replaced we need to be
       // able to say which reports came from which version.

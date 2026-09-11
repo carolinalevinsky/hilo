@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { readCustomInstructions } from '@/app/(app)/custom-instructions'
 import { ageLabel } from '@/lib/age'
 import { formError, type FormState } from '@/lib/form-state'
 import { instrument } from '@/lib/instruments'
@@ -66,6 +67,10 @@ export async function createAssessmentAction(
     return formError('Cargá al menos un resultado.')
   }
 
+  // Her own instructions (P20), before the quota like every other field.
+  const own = await readCustomInstructions(user.id, 'assessment', formData)
+  if ('message' in own) return formError(own.message)
+
   try {
     await assertQuota(user.id, practitioner.plan, 'assessments')
   } catch (error) {
@@ -86,6 +91,7 @@ export async function createAssessmentAction(
     assessedOn,
     results,
     observations,
+    customInstructions: own.text,
     analysis: assessmentFallback({
       instrumentName: chosen.name,
       patientName: patient.full_name,

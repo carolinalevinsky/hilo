@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { instrumentsFor } from '@/lib/instruments'
 import { listPatients } from '@/server/patients'
+import { listTemplates } from '@/server/prompt-templates'
 
 import { currentPractitioner, currentUser } from '../../session'
 
@@ -18,9 +19,11 @@ export default async function NewAssessmentPage({
   const params = await searchParams
   const user = await currentUser()
 
-  const [practitioner, patients] = await Promise.all([
+  const [practitioner, patients, templates] = await Promise.all([
     currentPractitioner(user.id),
     listPatients(user.id),
+    // Her saved instructions for assessments (P20).
+    listTemplates(user.id, 'assessment'),
   ])
 
   return (
@@ -49,6 +52,7 @@ export default async function NewAssessmentPage({
             defaultPatientId={
               typeof params.paciente === 'string' ? params.paciente : undefined
             }
+            templates={templates}
           />
         </CardContent>
       </Card>

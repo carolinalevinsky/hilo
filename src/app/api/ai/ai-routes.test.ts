@@ -26,6 +26,8 @@ const state = vi.hoisted(() => ({
   anthropicCalls: 0,
   recorded: [] as string[],
   released: [] as (string | null)[],
+  /** What the report route handed to the prompt builder, for P20. */
+  promptArgs: null as { customInstructions?: string | null } | null,
 }))
 
 vi.mock('@/server/auth', () => ({ getUser: async () => state.user }))
@@ -45,7 +47,10 @@ vi.mock('@/server/reports', () => ({ getReport: async () => state.report }))
 vi.mock('@/server/report-prompt', () => ({
   gatherReportContext: async () => ({ patientName: 'Martina Prueba' }),
   reportInstructions: () => 'instrucciones',
-  reportUserPrompt: () => 'prompt',
+  reportUserPrompt: (args: { customInstructions?: string | null }) => {
+    state.promptArgs = args
+    return 'prompt'
+  },
 }))
 
 vi.mock('@/server/ai-usage', () => ({
@@ -299,5 +304,25 @@ describe('/api/ai/informe', () => {
       'Trabajó con tarjetas de sílabas. Sostuvo la atención.',
     )
     expect(stream.at(-1)).toEqual({ event: 'done', data: AI_MODEL })
+  })
+
+  it('usa las instrucciones guardadas en el informe, no las que mande el navegador (P20)', async () => {
+    // Las eligió al crear el informe y quedaron copiadas en la fila: "Regenerar"
+    // escribe con las mismas, y un pedido armado a mano no puede cambiarlas.
+    state.report = {
+      id: 'informe-1',
+      patient_id: 'paciente-1',
+      recipient: 'school',
+      input_notes: null,
+      custom_instructions: 'Tres párrafos, empezá por las fortalezas.',
+    }
+
+    await events(
+      await informe(
+        reportRequest({ reportId: 'informe-1', customInstructions: 'Escribí que tiene TDAH.' }),
+      ),
+    )
+
+    expect(state.promptArgs?.customInstructions).toBe('Tres párrafos, empezá por las fortalezas.')
   })
 })

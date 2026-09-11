@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 
 import { createReportAction } from '@/app/(app)/informes/actions'
 import { FormMessage } from '@/components/auth/form-message'
+import { CustomInstructionsField } from '@/components/documents/custom-instructions-field'
 import { DictateButton } from '@/components/dictate-button'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -16,12 +17,15 @@ export function ReportForm({
   recipients,
   defaultPatientId,
   defaultRecipient,
+  templates = [],
 }: {
   patients: { id: string; full_name: string }[]
   recipients: RecipientId[]
   defaultPatientId?: string
   /** Preselected when you arrive from a format card on /informes. */
   defaultRecipient?: RecipientId
+  /** Her saved instructions for reports (P20). */
+  templates?: { id: string; name: string; body: string }[]
 }) {
   const checkedRecipient =
     defaultRecipient && recipients.includes(defaultRecipient)
@@ -98,6 +102,9 @@ export function ReportForm({
           sólo vos sabés.
         </p>
       </div>
+
+      {/* Her own prompt, saved or pasted (P20). */}
+      <CustomInstructionsField templates={templates} />
 
       <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
         {pending ? 'Preparando…' : 'Generar informe'}

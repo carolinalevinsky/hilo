@@ -60,6 +60,8 @@ export async function createAssessment(
     assessedOn: string
     results: AssessmentResultsData
     observations?: string | null
+    /** Her own instructions for this assessment (P20), copied so regenerating reuses them. */
+    customInstructions?: string | null
     analysis: string
     aiGenerated: boolean
     aiModel?: string | null
@@ -76,6 +78,7 @@ export async function createAssessment(
       assessed_on: input.assessedOn,
       results: input.results,
       observations: input.observations ?? null,
+      custom_instructions: input.customInstructions ?? null,
       analysis: input.analysis,
       ai_generated: input.aiGenerated,
       ai_model: input.aiModel ?? null,

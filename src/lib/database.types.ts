@@ -150,6 +150,7 @@ export type Database = {
           analysis: string | null
           assessed_on: string
           created_at: string
+          custom_instructions: string | null
           id: string
           instrument: string
           observations: string | null
@@ -164,6 +165,7 @@ export type Database = {
           analysis?: string | null
           assessed_on?: string
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           instrument: string
           observations?: string | null
@@ -178,6 +180,7 @@ export type Database = {
           analysis?: string | null
           assessed_on?: string
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           instrument?: string
           observations?: string | null
@@ -848,12 +851,51 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          practitioner_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          kind: string
+          name: string
+          practitioner_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          practitioner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_templates_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           ai_generated: boolean
           ai_model: string | null
           content: string | null
           created_at: string
+          custom_instructions: string | null
           id: string
           input_notes: string | null
           issued_on: string
@@ -868,6 +910,7 @@ export type Database = {
           ai_model?: string | null
           content?: string | null
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           input_notes?: string | null
           issued_on?: string
@@ -882,6 +925,7 @@ export type Database = {
           ai_model?: string | null
           content?: string | null
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           input_notes?: string | null
           issued_on?: string

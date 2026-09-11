@@ -5,6 +5,7 @@ import { useActionState, useState } from 'react'
 import { createAssessmentAction } from '@/app/(app)/evaluaciones/actions'
 import { FormMessage } from '@/components/auth/form-message'
 import { DictateButton } from '@/components/dictate-button'
+import { CustomInstructionsField } from '@/components/documents/custom-instructions-field'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,10 +30,13 @@ export function AssessmentForm({
   patients,
   instruments,
   defaultPatientId,
+  templates = [],
 }: {
   patients: { id: string; full_name: string }[]
   instruments: Instrument[]
   defaultPatientId?: string
+  /** Her saved instructions for assessments (P20). */
+  templates?: { id: string; name: string; body: string }[]
 }) {
   const [state, formAction, pending] = useActionState(
     createAssessmentAction,
@@ -158,6 +162,9 @@ export function AssessmentForm({
           placeholder="Cómo se mostró durante la administración: atención, fatiga, colaboración."
         />
       </div>
+
+      {/* Her own prompt, saved or pasted (P20). */}
+      <CustomInstructionsField templates={templates} />
 
       <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
         {pending ? 'Preparando…' : 'Interpretar evaluación'}

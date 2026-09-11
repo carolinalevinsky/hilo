@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { readCustomInstructions } from '@/app/(app)/custom-instructions'
+
 import { env } from '@/lib/env'
 import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import type { RecipientId } from '@/lib/recipients'
@@ -46,6 +48,11 @@ export async function createReportAction(
   if (!patientId) return formError('Elegí un paciente.')
   if (!recipient) return formError('Elegí para quién es el informe.')
 
+  // Her own instructions (P20). Checked before the quota, like any other field:
+  // a form that fails on length should not spend a unit first.
+  const own = await readCustomInstructions(user.id, 'report', formData)
+  if ('message' in own) return formError(own.message)
+
   try {
     await assertQuota(user.id, practitioner.plan, 'reports')
   } catch (error) {
@@ -76,6 +83,7 @@ export async function createReportAction(
         disciplineId: practitioner.discipline,
       }),
       inputNotes,
+      customInstructions: own.text,
       aiGenerated: false,
     })
   } catch (error) {
