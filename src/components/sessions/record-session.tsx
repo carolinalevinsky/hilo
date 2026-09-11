@@ -46,7 +46,7 @@ import {
  * below says what actually happens.
  *
  * Nothing is saved automatically. The draft lands in the field and the
- * practitioner presses "Guardar sesión", the same as if they had typed it.
+ * practitioner presses "Guardar registro", the same as if they had typed it.
  */
 export function RecordSession({
   patientId,

@@ -13,7 +13,7 @@ import { getPatient } from '@/server/patients'
 import { getSession } from '@/server/sessions'
 import { currentUser } from '../../../../session'
 
-export const metadata: Metadata = { title: 'Editar sesión · Hilo' }
+export const metadata: Metadata = { title: 'Editar registro · Hilo' }
 
 export default async function EditSessionPage({
   params,
@@ -41,7 +41,9 @@ export default async function EditSessionPage({
         Volver a la ficha
       </Link>
 
-      <PageHeader title="Editar sesión" subtitle={patient.full_name} />
+      {/* "Registro", not "sesión" (P13): the session is the hour in the agenda,
+          and what is edited here is what was written about it. */}
+      <PageHeader title="Editar registro" subtitle={patient.full_name} />
 
       <Card className="max-w-2xl">
         <CardContent className="space-y-5">
@@ -56,11 +58,11 @@ export default async function EditSessionPage({
             <input type="hidden" name="patientId" value={patient.id} />
             <input type="hidden" name="sessionId" value={session.id} />
             <Button type="submit" variant="ghost" size="sm">
-              Borrar esta sesión
+              Borrar este registro
             </Button>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Usalo solo si la cargaste por error: una sesión que no pasó desvirtúa las
-              estadísticas y los informes.
+              Usalo solo si lo cargaste por error: el registro de una sesión que no pasó
+              desvirtúa las estadísticas y los informes.
             </p>
           </form>
         </CardContent>

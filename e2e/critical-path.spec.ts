@@ -125,7 +125,7 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
     await page.getByRole('checkbox', { name: GOAL }).check()
     await page.getByLabel('Comentarios').fill(NOTE)
 
-    await page.getByRole('button', { name: 'Guardar sesión' }).click()
+    await page.getByRole('button', { name: 'Guardar registro' }).click()
 
     await expect(page.getByText(NOTE.slice(0, 40), { exact: false })).toBeVisible()
   })

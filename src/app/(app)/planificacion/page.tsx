@@ -466,8 +466,8 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
             {items.length > 0 ? (
               <p className="no-print mt-2.5 text-meta text-muted-foreground">
                 Se va guardando a medida que agregás, así que no hay nada que perder si
-                cerrás. Lo vas a encontrar en <b>Próximas sesiones</b> y en la ficha de{' '}
-                {firstName}, y desde ahí la registrás cuando la tengas.
+                cerrás. Lo vas a encontrar en <b>Planes preparados</b> y en la ficha de{' '}
+                {firstName}, y desde ahí registrás la sesión cuando la tengas.
               </p>
             ) : null}
           </CardContent>

@@ -74,7 +74,7 @@ export function SessionAside({
               href={`/pacientes/${patient.id}/sesiones/${lastSession.id}`}
               className="mt-2.5 inline-block text-meta font-semibold text-violet hover:underline"
             >
-              Abrir esa sesión →
+              Abrir ese registro →
             </Link>
           </CardContent>
         </Card>

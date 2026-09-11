@@ -39,7 +39,7 @@ export function SessionTimeline({
             </p>
             <Link
               href={`/pacientes/${patientId}/sesiones/${session.id}`}
-              aria-label="Editar sesión"
+              aria-label="Editar registro"
               className="text-muted-foreground hover:text-foreground"
             >
               <Pencil className="size-3.5" />

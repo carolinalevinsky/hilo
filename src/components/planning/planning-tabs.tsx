@@ -29,7 +29,9 @@ import { cn } from '@/lib/utils'
 const TABS = [
   { href: '/materiales', label: 'Materiales', exact: false },
   { href: '/planificacion', label: 'Planificar sesión', exact: true },
-  { href: '/planificacion/proximas', label: 'Próximas sesiones', exact: false },
+  // "Planes", not "Próximas sesiones" (P13): the upcoming sessions are the ones
+  // in the Agenda. What this tab lists is what was prepared for them.
+  { href: '/planificacion/proximas', label: 'Planes preparados', exact: false },
 ]
 
 export function PlanningTabs() {

@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { upcomingPlans } from '@/server/session-plans'
 import { currentUser } from '../../session'
 
-export const metadata: Metadata = { title: 'Próximas sesiones · Hilo' }
+export const metadata: Metadata = { title: 'Planes preparados · Hilo' }
 
 /**
  * Everything left prepared, in one place.
@@ -42,11 +42,11 @@ export default async function UpcomingPlansPage() {
         <Card>
           <EmptyState
             icon={ClipboardList}
-            title="No tenés ninguna sesión preparada"
-            text="Cuando dejes una lista en “Planificar sesión”, aparece acá hasta que la registres."
+            title="No tenés ningún plan preparado"
+            text="Cuando dejes una lista en “Planificar sesión”, aparece acá hasta que registres esa sesión."
             action={
               <Button asChild>
-                <Link href="/planificacion">Preparar una sesión</Link>
+                <Link href="/planificacion">Preparar un plan</Link>
               </Button>
             }
           />

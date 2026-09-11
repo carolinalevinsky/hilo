@@ -43,7 +43,7 @@ export async function saveSessionAction(
     }
   } catch (error) {
     if (error instanceof SessionLinkError) return formError(error.message)
-    return formErrorFor(error, 'No pudimos guardar la sesión. Probá de nuevo.')
+    return formErrorFor(error, 'No pudimos guardar el registro. Probá de nuevo.')
   }
 
   // After the session, not before: the numbers describe how the session that was

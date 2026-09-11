@@ -164,7 +164,7 @@ export function SessionForm({
       </div>
 
       <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
-        {pending ? 'Guardando…' : session ? 'Guardar cambios' : 'Guardar sesión'}
+        {pending ? 'Guardando…' : session ? 'Guardar cambios' : 'Guardar registro'}
       </Button>
     </form>
   )
