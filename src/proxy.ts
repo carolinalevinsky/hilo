@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { AUTH_COOKIE_OPTIONS } from '@/lib/auth-cookie'
+import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE, withLifetime } from '@/lib/auth-cookie'
 import { publicConfig } from '@/lib/env'
 
 /**
@@ -40,6 +40,7 @@ const PUBLIC_PREFIXES = [
   '/recuperar', // asking for a "cambiá tu contraseña" email
   '/confirmar', // where every emailed link comes back to
   '/reservar', // the public booking link a family opens
+  '/antes', // "Antes de empezar": details and consent, from a link with a token
   '/terminos',
   '/privacidad',
 ]
@@ -110,8 +111,12 @@ export async function proxy(request: NextRequest) {
             request.cookies.set(name, value)
           }
           response = NextResponse.next({ request })
+          // The hourly refresh is the write that matters most here: without
+          // this it would stamp 400 days back onto a session that was meant to
+          // end when the browser closes. See `@/lib/auth-cookie`.
+          const sessionOnly = request.cookies.get(SESSION_ONLY_COOKIE)?.value === '1'
           for (const { name, value, options } of cookiesToSet) {
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, withLifetime(options, sessionOnly))
           }
         },
       },

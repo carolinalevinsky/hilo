@@ -9,6 +9,8 @@ import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientActions } from '@/components/patients/patient-actions'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { OnlineConsultation } from '@/components/patients/online-consultation'
+import { IntakeCard } from '@/components/patient-forms/intake-card'
+import { ScalesCard } from '@/components/patient-forms/scales-card'
 import { NextSessionCard } from '@/components/planning/next-session-card'
 import { PatientHeader } from '@/components/patients/patient-header'
 import { SessionTimeline } from '@/components/sessions/session-timeline'
@@ -17,13 +19,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { formatDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
-import { ageGroupLabel, billingFrequencyLabel } from '@/lib/patient-labels'
+import { ageGroupLabel, billingFrequencyLabel, guardianSummary } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 import { videoRoomUrl } from '@/lib/video'
 import { listSchedules, nextAppointmentFor } from '@/server/appointments'
 import { listAssessments } from '@/server/assessments'
 import { GoalHistory } from '@/components/goals/goal-history'
 import { averageProgress, listGoalProgress, listGoals } from '@/server/goals'
+import { intakeStatus } from '@/server/patient-forms'
+import { scaleHistory } from '@/server/scales'
+import { SCALE_IDS, scaleIsReady } from '@/lib/scales'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { listReports } from '@/server/reports'
 import { listPlanItems } from '@/server/session-plans'
@@ -51,6 +56,8 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     reports,
     schedules,
     nextAppointment,
+    intake,
+    scales,
   ] = await Promise.all([
     getPhotoUrl(patient.photo_path),
     currentPractitioner(user.id),
@@ -64,6 +71,8 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     // nada que decidir y la pregunta sería ruido.
     listSchedules(user.id, patient.id),
     nextAppointmentFor(user.id, patient.id),
+    intakeStatus(user.id, patient.id),
+    scaleHistory(user.id, patient.id),
   ])
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
@@ -81,6 +90,17 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     // theirs is being seen under it. It stays on the ficha because it is what
     // the report says and what the mutualista reads.
     { label: 'Abordaje', value: disciplineLabel(practitioner.discipline) },
+    // Only for a minor. An adult is their own responsable, and a "Responsable"
+    // row would then sit in the "Sin cargar" line forever, naming something
+    // that does not apply.
+    ...(patient.age_group === 'adults'
+      ? []
+      : [
+          {
+            label: 'Responsable',
+            value: guardianSummary(patient.guardian_name, patient.guardian_relationship),
+          },
+        ]),
     { label: 'Teléfono', value: patient.phone },
     { label: 'Inicio', value: formatDate(patient.start_date) },
     {
@@ -245,6 +265,21 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
             </CardContent>
           </Card>
 
+          {/* Right under the goals: the goals say what is being worked on, the
+              scales say how the patient reports feeling while it is. Not for
+              children — PHQ-9 and GAD-7 are answered by the person themselves,
+              and they are validated from adolescence on. */}
+          {patient.age_group === 'children' ? null : (
+            <ScalesCard
+              patientId={patient.id}
+              phone={patient.phone}
+              patientFirstName={firstName(patient.full_name)}
+              practitionerFirstName={firstName(practitioner.full_name)}
+              history={scales}
+              ready={Object.fromEntries(SCALE_IDS.map((id) => [id, scaleIsReady(id)])) as Record<(typeof SCALE_IDS)[number], boolean>}
+            />
+          )}
+
           {/* v1 put what you prepared right here, above the history
               (`legacy/index.html:1674`). A plan is only worth making if it is on
               the screen you open with the child already in the room. */}
@@ -324,6 +359,19 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               )}
             </CardContent>
           </Card>
+
+          {/* Right under the motivo, and on a phone right under it too: the
+              consent and the family's answers are what you look for before a
+              first session, and the answers waiting for review are the one
+              thing on this column that asks you to do something. */}
+          <IntakeCard
+            className="max-lg:order-1"
+            patientId={patient.id}
+            phone={patient.phone}
+            patientFirstName={firstName(patient.full_name)}
+            practitionerFirstName={firstName(practitioner.full_name)}
+            status={intake}
+          />
 
           <Card className="max-lg:order-2">
             <CardHeader>

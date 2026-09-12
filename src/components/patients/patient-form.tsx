@@ -11,7 +11,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { FREQUENCY_LABELS } from '@/lib/appointment-labels'
-import { AGE_GROUP_LABELS, BILLING_FREQUENCY_LABELS } from '@/lib/patient-labels'
+import {
+  AGE_GROUP_LABELS,
+  BILLING_FREQUENCY_LABELS,
+  GUARDIAN_RELATIONSHIP_LABELS,
+} from '@/lib/patient-labels'
 import { WEEK_ORDER, weekdayName } from '@/lib/week'
 import type { Patient } from '@/server/patients'
 
@@ -99,7 +103,45 @@ export function PatientForm({
           />
         </Field>
 
-        <Field label="Teléfono de la familia" htmlFor="phone" hint="opcional">
+        {/* El adulto a cargo, en su propio bloque. Hasta ahora el alta sólo tenía
+            "Teléfono de la familia", sin nombre: el consentimiento que pide la
+            Ley 19.529 para un menor lo firma una persona, el link para
+            completar la ficha le llega a una persona, y el informe "para la
+            familia" lo lee alguien con nombre. Un solo responsable, a
+            propósito — ver la migración `patient_guardian`. */}
+        <div className="border-t border-border pt-4 sm:col-span-2">
+          <p className="text-body font-bold">Responsable</p>
+          <p className="text-meta text-muted-foreground">
+            Si es menor, el adulto a cargo: quien firma el consentimiento, paga y recibe los
+            informes. Si es adulto, alcanza con su teléfono.
+          </p>
+        </div>
+
+        <Field label="Nombre del responsable" htmlFor="guardianName" hint="opcional">
+          <Input
+            id="guardianName"
+            name="guardianName"
+            placeholder="Nombre y apellido"
+            defaultValue={patient?.guardian_name ?? ''}
+          />
+        </Field>
+
+        <Field label="Es su…" htmlFor="guardianRelationship" hint="opcional">
+          <Select
+            id="guardianRelationship"
+            name="guardianRelationship"
+            defaultValue={patient?.guardian_relationship ?? ''}
+          >
+            <option value="">Elegí</option>
+            {Object.entries(GUARDIAN_RELATIONSHIP_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label="Teléfono" htmlFor="phone" hint="opcional">
           <Input
             id="phone"
             name="phone"
@@ -107,7 +149,17 @@ export function PatientForm({
             placeholder="Ej: 099 123 456"
             defaultValue={patient?.phone ?? ''}
           />
-          <p className="text-xs text-muted-foreground">Para recordatorios y cobros.</p>
+          <p className="text-xs text-muted-foreground">Para recordatorios, cobros y el link de la ficha.</p>
+        </Field>
+
+        <Field label="Correo del responsable" htmlFor="guardianEmail" hint="opcional">
+          <Input
+            id="guardianEmail"
+            name="guardianEmail"
+            type="email"
+            placeholder="nombre@correo.com"
+            defaultValue={patient?.guardian_email ?? ''}
+          />
         </Field>
 
         <Field label="Motivo de consulta" htmlFor="referralReason" className="sm:col-span-2">

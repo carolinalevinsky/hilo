@@ -52,6 +52,9 @@ type Entity =
   | 'booking_request'
   | 'material'
   | 'google_account'
+  // The "Antes de empezar" link. Creating one hands a stranger a way to write
+  // into this practitioner's records, so it is worth being able to say when.
+  | 'patient_form'
 
 export async function logAction(
   practitionerId: string,

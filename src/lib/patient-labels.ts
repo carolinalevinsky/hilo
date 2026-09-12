@@ -56,3 +56,24 @@ export function billingFrequencyLabel(value: string) {
     BILLING_FREQUENCY_LABELS.monthly
   )
 }
+
+/** Who the responsable is to the patient. Values checked by the database. */
+export const GUARDIAN_RELATIONSHIP_LABELS = {
+  mother: 'Madre',
+  father: 'Padre',
+  guardian: 'Tutor/a',
+  other: 'Otro',
+} as const
+
+/**
+ * "Laura Pérez · madre", or null when nobody is on record. Lower-case after
+ * the name because it reads as part of a sentence, not as a field label.
+ */
+export function guardianSummary(name: string | null, relationship: string | null) {
+  if (!name) return null
+  const label =
+    relationship && relationship in GUARDIAN_RELATIONSHIP_LABELS
+      ? GUARDIAN_RELATIONSHIP_LABELS[relationship as keyof typeof GUARDIAN_RELATIONSHIP_LABELS]
+      : null
+  return label ? `${name} · ${label.toLowerCase()}` : name
+}
