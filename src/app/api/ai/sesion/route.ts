@@ -1,5 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
-import { recordUsage } from '@/server/ai-usage'
+import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import { getUser } from '@/server/auth'
 import { getPatient } from '@/server/patients'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
@@ -80,13 +80,19 @@ export async function POST(request: Request) {
   // — el contador vivía en las filas que cada camino creaba, y éste no crea
   // ninguna. Con el registro aparte, anotarlo es una línea y el comentario pasa
   // a ser cierto.
-  await recordUsage(user.id, 'questions')
+  //
+  // Se anota antes de llamar, como todas, y se devuelve si no llegó nada. Sin
+  // eso, con Anthropic caído cada dictado caía en `offlineSessionNote` —texto
+  // propio, que no cuesta un centavo— y gastaba una unidad igual: la cuota se
+  // agotaba justo cuando la IA no estaba funcionando.
+  const usageId = await recordUsage(user.id, 'questions')
 
   return sseResponse(
     generate(
       sessionNoteInstructions(practitioner.discipline),
       sessionNotePrompt(patient.full_name, transcript),
       fallback,
+      () => releaseUsage(usageId),
     ),
   )
 }
@@ -109,6 +115,7 @@ async function* generate(
   instructions: string,
   prompt: string,
   fallback: string,
+  release: () => Promise<void>,
 ): AsyncGenerator<SseEvent> {
   let received = ''
 
@@ -118,6 +125,10 @@ async function* generate(
     }
   } catch (error) {
     console.error('[ai/sesion]', error)
+
+    // Sólo se devuelve si no llegó nada. Un corte a mitad de camino ya consumió
+    // tokens y esos se pagaron, así que esa unidad queda gastada.
+    if (!received.trim()) await release()
 
     yield { event: 'delta', data: fallback }
     yield {
@@ -135,6 +146,10 @@ async function* generate(
   // The model's own way of saying the recording was not enough to work with.
   // Better the raw words than a paragraph invented to fill the field.
   if (!draft || draft === 'NO_ALCANZA') {
+    // `NO_ALCANZA` es una respuesta: el modelo leyó el dictado, contestó, y eso
+    // costó tokens. Una respuesta vacía no.
+    if (!draft) await release()
+
     yield { event: 'delta', data: fallback }
     yield {
       event: 'error',

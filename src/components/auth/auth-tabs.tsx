@@ -35,7 +35,7 @@ export function AuthTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'rounded-xl border px-3 py-2.5 text-center text-[13.5px] font-bold transition-colors',
+              'rounded-xl border px-3 py-2.5 text-center text-body font-bold transition-colors',
               active
                 ? 'border-violet bg-violet-soft text-violet'
                 : 'border-border text-muted-foreground hover:bg-muted',

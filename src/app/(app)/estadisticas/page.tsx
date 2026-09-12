@@ -96,11 +96,16 @@ export default async function StatisticsPage() {
         />
       </StatCardGrid>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* `items-start`, so a card is as tall as what is inside it. Without it
+          the grid stretches both columns to the taller one, and "Avance por
+          paciente" ends up with a hand's width of empty card under the last
+          patient — which reads as something missing rather than as a card that
+          finished. */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Avance por paciente</CardTitle>
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-meta text-muted-foreground">
               De menor a mayor: los primeros son los que conviene mirar.
             </p>
           </CardHeader>
@@ -119,10 +124,10 @@ export default async function StatisticsPage() {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="truncate text-[13.5px] font-bold">
+                        <span className="truncate text-body font-bold">
                           {patient.fullName}
                         </span>
-                        <span className="shrink-0 text-[12.5px] tabular-nums">
+                        <span className="shrink-0 text-meta tabular-nums">
                           {patient.goalCount === 0 ? 'sin objetivos' : `${patient.averageProgress}%`}
                         </span>
                       </div>
@@ -147,13 +152,13 @@ export default async function StatisticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>En qué trabajaste más</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
+              <p className="text-meta text-muted-foreground">
                 Objetivos por cantidad de sesiones.
               </p>
             </CardHeader>
             <CardContent>
               {worked.length === 0 ? (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Todavía no marcaste objetivos en tus sesiones. Marcarlos es lo que hace
                   posible esta lista.
                 </p>
@@ -162,10 +167,10 @@ export default async function StatisticsPage() {
                   {worked.map((goal) => (
                     <li
                       key={goal.title}
-                      className="flex items-center justify-between gap-2 text-[13px]"
+                      className="flex items-center justify-between gap-2 text-body"
                     >
                       <span className="truncate">{goal.title}</span>
-                      <span className="shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-[11px] font-bold text-violet">
+                      <span className="shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
                         {goal.count}
                       </span>
                     </li>
@@ -180,7 +185,7 @@ export default async function StatisticsPage() {
               <CardTitle>Del período</CardTitle>
             </CardHeader>
             <CardContent>
-              <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-y-2 text-[13px]">
+              <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-y-2 text-body">
                 <dt className="text-muted-foreground">Objetivos activos</dt>
                 <dd className="font-bold">{stats.activeGoals}</dd>
                 {/* Asistencia lives here rather than in the row above, because
@@ -198,7 +203,7 @@ export default async function StatisticsPage() {
               </dl>
 
               {stats.attendanceRate === null ? (
-                <p className="mt-2.5 text-[11.5px] text-muted-foreground">
+                <p className="mt-2.5 text-micro text-muted-foreground">
                   La asistencia aparece cuando marcás las sesiones como “vino” o “no
                   vino”.
                 </p>

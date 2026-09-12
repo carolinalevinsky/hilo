@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { AppointmentMenu } from '@/components/agenda/appointment-menu'
 import { NowLine } from '@/components/agenda/now-line'
 import { HOUR_HEIGHT, placeSpans, type Span } from '@/lib/agenda-layout'
+import { appointmentStatusLabel, appointmentStatusTile } from '@/lib/appointment-labels'
 import { patientHex } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
 import { WEEK_ORDER, formatTime, weekdayName } from '@/lib/week'
@@ -76,6 +77,7 @@ export function WeekCalendar({
   busyBlocks = [],
   selectedId,
   hrefForSession,
+  hrefForSlot,
   header,
   headerEnd,
   showWeekend = false,
@@ -96,6 +98,12 @@ export function WeekCalendar({
    * sabe en qué semana estamos y qué otros parámetros hay que conservar.
    */
   hrefForSession: (appointmentId: string) => string
+  /**
+   * El enlace de una media hora vacía, que abre "Agendar sesión" con ese día y
+   * esa hora puestos (P6). Lo arma la página por la misma razón que el de cada
+   * sesión. Sin él —sin pacientes todavía— la grilla no ofrece nada.
+   */
+  hrefForSlot?: (date: string, time: string) => string
   /**
    * Las flechas de semana y el botón "Hoy", adentro de la tarjeta del
    * calendario y no flotando arriba. Entra como slot en vez de armarse acá
@@ -183,7 +191,7 @@ export function WeekCalendar({
                   la vista es de lunes a viernes, la barra lo dice; el selector
                   está justo al lado para cambiarlo. */}
               {hiddenCount > 0 ? (
-                <span className="text-[12px] font-semibold text-violet">
+                <span className="text-meta font-semibold text-violet">
                   {hiddenCount === 1
                     ? '1 sesión el fin de semana'
                     : `${hiddenCount} sesiones el fin de semana`}
@@ -209,14 +217,14 @@ export function WeekCalendar({
               <div
                 key={day.date}
                 className={cn(
-                  'border-b border-l border-border px-1.5 py-3 text-center text-[13px] font-bold',
+                  'border-b border-l border-border px-1.5 py-3 text-center text-body font-bold',
                   isToday ? 'bg-violet-soft' : 'bg-[#faf9ff]',
                 )}
               >
                 {weekdayName(day.weekday)}
                 <div
                   className={cn(
-                    'mt-0.5 text-[11px] font-semibold',
+                    'mt-0.5 text-micro font-semibold',
                     isToday ? 'text-violet' : 'text-muted-foreground',
                   )}
                 >
@@ -232,7 +240,7 @@ export function WeekCalendar({
               hay alguno. */}
           {anyAllDay ? (
             <>
-              <div className="border-b border-border px-1.5 py-1 text-right text-[10px] text-muted-foreground">
+              <div className="border-b border-border px-1.5 py-1 text-right text-micro text-muted-foreground">
                 Todo el día
               </div>
               {days.map((day) => (
@@ -243,7 +251,7 @@ export function WeekCalendar({
                   {(allDayByDate.get(day.date) ?? []).map((block) => (
                     <div
                       key={block.id}
-                      className="truncate rounded-[7px] border border-dashed border-border bg-muted px-1.5 py-1 text-[11px] font-semibold text-muted-foreground"
+                      className="truncate rounded-[7px] border border-dashed border-border bg-muted px-1.5 py-1 text-micro font-semibold text-muted-foreground"
                     >
                       {block.title}
                     </div>
@@ -257,7 +265,7 @@ export function WeekCalendar({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="border-b border-border px-1.5 pt-1 text-right text-[11px] text-muted-foreground"
+                className="border-b border-border px-1.5 pt-1 text-right text-micro text-muted-foreground"
                 style={{ height: HOUR_HEIGHT }}
               >
                 {String(hour).padStart(2, '0')}:00
@@ -299,12 +307,34 @@ export function WeekCalendar({
                 className="relative border-l border-border"
                 style={{ height: dayHeight }}
               >
+                {/* Each hour is two half-hour links (P6): click the slot and
+                    "Agendar sesión" opens with that day and time, as in any
+                    calendar. Links, not handlers — the grid stays a Server
+                    Component and the slot is a URL. The sessions drawn on top
+                    keep their own clicks; see the overlay below. */}
                 {hours.map((hour) => (
                   <div
                     key={hour}
-                    className="border-b border-border"
+                    className="flex flex-col border-b border-border"
                     style={{ height: HOUR_HEIGHT }}
-                  />
+                  >
+                    {hrefForSlot
+                      ? (['00', '30'] as const).map((minutes) => {
+                          const time = `${String(hour).padStart(2, '0')}:${minutes}`
+                          return (
+                            <Link
+                              key={minutes}
+                              href={hrefForSlot(day.date, time)}
+                              scroll={false}
+                              aria-label={`Agendar el ${weekdayName(day.weekday).toLowerCase()} ${Number(day.date.slice(8, 10))}/${Number(day.date.slice(5, 7))} a las ${time}`}
+                              className="flex flex-1 items-start px-1.5 pt-0.5 text-micro font-semibold text-violet opacity-0 transition-opacity hover:bg-violet-soft/60 hover:opacity-100 focus-visible:opacity-100"
+                            >
+                              + {time}
+                            </Link>
+                          )
+                        })
+                      : null}
+                  </div>
                 ))}
 
                 {/* Sólo en la columna de hoy: una línea de "ahora" en el jueves
@@ -313,11 +343,14 @@ export function WeekCalendar({
                   <NowLine firstHour={firstHour} lastHour={lastHour} />
                 ) : null}
 
-                <div className="absolute inset-0">
+                {/* `pointer-events-none` on the layer and back on each piece: the
+                    layer covers the whole column, and without this it swallowed
+                    every click meant for the empty slots underneath. */}
+                <div className="pointer-events-none absolute inset-0">
                   {placeSpans(pieces).map(({ span: piece, z, top, height, width, labelTop }) => (
                     <div
                       key={piece.key}
-                      className="absolute left-0 px-[3px] py-px"
+                      className="pointer-events-auto absolute left-0 px-[3px] py-px"
                       style={{ top, height, width: `${width}%`, zIndex: z }}
                     >
                       {piece.kind === 'session' ? (
@@ -368,8 +401,8 @@ function Event({
   return (
     <div
       className={cn(
-        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-[11.5px] leading-tight font-semibold text-white',
-        appointment.status === 'cancelled' && 'opacity-55',
+        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-micro leading-tight font-semibold text-white',
+        appointment.status === 'cancelled' && 'line-through opacity-55',
         // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
         // Sin esto no habría forma de saber cuál de las doce es la que estás
         // mirando en el panel.
@@ -377,6 +410,30 @@ function Event({
       )}
       style={{ background: patientHex(patient?.color ?? null) }}
     >
+      {/* Ver `APPOINTMENT_STATUS_TILE`: los cuatro estados se dibujaban igual
+          salvo el cancelado, así que marcar "Vino" no movía un pixel. */}
+      {appointmentStatusTile(appointment.status).frame ? (
+        <span
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute inset-0 rounded-[9px]',
+            appointmentStatusTile(appointment.status).frame,
+          )}
+        />
+      ) : null}
+
+      {appointmentStatusTile(appointment.status).glyph ? (
+        <span
+          aria-hidden
+          className="absolute top-0.5 right-1 text-[10px] leading-none opacity-95"
+        >
+          {appointmentStatusTile(appointment.status).glyph}
+        </span>
+      ) : null}
+
+      {/* Dicho también en palabras, para quien no ve el anillo ni el glifo. */}
+      <span className="sr-only">{appointmentStatusLabel(appointment.status)}</span>
+
       <div style={{ paddingTop: labelTop }}>
         <SelectLink href={href}>
           {formatTime(appointment.start_time)} · {name}
@@ -404,7 +461,7 @@ function Event({
  */
 function Busy({ block, labelTop }: { block: BusyBlock; labelTop: number }) {
   return (
-    <div className="h-full overflow-hidden rounded-[9px] border border-dashed border-border bg-muted px-1.5 py-1.5 text-[11.5px] leading-tight text-muted-foreground">
+    <div className="h-full overflow-hidden rounded-[9px] border border-dashed border-border bg-muted px-1.5 py-1.5 text-micro leading-tight text-muted-foreground">
       <div style={{ paddingTop: labelTop }}>
         <div className="truncate font-semibold">{block.title}</div>
         <div className="font-normal opacity-90">

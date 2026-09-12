@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
 
 import { env } from '@/lib/env'
+import { FEATURES, FEATURE_OFF_MESSAGE } from '@/lib/features'
 
 import { getDb, getServiceDb } from './db'
 
@@ -38,7 +39,19 @@ export const MpConnection = z.object({
  * to everyone else — including its owner. That is the point: a token that the
  * practitioner's own browser cannot fetch is a token that cannot leak from it.
  */
+/**
+ * Cierra las dos entradas que escriben o cobran. Ver `src/lib/features.ts`.
+ *
+ * Acá y no en la pantalla: esconder el botón no cierra nada. Lo que no está
+ * apagado es `disconnectMercadoPago`, que sólo borra — alguien que conectó su
+ * cuenta antes de esto tiene que poder desconectarla.
+ */
+function assertMercadoPagoOn() {
+  if (!FEATURES.mercadoPago) throw new MercadoPagoError(FEATURE_OFF_MESSAGE)
+}
+
 export async function connectMercadoPago(practitionerId: string, input: unknown) {
+  assertMercadoPagoOn()
   const { accessToken } = MpConnection.parse(input)
   const db = getServiceDb()
 
@@ -71,6 +84,8 @@ export async function disconnectMercadoPago(practitionerId: string) {
  * every code path that merely needs a yes or no.
  */
 export async function isMercadoPagoConnected(practitionerId: string): Promise<boolean> {
+  if (!FEATURES.mercadoPago) return false
+
   const db = getServiceDb()
   const { data, error } = await db
     .from('mp_accounts')
@@ -120,6 +135,7 @@ export async function createPaymentLink(
     externalReference,
   }: { amount: number; title: string; externalReference: string },
 ): Promise<string> {
+  assertMercadoPagoOn()
   if (!(amount > 0)) throw new MercadoPagoError('El monto tiene que ser mayor a cero.')
 
   const token = await accessTokenFor(practitionerId)
@@ -239,6 +255,11 @@ type MpPayment = {
  * must land once.
  */
 export async function handlePaymentNotification(paymentId: string): Promise<void> {
+  // Apagado significa que tampoco se escriben pagos que llegan de afuera. Una
+  // notificación atrasada de una cuenta que quedó conectada antes de apagar
+  // esto no puede seguir tocando el libro de nadie.
+  if (!FEATURES.mercadoPago) return
+
   const db = getServiceDb()
 
   const { data: existing } = await db
@@ -274,11 +295,22 @@ export async function handlePaymentNotification(paymentId: string): Promise<void
         : 'pending'
 
   if (existing) {
-    await db.from('payments').update({ status }).eq('id', existing.id)
+    const { error } = await db.from('payments').update({ status }).eq('id', existing.id)
+    if (error) throw error
     return
   }
 
-  await db.from('payments').insert({
+  // Leer el `error` de estas dos, que eran las únicas escrituras de todo
+  // `src/server/` que no lo hacían.
+  //
+  // El camino realista es la carrera: Mercado Pago reintenta la misma
+  // notificación en paralelo, las dos pasan el `select` de `existing` con la
+  // tabla vacía, y la segunda choca contra el índice único de `mp_payment_id`.
+  // Ese choque era silencio: la función volvía normal, la ruta devolvía 200 y
+  // Mercado Pago dejaba de reintentar. El pago no quedaba registrado y nadie se
+  // enteraba. Tirando el error, la ruta responde 5xx y el reintento siguiente
+  // encuentra la fila y toma el camino de arriba.
+  const { error: insertError } = await db.from('payments').insert({
     practitioner_id: practitionerId,
     patient_id: reference!.patientId,
     period: reference!.period,
@@ -288,6 +320,8 @@ export async function handlePaymentNotification(paymentId: string): Promise<void
     status,
     mp_payment_id: paymentId,
   })
+
+  if (insertError) throw insertError
 }
 
 /**
@@ -341,6 +375,8 @@ export function parseExternalReference(reference: string | null | undefined) {
  * service role.
  */
 export async function paymentLinkFor(practitionerId: string) {
+  if (!FEATURES.mercadoPago) return null
+
   const db = await getDb()
   const { data } = await db
     .from('practitioners')

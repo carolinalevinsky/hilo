@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { readCustomInstructions } from '@/app/(app)/custom-instructions'
 import { ageLabel } from '@/lib/age'
 import { formError, type FormState } from '@/lib/form-state'
 import { instrument } from '@/lib/instruments'
@@ -18,6 +19,7 @@ import {
 import { createGoal } from '@/server/goals'
 import { getPatient } from '@/server/patients'
 import { recordUsage } from '@/server/ai-usage'
+import { listVersions, type VersionReason } from '@/server/document-versions'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -65,6 +67,10 @@ export async function createAssessmentAction(
     return formError('Cargá al menos un resultado.')
   }
 
+  // Her own instructions (P20), before the quota like every other field.
+  const own = await readCustomInstructions(user.id, 'assessment', formData)
+  if ('message' in own) return formError(own.message)
+
   try {
     await assertQuota(user.id, practitioner.plan, 'assessments')
   } catch (error) {
@@ -85,6 +91,7 @@ export async function createAssessmentAction(
     assessedOn,
     results,
     observations,
+    customInstructions: own.text,
     analysis: assessmentFallback({
       instrumentName: chosen.name,
       patientName: patient.full_name,
@@ -99,10 +106,16 @@ export async function createAssessmentAction(
   redirect(`/evaluaciones/${assessment.id}?ia=1`)
 }
 
-export async function saveAssessmentAction(assessmentId: string, analysis: string) {
+/** Igual que `saveReportAction`: ver la nota ahí. */
+export async function saveAssessmentAction(
+  assessmentId: string,
+  analysis: string,
+  reason: VersionReason = 'edit',
+) {
   const user = await requireUser()
-  await updateAssessmentAnalysis(user.id, assessmentId, analysis)
+  await updateAssessmentAnalysis(user.id, assessmentId, analysis, reason)
   revalidatePath(`/evaluaciones/${assessmentId}`)
+  return listVersions(user.id, 'assessment', assessmentId)
 }
 
 export async function deleteAssessmentAction(formData: FormData) {

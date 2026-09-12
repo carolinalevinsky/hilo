@@ -2,7 +2,7 @@ import { UserPlus } from '@/components/icons'
 
 import { confirmBookingAction, dismissBookingAction } from '@/app/(app)/reservas/actions'
 import { Button } from '@/components/ui/button'
-import { formatDate } from '@/lib/dates'
+import { formatDate, formatLongDate } from '@/lib/dates'
 import { weekdayName } from '@/lib/week'
 import type { BookingRequestWithPatient } from '@/server/booking'
 
@@ -29,18 +29,22 @@ export function PendingBookingRequests({
       {requests.map((request) => (
         <li key={request.id} className="flex flex-wrap items-center gap-3 py-3">
           <div className="min-w-[180px] flex-1">
-            <p className="text-[14px] font-bold">{request.name}</p>
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-item font-bold">{request.name}</p>
+            <p className="text-meta text-muted-foreground">
               {request.phone}
-              {request.preferred_weekday !== null
-                ? ` · pidió ${weekdayName(request.preferred_weekday).toLowerCase()}`
-                : ''}
+              {/* The date when the family gave one (P7); the weekday for
+                  requests from before the form asked for a date. */}
+              {request.preferred_date
+                ? ` · pidió el ${formatLongDate(request.preferred_date)}`
+                : request.preferred_weekday !== null
+                  ? ` · pidió ${weekdayName(request.preferred_weekday).toLowerCase()}`
+                  : ''}
               {request.preferred_time ? ` ${request.preferred_time.slice(0, 5)}` : ''}
               {' · '}
               {formatDate(request.created_at)}
             </p>
             {request.note ? (
-              <p className="mt-1 text-[13px] leading-relaxed">{request.note}</p>
+              <p className="mt-1 text-body leading-relaxed">{request.note}</p>
             ) : null}
           </div>
 

@@ -17,7 +17,12 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig(({ mode }) => ({
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    // `.tsx` además de `.ts` para poder probar un componente renderándolo de
+    // verdad, con `renderToStaticMarkup`. Lo abrió el panel de propuesta de la
+    // IA: lo que hay que verificar ahí no es una función sino lo que se lee en
+    // pantalla —que el párrafo que la propuesta borra se vea antes de aprobarla—
+    // y eso, mirando el módulo, no se ve.
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     env: loadEnv(mode, process.cwd(), ''),
   },
   resolve: {

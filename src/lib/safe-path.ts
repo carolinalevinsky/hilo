@@ -54,3 +54,24 @@ export function internalPath(value: unknown, fallback: string): string {
   // navigates by fragment, and it is the one part that never reaches the server.
   return `${url.pathname}${url.search}`
 }
+
+/**
+ * A dónde vuelve el botón "Volver" de un documento, y cómo se llama ese lugar.
+ *
+ * Un informe se abre desde dos lados —la lista de Informes y la ficha del
+ * paciente— y hasta ahora volvía siempre a la lista. Entrar desde la ficha y
+ * salir a otra pantalla es de las cosas que hacen sentir que la aplicación te
+ * mueve sola.
+ *
+ * El origen viaja en `?volver=`, y por eso pasa por `internalPath`: un parámetro
+ * de la barra de direcciones que termina en un `href` es exactamente la forma de
+ * un redirect abierto. Cualquier cosa que no sea una ruta interna cae en la
+ * lista, que es el destino de siempre.
+ */
+export function backLink(value: unknown, fallback: string, fallbackLabel: string) {
+  const href = internalPath(value, fallback)
+  return {
+    href,
+    label: href.startsWith('/pacientes/') ? 'Volver a la ficha' : fallbackLabel,
+  }
+}

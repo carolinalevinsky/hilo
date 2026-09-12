@@ -1,8 +1,8 @@
 import { calendarEventTitle } from '@/lib/calendar-privacy'
-import { TIME_ZONE } from '@/lib/dates'
+import { TIME_ZONE, zonedParts } from '@/lib/dates'
 
 import { getDb } from './db'
-import { connectionFor, pullStateFor, saveSyncPoint } from './google'
+import { connectionFor, findGoogleAccount, pullStateFor, saveSyncPoint } from './google'
 
 /**
  * Escribir en el calendario de Google lo que pasa en Hilo.
@@ -25,6 +25,9 @@ import { connectionFor, pullStateFor, saveSyncPoint } from './google'
  */
 
 const API = 'https://www.googleapis.com/calendar/v3/calendars'
+
+/** Guarda contra un `nextPageToken` que no avanza. 250 por página. */
+const MAX_SYNC_PAGES = 40
 
 type AppointmentForSync = {
   id: string
@@ -97,28 +100,13 @@ export function eventBody(appointment: AppointmentForSync, title: string) {
  * en Montevideo se guardarían como las seis, en todas las sesiones, y nada
  * fallaría.
  *
- * `Intl.DateTimeFormat` con la zona explícita es lo que hace la conversión bien,
- * sin importar dónde corra esto. `hourCycle: 'h23'` y no `hour12: false`: el
- * segundo devuelve "24" para la medianoche en algunos entornos, y "24:00:00" no
- * es una hora válida para Postgres.
+ * El `Intl.DateTimeFormat` que hace bien esa conversión vivía acá, y era el
+ * único lugar de la aplicación que la hacía bien. Ahora es `zonedParts` en
+ * `src/lib/dates.ts`, donde lo alcanza el resto del código — que cometía este
+ * mismo error en la agenda, en las estadísticas y en la cuota mensual.
  */
 export function toLocalDateTime(iso: string): { date: string; time: string } {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(new Date(iso))
-
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? ''
-
-  return {
-    date: `${get('year')}-${get('month')}-${get('day')}`,
-    time: `${get('hour')}:${get('minute')}:00`,
-  }
+  return zonedParts(new Date(iso))
 }
 
 /** Cuántos minutos dura, redondeando hacia arriba al minuto. */
@@ -298,8 +286,12 @@ async function pullOnce(
   calendarId: string,
   syncToken: string | null,
   retriedFromScratch = false,
+  pageToken?: string,
+  pageGuard = 0,
 ): Promise<number> {
   const params = new URLSearchParams({ maxResults: '250', showDeleted: 'true' })
+
+  if (pageToken) params.set('pageToken', pageToken)
 
   if (syncToken) {
     params.set('syncToken', syncToken)
@@ -332,11 +324,51 @@ async function pullOnce(
   const payload = (await response.json()) as {
     items?: GoogleEvent[]
     nextSyncToken?: string
+    nextPageToken?: string
   }
 
   let applied = 0
   for (const event of payload.items ?? []) {
     if (await applyEvent(practitionerId, event)) applied += 1
+  }
+
+  // ─── Por qué hay que leer `nextPageToken` ─────────────────────────────────
+  //
+  // Con más de 250 cambios, Google devuelve una página y un `nextPageToken`, y
+  // **no** manda `nextSyncToken` hasta la última. Sin esto pasaban dos cosas a
+  // la vez y las dos en silencio: las páginas siguientes no se pedían nunca, y
+  // el punto de sincronización se guardaba en `null`, así que la pasada
+  // siguiente arrancaba de cero desde hoy. Todo lo del medio se perdía.
+  //
+  // Se dispara justo cuando más duele: la primera sincronización de una agenda
+  // cargada, que es la que decide si la profesional confía en esto.
+  //
+  // El tope de páginas es una guarda, no un límite: 250 por página son 10.000
+  // cambios, que es muchísimo más que cualquier pasada real. Existe para que un
+  // token que vuelve sobre sí mismo no gire para siempre contra la API de
+  // Google. Si se llega ahí, no se guarda punto nuevo y la próxima pasada
+  // retoma — mejor lento que salteado.
+  if (payload.nextPageToken) {
+    if (pageGuard >= MAX_SYNC_PAGES) {
+      console.warn('[google] la sincronización superó el tope de páginas', {
+        practitionerId,
+        pages: pageGuard,
+      })
+      return applied
+    }
+
+    return (
+      applied +
+      (await pullOnce(
+        practitionerId,
+        accessToken,
+        calendarId,
+        syncToken,
+        retriedFromScratch,
+        payload.nextPageToken,
+        pageGuard + 1,
+      ))
+    )
   }
 
   await saveSyncPoint(practitionerId, payload.nextSyncToken ?? null)
@@ -383,7 +415,27 @@ async function applyEvent(
     .eq('id', appointmentId)
     .eq('practitioner_id', practitionerId)
 
-  return !error
+  if (error) return false
+
+  // Y se levanta la cancelación, si la había.
+  //
+  // Un evento borrado en Google y después restaurado vuelve por acá. Sin esto se
+  // le actualizaba la fecha y la hora pero no el estado, así que la sesión
+  // existía, decía cuándo era, y seguía tachada en Hilo para siempre.
+  //
+  // El `.eq('status', 'cancelled')` es lo que lo hace seguro: sólo levanta la
+  // cancelación que este mismo archivo escribió. Un "vino" o un "no vino" los
+  // puso una persona en Hilo, Google no sabe nada de eso, y no se tocan. Un
+  // evento cancelado ya salió por el camino de arriba, así que llegar hasta acá
+  // significa que en Google existe.
+  await db
+    .from('appointments')
+    .update({ status: 'scheduled' })
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .eq('status', 'cancelled')
+
+  return true
 }
 
 /**
@@ -410,8 +462,21 @@ async function applyEvent(
  *
  * Se leen, se dibujan, se olvidan.
  *
- * Vale la misma regla que el resto del archivo: si Google falla, esto devuelve
- * una lista vacía y la Agenda se ve como se veía antes de conectar. Nunca tira.
+ * Vale la misma regla que el resto del archivo: si Google falla, esto no tira y
+ * la Agenda se sigue viendo. Lo que no hace es callarlo.
+ *
+ * ─── "No sé" no es "libre" ─────────────────────────────────────────────────
+ *
+ * Antes devolvía una lista vacía en cuatro casos y sólo uno quería decir "no
+ * hay nada ocupado": que no hubiera cuenta conectada. Los otros tres —la red se
+ * cayó, Google contestó con error (un token vencido, casi siempre), la respuesta
+ * no se pudo leer— eran "no pude averiguarlo", y la pantalla los recibía igual.
+ * Google figuraba conectado, la semana se veía limpia, y el jueves a las 15:00
+ * donde estaba el dentista aparecía disponible. Ahí se agenda un paciente.
+ *
+ * Por eso `unavailable`: verdadero sólo cuando hay conexión y aun así no se pudo
+ * traer. La Agenda lo dice en una línea. No se reintenta en silencio: si es un
+ * token vencido, no se arregla solo.
  */
 export type BusyBlock = {
   id: string
@@ -423,13 +488,28 @@ export type BusyBlock = {
   endTime: string | null
 }
 
+export type BusyWeek = {
+  blocks: BusyBlock[]
+  /** Hay Google conectado y no se pudo leer. Ver "No sé no es libre" arriba. */
+  unavailable: boolean
+}
+
+const UNAVAILABLE: BusyWeek = { blocks: [], unavailable: true }
+
 export async function listBusyBlocks(
   practitionerId: string,
   from: string,
   to: string,
-): Promise<BusyBlock[]> {
+): Promise<BusyWeek> {
   const connection = await connectionFor(practitionerId)
-  if (!connection) return []
+  if (!connection) {
+    // `connectionFor` da null en dos casos que no se parecen: no hay cuenta
+    // conectada, o la hay y el permiso no se pudo renovar. El segundo es el
+    // "token vencido" de casi siempre, y contestarlo como "no hay nada" era el
+    // mismo "libre" de antes por otro camino. La consulta extra sólo corre acá.
+    const account = await findGoogleAccount(practitionerId)
+    return account ? UNAVAILABLE : { blocks: [], unavailable: false }
+  }
 
   // La ventana se pide con un día de más de cada lado, en UTC, y después se
   // filtra por fecha local. Es a propósito: armar el instante exacto en que
@@ -458,13 +538,13 @@ export async function listBusyBlocks(
     { method: 'GET' },
   )
 
-  if (!response || !response.ok) return []
+  if (!response || !response.ok) return UNAVAILABLE
 
   try {
     const payload = (await response.json()) as { items?: GoogleEvent[] }
-    return toBusyBlocks(payload.items ?? [], from, to)
+    return { blocks: toBusyBlocks(payload.items ?? [], from, to), unavailable: false }
   } catch {
-    return []
+    return UNAVAILABLE
   }
 }
 

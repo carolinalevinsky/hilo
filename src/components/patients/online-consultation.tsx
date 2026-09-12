@@ -1,6 +1,7 @@
 'use client'
 
 import { Globe, MessageCircle, Video } from '@/components/icons'
+import Link from 'next/link'
 import { useActionState, useState } from 'react'
 
 import {
@@ -21,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { FEATURES } from '@/lib/features'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
 
 /**
@@ -56,7 +58,14 @@ export function OnlineConsultation({
   const [open, setOpen] = useState(false)
   const [state, formAction, pending] = useActionState(saveVideoUrlAction, EMPTY_FORM_STATE)
 
-  const url = videoUrl ?? roomUrl
+  // La sala de Hilo está apagada para la v1 —ver `src/lib/features.ts`— pero la
+  // sala propia no: que una profesional use su Zoom o su Meet es asunto suyo, y
+  // lo que se apagó es que Hilo abra una sala pública de `meet.jit.si`. Por eso
+  // se filtra `roomUrl` y no `videoUrl`.
+  //
+  // Una ficha que ya tenga `room_id` de antes deja de mostrarlo. La columna
+  // queda; el link no se ofrece.
+  const url = videoUrl ?? (FEATURES.videoCalls ? roomUrl : null)
   const message = url
     ? `¡Hola! Nos encontramos en la videollamada de ${firstName(patientName)} por acá: ${url}`
     : ''
@@ -79,7 +88,9 @@ export function OnlineConsultation({
           <DialogDescription>
             {videoUrl
               ? 'Tu sala de siempre. Compartí el link con la familia para que entren.'
-              : 'Una sala privada para esta sesión. El link no dice el nombre del paciente, así que se puede compartir sin problema.'}
+              : FEATURES.videoCalls
+                ? 'Una sala privada para esta sesión. El link no dice el nombre del paciente, así que se puede compartir sin problema.'
+                : 'Guardá acá el link de la sala que usés, para tenerlo a mano en la ficha.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,19 +104,31 @@ export function OnlineConsultation({
                 </a>
               </Button>
 
-              <Button
-                asChild
-                className="w-full bg-[#25d366] text-white hover:bg-[#25d366]/90"
-              >
-                <a
-                  href={whatsappLink(patientPhone, message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {/* Sin teléfono, `whatsappLink` arma `wa.me/?text=…` sin número y
+                  WhatsApp abre sin destinatario. Acá se ofrece cargarlo, igual
+                  que en "Recordar" y "Compartir con familia". */}
+              {patientPhone ? (
+                <Button
+                  asChild
+                  className="w-full bg-[#25d366] text-white hover:bg-[#25d366]/90"
                 >
-                  <MessageCircle className="size-4" />
-                  Enviar el link a la familia
-                </a>
-              </Button>
+                  <a
+                    href={whatsappLink(patientPhone, message)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="size-4" />
+                    Enviar el link a la familia
+                  </a>
+                </Button>
+              ) : (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/pacientes/${patientId}/editar`}>
+                    <MessageCircle className="size-4" />
+                    Cargar el teléfono para mandarlo
+                  </Link>
+                </Button>
+              )}
 
               <p className="text-xs leading-relaxed text-muted-foreground">
                 El link es siempre el mismo, así que la familia puede guardarlo. Se abre
@@ -124,13 +147,20 @@ export function OnlineConsultation({
             // anyway is a row written for nothing. Once made it is kept — a
             // family saves the link, and v1's regenerated-every-reload id is
             // exactly what broke that.
-            <form action={openConsultationAction}>
-              <input type="hidden" name="patientId" value={patientId} />
-              <Button type="submit" className="w-full">
-                <Video className="size-4" />
-                Crear la sala de video
-              </Button>
-            </form>
+            FEATURES.videoCalls ? (
+              <form action={openConsultationAction}>
+                <input type="hidden" name="patientId" value={patientId} />
+                <Button type="submit" className="w-full">
+                  <Video className="size-4" />
+                  Crear la sala de video
+                </Button>
+              </form>
+            ) : (
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Por ahora Hilo no abre salas de video propias. Si usás Zoom, Meet o
+                cualquier otra, pegá el link acá abajo y queda guardado para esta ficha.
+              </p>
+            )
           )}
         </div>
 

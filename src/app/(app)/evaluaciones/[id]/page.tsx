@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { restoreVersionAction } from '@/app/(app)/document-actions'
 import {
   adoptSuggestedGoalsAction,
   deleteAssessmentAction,
@@ -13,8 +14,10 @@ import { DocumentEditor } from '@/components/documents/document-editor'
 import { Button } from '@/components/ui/button'
 import { ageLabel } from '@/lib/age'
 import { formatLongDate } from '@/lib/dates'
+import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { AssessmentResults, getAssessment, suggestedGoals } from '@/server/assessments'
+import { listVersions } from '@/server/document-versions'
 
 import { currentPractitioner, currentUser } from '../../session'
 
@@ -27,6 +30,8 @@ export default async function AssessmentPage({
 }: PageProps<'/evaluaciones/[id]'>) {
   const { id } = await params
   const query = await searchParams
+  // De dónde vino, para poder devolverlo ahí. Ver `backLink`.
+  const back = backLink(query.volver, '/informes', 'Volver a informes')
   const user = await currentUser()
 
   const [assessment, practitioner] = await Promise.all([
@@ -35,6 +40,8 @@ export default async function AssessmentPage({
   ])
   if (!assessment) notFound()
 
+  const versions = await listVersions(user.id, 'assessment', assessment.id)
+
   const results = AssessmentResults.parse(assessment.results)
   const proposals = suggestedGoals(results, assessment.instrument)
 
@@ -42,11 +49,11 @@ export default async function AssessmentPage({
     <>
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
-          href="/informes"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+          href={back.href}
+          className="inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Volver a informes
+          {back.label}
         </Link>
 
         <form action={deleteAssessmentAction}>
@@ -76,10 +83,12 @@ export default async function AssessmentPage({
         <DocumentEditor
           documentId={assessment.id}
           initialText={assessment.analysis ?? ''}
+          initialVersions={versions}
           endpoint="/api/ai/evaluacion"
           idField="assessmentId"
           autoStart={query.ia === '1'}
           onSave={saveAssessmentAction.bind(null, assessment.id)}
+          onRestore={restoreVersionAction}
         />
       </ClinicalDocument>
 
@@ -95,10 +104,10 @@ export default async function AssessmentPage({
           <input type="hidden" name="instrumentName" value={assessment.instrument} />
           <input type="hidden" name="results" value={JSON.stringify(results)} />
 
-          <p className="text-[13.5px] font-bold text-violet">
+          <p className="text-body font-bold text-violet">
             Objetivos sugeridos a partir de esta evaluación
           </p>
-          <ul className="mt-1.5 space-y-1 text-[13px] text-violet">
+          <ul className="mt-1.5 space-y-1 text-body text-violet">
             {proposals.map((proposal) => (
               <li key={proposal}>• {proposal}</li>
             ))}

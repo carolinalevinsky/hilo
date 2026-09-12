@@ -1,3 +1,5 @@
+import { todayDate } from './dates'
+
 /**
  * Age, derived from a date of birth.
  *
@@ -6,7 +8,7 @@
  * impossible to ask. Storing the date and computing this is the whole fix.
  */
 
-export function ageInYears(dateOfBirth: string, today = new Date()): number {
+export function ageInYears(dateOfBirth: string, today = todayDate()): number {
   const born = new Date(`${dateOfBirth}T00:00:00`)
   let years = today.getFullYear() - born.getFullYear()
   const monthDelta = today.getMonth() - born.getMonth()
@@ -16,7 +18,7 @@ export function ageInYears(dateOfBirth: string, today = new Date()): number {
   return Math.max(years, 0)
 }
 
-export function ageInMonths(dateOfBirth: string, today = new Date()): number {
+export function ageInMonths(dateOfBirth: string, today = todayDate()): number {
   const born = new Date(`${dateOfBirth}T00:00:00`)
   let months =
     (today.getFullYear() - born.getFullYear()) * 12 + (today.getMonth() - born.getMonth())
@@ -29,7 +31,7 @@ export function ageInMonths(dateOfBirth: string, today = new Date()): number {
  * actually works with — "1 año" tells you much less than "14 meses" does when
  * the patient is a toddler in early intervention.
  */
-export function ageLabel(dateOfBirth: string | null, today = new Date()): string | null {
+export function ageLabel(dateOfBirth: string | null, today = todayDate()): string | null {
   if (!dateOfBirth) return null
 
   const months = ageInMonths(dateOfBirth, today)

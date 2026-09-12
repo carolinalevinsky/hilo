@@ -13,7 +13,7 @@ export default function NewPatientPage() {
     <>
       <Link
         href="/pacientes"
-        className="mb-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+        className="mb-3 inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
         Volver a pacientes

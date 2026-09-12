@@ -156,7 +156,7 @@ function attachmentBlock(attachment: Attachment) {
 export class AiUnavailableError extends Error {
   constructor(
     message: string,
-    readonly reason: 'refusal' | 'error',
+    readonly reason: 'refusal' | 'error' | 'truncated',
   ) {
     super(message)
     this.name = 'AiUnavailableError'
@@ -245,6 +245,25 @@ async function* streamMessages(
     throw new AiUnavailableError(
       'La IA no pudo redactar este texto con los datos cargados.',
       'refusal',
+    )
+  }
+
+  // Se llegó al techo de `MAX_TOKENS` y el texto quedó cortado a mitad de
+  // frase. Sin esto la ruta mandaba `event: done` igual y la pantalla lo daba
+  // por terminado: un informe clínico incompleto que parece completo, que es
+  // exactamente lo que una profesional no puede firmar sin darse cuenta.
+  //
+  // Se tira como error y no se descarta lo escrito, a propósito. Los chunks ya
+  // salieron por el stream, así que lo que hay sigue en pantalla; lo que cambia
+  // es que el final dice que está cortado en vez de decir que está listo. Un
+  // informe casi entero es mucho más útil que ninguno.
+  //
+  // Ojo con el techo: `MAX_TOKENS` cuenta el thinking además del texto, así que
+  // esto se dispara antes de lo que sugiere el largo de lo que se ve.
+  if (message.stop_reason === 'max_tokens') {
+    throw new AiUnavailableError(
+      'Llegó al máximo de largo y quedó cortado. Lo de arriba está entero hasta ahí — podés seguirlo a mano o pedirlo por partes.',
+      'truncated',
     )
   }
 }

@@ -89,10 +89,12 @@ export default async function DocumentsPage() {
         </Card>
       ) : (
         <>
-          <p className="mb-3.5 rounded-lg bg-violet-soft px-4 py-3 text-[13px] leading-relaxed text-violet">
-            Empezá por un formato: elegís el paciente y Hilo arma el borrador. Cada
-            informe y evaluación queda vinculado al paciente y disponible en su ficha.
-          </p>
+          {/* There used to be a violet strip here saying "Empezá por un formato:
+              elegís el paciente y Hilo arma el borrador". It was the third time
+              the same instruction appeared above the fold: the page subtitle
+              says where reports end up, and the card below says "Formatos
+              disponibles · Tocá Crear y elegí el paciente" two centimetres
+              lower. Whoever needs to be told once has been told. */}
 
           {/* "Formatos disponibles" is how v1 opened this screen
               (`legacy/index.html:1656`), and it is the right way round: nobody
@@ -103,7 +105,7 @@ export default async function DocumentsPage() {
           <Card className="mb-5">
             <CardHeader>
               <CardTitle>Formatos disponibles</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
+              <p className="text-meta text-muted-foreground">
                 Tocá Crear y elegí el paciente.
               </p>
             </CardHeader>
@@ -138,7 +140,7 @@ export default async function DocumentsPage() {
           {/* Sólo en los últimos tres. El resto del mes no hay contador: ver
               `quotaWarning` en src/server/plans.ts. */}
           {runningOut ? (
-            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-[12.5px] leading-relaxed text-amber">
+            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-meta leading-relaxed text-amber">
               {runningOut}
             </p>
           ) : null}
@@ -150,7 +152,7 @@ export default async function DocumentsPage() {
               </CardHeader>
               <CardContent>
                 {reports.length === 0 ? (
-                  <p className="text-[13px] text-muted-foreground">
+                  <p className="text-body text-muted-foreground">
                     Todavía no generaste ninguno.
                   </p>
                 ) : (
@@ -167,10 +169,10 @@ export default async function DocumentsPage() {
                             size={32}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13.5px] font-bold">
+                            <p className="truncate text-body font-bold">
                               {report.patients?.full_name}
                             </p>
-                            <p className="truncate text-[12px] text-muted-foreground">
+                            <p className="truncate text-meta text-muted-foreground">
                               {RECIPIENT_LABELS[report.recipient as RecipientId]} ·{' '}
                               {formatDate(report.issued_on)}
                             </p>
@@ -192,7 +194,7 @@ export default async function DocumentsPage() {
               </CardHeader>
               <CardContent>
                 {assessments.length === 0 ? (
-                  <p className="text-[13px] text-muted-foreground">
+                  <p className="text-body text-muted-foreground">
                     Todavía no cargaste ninguna.
                   </p>
                 ) : (
@@ -209,10 +211,10 @@ export default async function DocumentsPage() {
                             size={32}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13.5px] font-bold">
+                            <p className="truncate text-body font-bold">
                               {assessment.patients?.full_name}
                             </p>
-                            <p className="truncate text-[12px] text-muted-foreground">
+                            <p className="truncate text-meta text-muted-foreground">
                               {assessment.instrument} · {formatDate(assessment.assessed_on)}
                             </p>
                           </div>
@@ -289,14 +291,14 @@ function FormatCard({
         <Icon className="size-[18px]" />
       </span>
 
-      <span className="text-[14.5px] font-bold">{title}</span>
-      <span className="mt-1 mb-2.5 text-[12.5px] text-muted-foreground">{blurb}</span>
+      <span className="text-item font-bold">{title}</span>
+      <span className="mt-1 mb-2.5 text-meta text-muted-foreground">{blurb}</span>
 
       <span className="mt-auto flex items-center justify-between gap-2">
-        <span className="rounded-full bg-violet-soft px-2.5 py-1 text-[11px] font-bold text-violet">
+        <span className="rounded-full bg-violet-soft px-2.5 py-1 text-micro font-bold text-violet">
           {chip}
         </span>
-        <span className="rounded-full bg-violet px-3 py-1.5 text-[12px] font-bold text-white">
+        <span className="rounded-full bg-violet px-3 py-1.5 text-meta font-bold text-white">
           Crear →
         </span>
       </span>

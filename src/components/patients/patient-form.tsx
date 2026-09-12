@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { FREQUENCY_LABELS } from '@/lib/appointment-labels'
 import { AGE_GROUP_LABELS, BILLING_FREQUENCY_LABELS } from '@/lib/patient-labels'
+import { WEEK_ORDER, weekdayName } from '@/lib/week'
 import type { Patient } from '@/server/patients'
 
 /**
@@ -118,6 +120,32 @@ export function PatientForm({
           />
         </Field>
 
+        {/* Only when creating. The motivo above says why they arrived — "derivado
+            por la maestra" — which is not a goal, and a practitioner who typed
+            what they meant to work on into that box had to type it again on the
+            ficha afterwards. Asking here is asking once. Editing does not offer
+            it: by then the patient has a goal list, and a second way in would
+            quietly create duplicates. */}
+        {editing ? null : (
+          <Field
+            label="Primer objetivo"
+            htmlFor="firstGoal"
+            hint="opcional"
+            className="sm:col-span-2"
+          >
+            <Input
+              id="firstGoal"
+              name="firstGoal"
+              maxLength={200}
+              placeholder="Ej: Producir /r/ en posición inicial"
+            />
+            <p className="text-xs text-muted-foreground">
+              Lo que vas a trabajar. Con esto Hilo sigue el avance y arma los informes.
+              Después agregás los que quieras desde la ficha.
+            </p>
+          </Field>
+        )}
+
         <Field label="Inicio del tratamiento" htmlFor="startDate" hint="opcional">
           <Input
             id="startDate"
@@ -128,8 +156,56 @@ export function PatientForm({
         </Field>
       </div>
 
+      {/* Also only when creating. The form was already asking "sesiones por mes"
+          two fieldsets down — it wanted to know how often you see them — but had
+          nowhere to say *when*, so the day and time had to be repeated in the
+          Agenda dialog. This writes the same standing rule that dialog writes,
+          and the Agenda materialises the occurrences from it.
+
+          The hour is empty on purpose and is the switch: no hour, no schedule.
+          A pre-filled 09:00 would agendar every patient at nine for somebody
+          who has not decided yet. */}
+      {editing ? null : (
+        <fieldset className="space-y-4 border-t border-border pt-5">
+          <legend className="text-body font-bold text-muted-foreground uppercase">
+            Cuándo la ves
+          </legend>
+
+          <p className="text-meta leading-relaxed text-muted-foreground">
+            Si ya sabés el día y la hora, la sesión queda agendada sola en tu Agenda.
+            Si todavía no, dejá la hora en blanco y la agendás cuando la tengas.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Día de la semana" htmlFor="weekday">
+              <Select id="weekday" name="weekday" defaultValue="1">
+                {WEEK_ORDER.map((weekday) => (
+                  <option key={weekday} value={weekday}>
+                    {weekdayName(weekday)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field label="Hora" htmlFor="startTime">
+              <Input id="startTime" name="startTime" type="time" />
+            </Field>
+
+            <Field label="Frecuencia" htmlFor="frequency">
+              <Select id="frequency" name="frequency" defaultValue="weekly">
+                {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+        </fieldset>
+      )}
+
       <fieldset className="space-y-4 border-t border-border pt-5">
-        <legend className="text-[13px] font-bold text-muted-foreground uppercase">
+        <legend className="text-body font-bold text-muted-foreground uppercase">
           Cobro
         </legend>
 

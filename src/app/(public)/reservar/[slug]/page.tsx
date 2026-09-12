@@ -49,7 +49,7 @@ export default async function BookingPage({ params }: PageProps<'/reservar/[slug
               <h1 className="truncate text-[19px] font-extrabold tracking-[-0.4px]">
                 {practitioner.full_name}
               </h1>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-body text-muted-foreground">
                 {disciplineLabel(practitioner.discipline)}
               </p>
             </div>
@@ -57,12 +57,12 @@ export default async function BookingPage({ params }: PageProps<'/reservar/[slug
 
           <BookingForm slug={slug} />
 
-          <p className="mt-4 text-center text-[12px] text-muted-foreground">
+          <p className="mt-4 text-center text-meta text-muted-foreground">
             {practitioner.full_name} recibe tu pedido y te confirma el horario.
           </p>
         </div>
 
-        <p className="mt-4 text-center text-[11.5px] text-muted-foreground">
+        <p className="mt-4 text-center text-micro text-muted-foreground">
           Hecho con Hilo · tus datos se comparten sólo con {practitioner.full_name}.{' '}
           <Link href="/privacidad" className="underline">
             Cómo los cuidamos

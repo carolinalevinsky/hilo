@@ -9,7 +9,7 @@ export default function SignUpPage() {
   return (
     <>
       <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">Creá tu cuenta</h1>
-      <p className="mt-1 mb-5 text-[13px] text-muted-foreground">
+      <p className="mt-1 mb-5 text-body text-muted-foreground">
         Tu espacio de trabajo, con tus pacientes guardados y seguros.
       </p>
 
@@ -17,7 +17,7 @@ export default function SignUpPage() {
 
       <SignUpForm />
 
-      <p className="mt-5 text-center text-[11.5px] text-muted-foreground">
+      <p className="mt-5 text-center text-micro text-muted-foreground">
         Tus datos están protegidos y encriptados.
       </p>
     </>

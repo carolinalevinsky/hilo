@@ -192,23 +192,32 @@ export function AppTour({ seen }: { seen: boolean }) {
                 top: Math.min(foco.top, window.innerHeight - 260),
                 left: foco.left + foco.width + 16,
               }
-            : {
+            : // Centred in both directions, which is what the note at the top
+              // of this file always said it did. It was pinned 88px from the
+              // bottom — above the phone's bottom bar — so the welcome, the
+              // first thing anyone sees, sat low on the screen on a phone and
+              // at the foot of the window on a desktop, over the end of
+              // "Primeros pasos". The middle clears the bottom bar on any
+              // phone tall enough to hold the card.
+              {
                 left: '50%',
-                bottom: 'calc(88px + env(safe-area-inset-bottom))',
-                transform: 'translateX(-50%)',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                maxHeight: 'calc(100dvh - 32px)',
+                overflowY: 'auto',
               }),
         }}
       >
         {/* El saludo no lleva contador: no es una de las cinco pantallas, y
             numerarlo haría que "1 de 6" empiece antes de mostrar nada. */}
         {step > 0 ? (
-          <p className="mb-1 text-[11.5px] font-semibold tracking-wide text-violet uppercase">
+          <p className="mb-1 text-micro font-semibold tracking-wide text-violet uppercase">
             {step} de {TOUR_STOPS.length - 1}
           </p>
         ) : null}
 
         <h2 className="text-[17px] font-extrabold tracking-[-0.3px]">{stop.title}</h2>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+        <p className="mt-1.5 text-body leading-relaxed text-muted-foreground">
           {stop.body}
         </p>
 
@@ -228,7 +237,7 @@ export function AppTour({ seen }: { seen: boolean }) {
           <button
             type="button"
             onClick={close}
-            className="ml-auto text-[12.5px] text-muted-foreground underline hover:text-foreground"
+            className="ml-auto text-meta text-muted-foreground underline hover:text-foreground"
           >
             Saltar
           </button>

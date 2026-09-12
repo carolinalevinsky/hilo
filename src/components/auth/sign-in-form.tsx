@@ -90,7 +90,7 @@ export function SignInForm({ back }: { back?: string }) {
         autoComplete="current-password"
       />
 
-      <label className="flex cursor-pointer items-center gap-2 text-[13px] font-medium text-[#3a4256]">
+      <label className="flex cursor-pointer items-center gap-2 text-body font-medium text-[#3a4256]">
         <input
           ref={rememberRef}
           type="checkbox"

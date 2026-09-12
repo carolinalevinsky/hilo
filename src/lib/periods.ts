@@ -1,3 +1,5 @@
+import { todayDate } from './dates'
+
 /**
  * Billing periods — "YYYY-MM".
  *
@@ -9,7 +11,7 @@
  */
 
 /** "2026-08" for the month containing `today`. */
-export function currentPeriod(today = new Date()): string {
+export function currentPeriod(today = todayDate()): string {
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 }
 

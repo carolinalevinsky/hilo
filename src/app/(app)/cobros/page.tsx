@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/page-header'
 import { PeriodNav } from '@/components/period-nav'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { MercadoPagoCard } from '@/components/payments/mercadopago-card'
+import { FEATURES } from '@/lib/features'
 import { BillingDialog } from '@/components/payments/billing-dialog'
 import { PaymentDialog } from '@/components/payments/payment-dialog'
 import { PaymentLinkButton } from '@/components/payments/payment-link-button'
@@ -135,11 +136,48 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     />
 
                     <div className="min-w-[140px] flex-1">
-                      <p className="text-[13.5px] font-bold">{row.fullName}</p>
-                      <p className="text-[12px] text-muted-foreground">
-                        {row.expected === null
-                          ? 'Sin honorario cargado'
-                          : `${money(row.paid)} de ${money(row.expected)}`}
+                      <p className="text-body font-bold">
+                        {row.fullName}
+                        {/* Dicho, y no sólo insinuado por la fila más apagada:
+                            si el mes cierra con una cifra que no cuadra, esto
+                            es lo que la explica. */}
+                        {row.deleted ? (
+                          <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
+                            Borrado
+                          </span>
+                        ) : row.archived ? (
+                          <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
+                            Archivado
+                          </span>
+                        ) : null}
+                      </p>
+                      {/* Sin honorario la fila decía "Sin honorario cargado" acá
+                          y "Sin honorario" en la etiqueta de al lado: lo mismo,
+                          dos veces, a dos centímetros. Queda la etiqueta —que es
+                          la que se lee de un vistazo bajando la lista— y esta
+                          línea pasa a ser lo único que falta hacer. */}
+                      <p className="text-meta text-muted-foreground">
+                        {row.archived || row.deleted ? (
+                          `${money(row.paid)} cobrado`
+                        ) : row.expected === null ? (
+                          <BillingDialog
+                            patientId={row.patientId}
+                            patientName={row.fullName}
+                            sessionFee={row.billing.sessionFee}
+                            billingFrequency={row.billing.frequency}
+                            expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
+                            trigger={
+                              <button
+                                type="button"
+                                className="font-semibold text-violet underline"
+                              >
+                                Cargar el honorario
+                              </button>
+                            }
+                          />
+                        ) : (
+                          `${money(row.paid)} de ${money(row.expected)}`
+                        )}
                         {row.payments.length > 0
                           ? ` · ${row.payments
                               .map((payment) => formatDayMonth(payment.paid_on))
@@ -150,6 +188,9 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
 
                     <Status row={row} />
 
+                    {/* Nothing to do on a deleted patient's row: the payments are
+                        history, and there is nobody to charge or bill anymore. */}
+                    {row.deleted ? null : (
                     <div className="flex flex-wrap gap-1.5">
                       {mpConnected && row.outstanding !== null && row.outstanding > 0 ? (
                         <PaymentLinkButton
@@ -162,21 +203,30 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                         />
                       ) : null}
 
-                      <PaymentDialog
-                        period={period}
-                        patients={patientOptions}
-                        defaultPatientId={row.patientId}
-                        defaultAmount={
-                          row.outstanding !== null && row.outstanding > 0
-                            ? row.outstanding
-                            : null
-                        }
-                        trigger={
-                          <Button size="sm" variant="ghost">
-                            Registrar pago
-                          </Button>
-                        }
-                      />
+                      {/* Sin honorario no hay pago que registrar acá: "Registrar
+                          pago" abriría un diálogo que no sabe de cuánto, al lado
+                          de una etiqueta que ya dice que falta el número. Se
+                          ofrece cargar el honorario, arriba, y nada se pierde —
+                          el "Registrar pago" del encabezado sigue estando, con
+                          su lista de pacientes, para el pago suelto de alguien a
+                          quien todavía no le pusiste arancel. */}
+                      {row.expected === null && !row.archived ? null : (
+                        <PaymentDialog
+                          period={period}
+                          patients={patientOptions}
+                          defaultPatientId={row.patientId}
+                          defaultAmount={
+                            row.outstanding !== null && row.outstanding > 0
+                              ? row.outstanding
+                              : null
+                          }
+                          trigger={
+                            <Button size="sm" variant="ghost">
+                              Registrar pago
+                            </Button>
+                          }
+                        />
+                      )}
 
                       {/* v1's `···` (`legacy/index.html:2421`): the fee and the
                           frequency, edited from the row you are already
@@ -189,13 +239,22 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                         expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
                       />
                     </div>
+                    )}
                   </li>
                 ))}
               </ul>
             </CardContent>
           </Card>
 
-          <MercadoPagoCard connected={mpConnected} />
+          {/* Apagado para la v1 — ver `src/lib/features.ts`. El botón de generar
+              link ya desaparece solo, porque `isMercadoPagoConnected` devuelve
+              `false` con la bandera baja; esta tarjeta hay que esconderla
+              aparte, porque su versión "sin conectar" es justamente la que
+              invita a conectar.
+
+              Lo que sigue prendido es todo el registro: anotar un pago a mano,
+              subir el comprobante y este mismo libro. Eso no toca plata. */}
+          {FEATURES.mercadoPago ? <MercadoPagoCard connected={mpConnected} /> : null}
 
           {ledger.rows.some((row) => row.payments.length > 0) ? (
             <Card className="mt-4">
@@ -209,7 +268,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     .map((payment) => (
                       <li
                         key={payment.id}
-                        className="flex items-center justify-between gap-2 py-2 text-[13px]"
+                        className="flex items-center justify-between gap-2 py-2 text-body"
                       >
                         <span>
                           <b>{payment.patients?.full_name}</b> · {money(Number(payment.amount))}{' '}
@@ -239,10 +298,18 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
  * to fill in and a settled account are different things, and conflating them is
  * how a month quietly looks collected when it is not.
  */
-function Status({ row }: { row: { expected: number | null; outstanding: number | null } }) {
+function Status({
+  row,
+}: {
+  row: { expected: number | null; outstanding: number | null; deleted?: boolean }
+}) {
+  // A deleted patient's row already says "Borrado" and what they paid; "Sin
+  // honorario" beside it would ask for a fee nobody is going to charge.
+  if (row.deleted) return null
+
   if (row.expected === null) {
     return (
-      <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
+      <span className="rounded-full bg-muted px-2.5 py-1 text-micro font-bold text-muted-foreground">
         Sin honorario
       </span>
     )
@@ -250,14 +317,14 @@ function Status({ row }: { row: { expected: number | null; outstanding: number |
 
   if ((row.outstanding ?? 0) <= 0) {
     return (
-      <span className="rounded-full bg-green-soft px-2.5 py-1 text-[11px] font-bold text-[#1a8f57]">
+      <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-[#1a8f57]">
         Al día
       </span>
     )
   }
 
   return (
-    <span className="rounded-full bg-amber-soft px-2.5 py-1 text-[11px] font-bold text-[#8a5a12]">
+    <span className="rounded-full bg-amber-soft px-2.5 py-1 text-micro font-bold text-[#8a5a12]">
       Debe {`$ ${row.outstanding!.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`}
     </span>
   )

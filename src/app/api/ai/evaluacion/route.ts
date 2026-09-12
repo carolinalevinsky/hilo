@@ -59,6 +59,8 @@ export async function POST(request: Request) {
     age: ageLabel(assessment.patients?.date_of_birth ?? null) ?? 'sin edad consignada',
     results,
     observations: assessment.observations,
+    // From the row, not the request (P20) — see the same line in `informe/route.ts`.
+    customInstructions: assessment.custom_instructions,
     adjustment: body.adjustment,
   })
 

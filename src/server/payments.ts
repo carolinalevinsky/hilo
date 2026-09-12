@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { zonedParts } from '@/lib/dates'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -99,6 +100,13 @@ export type LedgerRow = {
   patientId: string
   fullName: string
   color: string | null
+  /** Terminó el tratamiento. La fila se muestra igual, dicho con todas las letras. */
+  archived: boolean
+  /**
+   * Se lo borró. Sólo aparece en un mes en el que pagó, y sólo hasta el mes en
+   * que se lo borró — ver `monthlyLedger`.
+   */
+  deleted: boolean
   /** What this patient is expected to pay for the month, if it can be worked out. */
   expected: number | null
   paid: number
@@ -142,10 +150,11 @@ export async function monthlyLedger(
   const [{ data: patients, error: patientsError }, payments] = await Promise.all([
     db
       .from('patients')
-      .select('id, full_name, color, session_fee, billing_frequency, expected_sessions_per_month')
+      // Los borrados también, a propósito — ver la regla más abajo.
+      .select(
+        'id, full_name, color, session_fee, billing_frequency, expected_sessions_per_month, archived_at, deleted_at',
+      )
       .eq('practitioner_id', practitionerId)
-      .is('deleted_at', null)
-      .is('archived_at', null)
       .order('full_name'),
     listPayments(practitionerId, period),
   ])
@@ -159,26 +168,57 @@ export async function monthlyLedger(
     else byPatient.set(payment.patient_id, [payment])
   }
 
-  const rows: LedgerRow[] = (patients ?? []).map((patient) => {
-    const own = byPatient.get(patient.id) ?? []
-    const paid = own.reduce((sum, payment) => sum + Number(payment.amount), 0)
-    const expected = expectedForMonth(patient)
-
-    return {
-      patientId: patient.id,
-      fullName: patient.full_name,
-      color: patient.color,
-      expected,
-      paid,
-      outstanding: expected === null ? null : expected - paid,
-      payments: own,
-      billing: {
-        sessionFee: patient.session_fee === null ? null : Number(patient.session_fee),
-        frequency: patient.billing_frequency,
-        expectedSessionsPerMonth: patient.expected_sessions_per_month,
-      },
+  // Los archivados entran, pero sólo si ese mes tuvieron movimiento.
+  //
+  // Antes se los filtraba en la consulta, así que su plata quedaba en la tabla
+  // sin sumar a nada: registrabas un cobro, archivabas al paciente, y el total
+  // de agosto bajaba solo. Un libro contable no puede cambiar porque en octubre
+  // archivaste a alguien.
+  //
+  // Sin el `filter` estarían todos siempre, y la pantalla se llenaría de gente
+  // que terminó el tratamiento hace un año y no debe ni pagó nada.
+  //
+  // Los borrados, con la regla que decidió Carolina (2026-09-11): "si pagó,
+  // aparece; si no, no. Si se lo borra, no está más en los meses próximos, pero
+  // en los anteriores y en el actual sí." Antes se los filtraba en la consulta y
+  // pasaba lo mismo que con los archivados: su plata desaparecía del total del
+  // mes en que la cobraste. El mes del borrado se toma en hora de Uruguay — un
+  // borrado a las 22:00 del 31 de agosto es de agosto, no de septiembre.
+  const includes = (patient: NonNullable<typeof patients>[number]) => {
+    const moved = (byPatient.get(patient.id)?.length ?? 0) > 0
+    if (patient.deleted_at) {
+      const deletedIn = zonedParts(new Date(patient.deleted_at)).date.slice(0, 7)
+      return moved && period <= deletedIn
     }
-  })
+    return !patient.archived_at || moved
+  }
+
+  const rows: LedgerRow[] = (patients ?? [])
+    .filter(includes)
+    .map((patient) => {
+      const own = byPatient.get(patient.id) ?? []
+      const paid = own.reduce((sum, payment) => sum + Number(payment.amount), 0)
+      // De alguien archivado o borrado no se espera nada más, así que no
+      // engrosa lo pendiente. Lo que pagó sí cuenta: eso ya entró.
+      const expected = patient.archived_at || patient.deleted_at ? null : expectedForMonth(patient)
+
+      return {
+        patientId: patient.id,
+        fullName: patient.full_name,
+        color: patient.color,
+        archived: Boolean(patient.archived_at),
+        deleted: Boolean(patient.deleted_at),
+        expected,
+        paid,
+        outstanding: expected === null ? null : expected - paid,
+        payments: own,
+        billing: {
+          sessionFee: patient.session_fee === null ? null : Number(patient.session_fee),
+          frequency: patient.billing_frequency,
+          expectedSessionsPerMonth: patient.expected_sessions_per_month,
+        },
+      }
+    })
 
   return {
     period,

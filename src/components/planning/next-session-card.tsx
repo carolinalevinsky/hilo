@@ -1,6 +1,9 @@
 import { ClipboardList, Pencil, Plus } from '@/components/icons'
 import Link from 'next/link'
 
+import { formatLongDate } from '@/lib/dates'
+import { formatTime } from '@/lib/week'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { PlanItem } from '@/server/session-plans'
@@ -21,17 +24,38 @@ export function NextSessionCard({
   patientId,
   patientFirstName,
   items,
+  next,
 }: {
   patientId: string
   patientFirstName: string
   items: PlanItem[]
+  /** Cuándo es, si está agendada. La tarjeta decía "Próxima sesión" y no lo decía. */
+  next?: { id: string; scheduled_on: string; start_time: string } | null
 }) {
+  // Los links llevan la sesión (P14): lo preparado es para una sesión, y abrir
+  // Planificación o el registro sin decir cuál dejaba que eligiera otra cosa.
+  // Sin sesión agendada, el paciente — lo preparado queda para la próxima.
+  const planHref = next
+    ? `/planificacion?sesion=${next.id}`
+    : `/planificacion?paciente=${patientId}`
+  const recordHref = next
+    ? `/pacientes/${patientId}/sesiones/nueva?agenda=${next.id}`
+    : `/pacientes/${patientId}/sesiones/nueva?plan=1`
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Próxima sesión</CardTitle>
+
+        {/* Antes que nada lo demás: es la única cosa que alguien viene a mirar
+            acá, y estaba en la base sin que la pantalla la pidiera. */}
+        <p className="text-meta font-semibold">
+          {next
+            ? `${formatLongDate(next.scheduled_on)} · ${formatTime(next.start_time)}`
+            : 'No hay ninguna agendada todavía.'}
+        </p>
         {items.length > 0 ? (
-          <p className="text-[12.5px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             Dejaste preparada la próxima sesión con{' '}
             <b>{items.length === 1 ? '1 actividad' : `${items.length} actividades`}</b>.
             Cuando la tengas, registrala y pasa al historial.
@@ -42,14 +66,14 @@ export function NextSessionCard({
       <CardContent>
         {items.length === 0 ? (
           <>
-            <p className="mb-3 text-[13px] text-muted-foreground">
+            <p className="mb-3 text-body text-muted-foreground">
               Hilo ordena los objetivos de {patientFirstName} por los que menos se movieron
               y te sugiere con qué trabajarlos.
             </p>
             <Button asChild size="sm">
               {/* The patient is already chosen: arriving at the planner and
                   having to pick them from a list is the friction v1 avoided. */}
-              <Link href={`/planificacion?paciente=${patientId}`}>
+              <Link href={planHref}>
                 <Plus className="size-4" />
                 Preparar la próxima sesión
               </Link>
@@ -60,14 +84,14 @@ export function NextSessionCard({
             <ol className="space-y-2">
               {items.map((item, index) => (
                 <li key={item.id} className="flex items-center gap-2.5">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-[12px] font-extrabold text-[#12706a]">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-meta font-extrabold text-[#12706a]">
                     {index + 1}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[13.5px] font-bold">
+                    <p className="text-body font-bold">
                       {item.title ?? item.material?.title ?? 'Actividad'}
                     </p>
-                    <p className="text-[12px] text-muted-foreground">
+                    <p className="text-meta text-muted-foreground">
                       {item.title && item.material
                         ? `Material: ${item.material.title}`
                         : item.material
@@ -83,13 +107,13 @@ export function NextSessionCard({
 
             <div className="mt-3.5 flex flex-wrap gap-2">
               <Button asChild size="sm">
-                <Link href={`/pacientes/${patientId}/sesiones/nueva?plan=1`}>
+                <Link href={recordHref}>
                   <ClipboardList className="size-4" />
                   Registrar esta sesión
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/planificacion?paciente=${patientId}`}>
+                <Link href={planHref}>
                   <Pencil className="size-4" />
                   Editar
                 </Link>

@@ -57,14 +57,14 @@ export function PeriodNav({
         </Arrow>
       </div>
 
-      <p className="text-[15px] leading-tight font-extrabold">{label}</p>
+      <p className="text-lead leading-tight font-extrabold">{label}</p>
 
       {/* El botón siempre está, incluso cuando ya estás en el período actual. Uno
           que aparece y desaparece corre todo lo que tiene al lado, y esta es una
           barra a la que se le apunta sin mirar. En el período actual queda
           apagado en vez de irse. */}
       {isCurrent ? (
-        <span className="rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-muted-foreground/60">
+        <span className="rounded-lg border border-border px-3 py-1.5 text-meta font-semibold text-muted-foreground/60">
           {resetLabel}
         </span>
       ) : (

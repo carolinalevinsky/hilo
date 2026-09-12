@@ -113,13 +113,28 @@ beforeAll(async () => {
     title: 'Lo que Bruno planificó para la próxima',
   })
 
-  await service.from('reports').insert({
+  const { data: reportB } = await service
+    .from('reports')
+    .insert({
+      practitioner_id: idB,
+      patient_id: patientB,
+      recipient: 'family',
+      title: 'Informe de avance',
+      content: 'Cuerpo del informe de Bruno',
+    })
+    .select()
+    .single()
+
+  // Una versión anterior de ese informe. Es el texto clínico que Bruno escribió
+  // y después reemplazó: exactamente igual de privado que el que quedó, y en una
+  // tabla distinta que nadie había mirado desde afuera.
+  const { error: versionError } = await service.from('document_versions').insert({
     practitioner_id: idB,
-    patient_id: patientB,
-    recipient: 'family',
-    title: 'Informe de avance',
-    content: 'Cuerpo del informe de Bruno',
+    report_id: reportB?.id,
+    body: 'Lo que el informe de Bruno decía antes',
+    replaced_by: 'ai',
   })
+  expect(versionError, 'the document_versions fixture itself failed').toBeNull()
 
   // The three that had no fixture, and therefore no case below, and therefore
   // policies nobody had ever watched work. They are asserted rather than fired
@@ -287,6 +302,10 @@ describe('the clinical tables', () => {
       'appointments',
       'assessments',
       'reports',
+      // Lo que un documento decía antes de que algo lo reemplazara. Es texto
+      // clínico completo, no un metadato: la versión guardada de un informe es
+      // un informe.
+      'document_versions',
       // The prepared next session. It names a patient and quotes their goals,
       // so it is as clinical as the goals themselves.
       'session_plan_items',

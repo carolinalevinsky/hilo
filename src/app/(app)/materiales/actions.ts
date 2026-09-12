@@ -3,13 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { formError, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { offlineMaterial } from '@/server/material-prompt'
 import {
   copyMaterial,
   createMaterial,
   deleteMaterial,
+  MaterialError,
   saveMaterialFile,
   updateMaterial,
 } from '@/server/materials'
@@ -17,14 +18,18 @@ import { recordUsage } from '@/server/ai-usage'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
-/** Zod's first message, or a sentence a practitioner can act on. */
-function toFormError(error: unknown, fallback: string): FormState {
-  if (error && typeof error === 'object' && 'issues' in error) {
-    const issues = (error as { issues: { message: string }[] }).issues
-    return formError(issues[0]?.message ?? 'Revisá los datos.')
-  }
-  if (error instanceof Error && error.message) return formError(error.message)
-  return formError(fallback)
+/**
+ * The sentence a practitioner sees when a material could not be saved.
+ *
+ * Our own refusals (`MaterialError`) are shown as written. Everything else goes
+ * through `formErrorFor`: the schema's sentence for a mistyped field, and for
+ * anything else a neutral `fallback` plus a line in the server log. It used to
+ * show the message of any `Error`, which let a raw Postgres error onto the
+ * screen — see `MaterialError`.
+ */
+function failed(error: unknown, fallback: string): FormState {
+  if (error instanceof MaterialError) return formError(error.message)
+  return formErrorFor(error, fallback)
 }
 
 /**
@@ -70,7 +75,7 @@ export async function createMaterialAction(
       authorName: practitioner.full_name,
     })
   } catch (error) {
-    return toFormError(error, 'No pudimos guardar el material. Probá de nuevo.')
+    return failed(error, 'No pudimos guardar el material. Probá de nuevo.')
   }
 
   revalidatePath('/materiales')
@@ -90,7 +95,7 @@ export async function updateMaterialAction(
       authorName: practitioner.full_name,
     })
   } catch (error) {
-    return toFormError(error, 'No pudimos guardar los cambios. Probá de nuevo.')
+    return failed(error, 'No pudimos guardar los cambios. Probá de nuevo.')
   }
 
   revalidatePath('/materiales')
@@ -159,7 +164,7 @@ export async function generateMaterialAction(
       { source: 'ai' },
     )
   } catch (error) {
-    return toFormError(error, 'No pudimos generar el material. Probá de nuevo.')
+    return failed(error, 'No pudimos generar el material. Probá de nuevo.')
   }
 
   revalidatePath('/materiales')
@@ -211,7 +216,7 @@ export async function uploadMaterialAction(
     // The row may exist with no file attached. Leaving it would litter the
     // library with empty materials nobody asked for.
     if (material) await deleteMaterial(user.id, material.id).catch(() => {})
-    return toFormError(error, 'No pudimos subir el archivo. Probá de nuevo.')
+    return failed(error, 'No pudimos subir el archivo. Probá de nuevo.')
   }
 
   revalidatePath('/materiales')

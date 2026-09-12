@@ -82,7 +82,7 @@ export function PaymentLinkButton({
       </Button>
 
       {state.message && !state.ok ? (
-        <p className="mt-1 text-[11.5px] text-[#c0392b]">{state.message}</p>
+        <p className="mt-1 text-micro text-[#c0392b]">{state.message}</p>
       ) : null}
     </form>
   )

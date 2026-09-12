@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 
+import { formatLongDate } from '@/lib/dates'
 import { env } from '@/lib/env'
 import { weekdayName } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
@@ -131,13 +132,19 @@ export async function sendBookingNotification({
     name: string
     phone: string
     preferred_weekday: number | null
+    /** Since P7 the form asks for a date; older requests only have the weekday. */
+    preferred_date?: string | null
     preferred_time: string | null
     note: string | null
   }
   appUrl: string
 }) {
   const when = [
-    request.preferred_weekday === null ? null : weekdayName(request.preferred_weekday),
+    request.preferred_date
+      ? formatLongDate(request.preferred_date)
+      : request.preferred_weekday === null
+        ? null
+        : weekdayName(request.preferred_weekday),
     request.preferred_time?.slice(0, 5) ?? null,
   ]
     .filter(Boolean)

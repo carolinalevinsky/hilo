@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import { startOfMonth } from '@/server/plans'
 import {
   createTestPractitioner,
   deleteTestPractitioner,
@@ -38,16 +39,12 @@ let practitionerId = ''
 
 /** `countThisMonth(practitionerId, 'materials')`, as `src/server/plans.ts` runs it. */
 async function countAiMaterials(): Promise<number> {
-  const date = new Date()
-  date.setDate(1)
-  date.setHours(0, 0, 0, 0)
-
   const { count, error } = await service
     .from('materials')
     .select('id', { count: 'exact', head: true })
     .eq('practitioner_id', practitionerId)
     .eq('source', 'ai')
-    .gte('created_at', date.toISOString())
+    .gte('created_at', startOfMonth())
 
   expect(error).toBeNull()
   return count ?? 0

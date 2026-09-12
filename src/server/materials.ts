@@ -16,6 +16,19 @@ import { getDb } from './db'
 
 export type Material = Database['public']['Tables']['materials']['Row']
 
+/**
+ * A refusal written to be read — "Ese material ya es tuyo." — as opposed to
+ * anything else that can go wrong in here.
+ *
+ * The action used to show `error.message` for any `Error`, to keep these
+ * sentences. But `PostgrestError` extends `Error` too, so a database failure
+ * reached the screen verbatim: "duplicate key value violates unique
+ * constraint", in English, telling a practitioner she had done something wrong.
+ * Same shape as `QuotaExceededError` and `SessionLinkError`: only this class is
+ * shown as is, and everything else gets a neutral sentence and a log line.
+ */
+export class MaterialError extends Error {}
+
 export const MATERIAL_KINDS = ['activity', 'game', 'worksheet', 'text', 'guide'] as const
 
 export const MATERIAL_VISIBILITIES = ['private', 'public'] as const
@@ -113,13 +126,64 @@ export type MaterialSummary = Pick<
 const SUMMARY_COLUMNS =
   'id, practitioner_id, discipline, title, area, focus, kind, objective, age_range, visibility, source, author_name'
 
+/**
+ * Every material that matches, in one list.
+ *
+ * What the planner's suggestions and the Agenda's matched material need: they
+ * score the whole library against a goal, so a page of it would miss the best
+ * match. The Materiales screen itself pages — see `pageMaterials`.
+ */
 export async function listMaterials(
   practitionerId: string,
   filters: MaterialFilters,
 ): Promise<MaterialSummary[]> {
   const db = await getDb()
 
-  let query = db.from('materials').select(SUMMARY_COLUMNS)
+  const { data, error } = await filteredMaterials(db, practitionerId, filters).order('title')
+  if (error) throw error
+  return data
+}
+
+/** How many the Materiales screen shows at first, and how many "Ver más" adds. */
+export const MATERIALS_PAGE = 30
+
+/**
+ * The first `shown` materials that match, and how many match in total (P18).
+ *
+ * Thomas's QA: the screen loaded the whole library at once — the discipline's
+ * own plus the practitioner's plus the community's — which does not scale. The
+ * search and the filters run in the query before the page is cut, so both the
+ * total and "Ver más" are about the whole library, never about what happened to
+ * be loaded.
+ *
+ * Ordered by title and then id: two materials with the same title would
+ * otherwise swap places between two requests, and one of them could appear on
+ * both sides of "Ver más" while the other appeared on neither.
+ */
+export async function pageMaterials(
+  practitionerId: string,
+  filters: MaterialFilters,
+  shown: number = MATERIALS_PAGE,
+): Promise<{ materials: MaterialSummary[]; total: number }> {
+  const db = await getDb()
+
+  const { data, error, count } = await filteredMaterials(db, practitionerId, filters, 'exact')
+    .order('title')
+    .order('id')
+    .range(0, Math.max(shown, 1) - 1)
+
+  if (error) throw error
+  return { materials: data, total: count ?? data.length }
+}
+
+/** The filters both lists share, so the page and the whole list can never disagree. */
+function filteredMaterials(
+  db: Awaited<ReturnType<typeof getDb>>,
+  practitionerId: string,
+  filters: MaterialFilters,
+  count?: 'exact',
+) {
+  let query = db.from('materials').select(SUMMARY_COLUMNS, count ? { count } : undefined)
 
   if (filters.onlyMine) {
     query = query.eq('practitioner_id', practitionerId)
@@ -147,9 +211,7 @@ export async function listMaterials(
     query = query.ilike('search_text', searchPattern(filters.search.trim()))
   }
 
-  const { data, error } = await query.order('title')
-  if (error) throw error
-  return data
+  return query
 }
 
 // ─── The attached file ──────────────────────────────────────────────────────
@@ -216,7 +278,7 @@ export async function saveMaterialFile(
     .maybeSingle()
 
   if (error) throw error
-  if (!row) throw new Error('Ese material no es tuyo, o ya no existe.')
+  if (!row) throw new MaterialError('Ese material no es tuyo, o ya no existe.')
   return row
 }
 
@@ -445,7 +507,7 @@ export async function updateMaterial(
     .maybeSingle()
 
   if (error) throw error
-  if (!row) throw new Error('Ese material no es tuyo, o ya no existe.')
+  if (!row) throw new MaterialError('Ese material no es tuyo, o ya no existe.')
   return row
 }
 
@@ -469,9 +531,9 @@ export async function copyMaterial(
   const db = await getDb()
 
   const original = await getMaterial(materialId)
-  if (!original) throw new Error('Ese material no existe.')
+  if (!original) throw new MaterialError('Ese material no existe.')
   if (original.practitioner_id === practitionerId) {
-    throw new Error('Ese material ya es tuyo.')
+    throw new MaterialError('Ese material ya es tuyo.')
   }
 
   const { data: row, error } = await db
@@ -528,27 +590,45 @@ export function bestMaterialFor<T extends Pick<Material, 'title' | 'focus' | 'ar
   goalTitle: string,
   materials: T[],
 ): T | null {
+  return topMaterialsFor(goalTitle, materials, 1)[0] ?? null
+}
+
+/**
+ * The same match, ranked, for the screens that offer a choice rather than an
+ * answer.
+ *
+ * The planner used to show one material per goal with an "Agregar" beside it,
+ * which asks a practitioner to accept a guess or start a search from scratch.
+ * The scoring is unchanged — this is the same list `bestMaterialFor` was already
+ * computing and throwing away all but the head of.
+ *
+ * Ties keep the order `materials` arrived in, which is the order the library
+ * query chose; there is no meaningful second criterion and inventing one would
+ * only make the ranking look more considered than it is.
+ */
+export function topMaterialsFor<
+  T extends Pick<Material, 'title' | 'focus' | 'area' | 'objective'>,
+>(goalTitle: string, materials: T[], limit: number): T[] {
   const words = normalise(goalTitle)
     .split(/\s+/)
     .filter((word) => word.length > 3)
 
-  if (words.length === 0) return null
+  if (words.length === 0) return []
 
-  let best: T | null = null
-  let bestScore = 0
+  const scored: { material: T; score: number }[] = []
 
   for (const material of materials) {
     const haystack = normalise(
       `${material.title} ${material.focus ?? ''} ${material.area} ${material.objective ?? ''}`,
     )
     const score = words.filter((word) => haystack.includes(word)).length
-    if (score > bestScore) {
-      bestScore = score
-      best = material
-    }
+    if (score > 0) scored.push({ material, score })
   }
 
-  return bestScore > 0 ? best : null
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((entry) => entry.material)
 }
 
 /** Lowercase, accents stripped, so "fonológica" matches "fonologica". */

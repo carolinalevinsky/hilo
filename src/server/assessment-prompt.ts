@@ -3,6 +3,7 @@ import { joinEs } from '@/lib/text'
 import { disciplineAdjective } from '@/lib/recipients'
 
 import { bandScores, type AssessmentResultsData } from './assessments'
+import { customInstructionsBlock } from './prompt-templates'
 
 /**
  * The prompt for interpreting an assessment.
@@ -30,6 +31,7 @@ export function assessmentUserPrompt({
   age,
   results,
   observations,
+  customInstructions,
   adjustment,
 }: {
   instrumentName: string
@@ -37,6 +39,8 @@ export function assessmentUserPrompt({
   age: string
   results: AssessmentResultsData
   observations?: string | null
+  /** Her own instructions (P20), fenced and below the rules — see `prompt-templates.ts`. */
+  customInstructions?: string | null
   adjustment?: string | null
 }): string {
   const scale = SCORE_SCALES[results.scale as ScoreScale]
@@ -72,6 +76,9 @@ export function assessmentUserPrompt({
   }
 
   parts.push('', 'Redactá la interpretación (sin encabezado ni firma).')
+
+  const own = customInstructionsBlock(customInstructions)
+  if (own) parts.push('', own)
 
   if (adjustment?.trim()) {
     parts.push('', `Ajuste solicitado por el/la profesional (respetalo): ${adjustment.trim()}`)

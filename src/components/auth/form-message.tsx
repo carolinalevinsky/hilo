@@ -27,7 +27,7 @@ export function FormMessage({
     <p
       role={ok ? 'status' : 'alert'}
       className={cn(
-        'rounded-[11px] px-3.5 py-2.5 text-[12.5px] leading-relaxed',
+        'rounded-[11px] px-3.5 py-2.5 text-meta leading-relaxed',
         ok ? 'bg-green-soft text-[#1a8f57]' : 'bg-coral-soft text-[#c0392b]',
         className,
       )}

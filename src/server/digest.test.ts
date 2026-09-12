@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { toDateInput } from '@/lib/dates'
+import { toDateInput, todayDate } from '@/lib/dates'
 
 /**
  * The fortnightly digest. **Defect #12.**
@@ -87,6 +87,7 @@ type FakeQuery = {
   gte: (column: string, value: string) => FakeQuery
   is: (column: string, value: null) => FakeQuery
   order: (column: string, options: { ascending: boolean; nullsFirst: boolean }) => FakeQuery
+  limit: (count: number) => FakeQuery
   then: <T>(
     onfulfilled: (value: {
       data: Record<string, Cell>[]
@@ -115,6 +116,10 @@ function query(rows: Record<string, Cell>[]): FakeQuery {
           return ascending ? order : -order
         }),
       ),
+    // Implementado y no ignorado, por lo mismo que `order`: el tope de filas es
+    // comportamiento bajo prueba. Un passthrough dejaría pasar un `.limit()` que
+    // se cayó del código, que es justamente el defecto que esto vino a cerrar.
+    limit: (count: number) => query(rows.slice(0, count)),
     then: (onfulfilled) => Promise.resolve({ data: rows, error: null }).then(onfulfilled),
   }
 }
@@ -129,7 +134,7 @@ const { DIGEST_BATCH_SIZE, digestPeriod, digestRecipients } = await import('./di
 
 /** Relative to today, so the fortnight window keeps meaning the same thing. */
 function daysAgo(days: number): string {
-  const date = new Date()
+  const date = todayDate()
   date.setDate(date.getDate() - days)
   return toDateInput(date)
 }

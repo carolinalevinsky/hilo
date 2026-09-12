@@ -17,9 +17,12 @@ import { listSessions } from './sessions'
  * ─── The private note ──────────────────────────────────────────────────────
  *
  * **`sessions.private_note` is deliberately excluded, and its existence is
- * deliberately declared.** It is the field the form describes as "Para vos. No
- * entra en ningún informe" — where a practitioner writes a hunch, a worry, or
- * something a parent said that they are still thinking about.
+ * deliberately declared.** It was a second field on the session form, offered as
+ * "Para vos. No entra en ningún informe" — where a practitioner wrote a hunch, a
+ * worry, or something a parent said that they were still thinking about. The
+ * form no longer offers it (see `sessions.ts`), so no new rows have one, but the
+ * rows written while it existed still do and this export still owes them the
+ * same treatment.
  *
  * Excluding it silently would be the easy thing and the wrong one: it is still
  * personal data about the patient, and pretending it does not exist is what

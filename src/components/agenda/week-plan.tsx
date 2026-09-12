@@ -1,8 +1,7 @@
-import { BookOpen, Check } from '@/components/icons'
+import { BookOpen, Check, ClipboardList, Pencil } from '@/components/icons'
 import Link from 'next/link'
 
-import { setAppointmentFocusAction, setAppointmentStatusAction } from '@/app/(app)/agenda/actions'
-import { FocusSelect } from '@/components/agenda/focus-select'
+import { setAppointmentStatusAction } from '@/app/(app)/agenda/actions'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,10 +18,17 @@ import type { PlannedSession } from '@/server/planning'
  * work rather than as a calendar — the grid answers "when am I busy", this
  * answers "what am I doing in each of these".
  *
- * Two things differ from v1, both because v1 kept its state in memory:
+ * What differs from v1:
  *
- *   - **The goal you pick is kept.** v1 reset every row to the lowest-scoring
- *     goal on each reload, which made choosing feel pointless.
+ *   - **It shows what you prepared, not a second planner (P14).** This row used
+ *     to carry its own goal picker, saved on the appointment (`focus_goal_id`),
+ *     while Planificación kept a separate list per patient; picking in one
+ *     changed nothing in the other, and Thomas's QA could not tell what either
+ *     was for. Now the row shows the session's plan — the same rows the planner
+ *     writes — and "Preparar" / "Editar" open the planner on this session. The
+ *     goal comes from the plan (`planForRange`). The picker (`FocusSelect`) and
+ *     its action are hidden, not deleted: a pick already made still counts until
+ *     a plan says otherwise.
  *   - **The tick is the appointment's own status**, the same "Vino" the card
  *     menu sets, rather than a separate checkbox that knew nothing about it.
  *     One session, one truth about whether it happened.
@@ -34,10 +40,10 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
     <Card className="mt-5">
       <CardHeader>
         <CardTitle>Plan de la semana</CardTitle>
-        <p className="text-[12.5px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {sessions.length === 0
             ? 'Sin sesiones esta semana.'
-            : `${done}/${sessions.length} dadas · elegí el objetivo de cada sesión y marcá cuando la des`}
+            : `${done}/${sessions.length} dadas · prepará cada sesión y marcá cuando la des`}
         </p>
       </CardHeader>
 
@@ -84,7 +90,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                     </button>
                   </form>
 
-                  <span className="w-[74px] shrink-0 text-[13px] text-muted-foreground">
+                  <span className="w-[74px] shrink-0 text-body text-muted-foreground">
                     <b className="text-foreground">
                       {weekdayName(new Date(`${session.scheduledOn}T12:00:00`).getDay())
                         .slice(0, 3)
@@ -102,35 +108,43 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                   <Link
                     href={`/pacientes/${session.patientId}`}
                     className={cn(
-                      'min-w-[90px] flex-1 text-[14px] font-bold hover:underline',
+                      'min-w-[90px] flex-1 text-item font-bold hover:underline',
                       attended && 'line-through',
                     )}
                   >
                     {session.patientName}
                   </Link>
 
-                  {session.goals.length === 0 ? (
-                    <span className="text-[12.5px] text-muted-foreground">
-                      Sin objetivos cargados
-                    </span>
-                  ) : (
-                    <form
-                      action={setAppointmentFocusAction}
-                      className="min-w-[180px] flex-1"
-                    >
-                      <input
-                        type="hidden"
-                        name="appointmentId"
-                        value={session.appointmentId}
-                      />
-                      <FocusSelect
-                        name="goalId"
-                        defaultValue={session.focus?.id ?? ''}
-                        label={`Objetivo de la sesión de ${session.patientName}`}
-                        options={session.goals}
-                      />
-                    </form>
-                  )}
+                  {/* What is prepared for this session, or what Hilo would
+                      start from. One line: the whole list is one click away. */}
+                  <p className="min-w-[180px] flex-1 truncate text-meta">
+                    {session.plan.length > 0 ? (
+                      <>
+                        <b className="font-semibold">Preparada:</b>{' '}
+                        {session.plan.map((line) => line.title).join(' · ')}
+                      </>
+                    ) : session.focus ? (
+                      <span className="text-muted-foreground">
+                        Sin preparar · Hilo sugiere {session.focus.title} (
+                        {session.focus.progress}%)
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Sin preparar · sin objetivos cargados
+                      </span>
+                    )}
+                  </p>
+
+                  <Button asChild size="sm" variant={session.plan.length > 0 ? 'outline' : 'default'}>
+                    <Link href={`/planificacion?sesion=${session.appointmentId}`}>
+                      {session.plan.length > 0 ? (
+                        <Pencil className="size-3.5" />
+                      ) : (
+                        <ClipboardList className="size-3.5" />
+                      )}
+                      {session.plan.length > 0 ? 'Editar' : 'Preparar'}
+                    </Link>
+                  </Button>
 
                   {session.suggestedMaterial ? (
                     <Button asChild size="sm" variant="outline">
@@ -139,9 +153,10 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                         Material
                       </Link>
                     </Button>
-                  ) : (
-                    <span className="text-[12.5px] text-muted-foreground">Sin objetivo</span>
-                  )}
+                  ) : null}
+                  {/* Nothing in the material's place when there is none: the
+                      line beside it already says "sin objetivos cargados", and
+                      "Sin objetivo" here said it a second time. */}
                 </li>
               )
             })}

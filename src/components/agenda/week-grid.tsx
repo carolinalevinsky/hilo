@@ -66,17 +66,17 @@ export function WeekGrid({
             <header className="mb-2.5 flex items-baseline justify-between gap-1">
               <h3
                 className={cn(
-                  'text-[13px] font-extrabold',
+                  'text-body font-extrabold',
                   isToday ? 'text-violet' : 'text-foreground',
                 )}
               >
                 {weekdayName(weekday)}
               </h3>
-              <span className="text-[12px] text-muted-foreground">{dayNumber}</span>
+              <span className="text-meta text-muted-foreground">{dayNumber}</span>
             </header>
 
             {dayAppointments.length === 0 && dayBusy.length === 0 ? (
-              <p className="py-2 text-[12px] text-muted-foreground">Libre</p>
+              <p className="py-2 text-meta text-muted-foreground">Libre</p>
             ) : (
               <ul className="space-y-2">
                 {dayAppointments.map((appointment) => (
@@ -93,7 +93,7 @@ export function WeekGrid({
                 {dayBusy.map((block) => (
                   <li
                     key={block.id}
-                    className="rounded-[9px] border border-dashed border-border bg-muted px-2.5 py-2 text-[12px] leading-tight text-muted-foreground"
+                    className="rounded-[9px] border border-dashed border-border bg-muted px-2.5 py-2 text-meta leading-tight text-muted-foreground"
                   >
                     <div className="font-semibold">{block.title}</div>
                     <div className="opacity-90">

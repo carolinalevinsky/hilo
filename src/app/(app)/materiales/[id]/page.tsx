@@ -52,7 +52,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
           href="/materiales"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           Volver a materiales
@@ -92,40 +92,40 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
       <Card className="hilo-doc mx-auto max-w-[720px]">
         <CardContent className="px-6 py-7 sm:px-10">
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-violet-soft px-2 py-0.5 text-[10.5px] font-bold text-violet">
+            <span className="rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
               {materialKindLabel(material.kind)}
             </span>
             {origin === 'community' ? (
-              <span className="rounded-full bg-blue-soft px-2 py-0.5 text-[10.5px] font-bold text-[#2f6fd6]">
+              <span className="rounded-full bg-blue-soft px-2 py-0.5 text-micro font-bold text-[#2f6fd6]">
                 De la comunidad
               </span>
             ) : null}
             {material.source === 'ai' ? (
-              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-[10.5px] font-bold text-[#8a5a12]">
+              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-[#8a5a12]">
                 Generado con IA
               </span>
             ) : null}
             {material.age_range ? (
-              <span className="text-[11.5px] text-muted-foreground">
+              <span className="text-micro text-muted-foreground">
                 {material.age_range}
               </span>
             ) : null}
           </div>
 
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px]">{material.title}</h1>
-          <p className="mt-0.5 mb-1 text-[12.5px] text-muted-foreground">
+          <p className="mt-0.5 mb-1 text-meta text-muted-foreground">
             {material.area}
             {material.focus ? ` › ${material.focus}` : ''}
           </p>
           {material.objective ? (
-            <p className="mb-4 text-[13px] text-muted-foreground">{material.objective}</p>
+            <p className="mb-4 text-body text-muted-foreground">{material.objective}</p>
           ) : null}
 
           {/* The byline is frozen on the row at publishing time — a practitioner
               cannot read another practitioner's profile, and should not be able
               to. See the migration for why it is denormalised. */}
           {origin === 'community' && material.author_name ? (
-            <p className="mb-4 text-[12.5px] text-muted-foreground">
+            <p className="mb-4 text-meta text-muted-foreground">
               Publicado por <b>{material.author_name}</b> · comunidad Hilo
             </p>
           ) : null}

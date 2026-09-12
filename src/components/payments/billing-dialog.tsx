@@ -32,6 +32,10 @@ import { BILLING_FREQUENCY_LABELS } from '@/lib/patient-labels'
  * The action writes through `updatePatientBilling`, which touches these three
  * columns and nothing else. A form that posted the whole patient would blank
  * every field it did not happen to include.
+ *
+ * `trigger` exists for the row that has no fee at all, where the missing number
+ * is the thing to say out loud rather than hide behind three dots. Same shape as
+ * `PaymentDialog` next door.
  */
 export function BillingDialog({
   patientId,
@@ -39,12 +43,15 @@ export function BillingDialog({
   sessionFee,
   billingFrequency,
   expectedSessionsPerMonth,
+  trigger,
 }: {
   patientId: string
   patientName: string
   sessionFee: number | null
   billingFrequency: string
   expectedSessionsPerMonth: number | null
+  /** Reemplaza el `···`. Sin esto, el `···` de siempre. */
+  trigger?: React.ReactNode
 }) {
   const [state, formAction, pending] = useActionState(updateBillingAction, EMPTY_FORM_STATE)
   const [open, setOpen] = useState(false)
@@ -62,19 +69,21 @@ export function BillingDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Editar arancel o frecuencia"
-          aria-label={`Editar arancel o frecuencia de ${patientName}`}
-          // 32px es cómodo con un mouse y chico para un pulgar. En teléfono pasa
-          // a 44, que es el mínimo de Apple. No se nota: el botón es `ghost`, no
-          // tiene fondo hasta que lo tocás, así que lo único que cambia es el
-          // aire alrededor de los tres puntos.
-          className="max-lg:size-11"
-        >
-          <MoreHorizontal className="size-[18px]" />
-        </Button>
+        {trigger ?? (
+          <Button
+            size="icon"
+            variant="ghost"
+            title="Editar arancel o frecuencia"
+            aria-label={`Editar arancel o frecuencia de ${patientName}`}
+            // 32px es cómodo con un mouse y chico para un pulgar. En teléfono pasa
+            // a 44, que es el mínimo de Apple. No se nota: el botón es `ghost`, no
+            // tiene fondo hasta que lo tocás, así que lo único que cambia es el
+            // aire alrededor de los tres puntos.
+            className="max-lg:size-11"
+          >
+            <MoreHorizontal className="size-[18px]" />
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent>

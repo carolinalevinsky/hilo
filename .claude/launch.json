@@ -3,9 +3,7 @@
   "configurations": [
     {
       "name": "hilo",
-      "runtimeExecutable": "./dx",
-      "runtimeArgs": ["npm", "run", "dev"],
-      "port": 3000
+      "url": "http://localhost:3000"
     }
   ]
 }

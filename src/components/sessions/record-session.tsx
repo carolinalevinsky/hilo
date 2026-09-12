@@ -46,7 +46,7 @@ import {
  * below says what actually happens.
  *
  * Nothing is saved automatically. The draft lands in the field and the
- * practitioner presses "Guardar sesión", the same as if they had typed it.
+ * practitioner presses "Guardar registro", the same as if they had typed it.
  */
 export function RecordSession({
   patientId,
@@ -213,7 +213,7 @@ export function RecordSession({
               <Square className="size-3.5" />
               Terminar y armar el registro
             </Button>
-            <span className="inline-flex items-center gap-1.5 text-[13px] font-bold tabular-nums">
+            <span className="inline-flex items-center gap-1.5 text-body font-bold tabular-nums">
               <span className="size-2 animate-pulse rounded-full bg-coral" />
               {minutes}:{rest}
             </span>
@@ -241,14 +241,14 @@ export function RecordSession({
         )}
       </div>
 
-      <p className="mt-2 text-[12px] text-muted-foreground">
+      <p className="mt-2 text-meta text-muted-foreground">
         {state === 'recording'
           ? 'Estoy escuchando. Dejá el teléfono sobre la mesa y seguí con la sesión.'
           : 'Grabás y Hilo arma el registro solo. Para pasar la voz a texto, el navegador manda el audio a su servicio de dictado (en Chrome, el de Google). Hilo recibe y guarda solo el texto.'}
       </p>
 
       {note ? (
-        <p className="mt-2 inline-flex items-start gap-1.5 text-[12px] text-[#8a5a00]">
+        <p className="mt-2 inline-flex items-start gap-1.5 text-meta text-[#8a5a00]">
           <TriangleAlert className="mt-px size-3.5 shrink-0" />
           {note}
         </p>

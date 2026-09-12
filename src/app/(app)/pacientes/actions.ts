@@ -4,7 +4,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { formError, formOk, type FormState } from '@/lib/form-state'
+import { createSchedule } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
+import { createGoal } from '@/server/goals'
 import {
   createPatient,
   ensurePatientRoom,
@@ -63,6 +65,68 @@ async function savePhotoIfPresent(
   }
 }
 
+/**
+ * The first goal typed on the alta, if there was one.
+ *
+ * A goal is its own row, not a column on the patient — so this is a second
+ * write, made here only so that somebody who already knows what they are going
+ * to work on does not have to say it again on the ficha.
+ *
+ * Swallows its own failure for the same reason `savePhotoIfPresent` does: the
+ * patient exists by now, and turning a failed extra into a form error would
+ * hide the patient that was actually created. It is not silent in practice —
+ * the redirect lands on the ficha, where a missing goal is visible immediately.
+ */
+async function saveFirstGoalIfPresent(
+  practitionerId: string,
+  patientId: string,
+  formData: FormData,
+) {
+  const title = String(formData.get('firstGoal') ?? '').trim()
+  if (!title) return
+
+  try {
+    await createGoal(practitionerId, patientId, { title, progress: 0 })
+  } catch (error) {
+    console.error('[patients] no se pudo crear el primer objetivo', { patientId, error })
+  }
+}
+
+/**
+ * The standing appointment typed on the alta, if there was one.
+ *
+ * **The hour is the switch.** Weekday and frequency are selects and always come
+ * back with a value; the hour is the only field somebody has to deliberately
+ * fill, so an empty hour means "I have not decided yet" and nothing is written.
+ *
+ * The rule it writes is the same one the "Agendar sesión" dialog writes, and
+ * the Agenda turns it into occurrences on its own — see `materialiseAppointments`.
+ *
+ * Returns whether anything was written, so the caller only revalidates the
+ * Agenda when there is a reason to.
+ */
+async function saveScheduleIfPresent(
+  practitionerId: string,
+  patientId: string,
+  formData: FormData,
+) {
+  const startTime = String(formData.get('startTime') ?? '').trim()
+  if (!startTime) return false
+
+  try {
+    await createSchedule(practitionerId, {
+      patientId,
+      weekday: formData.get('weekday'),
+      startTime,
+      frequency: formData.get('frequency') ?? 'weekly',
+    })
+    return true
+  } catch (error) {
+    console.error('[patients] no se pudo agendar el horario', { patientId, error })
+    return false
+  }
+}
+
 export async function createPatientAction(
   _previous: FormState,
   formData: FormData,
@@ -78,8 +142,11 @@ export async function createPatientAction(
   }
 
   await savePhotoIfPresent(user.id, patientId, formData)
+  await saveFirstGoalIfPresent(user.id, patientId, formData)
+  const scheduled = await saveScheduleIfPresent(user.id, patientId, formData)
 
   revalidatePath('/pacientes')
+  if (scheduled) revalidatePath('/agenda')
   redirect(`/pacientes/${patientId}`)
 }
 
@@ -115,9 +182,14 @@ export async function setArchivedAction(formData: FormData) {
   const user = await requireUser()
   const patientId = String(formData.get('patientId'))
   const archived = formData.get('archived') === 'true'
+  // `keep` por defecto: es la opción que no pierde nada, y es la que
+  // corresponde cuando el paciente no tiene ningún horario fijo y la pantalla
+  // no llegó a preguntar.
+  const schedules = formData.get('schedules') === 'deactivate' ? 'deactivate' : 'keep'
 
-  await setPatientArchived(user.id, patientId, archived)
+  await setPatientArchived(user.id, patientId, archived, schedules)
   revalidatePath('/pacientes')
+  revalidatePath('/agenda')
   revalidatePath(`/pacientes/${patientId}`)
 }
 
@@ -127,6 +199,7 @@ export async function deletePatientAction(formData: FormData) {
 
   await softDeletePatient(user.id, patientId)
   revalidatePath('/pacientes')
+  revalidatePath('/agenda')
   redirect('/pacientes')
 }
 

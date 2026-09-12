@@ -1,3 +1,4 @@
+import { startOfDayInUruguay, today } from '@/lib/dates'
 import { getDb } from './db'
 
 /**
@@ -24,11 +25,21 @@ export function planLimits(plan: string) {
   return PLAN_LIMITS[plan as PlanId] ?? PLAN_LIMITS.free
 }
 
-function startOfMonth(): string {
-  const date = new Date()
-  date.setDate(1)
-  date.setHours(0, 0, 0, 0)
-  return date.toISOString()
+/**
+ * El instante en que empezó el mes en curso en Uruguay.
+ *
+ * Se compara contra `created_at`, que es `timestamptz`, así que tiene que ser un
+ * instante y no una fecha suelta. Leído con el reloj del servidor, el mes
+ * arrancaba a las 21:00 del último día del mes anterior: la cuota se renovaba
+ * tres horas antes de tiempo y la pantalla seguía diciendo "se renueva el 1.º".
+ *
+ * Exportada porque `materials.quota.test.ts` verifica el conteo contra la base y
+ * necesita el mismo corte. Tenía una copia de estas cuatro líneas al lado de un
+ * comentario que decía "as `src/server/plans.ts` runs it"; la copia se quedó
+ * vieja apenas esto cambió, que es lo que hacen las copias.
+ */
+export function startOfMonth(): string {
+  return startOfDayInUruguay(`${today().slice(0, 7)}-01`).toISOString()
 }
 
 /**

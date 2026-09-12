@@ -92,11 +92,20 @@ export async function POST(request: Request) {
   // their inbox — a family should not get an error because Resend is down.
   const email = await practitionerEmail(practitioner.id)
   if (email) {
-    await sendBookingNotification({
+    // Sin `await`, que es lo que el comentario de arriba decía y el código no
+    // hacía: con Resend lento, la familia se quedaba mirando el spinner por un
+    // mail que no es para ella. El `catch` no es decorativo — una promesa
+    // rechazada sin manejar tumba el proceso en Node.
+    void sendBookingNotification({
       to: email,
       practitionerName: practitioner.full_name,
       request: created,
       appUrl: publicConfig.NEXT_PUBLIC_APP_URL,
+    }).catch((error) => {
+      console.error('[reservas] no se pudo avisar de la reserva', {
+        practitionerId: practitioner.id,
+        error,
+      })
     })
   }
 

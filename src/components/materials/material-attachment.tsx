@@ -68,7 +68,7 @@ export function MaterialAttachment({
           arrive as an attachment. */}
       <a
         href={downloadUrl}
-        className="no-print inline-flex items-center gap-2 text-[13px] font-semibold text-violet hover:underline"
+        className="no-print inline-flex items-center gap-2 text-body font-semibold text-violet hover:underline"
       >
         <Download className="size-4" />
         Descargar el archivo

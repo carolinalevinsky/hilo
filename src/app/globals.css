@@ -69,6 +69,35 @@
   --color-blue: var(--hilo-blue);
   --color-blue-soft: var(--hilo-blue-soft);
 
+  /* ── Type scale ──────────────────────────────────────────────────────────
+     Hilo's small sizes, which are most of the text in the product.
+
+     They used to be written literally in the JSX: twelve different values
+     between 10px and 15.5px, each screen having picked its own, so two cards
+     that meant the same thing agreed only by accident. Five steps now, named
+     for the job rather than the number:
+
+       text-micro  11px    chips, badges, the smallest label
+       text-meta   12.5px  the quiet second line under something
+       text-body   13px    running text, form hints, list detail
+       text-item   14.5px  the title of a row in a list
+       text-lead   15.5px  the title of a card
+
+     Font size only, on purpose: no `--text-*--line-height` companion, so the
+     line height stays inherited exactly as it did with the arbitrary values
+     these replace. Adding one would silently re-space every screen at once.
+
+     Headings above 16px are deliberately not in here. Each one belongs to a
+     single component that owns its own measurements — the page header, the
+     patient band, the stat card — and folding them together would be inventing
+     agreement that does not exist.
+  */
+  --text-micro: 11px;
+  --text-meta: 12.5px;
+  --text-body: 13px;
+  --text-item: 14.5px;
+  --text-lead: 15.5px;
+
   --shadow-card: var(--hilo-shadow);
 }
 

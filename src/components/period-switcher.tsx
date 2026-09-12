@@ -43,9 +43,9 @@ export function PeriodSwitcher({
       </Arrow>
 
       <div className="min-w-[150px] text-center">
-        <div className="text-[15px] leading-tight font-extrabold">{label}</div>
+        <div className="text-lead leading-tight font-extrabold">{label}</div>
         {caption ? (
-          <div className="mt-0.5 text-[10px] font-bold tracking-[0.5px] text-violet uppercase">
+          <div className="mt-0.5 text-micro font-bold tracking-[0.5px] text-violet uppercase">
             {caption}
           </div>
         ) : null}

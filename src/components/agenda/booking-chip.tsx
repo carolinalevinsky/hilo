@@ -33,7 +33,7 @@ export function BookingChip({ url }: { url: string }) {
 
       <Link
         href="/reservas"
-        className="text-[12.5px] font-bold hover:text-violet hover:underline"
+        className="text-meta font-bold hover:text-violet hover:underline"
       >
         Reservas online
       </Link>

@@ -1,4 +1,4 @@
-import { toDateInput } from '@/lib/dates'
+import { today } from '@/lib/dates'
 import { AiUnavailableError, AI_MODEL, streamChat, type ChatMessage } from '@/server/ai'
 import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import {
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   const context = await gatherAssistantContext(
     user.id,
     practitioner.discipline,
-    toDateInput(new Date()),
+    today(),
   )
 
   const fallback = offlineAnswer(context, question)

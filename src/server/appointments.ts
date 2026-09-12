@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
-import { toDateInput } from '@/lib/dates'
+import { today, toDateInput } from '@/lib/dates'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -25,6 +25,12 @@ export type Appointment = Database['public']['Tables']['appointments']['Row']
 
 export type AppointmentWithPatient = Appointment & {
   patients: { id: string; full_name: string; color: string | null } | null
+  /**
+   * El registro escrito de esta sesión, si ya existe. Es una lista porque así lo
+   * devuelve PostgREST, pero tiene uno como mucho: lo garantiza el único parcial
+   * de `20260911090000_session_belongs_to_its_appointment.sql`.
+   */
+  sessions: { id: string }[]
 }
 
 export type ScheduleWithPatient = Schedule & {
@@ -44,7 +50,7 @@ export const ScheduleInput = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Revisá la hora.'),
   durationMinutes: z.coerce.number().int().min(5).max(480).default(45),
   frequency: z.enum(['weekly', 'biweekly', 'monthly']).default('weekly'),
-  startsOn: z.iso.date().default(() => toDateInput(new Date())),
+  startsOn: z.iso.date().default(() => today()),
 })
 
 export const AppointmentInput = z.object({
@@ -86,16 +92,24 @@ export async function createSchedule(practitionerId: string, input: unknown) {
 }
 
 /**
- * Turns a rule off and clears the occurrences it had already produced from today
- * onwards. The past is left exactly as it was — those appointments happened, or
- * were missed, and either way they are history.
+ * Turns a rule off and clears the occurrences it had already produced, from
+ * tomorrow onwards. The past is left exactly as it was — those appointments
+ * happened, or were missed, and either way they are history.
+ *
+ * **Desde mañana, no desde hoy.** `ends_on` se escribe con la fecha de hoy, o
+ * sea que la regla llega hasta hoy inclusive; borrar `>= hoy` se llevaba puesta
+ * la sesión de esta tarde, que según lo que la misma función acaba de escribir
+ * tenía que quedar. Las dos mitades decían cosas distintas y ganaba la de abajo.
+ *
+ * Archivar un paciente sí borra la de hoy, y no es una incoherencia con esto:
+ * ahí la decisión es sacarlo de la agenda ya. Ver `clearUpcomingFor`.
  */
 export async function deactivateSchedule(practitionerId: string, scheduleId: string) {
   const db = await getDb()
 
   const { error } = await db
     .from('schedules')
-    .update({ is_active: false, ends_on: toDateInput(new Date()) })
+    .update({ is_active: false, ends_on: today() })
     .eq('id', scheduleId)
     .eq('practitioner_id', practitionerId)
   if (error) throw error
@@ -106,7 +120,7 @@ export async function deactivateSchedule(practitionerId: string, scheduleId: str
     .eq('practitioner_id', practitionerId)
     .eq('schedule_id', scheduleId)
     .eq('status', 'scheduled')
-    .gte('scheduled_on', toDateInput(new Date()))
+    .gt('scheduled_on', today())
 
   if (cleanupError) throw cleanupError
 }
@@ -117,11 +131,18 @@ export async function listSchedules(
 ): Promise<ScheduleWithPatient[]> {
   const db = await getDb()
 
+  // El estado del paciente manda sobre la regla. `materialiseAppointments` va
+  // por acá, así que archivar a alguien alcanza para que su horario deje de
+  // crear sesiones — sin tocar la regla, que es lo que hace que desarchivar lo
+  // devuelva solo. La otra salida, dar el horario de baja, es una decisión
+  // aparte que se pregunta al archivar y escribe `is_active`.
   let query = db
     .from('schedules')
-    .select('*, patients(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color)')
     .eq('practitioner_id', practitionerId)
     .eq('is_active', true)
+    .is('patients.deleted_at', null)
+    .is('patients.archived_at', null)
 
   if (patientId) query = query.eq('patient_id', patientId)
 
@@ -131,6 +152,156 @@ export async function listSchedules(
 
   if (error) throw error
   return data
+}
+
+/**
+ * Saca de la agenda lo que todavía no pasó, para un paciente que se archiva o
+ * se borra.
+ *
+ * De hoy en adelante y sólo lo que sigue `scheduled`: el pasado queda intacto
+ * porque esas sesiones ocurrieron —o se faltó a ellas— y en cualquiera de los
+ * dos casos son historia. Una sesión ya marcada como asistida o ausente
+ * tampoco se toca, aunque estuviera fechada mañana: alguien la registró a
+ * mano y no es de este código deshacerlo.
+ */
+export async function clearUpcomingFor(practitionerId: string, patientId: string) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('appointments')
+    .delete()
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+
+  if (error) throw error
+}
+
+/**
+ * Da de baja todos los horarios fijos de un paciente.
+ *
+ * Es la salida explícita de las dos que ofrece el diálogo de archivar, y la
+ * única para un paciente borrado. A diferencia de archivar y conservar, esto no
+ * se deshace desarchivando: la regla queda marcada como terminada.
+ *
+ * No borra sesiones. Quien llama ya pasó por `clearUpcomingFor`, y hacerlo dos
+ * veces sólo serviría para que las dos mitades se desincronicen algún día.
+ */
+export async function deactivateSchedulesFor(practitionerId: string, patientId: string) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('schedules')
+    .update({ is_active: false, ends_on: today() })
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('is_active', true)
+
+  if (error) throw error
+}
+
+/**
+ * La próxima sesión agendada de un paciente, si hay alguna.
+ *
+ * La ficha decía "Próxima sesión" y no decía cuándo era, que es la única cosa
+ * que alguien va a mirar ahí. El dato existía en `appointments` y la pantalla no
+ * lo pedía.
+ *
+ * Sólo `scheduled`: una cancelada no es la próxima, y una ya marcada como
+ * asistida está en el pasado aunque su fecha diga otra cosa.
+ */
+export async function nextAppointmentFor(
+  practitionerId: string,
+  patientId: string,
+): Promise<NextAppointment | null> {
+  const db = await getDb()
+
+  const { data, error } = await db
+    .from('appointments')
+    .select('id, scheduled_on, start_time')
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+    .order('scheduled_on', { ascending: true })
+    .order('start_time', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export type NextAppointment = { id: string; scheduled_on: string; start_time: string }
+
+/**
+ * Una cita por su id, o `null`.
+ *
+ * Para Planificación, que la recibe de la URL (`?sesion=`) desde "Preparar" en
+ * la Agenda. La Agenda pagina semanas hacia adelante sin límite, así que puede
+ * ser una sesión que el selector de Planificación no alcanza a listar.
+ *
+ * Lo que no es un uuid se descarta antes de preguntarle a Postgres, igual que en
+ * `getAppointmentFor`.
+ */
+export async function getAppointment(
+  practitionerId: string,
+  appointmentId: string,
+): Promise<(NextAppointment & { patient_id: string }) | null> {
+  if (!z.uuid().safeParse(appointmentId).success) return null
+
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('id, patient_id, scheduled_on, start_time')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+/**
+ * La próxima sesión de cada uno de estos pacientes, en una sola consulta.
+ *
+ * Misma regla que `nextAppointmentFor` —sólo `scheduled`, de hoy en adelante—
+ * y tiene que seguir siéndolo: es la que decide a qué sesión pertenece lo que se
+ * preparó sin sesión (ver `session-plans.ts`), y si las dos dijeran distinto la
+ * ficha y la Agenda mostrarían planes distintos para la misma sesión.
+ */
+export async function nextAppointments(
+  practitionerId: string,
+  patientIds: string[],
+): Promise<Map<string, NextAppointment>> {
+  const next = new Map<string, NextAppointment>()
+  if (patientIds.length === 0) return next
+
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('id, patient_id, scheduled_on, start_time')
+    .eq('practitioner_id', practitionerId)
+    .in('patient_id', patientIds)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+    .order('scheduled_on', { ascending: true })
+    .order('start_time', { ascending: true })
+
+  if (error) throw error
+
+  // Ordered soonest first, so the first one seen for a patient is theirs.
+  for (const row of data ?? []) {
+    if (!next.has(row.patient_id)) {
+      next.set(row.patient_id, {
+        id: row.id,
+        scheduled_on: row.scheduled_on,
+        start_time: row.start_time,
+      })
+    }
+  }
+  return next
 }
 
 // ─── Materialising occurrences ──────────────────────────────────────────────
@@ -173,11 +344,81 @@ export async function materialiseAppointments(
   if (rows.length === 0) return
 
   const db = await getDb()
+
+  // Las fechas que se quitaron "sólo esta vez" (P5). Sin esto, una sesión de
+  // horario fijo borrada volvía en la próxima carga: la deduplicación de abajo es
+  // por la fila, y una fila borrada no deja nada contra qué deduplicar.
+  const { data: skips, error: skipsError } = await db
+    .from('schedule_skips')
+    .select('schedule_id, skipped_on')
+    .eq('practitioner_id', practitionerId)
+    .gte('skipped_on', from)
+    .lte('skipped_on', to)
+
+  if (skipsError) throw skipsError
+
+  const skipped = new Set((skips ?? []).map((skip) => `${skip.schedule_id}:${skip.skipped_on}`))
+  const wanted = rows.filter((row) => !skipped.has(`${row.schedule_id}:${row.scheduled_on}`))
+  if (wanted.length === 0) return
+
   const { error } = await db
     .from('appointments')
-    .upsert(rows, { onConflict: 'schedule_id,scheduled_on', ignoreDuplicates: true })
+    .upsert(wanted, { onConflict: 'schedule_id,scheduled_on', ignoreDuplicates: true })
 
   if (error) throw error
+}
+
+export type RemoveScope = 'once' | 'series'
+
+/**
+ * "Quitar de la agenda" (P5).
+ *
+ * Una sesión suelta se borra y listo. Una que vino de un horario fijo pregunta,
+ * como cualquier calendario con eventos que se repiten:
+ *
+ *   - **Sólo esta vez** (`once`): se anota la fecha en `schedule_skips` y se
+ *     borra la sesión. La regla sigue; esta fecha no vuelve.
+ *   - **Todas las de este horario** (`series`): se da de baja la regla
+ *     (`deactivateSchedule`, que saca las de mañana en adelante) y se borra esta
+ *     también — aunque sea de hoy, que la baja deja a propósito. La fecha se
+ *     anota igual: la regla termina hoy inclusive, y sin la excepción la sesión
+ *     de hoy volvería a aparecer.
+ *
+ * Lo pasado no se toca en ningún caso: esas sesiones ocurrieron, o se faltó a
+ * ellas, y son historia.
+ */
+export async function removeFromAgenda(
+  practitionerId: string,
+  appointmentId: string,
+  scope: RemoveScope = 'once',
+) {
+  const db = await getDb()
+
+  const { data: appointment, error } = await db
+    .from('appointments')
+    .select('id, schedule_id, scheduled_on')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!appointment) return
+
+  if (appointment.schedule_id) {
+    const { error: skipError } = await db.from('schedule_skips').upsert(
+      {
+        practitioner_id: practitionerId,
+        schedule_id: appointment.schedule_id,
+        skipped_on: appointment.scheduled_on,
+      },
+      { onConflict: 'schedule_id,skipped_on', ignoreDuplicates: true },
+    )
+    if (skipError) throw skipError
+
+    if (scope === 'series') await deactivateSchedule(practitionerId, appointment.schedule_id)
+  }
+
+  await deleteAppointment(practitionerId, appointmentId)
 }
 
 /**
@@ -210,6 +451,21 @@ export function occurrencesBetween(
   // the slot stays the same, which a calendar-month rule would not preserve.
   const stepDays = schedule.frequency === 'weekly' ? 7 : schedule.frequency === 'biweekly' ? 14 : 28
 
+  // Saltar de una hasta la ventana, en vez de llegar paso a paso.
+  //
+  // La guarda de abajo contaba desde `starts_on`, así que la gastaba el tiempo
+  // transcurrido y no el trabajo a hacer: un horario semanal empezado hace más
+  // de siete años y medio agotaba las 400 vueltas antes de llegar a la semana
+  // que se está mirando, y dejaba de generar sesiones sin decir nada. Una
+  // profesional con un paciente de años lo habría visto; nadie más.
+  //
+  // Con el salto, la guarda cubre la ventana pedida —siete días, tres semanas,
+  // un año— que es lo que tiene que acotar.
+  if (cursor < start) {
+    const daysBehind = Math.floor((start.getTime() - cursor.getTime()) / 86_400_000)
+    cursor.setDate(cursor.getDate() + Math.floor(daysBehind / stepDays) * stepDays)
+  }
+
   // A guard, not a limit: any rule stepping at least a week reaches a year's
   // window in well under this. It exists so a bad `starts_on` cannot spin.
   for (let guard = 0; guard < 400; guard += 1) {
@@ -223,6 +479,24 @@ export function occurrencesBetween(
 }
 
 // ─── Appointments ───────────────────────────────────────────────────────────
+
+/**
+ * Whether this practitioner has anything on the agenda yet, ever.
+ *
+ * For "Primeros pasos" on Inicio (P21), the same way `hasAnyGoal` is: `head:
+ * true` reads an index and returns no rows.
+ */
+export async function hasAnyAppointment(practitionerId: string): Promise<boolean> {
+  const db = await getDb()
+  const { count, error } = await db
+    .from('appointments')
+    .select('id', { count: 'exact', head: true })
+    .eq('practitioner_id', practitionerId)
+    .limit(1)
+
+  if (error) throw error
+  return (count ?? 0) > 0
+}
 
 export async function createAppointment(practitionerId: string, input: unknown) {
   const data = AppointmentInput.parse(input)
@@ -252,6 +526,34 @@ export async function createAppointment(practitionerId: string, input: unknown) 
   await pushAppointment(practitionerId, row.id)
 
   return row
+}
+
+/**
+ * Una cita de este paciente, o `null`.
+ *
+ * El id llega de la URL (`?agenda=`), así que puede ser cualquier cosa: lo que no
+ * es un uuid se descarta antes de preguntarle a Postgres, que si no contesta con
+ * un error de sintaxis y la página se cae. Y se filtra por paciente además de
+ * por profesional, porque el registro que se abre con ella es el de ese paciente.
+ */
+export async function getAppointmentFor(
+  practitionerId: string,
+  patientId: string,
+  appointmentId: string,
+) {
+  if (!z.uuid().safeParse(appointmentId).success) return null
+
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('*')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
 }
 
 export async function setAppointmentStatus(
@@ -301,10 +603,18 @@ export async function listAppointments(
 ): Promise<AppointmentWithPatient[]> {
   const db = await getDb()
 
+  // `!inner` y no un filtro después: un paciente borrado sale de la grilla, no
+  // sale sin nombre. Es derecho al olvido (Ley N.º 18.331) y la fila entera es
+  // lo que no corresponde mostrar.
+  //
+  // Sólo `deleted_at`. Un paciente archivado terminó el tratamiento y sus
+  // sesiones pasadas son historia que se sigue pudiendo mirar; las futuras se
+  // borran al archivar, así que no hay nada que esconder acá.
   const { data, error } = await db
     .from('appointments')
-    .select('*, patients(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color), sessions(id)')
     .eq('practitioner_id', practitionerId)
+    .is('patients.deleted_at', null)
     .gte('scheduled_on', from)
     .lte('scheduled_on', to)
     .order('scheduled_on', { ascending: true })

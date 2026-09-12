@@ -88,7 +88,7 @@ export function InstallPrompt() {
     <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-2xl border border-violet/15 bg-violet-soft px-4 py-3">
       <Download className="size-[18px] shrink-0 text-violet" />
 
-      <p className="min-w-0 flex-1 text-[13px] leading-snug text-violet">
+      <p className="min-w-0 flex-1 text-body leading-snug text-violet">
         <span className="font-semibold">Instalá Hilo en este dispositivo.</span>{' '}
         Queda en la pantalla de inicio y la abrís como una app, sin pasar por el
         navegador.

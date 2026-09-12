@@ -70,6 +70,10 @@ export async function POST(request: Request) {
     recipient: report.recipient as RecipientId,
     disciplineId: practitioner.discipline,
     practitionerNotes: report.input_notes,
+    // From the row, not the request (P20): what she chose when she created the
+    // report, so "Regenerar" writes with the same instructions and nothing the
+    // browser sends can swap them.
+    customInstructions: report.custom_instructions,
     adjustment: body.adjustment,
   })
 

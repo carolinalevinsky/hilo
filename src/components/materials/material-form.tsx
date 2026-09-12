@@ -52,6 +52,7 @@ export function MaterialForm({
     EMPTY_FORM_STATE,
   )
   const [area, setArea] = useState(material?.area ?? Object.keys(areas)[0] ?? '')
+  const [ownWork, setOwnWork] = useState(false)
   const [visibility, setVisibility] = useState<MaterialVisibility>(
     material?.visibility === 'public' ? 'public' : 'private',
   )
@@ -308,7 +309,7 @@ export function MaterialForm({
       <div className="space-y-1.5">
         <Label htmlFor="content">La actividad</Label>
         {generation ? (
-          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] text-violet">
+          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-3 py-2.5 text-meta text-violet">
             <Sparkles className="size-4 shrink-0" />
             {generation}
           </p>
@@ -381,7 +382,7 @@ export function MaterialForm({
         </div>
         <input type="hidden" name="visibility" value={visibility} />
 
-        <p className="rounded-xl bg-violet-soft px-3 py-2.5 text-[12.5px] text-violet">
+        <p className="rounded-xl bg-violet-soft px-3 py-2.5 text-meta text-violet">
           {visibility === 'public'
             ? 'Público: cualquier profesional de Hilo lo ve en su biblioteca y puede copiarlo, con tu nombre. Vos seguís siendo quien lo edita.'
             : 'Privado: queda solo en tu biblioteca. Nadie más lo ve.'}
@@ -390,9 +391,15 @@ export function MaterialForm({
         {visibility === 'public' ? (
           <Label
             htmlFor="ownWork"
-            className="flex items-start gap-2.5 text-[12.5px] leading-relaxed font-normal"
+            className="flex items-start gap-2.5 text-meta leading-relaxed font-normal"
           >
-            <Checkbox id="ownWork" name="ownWork" className="mt-0.5" />
+            <Checkbox
+              id="ownWork"
+              name="ownWork"
+              className="mt-0.5"
+              checked={ownWork}
+              onCheckedChange={(value) => setOwnWork(value === true)}
+            />
             <span>
               Declaro que este material es de mi autoría o tengo permiso para compartirlo, y
               que no incluye contenido con derechos de autor de terceros.
@@ -401,7 +408,16 @@ export function MaterialForm({
         ) : null}
       </fieldset>
 
-      <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
+      {/* Deshabilitado hasta marcar la declaración, en vez de dejar apretar y
+          contestar con un error. El servidor la sigue validando —`materials.ts`
+          es lo que manda, y una casilla del navegador no protege nada— pero
+          llegar al error después de intentar no le sirve a nadie. */}
+      <Button
+        type="submit"
+        size="lg"
+        disabled={pending || (visibility === 'public' && !ownWork)}
+        className="max-sm:w-full"
+      >
         {pending
           ? 'Guardando…'
           : visibility === 'public'
@@ -435,7 +451,7 @@ function VisibilityOption({
       onClick={() => onPick(value)}
       aria-pressed={active}
       className={cn(
-        'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12.5px] font-bold transition-colors',
+        'flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-meta font-bold transition-colors',
         active ? 'bg-card text-violet shadow-card' : 'text-muted-foreground hover:text-foreground',
       )}
     >

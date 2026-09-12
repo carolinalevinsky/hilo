@@ -171,7 +171,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             is being seen for the first time, and it is where the promise that
             nothing is written down still gets made. */}
         {fill ? null : (
-          <p className="text-[12.5px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             {turns.length
               ? 'Se acuerda de esta charla. Cuando la cerrás, no queda guardada.'
               : 'Sobre cualquier paciente o sobre tu práctica.'}
@@ -196,26 +196,26 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
                 turn.role === 'user' ? (
                   <p
                     key={index}
-                    className="ml-auto w-fit max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-[13.5px] leading-relaxed"
+                    className="ml-auto w-fit max-w-[85%] rounded-xl bg-muted px-3.5 py-2.5 text-body leading-relaxed"
                   >
                     {turn.content}
                   </p>
                 ) : (
                   <div key={index} className="space-y-2">
                     {turn.content ? (
-                      <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                      <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-body leading-relaxed whitespace-pre-wrap">
                         {turn.content}
                       </p>
                     ) : null}
 
                     {!turn.content && asking && index === turns.length - 1 ? (
-                      <p className="text-[13px] text-muted-foreground">Pensando…</p>
+                      <p className="text-body text-muted-foreground">Pensando…</p>
                     ) : null}
 
                     {/* Beside the answer, not instead of it: the answer above is
                         real either way, it just did not come from the model. */}
                     {turn.note ? (
-                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8a5a12]">
+                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
                         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
                         <span>{turn.note}</span>
                       </p>
@@ -225,7 +225,41 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
               )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          /* An empty panel is not an empty box. Hilo speaks first, and the four
+             questions under it are the answer to "¿y qué le pregunto?" — the
+             thing a first-time user actually gets stuck on.
+
+             Greeting and shortcuts at the top, the box you type in at the
+             bottom: the shape of every chat someone already uses. The composer
+             does not move when the conversation starts, so the one control the
+             practitioner reaches for is in the same place before and after.
+
+             The greeting belongs to the panel alone. On Inicio the card's
+             header already puts a line of grey text under the title, and two
+             greetings stacked is one too many. */
+          <div className={cn('space-y-3', fill && 'min-h-0 flex-1 overflow-y-auto')}>
+            {fill ? (
+              <p className="w-fit max-w-[92%] rounded-xl bg-violet-soft px-3.5 py-3 text-[13.5px] leading-relaxed">
+                Hola, ¿cómo puedo ayudarte?
+              </p>
+            ) : null}
+
+            {/* Not decoration: tapping one asks it. */}
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK.map((text) => (
+                <button
+                  key={text}
+                  type="button"
+                  onClick={() => void ask(text)}
+                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  {text}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form
           onSubmit={(event) => {
@@ -287,21 +321,6 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             </Button>
           </div>
         </form>
-
-        {turns.length === 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {QUICK.map((text) => (
-              <button
-                key={text}
-                type="button"
-                onClick={() => void ask(text)}
-                className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
-              >
-                {text}
-              </button>
-            ))}
-          </div>
-        ) : null}
       </CardContent>
     </Card>
   )

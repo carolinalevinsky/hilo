@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { firstName } from '@/lib/whatsapp'
 import { requireUser } from '@/server/auth'
 import {
@@ -15,13 +15,13 @@ import {
 import { updatePatientBilling } from '@/server/patients'
 import { deletePayment, recordPayment } from '@/server/payments'
 
-function messageFor(error: unknown): string {
-  if (error instanceof MercadoPagoError) return error.message
-  if (error && typeof error === 'object' && 'issues' in error) {
-    const issues = (error as { issues: { message: string }[] }).issues
-    return issues[0]?.message ?? 'Revisá los datos.'
-  }
-  return 'No pudimos guardar. Probá de nuevo.'
+/**
+ * `MercadoPagoError` ya trae una frase escrita para quien la va a leer, así que
+ * pasa derecho; el resto va por el camino común.
+ */
+function failed(error: unknown): FormState {
+  if (error instanceof MercadoPagoError) return formError(error.message)
+  return formErrorFor(error, 'No pudimos guardar. Probá de nuevo.')
 }
 
 /**
@@ -41,7 +41,7 @@ export async function updateBillingAction(
       expectedSessionsPerMonth: formData.get('expectedSessionsPerMonth'),
     })
   } catch (error) {
-    return formError(messageFor(error))
+    return failed(error)
   }
 
   revalidatePath('/cobros')
@@ -65,7 +65,7 @@ export async function recordPaymentAction(
       note: formData.get('note'),
     })
   } catch (error) {
-    return formError(messageFor(error))
+    return failed(error)
   }
 
   revalidatePath('/cobros')
@@ -88,7 +88,7 @@ export async function connectMercadoPagoAction(
   try {
     await connectMercadoPago(user.id, { accessToken: formData.get('accessToken') })
   } catch (error) {
-    return formError(messageFor(error))
+    return failed(error)
   }
 
   revalidatePath('/cobros')
@@ -138,6 +138,6 @@ export async function createPaymentLinkAction(
     // The link travels back in the form message so the practitioner can copy it.
     return formOk(link)
   } catch (error) {
-    return formError(messageFor(error))
+    return failed(error)
   }
 }

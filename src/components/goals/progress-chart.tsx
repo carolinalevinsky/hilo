@@ -33,7 +33,7 @@ export function ProgressChart({
 }) {
   if (goals.length === 0) {
     return (
-      <p className="py-3 text-[13px] text-muted-foreground">
+      <p className="py-3 text-body text-muted-foreground">
         Cargá objetivos para ver la evolución en el tiempo.
       </p>
     )
@@ -53,7 +53,7 @@ export function ProgressChart({
 
   if (!Number.isFinite(first)) {
     return (
-      <p className="py-3 text-[13px] text-muted-foreground">
+      <p className="py-3 text-body text-muted-foreground">
         Todavía no hay movimiento para graficar. Ajustá el avance de un objetivo y aparece acá.
       </p>
     )
@@ -139,7 +139,7 @@ export function ProgressChart({
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
         {goals.map((goal, index) => (
-          <li key={goal.id} className="flex items-center gap-1.5 text-[12px]">
+          <li key={goal.id} className="flex items-center gap-1.5 text-meta">
             <span
               className="size-2.5 rounded-full"
               style={{

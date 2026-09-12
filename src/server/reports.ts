@@ -5,6 +5,7 @@ import { disciplineAdjective, recipientTone, type RecipientId } from '@/lib/reci
 
 import { logAction } from './audit'
 import { getDb } from './db'
+import { replaceDocumentBody, type VersionReason } from './document-versions'
 
 /**
  * Reports: storing them, listing them, and titling them.
@@ -65,6 +66,8 @@ export async function createReport(
     title: string
     content: string
     inputNotes?: string | null
+    /** Her own instructions for this report (P20), copied so regenerating reuses them. */
+    customInstructions?: string | null
     aiGenerated: boolean
     aiModel?: string | null
   },
@@ -80,6 +83,7 @@ export async function createReport(
       title: input.title,
       content: input.content,
       input_notes: input.inputNotes ?? null,
+      custom_instructions: input.customInstructions ?? null,
       ai_generated: input.aiGenerated,
       // Stored per document. When the pinned model is replaced we need to be
       // able to say which reports came from which version.
@@ -93,21 +97,20 @@ export async function createReport(
   return data
 }
 
+/**
+ * Guardar el texto de un informe.
+ *
+ * Pasa por `replaceDocumentBody` y no hace el `update` acá, para que lo que
+ * decía antes quede guardado. Ver `document-versions.ts`: no es una capa de
+ * más, es el único camino que escribe el cuerpo de un documento firmado.
+ */
 export async function updateReportContent(
   practitionerId: string,
   reportId: string,
   content: string,
+  reason: VersionReason = 'edit',
 ) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('reports')
-    .update({ content })
-    .eq('id', reportId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'update', 'report', reportId)
+  await replaceDocumentBody(practitionerId, 'report', reportId, content, reason)
 }
 
 export async function getReport(practitionerId: string, reportId: string) {

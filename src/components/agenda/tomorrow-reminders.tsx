@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { formatLongDate } from '@/lib/dates'
@@ -19,6 +21,19 @@ import type { AppointmentWithPatient } from '@/server/appointments'
  * Nothing clinical goes in the message — a name, a day and a time. It leaves in
  * a WhatsApp thread, which is an uncontrolled copy forever, and Ley N.º 18.331
  * is the reason that line is drawn here rather than argued about later.
+ *
+ * ─── The row that cannot be reminded ──────────────────────────────────────
+ *
+ * A patient with no phone on record used to get the same green "Recordar", one
+ * line under the words *sin teléfono cargado*. `whatsappLink` falls back to
+ * `https://wa.me/?text=…` — no number — so the button opened WhatsApp with no
+ * recipient and the practitioner had to work out why.
+ *
+ * The fallback itself is right and stays: `booking-link.tsx` uses it on purpose,
+ * to send a link to whoever you pick in WhatsApp. It is wrong here, where the
+ * row already knows exactly who it is about. So the row says what is missing
+ * and offers the way to fix it, which is the same move as "Sin cargar:" on the
+ * ficha and "Sin honorario" in Cobros.
  */
 export function TomorrowReminders({
   date,
@@ -43,7 +58,7 @@ export function TomorrowReminders({
         {/* "lunes, 17 de agosto" comes back lower-cased from `toLocaleDateString`,
             which is correct Spanish inside a sentence and wrong as a heading.
             `capitalize` would give "Lunes, 17 De Agosto". */}
-        <p className="text-[12.5px] text-muted-foreground first-letter:uppercase">
+        <p className="text-meta text-muted-foreground first-letter:uppercase">
           {dayLabel}
         </p>
       </CardHeader>
@@ -68,23 +83,32 @@ export function TomorrowReminders({
                 />
 
                 <div className="min-w-[120px] flex-1">
-                  <p className="text-[13.5px] font-bold">
+                  <p className="text-body font-bold">
                     {firstName(patient.full_name)}
                     <span className="font-medium text-muted-foreground"> · {time}</span>
                   </p>
-                  <p className="text-[12px] text-muted-foreground">
+                  <p className="text-meta text-muted-foreground">
                     {phone ?? 'sin teléfono cargado'}
                   </p>
                 </div>
 
-                <a
-                  href={whatsappLink(phone, message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-[#25d366] px-3.5 py-2 text-[12.5px] font-bold text-white hover:opacity-90"
-                >
-                  Recordar
-                </a>
+                {phone ? (
+                  <a
+                    href={whatsappLink(phone, message)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-[#25d366] px-3.5 py-2 text-meta font-bold text-white hover:opacity-90"
+                  >
+                    Recordar
+                  </a>
+                ) : (
+                  <Link
+                    href={`/pacientes/${patient.id}/editar`}
+                    className="rounded-full border border-border px-3.5 py-2 text-meta font-bold text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    Cargar teléfono
+                  </Link>
+                )}
               </li>
             )
           })}

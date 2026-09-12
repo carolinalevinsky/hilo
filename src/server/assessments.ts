@@ -5,6 +5,7 @@ import { instrument, SCORE_SCALES, type ScoreScale } from '@/lib/instruments'
 
 import { logAction } from './audit'
 import { getDb } from './db'
+import { replaceDocumentBody, type VersionReason } from './document-versions'
 
 /**
  * Assessments — administering an instrument and interpreting the result.
@@ -59,6 +60,8 @@ export async function createAssessment(
     assessedOn: string
     results: AssessmentResultsData
     observations?: string | null
+    /** Her own instructions for this assessment (P20), copied so regenerating reuses them. */
+    customInstructions?: string | null
     analysis: string
     aiGenerated: boolean
     aiModel?: string | null
@@ -75,6 +78,7 @@ export async function createAssessment(
       assessed_on: input.assessedOn,
       results: input.results,
       observations: input.observations ?? null,
+      custom_instructions: input.customInstructions ?? null,
       analysis: input.analysis,
       ai_generated: input.aiGenerated,
       ai_model: input.aiModel ?? null,
@@ -87,21 +91,14 @@ export async function createAssessment(
   return data
 }
 
+/** Igual que `updateReportContent`: pasa por el historial. */
 export async function updateAssessmentAnalysis(
   practitionerId: string,
   assessmentId: string,
   analysis: string,
+  reason: VersionReason = 'edit',
 ) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('assessments')
-    .update({ analysis })
-    .eq('id', assessmentId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'update', 'assessment', assessmentId)
+  await replaceDocumentBody(practitionerId, 'assessment', assessmentId, analysis, reason)
 }
 
 export async function getAssessment(practitionerId: string, assessmentId: string) {

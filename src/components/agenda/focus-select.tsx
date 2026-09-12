@@ -30,7 +30,7 @@ export function FocusSelect({
       defaultValue={defaultValue}
       aria-label={label}
       onChange={(event) => event.currentTarget.form?.requestSubmit()}
-      className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-[13px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-body outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       {options.map((option) => (
         <option key={option.id} value={option.id}>

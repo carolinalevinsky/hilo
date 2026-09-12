@@ -3,13 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { readCustomInstructions } from '@/app/(app)/custom-instructions'
+
 import { env } from '@/lib/env'
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
 import { sendFormatRequestNotification } from '@/server/notifications'
-import { recordUsage } from '@/server/ai-usage'
+import { recordUsage, releaseUsage } from '@/server/ai-usage'
+import { listVersions, type VersionReason } from '@/server/document-versions'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
@@ -45,6 +48,11 @@ export async function createReportAction(
   if (!patientId) return formError('Elegí un paciente.')
   if (!recipient) return formError('Elegí para quién es el informe.')
 
+  // Her own instructions (P20). Checked before the quota, like any other field:
+  // a form that fails on length should not spend a unit first.
+  const own = await readCustomInstructions(user.id, 'report', formData)
+  if ('message' in own) return formError(own.message)
+
   try {
     await assertQuota(user.id, practitioner.plan, 'reports')
   } catch (error) {
@@ -56,29 +64,53 @@ export async function createReportAction(
 
   // Una unidad por informe creado. Antes la contaba la fila de `reports`, que
   // la profesional puede borrar; ahora la cuenta `ai_usage`, que no.
-  await recordUsage(user.id, 'reports')
+  const usageId = await recordUsage(user.id, 'reports')
 
-  const report = await createReport(user.id, {
-    patientId,
-    recipient,
-    title: titleFor(recipient, practitioner.discipline, context.patientName),
-    content: reportFallback({
-      context,
+  // Anotar antes y devolver si falla, y no anotar después. Al revés, un insert
+  // que falla se llevaba la unidad puesta; pero anotar después dejaría que un
+  // informe creado quede sin contar si el ledger es el que falla, y ése es el
+  // lado que no puede ceder — es el contador que la profesional no puede
+  // borrar.
+  let report
+  try {
+    report = await createReport(user.id, {
+      patientId,
       recipient,
-      disciplineId: practitioner.discipline,
-    }),
-    inputNotes,
-    aiGenerated: false,
-  })
+      title: titleFor(recipient, practitioner.discipline, context.patientName),
+      content: reportFallback({
+        context,
+        recipient,
+        disciplineId: practitioner.discipline,
+      }),
+      inputNotes,
+      customInstructions: own.text,
+      aiGenerated: false,
+    })
+  } catch (error) {
+    await releaseUsage(usageId)
+    throw error
+  }
 
   revalidatePath('/informes')
   redirect(`/informes/${report.id}?ia=1`)
 }
 
-export async function saveReportAction(reportId: string, content: string) {
+/**
+ * Guardar el texto del informe, venga de la mano o de una propuesta aplicada.
+ *
+ * `reason` viaja hasta el historial y es lo que después distingue "antes de
+ * aplicar la IA" de "antes de tu edición" en la lista de versiones. Devuelve el
+ * historial ya actualizado para que el editor lo muestre sin recargar.
+ */
+export async function saveReportAction(
+  reportId: string,
+  content: string,
+  reason: VersionReason = 'edit',
+) {
   const user = await requireUser()
-  await updateReportContent(user.id, reportId, content)
+  await updateReportContent(user.id, reportId, content, reason)
   revalidatePath(`/informes/${reportId}`)
+  return listVersions(user.id, 'report', reportId)
 }
 
 export async function deleteReportAction(formData: FormData) {
@@ -107,18 +139,16 @@ export async function requestFormatAction(
   try {
     await createFormatRequest(user.id, { detail })
   } catch (error) {
-    // El tope es una respuesta y se dice con sus palabras; un fallo de Zod
-    // también. Cualquier otra cosa es un problema nuestro y no se le cuenta a
-    // quien está del otro lado.
-    const message =
-      error instanceof TooManyFormatRequests
-        ? error.message
-        : error && typeof error === 'object' && 'issues' in error
-          ? ((error as { issues: { message: string }[] }).issues[0]?.message ??
-            'Revisá lo que escribiste.')
-          : 'No pudimos guardar tu pedido. Probá de nuevo en un momento.'
+    // El tope es una respuesta y se dice con sus palabras. El resto —un dato
+    // mal escrito, o un problema nuestro— lo separa `formErrorFor`, que además
+    // es la que deja constancia de lo segundo.
+    if (error instanceof TooManyFormatRequests) {
+      return formError(error.message, { detail })
+    }
 
-    return formError(message, { detail })
+    return formErrorFor(error, 'No pudimos guardar tu pedido. Probá de nuevo en un momento.', {
+      detail,
+    })
   }
 
   // Sin `OWNER_EMAIL` configurado el pedido queda guardado igual y no se avisa.

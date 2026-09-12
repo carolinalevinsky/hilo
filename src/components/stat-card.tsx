@@ -80,9 +80,9 @@ export function StatCard({
       <div className="text-[22px] font-extrabold tracking-[-0.6px] sm:text-[27px]">
         {value}
       </div>
-      <div className="mt-0.5 text-[12.5px] text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-meta text-muted-foreground">{label}</div>
       {hint ? (
-        <div className="mt-0.5 text-[11.5px] text-muted-foreground/80">{hint}</div>
+        <div className="mt-0.5 text-micro text-muted-foreground/80">{hint}</div>
       ) : null}
     </div>
   )

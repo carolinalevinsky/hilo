@@ -150,6 +150,7 @@ export type Database = {
           analysis: string | null
           assessed_on: string
           created_at: string
+          custom_instructions: string | null
           id: string
           instrument: string
           observations: string | null
@@ -164,6 +165,7 @@ export type Database = {
           analysis?: string | null
           assessed_on?: string
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           instrument: string
           observations?: string | null
@@ -178,6 +180,7 @@ export type Database = {
           analysis?: string | null
           assessed_on?: string
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           instrument?: string
           observations?: string | null
@@ -247,6 +250,7 @@ export type Database = {
           patient_id: string | null
           phone: string
           practitioner_id: string
+          preferred_date: string | null
           preferred_time: string | null
           preferred_weekday: number | null
           status: string
@@ -261,6 +265,7 @@ export type Database = {
           patient_id?: string | null
           phone: string
           practitioner_id: string
+          preferred_date?: string | null
           preferred_time?: string | null
           preferred_weekday?: number | null
           status?: string
@@ -275,6 +280,7 @@ export type Database = {
           patient_id?: string | null
           phone?: string
           practitioner_id?: string
+          preferred_date?: string | null
           preferred_time?: string | null
           preferred_weekday?: number | null
           status?: string
@@ -294,6 +300,58 @@ export type Database = {
             columns: ["practitioner_id"]
             isOneToOne: false
             referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_versions: {
+        Row: {
+          assessment_id: string | null
+          body: string
+          created_at: string
+          id: string
+          practitioner_id: string
+          replaced_by: string
+          report_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          practitioner_id: string
+          replaced_by: string
+          report_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          practitioner_id?: string
+          replaced_by?: string
+          report_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
             referencedColumns: ["id"]
           },
         ]
@@ -793,12 +851,51 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          practitioner_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          kind: string
+          name: string
+          practitioner_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          practitioner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_templates_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           ai_generated: boolean
           ai_model: string | null
           content: string | null
           created_at: string
+          custom_instructions: string | null
           id: string
           input_notes: string | null
           issued_on: string
@@ -813,6 +910,7 @@ export type Database = {
           ai_model?: string | null
           content?: string | null
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           input_notes?: string | null
           issued_on?: string
@@ -827,6 +925,7 @@ export type Database = {
           ai_model?: string | null
           content?: string | null
           created_at?: string
+          custom_instructions?: string | null
           id?: string
           input_notes?: string | null
           issued_on?: string
@@ -850,6 +949,45 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "practitioners"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_skips: {
+        Row: {
+          created_at: string
+          id: string
+          practitioner_id: string
+          schedule_id: string
+          skipped_on: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          practitioner_id: string
+          schedule_id: string
+          skipped_on: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          practitioner_id?: string
+          schedule_id?: string
+          skipped_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_skips_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_skips_schedule_same_practitioner"
+            columns: ["practitioner_id", "schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["practitioner_id", "id"]
           },
         ]
       }
@@ -955,6 +1093,7 @@ export type Database = {
       }
       session_plan_items: {
         Row: {
+          appointment_id: string | null
           created_at: string
           goal_id: string | null
           id: string
@@ -965,6 +1104,7 @@ export type Database = {
           title: string | null
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           goal_id?: string | null
           id?: string
@@ -975,6 +1115,7 @@ export type Database = {
           title?: string | null
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           goal_id?: string | null
           id?: string
@@ -985,6 +1126,13 @@ export type Database = {
           title?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "session_plan_items_appointment_same_patient"
+            columns: ["practitioner_id", "patient_id", "appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["practitioner_id", "patient_id", "id"]
+          },
           {
             foreignKeyName: "session_plan_items_goal_id_fkey"
             columns: ["goal_id"]
@@ -1051,11 +1199,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "sessions_appointment_id_fkey"
-            columns: ["appointment_id"]
+            foreignKeyName: "sessions_appointment_same_patient"
+            columns: ["practitioner_id", "patient_id", "appointment_id"]
             isOneToOne: false
             referencedRelation: "appointments"
-            referencedColumns: ["id"]
+            referencedColumns: ["practitioner_id", "patient_id", "id"]
           },
           {
             foreignKeyName: "sessions_patient_same_practitioner"
@@ -1078,6 +1226,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_goal_point: { Args: { point_id: string }; Returns: undefined }
       practitioner_by_slug: {
         Args: { lookup_slug: string }
         Returns: {

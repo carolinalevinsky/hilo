@@ -3,15 +3,18 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { restoreVersionAction } from '@/app/(app)/document-actions'
 import { deleteReportAction, saveReportAction } from '@/app/(app)/informes/actions'
 import { ClinicalDocument } from '@/components/documents/clinical-document'
 import { DocumentEditor } from '@/components/documents/document-editor'
 import { Button } from '@/components/ui/button'
 import { ageLabel } from '@/lib/age'
 import { formatLongDate } from '@/lib/dates'
+import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
+import { listVersions } from '@/server/document-versions'
 import { getPatient } from '@/server/patients'
 import { getReport } from '@/server/reports'
 
@@ -33,6 +36,8 @@ export default async function ReportPage({
 }: PageProps<'/informes/[id]'>) {
   const { id } = await params
   const query = await searchParams
+  // De dónde vino, para poder devolverlo ahí. Ver `backLink`.
+  const back = backLink(query.volver, '/informes', 'Volver a informes')
   const user = await currentUser()
 
   const [report, practitioner] = await Promise.all([
@@ -41,7 +46,10 @@ export default async function ReportPage({
   ])
   if (!report) notFound()
 
-  const patient = await getPatient(user.id, report.patient_id)
+  const [patient, versions] = await Promise.all([
+    getPatient(user.id, report.patient_id),
+    listVersions(user.id, 'report', report.id),
+  ])
 
   const meta = [
     { label: 'Paciente', value: report.patients?.full_name ?? 'Sin datos' },
@@ -60,25 +68,38 @@ export default async function ReportPage({
     <>
       <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2">
         <Link
-          href="/informes"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+          href={back.href}
+          className="inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Volver a informes
+          {back.label}
         </Link>
 
         <div className="flex gap-2">
+          {/* Sin teléfono el link salía `wa.me/?text=…`, sin número, y
+              WhatsApp abría sin destinatario. El botón dice lo que falta y
+              lleva a cargarlo — la misma regla que "Recordar" en la Agenda y
+              "Compartir con familia" en la ficha. */}
           {shareable && patient ? (
-            <Button asChild variant="outline" size="sm">
-              <a
-                href={whatsappLink(patient.phone, shareText)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle className="size-4" />
-                Avisar por WhatsApp
-              </a>
-            </Button>
+            patient.phone ? (
+              <Button asChild variant="outline" size="sm">
+                <a
+                  href={whatsappLink(patient.phone, shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="size-4" />
+                  Avisar por WhatsApp
+                </a>
+              </Button>
+            ) : (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/pacientes/${patient.id}/editar`}>
+                  <MessageCircle className="size-4" />
+                  Cargar teléfono
+                </Link>
+              </Button>
+            )
           ) : null}
 
           <form action={deleteReportAction}>
@@ -102,10 +123,12 @@ export default async function ReportPage({
         <DocumentEditor
           documentId={report.id}
           initialText={report.content ?? ''}
+          initialVersions={versions}
           endpoint="/api/ai/informe"
           idField="reportId"
           autoStart={query.ia === '1'}
           onSave={saveReportAction.bind(null, report.id)}
+          onRestore={restoreVersionAction}
         />
       </ClinicalDocument>
     </>

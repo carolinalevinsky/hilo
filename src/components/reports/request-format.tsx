@@ -57,9 +57,17 @@ export function RequestFormat() {
           <Plus className="size-[18px]" />
         </span>
 
-        <span className="text-[14.5px] font-bold">¿Te falta un formato?</span>
-        <span className="mt-1 text-[12.5px] text-muted-foreground">
+        <span className="text-item font-bold">¿Te falta un formato?</span>
+        <span className="mt-1 mb-2.5 text-meta text-muted-foreground">
           Contanos cuál necesitás y lo agregamos
+        </span>
+
+        {/* Every other card in this grid ends in a violet "Crear →". Without
+            one, the odd card out reads as a caption at the foot of the grid
+            rather than as the button it has always been. Outlined rather than
+            solid, because it opens a form instead of starting a report. */}
+        <span className="mt-auto rounded-full border border-violet px-3 py-1.5 text-meta font-bold text-violet">
+          Pedir →
         </span>
       </button>
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { disconnect } from '@/server/google'
 import { updateCalendarPrivacy, updatePractitioner } from '@/server/practitioners'
@@ -19,8 +19,8 @@ export async function updateProfileAction(
       discipline: formData.get('discipline'),
       phone: formData.get('phone'),
     })
-  } catch {
-    return formError('No pudimos guardar los cambios. Probá de nuevo.')
+  } catch (error) {
+    return formErrorFor(error, 'No pudimos guardar los cambios. Probá de nuevo.')
   }
 
   // The sidebar shows the name and discipline, so the whole shell is stale.
@@ -47,8 +47,8 @@ export async function updateCalendarPrivacyAction(
     await updateCalendarPrivacy(user.id, {
       calendarPrivacy: formData.get('calendarPrivacy'),
     })
-  } catch {
-    return formError('No pudimos guardar el cambio. Probá de nuevo.')
+  } catch (error) {
+    return formErrorFor(error, 'No pudimos guardar el cambio. Probá de nuevo.')
   }
 
   revalidatePath('/perfil')

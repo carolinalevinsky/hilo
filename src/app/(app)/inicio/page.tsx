@@ -11,8 +11,11 @@ import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
+import { today } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
+import { formatTime } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
+import { hasAnyAppointment, nextAppointmentFor } from '@/server/appointments'
 import { hasAnyGoal } from '@/server/goals'
 import { countMaterials } from '@/server/materials'
 import { listPatients } from '@/server/patients'
@@ -24,22 +27,35 @@ export const metadata: Metadata = { title: 'Inicio · Hilo' }
 
 export default async function HomePage() {
   const { user, practitioner } = await currentSession()
-  const [patients, todaySessions, sessionCount, goalExists] = await Promise.all([
-    listPatients(user.id, { sort: 'recent' }),
-    todayBriefing(user.id, practitioner.discipline),
-    // Just the numbers, for "Primeros pasos". Both read an index and return no
-    // rows.
-    countSessions(user.id),
-    hasAnyGoal(user.id),
-  ])
+  const [patients, todaySessions, sessionCount, goalExists, appointmentExists] =
+    await Promise.all([
+      listPatients(user.id, { sort: 'recent' }),
+      todayBriefing(user.id, practitioner.discipline),
+      // Just the numbers, for "Primeros pasos". They read an index and return no
+      // rows.
+      countSessions(user.id),
+      hasAnyGoal(user.id),
+      hasAnyAppointment(user.id),
+    ])
 
   // Only while "Primeros pasos" is still on screen, which is a few days out of
-  // the life of an account. Once the three steps are done this query stops
-  // running.
+  // the life of an account. The same condition `FirstSteps` hides itself on —
+  // patient, goal and record; see there for why scheduling is not part of it.
   const stillOnboarding = patients.length === 0 || sessionCount === 0 || !goalExists
-  const materialCount = stillOnboarding
-    ? await countMaterials(user.id, practitioner.discipline)
-    : 0
+  const firstPatient = patients[0] ?? null
+  const [materialCount, firstPatientNext] = stillOnboarding
+    ? await Promise.all([
+        countMaterials(user.id, practitioner.discipline),
+        firstPatient ? nextAppointmentFor(user.id, firstPatient.id) : Promise.resolve(null),
+      ])
+    : [0, null]
+
+  // Step four is tied to that patient's session only when it is today: tying the
+  // record to next Tuesday's would mark it attended before it happened.
+  const todaysAppointment =
+    firstPatientNext && firstPatientNext.scheduled_on === today()
+      ? { id: firstPatientNext.id, startTime: formatTime(firstPatientNext.start_time) }
+      : null
 
   // The briefing carries the patient's name and colour but not their birthday,
   // and the list is already here — no reason to ask the database twice.
@@ -82,9 +98,15 @@ export default async function HomePage() {
           sees. */}
       <FirstSteps
         hasPatient={patients.length > 0}
-        hasSession={sessionCount > 0}
         hasGoal={goalExists}
-        firstPatientId={patients[0]?.id ?? null}
+        hasAppointment={appointmentExists}
+        hasSession={sessionCount > 0}
+        firstPatient={
+          firstPatient
+            ? { id: firstPatient.id, firstName: firstName(firstPatient.full_name) }
+            : null
+        }
+        todaysAppointment={todaysAppointment}
         materialCount={materialCount}
         disciplineLabel={disciplineLabel(practitioner.discipline)}
       />
@@ -107,19 +129,16 @@ export default async function HomePage() {
           </StatCardGrid>
 
           <Card className="mb-4">
+            {/* No line counting the sessions any more: the "Sesiones hoy" card
+                is an inch above and states the same number, and the list itself
+                is right below. The same fact three times on one screen does not
+                inform better, it just makes the screen harder to read. */}
             <CardHeader>
               <CardTitle>Hoy</CardTitle>
-              <p className="text-[12.5px] text-muted-foreground">
-                {todaySessions.length === 0
-                  ? 'Sin sesiones agendadas'
-                  : todaySessions.length === 1
-                    ? '1 sesión'
-                    : `${todaySessions.length} sesiones`}
-              </p>
             </CardHeader>
             <CardContent>
               {todaySessions.length === 0 ? (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-body text-muted-foreground">
                   Hoy tenés el día libre.{' '}
                   <Link href="/agenda" className="font-semibold text-violet underline">
                     Ver la semana
