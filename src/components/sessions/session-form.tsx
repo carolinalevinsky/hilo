@@ -5,7 +5,6 @@ import { useActionState, useState } from 'react'
 import { saveSessionAction } from '@/app/(app)/pacientes/session-actions'
 import { FormMessage } from '@/components/auth/form-message'
 import { DictateButton } from '@/components/dictate-button'
-import { RecordSession } from '@/components/sessions/record-session'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -85,11 +84,17 @@ export function SessionForm({
 
       <FormMessage message={state.message} />
 
-      {/* At the top, as in v1 (`legacy/index.html:1943`): it is the first thing
-          you reach for, before the session starts, not something you find after
-          filling the form in. Only when writing a session up for the first time
-          — a recording cannot be made of a session that already happened. */}
-      {session ? null : <RecordSession patientId={patientId} targetId="progressNote" />}
+      {/* "Grabar sesión" used to sit right here, above the date, as in v1
+          (`legacy/index.html:1943`). Taken off the screen at the practitioner's
+          request — it is not a feature she wants for now. Nothing was deleted:
+          `src/components/sessions/record-session.tsx` and its route
+          `/api/ai/sesion` are intact, so bringing it back is putting this line
+          back:
+
+            {session ? null : <RecordSession patientId={patientId} targetId="progressNote" />}
+
+          The "Dictar" button next to Comentarios below is a different feature
+          and stays. */}
 
       <div className="max-w-[200px] space-y-1.5">
         <Label htmlFor="heldOn">Fecha de la sesión</Label>

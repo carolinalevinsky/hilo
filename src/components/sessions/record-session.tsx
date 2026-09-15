@@ -13,6 +13,16 @@ import {
 } from '@/lib/speech'
 
 /**
+ * ─── Not on screen right now ───────────────────────────────────────────────
+ *
+ * Nothing renders this. It was taken out of "Registrar sesión" at the
+ * practitioner's request — she does not want the feature for now — and the file
+ * is kept whole so that putting it back is one line in
+ * `src/components/sessions/session-form.tsx`, where the comment marking the spot
+ * is. The route it posts to (`/api/ai/sesion`) is untouched and still tested.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ *
  * "Grabá y Hilo arma el registro" — v1's promise
  * (`legacy/index.html:1943`), delivered.
  *

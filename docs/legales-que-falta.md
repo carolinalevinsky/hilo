@@ -60,7 +60,7 @@ encargados:
 | **Anthropic** | El texto que se manda a redactar: el contexto del informe o de la evaluación, el dictado de una sesión, la pregunta al asistente, y el archivo que se sube para que lo describa. No la base entera — sólo lo de ese pedido. |
 | **Resend** | Correo. El resumen semanal va **sin nombres**: cuenta cuántas sesiones y cuánto saldo, y un link. La única excepción está en el punto 4. |
 | **Google Calendar** | Sólo si la profesional lo conecta, y sólo lo que ella eligió que salga: "Ocupado", las iniciales, o el nombre de pila. Nunca el motivo ni la nota. |
-| **El servicio de dictado del navegador** (Google en Chrome, Apple en Safari) | El audio, cuando se usa dictar o grabar. **No pasa por Hilo**: va del navegador a ese servicio y vuelve como texto. Esto ya está bien explicado en el documento. |
+| **El servicio de dictado del navegador** (Google en Chrome, Apple en Safari) | El audio, cuando se usa dictar. **No pasa por Hilo**: va del navegador a ese servicio y vuelve como texto. Esto ya está bien explicado en el documento. |
 | **Mercado Pago** | Nada, por ahora: está apagado para la v1 (ver el punto 3). |
 
 Dos cosas que conviene decir junto a esa tabla, porque son ciertas y son buenas:

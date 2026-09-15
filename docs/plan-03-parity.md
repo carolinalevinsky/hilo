@@ -296,11 +296,18 @@ any OAuth at all.
 Both are listed under Ficha above. They are schema or server work, not component
 work.
 
-## "Grabar sesión" — built
+## "Grabar sesión" — built, and off the screen
 
 v1's button that promised a session record from a recording
 (`legacy/index.html:1943`), delivered in `src/components/sessions/record-session.tsx`
 and `src/app/api/ai/sesion/route.ts`.
+
+**It is not offered right now.** Taken out of "Registrar sesión" at the
+practitioner's request — not a feature she wants for now. The component and the
+route are intact and the route's tests still run; what changed is that
+`src/components/sessions/session-form.tsx` no longer renders it, and the comment
+where it used to be says so. The "Dictar" button next to Comentarios is a
+different feature and is still there.
 
 The rule it is built on, and the one to keep if it is ever changed: **the browser
 turns speech into text and only text is posted — no audio is uploaded, stored or
