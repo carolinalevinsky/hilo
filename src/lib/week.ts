@@ -102,6 +102,70 @@ export function formatTime(time: string): string {
 }
 
 /**
+ * Una hora válida para agendar: "HH:MM" en punto, y cuarto, y media o menos
+ * cuarto.
+ *
+ * La agenda se lee como una grilla de franjas. Algo a las 13:33 cae entre dos
+ * líneas, así que para saber a qué hora era hay que leer el número igual, y dos
+ * horarios que en la práctica son el mismo —13:30 y 13:33— se dibujan como dos.
+ *
+ * Vive acá porque la usan dos lados que no se conocen: la reserva pública y el
+ * diálogo de agendar. El `step` del navegador es una comodidad que un formulario
+ * hecho a mano no tiene por qué respetar; la regla es ésta.
+ */
+export const QUARTER_HOUR = /^([01]\d|2[0-3]):(00|15|30|45)$/
+
+/** El mensaje de esa regla, uno solo para las dos pantallas. */
+export const QUARTER_HOUR_MESSAGE =
+  'Elegí una hora de a 15 minutos, por ejemplo 14:00 o 14:15.'
+
+/** Desde y hasta dónde llega la lista de horas para elegir, en minutos. */
+const FIRST_QUARTER = 6 * 60
+const LAST_QUARTER = 22 * 60 + 45
+
+/**
+ * Todas las horas que se pueden elegir al agendar: de 06:00 a 22:45, de a
+ * quince minutos.
+ *
+ * Es una lista y no un `<input type="time">` con `step` porque el `step` del
+ * navegador se puede escribir por arriba —se tipea 13:33 y recién al enviar
+ * aparece un cartel del sistema operativo, en el idioma del sistema operativo—
+ * y porque los demás campos del mismo formulario (día, frecuencia, duración) ya
+ * son listas. Elegir una hora es elegir de un conjunto, no escribir un número.
+ *
+ * El rango es ancho a propósito: alguien atiende a las 7:00 y alguien cierra a
+ * las 22:00, y una lista que corta a las 20:00 deja a esas dos personas sin
+ * poder agendar su propio horario.
+ */
+export const QUARTER_HOURS = Array.from(
+  { length: (LAST_QUARTER - FIRST_QUARTER) / 15 + 1 },
+  (_, index) => {
+    const minutes = FIRST_QUARTER + index * 15
+    return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
+  },
+)
+
+/**
+ * La hora más cercana de `QUARTER_HOURS`.
+ *
+ * Es para el `defaultValue` de esas listas. Un valor que no esté entre las
+ * opciones no deja el select vacío: el navegador muestra la primera, así que una
+ * franja rara heredada de la URL se convertiría, sin decir nada, en las seis de
+ * la mañana.
+ */
+export function snapToQuarterHour(time: string | null | undefined): string {
+  const fallback = '09:00'
+  if (!time) return fallback
+
+  const minutes = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5))
+  if (!Number.isFinite(minutes)) return fallback
+
+  const snapped = Math.round(minutes / 15) * 15
+  const clamped = Math.min(Math.max(snapped, FIRST_QUARTER), LAST_QUARTER)
+  return `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`
+}
+
+/**
  * A Google Calendar "add event" link.
  *
  * Ported from `legacy/index.html:1290`. Deliberately a link and not an

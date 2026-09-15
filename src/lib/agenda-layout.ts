@@ -12,8 +12,15 @@
 /** Alto de una hora, en píxeles. Es la escala de todo lo demás. */
 export const HOUR_HEIGHT = 56
 
-/** Lo mínimo que puede medir algo y todavía leerse. */
-export const MIN_HEIGHT = 22
+/**
+ * Lo mínimo que puede medir algo y todavía leerse: una línea de texto entera.
+ *
+ * Son los 13 píxeles de una línea del bloque más los 10 que se comen sus bordes
+ * —ver `BLOCK_LINE` y `BLOCK_CHROME` en `week-calendar.tsx`—, redondeado para
+ * arriba. Con 22 la única línea que hay quedaba cortada por abajo, que es
+ * exactamente lo que esta constante existe para evitar.
+ */
+export const MIN_HEIGHT = 24
 
 /** Cuánto se angosta cada cosa que cae encima de otra, en %. */
 const STEP = 16

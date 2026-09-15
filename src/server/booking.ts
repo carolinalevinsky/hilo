@@ -5,6 +5,9 @@ import { z } from 'zod'
 import type { Database } from '@/lib/database.types'
 import { today, toDateInput, todayDate } from '@/lib/dates'
 import { env } from '@/lib/env'
+// 00, 15, 30 o 45 pasada cualquier hora. La misma regla que usa el diálogo de
+// agendar, para que las dos puertas de entrada a la agenda coincidan.
+import { QUARTER_HOUR, QUARTER_HOUR_MESSAGE } from '@/lib/week'
 
 import { getDb, getServiceDb } from './db'
 
@@ -26,9 +29,6 @@ export type BookingRequest = Database['public']['Tables']['booking_requests']['R
 export type BookingRequestWithPatient = BookingRequest & {
   patients: { id: string; full_name: string } | null
 }
-
-/** 00, 15, 30 or 45 past any hour of the day. */
-const QUARTER_HOUR = /^([01]\d|2[0-3]):(00|15|30|45)$/
 
 function emptyToNull(value: unknown) {
   return value === '' || value === undefined ? null : value
@@ -87,7 +87,7 @@ export const PublicBooking = z.object({
       emptyToNull,
       z
         .string()
-        .regex(QUARTER_HOUR, 'Elegí una hora de a 15 minutos, por ejemplo 14:00 o 14:15.')
+        .regex(QUARTER_HOUR, QUARTER_HOUR_MESSAGE)
         .nullable(),
     )
     .optional()

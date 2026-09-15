@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
 import { today, toDateInput } from '@/lib/dates'
+import { QUARTER_HOUR, QUARTER_HOUR_MESSAGE } from '@/lib/week'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -44,10 +45,23 @@ export const APPOINTMENT_STATUSES = [
   'no_show',
 ] as const
 
+/**
+ * La hora a la que empieza algo, siempre en un cuarto de hora.
+ *
+ * Es la misma regla que ya tenía la reserva pública, ahora compartida: ver
+ * `QUARTER_HOUR` en `src/lib/week.ts` por el porqué.
+ *
+ * El diálogo de agendar ofrece nada más que :00, :15, :30 y :45, pero un
+ * formulario se postea sin pasar por el diálogo, así que la regla vive acá. De
+ * paso se aprieta el rango: `\d{2}:\d{2}` aceptaba 99:99, y eso lo rechazaba
+ * Postgres después, con un error que no le dice nada a nadie.
+ */
+const QuarterHour = z.string().regex(QUARTER_HOUR, QUARTER_HOUR_MESSAGE)
+
 export const ScheduleInput = z.object({
   patientId: z.uuid('Elegí un paciente.'),
   weekday: z.coerce.number().int().min(0).max(6),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Revisá la hora.'),
+  startTime: QuarterHour,
   durationMinutes: z.coerce.number().int().min(5).max(480).default(45),
   frequency: z.enum(['weekly', 'biweekly', 'monthly']).default('weekly'),
   startsOn: z.iso.date().default(() => today()),
@@ -56,7 +70,7 @@ export const ScheduleInput = z.object({
 export const AppointmentInput = z.object({
   patientId: z.uuid('Elegí un paciente.'),
   scheduledOn: z.iso.date('Revisá la fecha.'),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Revisá la hora.'),
+  startTime: QuarterHour,
   durationMinutes: z.coerce.number().int().min(5).max(480).default(45),
   note: z
     .string()

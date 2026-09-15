@@ -139,6 +139,22 @@ const checkPath = (
 export const CircleCheck = icon(checkPath)
 export const Check = icon(checkPath)
 
+/**
+ * The other two ends a session can have, each with its own glyph.
+ *
+ * "No vino" and "Cancelada" used to share a bare ✕ in the appointment menu,
+ * which made two different facts —the family did not come, and the family let
+ * you know— look like the same one. `CircleX` pairs with the `CircleCheck` of
+ * "Vino"; `Ban` is the crossed-out circle that reads as called off.
+ */
+export const CircleX = icon(
+  <path d="M15 9L9 15M9 9L15 15M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" />,
+)
+
+export const Ban = icon(
+  <path d="M5.63604 5.63604L18.364 18.364M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" />,
+)
+
 export const Printer = icon(
   <path d="M7 17H5C3.89543 17 3 16.1046 3 15V11C3 9.34315 4.34315 8 6 8H7M7 17V14H17V17M7 17V18C7 19.1046 7.89543 20 9 20H15C16.1046 20 17 19.1046 17 18V17M17 17H19C20.1046 17 21 16.1046 21 15V11C21 9.34315 19.6569 8 18 8H17M7 8V6C7 4.89543 7.89543 4 9 4H15C16.1046 4 17 4.89543 17 6V8M7 8H17M15 11H17" />,
 )
