@@ -359,11 +359,12 @@ export function WeekCalendar({
                           ageOf={ageOf}
                           calendarPrivacy={calendarPrivacy}
                           labelTop={labelTop}
+                          height={height}
                           href={hrefForSession(piece.appointment.id)}
                           selected={piece.appointment.id === selectedId}
                         />
                       ) : (
-                        <Busy block={piece.block} labelTop={labelTop} />
+                        <Busy block={piece.block} labelTop={labelTop} height={height} />
                       )}
                     </div>
                   ))}
@@ -378,11 +379,62 @@ export function WeekCalendar({
   )
 }
 
+/**
+ * Alto de una línea de texto adentro de un bloque: `text-nano` con
+ * `leading-[13px]`. Escrito, y no heredado de `leading-tight`, porque de este
+ * número depende `fitsLines` — si el CSS y la cuenta dejan de coincidir, la
+ * segunda línea vuelve a quedar cortada al medio.
+ */
+const BLOCK_LINE = 13
+
+/**
+ * La segunda línea —la edad— es más chica que el título y va separada de él:
+ * `text-[9px]` con `leading-[11px]`, más los 3 del `mt-[3px]`. A 10 px y pegada
+ * al nombre las dos líneas pesaban lo mismo y el bloque se leía como un párrafo
+ * apretado; la edad es un dato de apoyo y tiene que parecerlo.
+ *
+ * No es un escalón de la escala de `globals.css` a propósito: vive en esta
+ * superficie y en ninguna otra, debajo de `text-nano`, que ya es el escalón que
+ * existe para la grilla. Por eso se escribe una vez acá y las dos líneas de edad
+ * del archivo —la de una sesión y la de un evento de Google— lo usan.
+ */
+const BLOCK_AGE_CLASS = 'mt-[3px] truncate text-[9px] leading-[11px] font-normal opacity-90'
+
+/** Lo que mide esa segunda línea, para `fitsLines`: 11 de alto y 3 de aire. */
+const BLOCK_AGE_LINE = 14
+
+/**
+ * Lo que el bloque pierde contra el alto del tramo: el `py-px` del contenedor
+ * que lo posiciona, 1 arriba y 1 abajo, más su propio `py-1`, 4 y 4.
+ */
+const BLOCK_CHROME = 10
+
+/**
+ * ¿Entran tantas líneas de texto en este bloque?
+ *
+ * El alto de un bloque es su duración: una sesión de 45 minutos mide 42 píxeles
+ * y una de 30 mide 28. El texto no se achica con él, así que en las cortas la
+ * segunda línea —la edad— quedaba mitad adentro y mitad tapada por el borde, que
+ * es peor que no estar: una franja de píxeles con la parte de arriba de unas
+ * letras no se lee, y encima ensucia el bloque.
+ *
+ * Así que la segunda línea no se dibuja cuando no entra entera. Es una cuenta y
+ * no una medición: el alto ya lo sabe `placeSpans` antes de dibujar nada, y
+ * medir en el navegador pediría un efecto, un re-render y sacar la grilla del
+ * servidor para responder algo que es una resta.
+ *
+ * `labelTop` entra en la cuenta porque el título ya viene bajado cuando algo lo
+ * tapa, y ese desplazamiento sale del mismo alto.
+ */
+const fitsLines = (height: number, labelTop: number, lines: number) =>
+  height - BLOCK_CHROME - labelTop >= BLOCK_LINE + (lines > 1 ? BLOCK_AGE_LINE : 0)
+
 function Event({
   appointment,
   ageOf,
   calendarPrivacy,
   labelTop,
+  height,
   href,
   selected,
 }: {
@@ -390,6 +442,8 @@ function Event({
   ageOf?: Map<string, string | null>
   calendarPrivacy?: string | null
   labelTop: number
+  /** Alto del bloque en píxeles, de `placeSpans`. Ver `fitsLines`. */
+  height: number
   /** A dónde lleva el nombre: esta misma semana, con esta sesión abierta. */
   href: string
   selected: boolean
@@ -401,7 +455,7 @@ function Event({
   return (
     <div
       className={cn(
-        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1.5 pr-6 text-micro leading-tight font-semibold text-white',
+        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1 pr-6 text-nano leading-[13px] font-semibold text-white',
         appointment.status === 'cancelled' && 'line-through opacity-55',
         // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
         // Sin esto no habría forma de saber cuál de las doce es la que estás
@@ -425,7 +479,7 @@ function Event({
       {appointmentStatusTile(appointment.status).glyph ? (
         <span
           aria-hidden
-          className="absolute top-0.5 right-1 text-[10px] leading-none opacity-95"
+          className="absolute top-0.5 right-1 text-nano leading-none opacity-95"
         >
           {appointmentStatusTile(appointment.status).glyph}
         </span>
@@ -435,10 +489,15 @@ function Event({
       <span className="sr-only">{appointmentStatusLabel(appointment.status)}</span>
 
       <div style={{ paddingTop: labelTop }}>
+        {/* Una línea sola siempre: un nombre largo que envuelve empuja la edad
+            afuera del bloque y se corta él mismo. Cortado por la derecha se
+            entiende —se ve que sigue—; cortado por abajo, no. */}
         <SelectLink href={href}>
           {formatTime(appointment.start_time)} · {name}
         </SelectLink>
-        {age ? <div className="font-normal opacity-90">{age}</div> : null}
+        {age && fitsLines(height, labelTop, 2) ? (
+          <div className={BLOCK_AGE_CLASS}>{age}</div>
+        ) : null}
       </div>
 
       <AppointmentMenu
@@ -459,15 +518,28 @@ function Event({
  * quede lindo: son las dos únicas cosas en la grilla, y confundirlas es agendar
  * un paciente encima de tu propia cena.
  */
-function Busy({ block, labelTop }: { block: BusyBlock; labelTop: number }) {
+function Busy({
+  block,
+  labelTop,
+  height,
+}: {
+  block: BusyBlock
+  labelTop: number
+  /** Alto del bloque en píxeles, de `placeSpans`. Ver `fitsLines`. */
+  height: number
+}) {
   return (
-    <div className="h-full overflow-hidden rounded-[9px] border border-dashed border-border bg-muted px-1.5 py-1.5 text-micro leading-tight text-muted-foreground">
+    <div className="h-full overflow-hidden rounded-[9px] border border-dashed border-border bg-muted px-1.5 py-1 text-nano leading-[13px] text-muted-foreground">
       <div style={{ paddingTop: labelTop }}>
         <div className="truncate font-semibold">{block.title}</div>
-        <div className="font-normal opacity-90">
-          {block.startTime ? formatTime(block.startTime) : ''}
-          {block.endTime ? ` – ${formatTime(block.endTime)}` : ''}
-        </div>
+        {/* Misma regla que la sesión: el horario sólo si entra entero. Una
+            llamada de media hora tiene lugar para el título y nada más. */}
+        {fitsLines(height, labelTop, 2) ? (
+          <div className={BLOCK_AGE_CLASS}>
+            {block.startTime ? formatTime(block.startTime) : ''}
+            {block.endTime ? ` – ${formatTime(block.endTime)}` : ''}
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -492,7 +564,7 @@ function SelectLink({
   children: React.ReactNode
 }) {
   return (
-    <Link href={href} scroll={false} className="block hover:underline">
+    <Link href={href} scroll={false} className="block truncate hover:underline">
       {children}
     </Link>
   )

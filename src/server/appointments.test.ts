@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { occurrencesBetween } from './appointments'
+import { AppointmentInput, ScheduleInput, occurrencesBetween } from './appointments'
 
 /**
  * Recurrence arithmetic.
@@ -123,5 +123,52 @@ describe('occurrencesBetween', () => {
       '2026-08-31',
     )
     expect(dates).toEqual([])
+  })
+})
+
+/**
+ * Los cuartos de hora.
+ *
+ * El diálogo de agendar ya no ofrece otra cosa, pero el select es la puerta y no
+ * la cerradura: la Server Action recibe un `FormData` que se postea igual sin
+ * pasar por la pantalla. Y hay dos entradas más que escriben las mismas reglas
+ * —el alta de paciente y el onboarding—, así que la única forma de que "las
+ * sesiones caen en la grilla" sea cierta es que lo sea acá.
+ */
+const scheduleAt = (startTime: string) => ({
+  patientId: '11111111-1111-4111-8111-111111111111',
+  weekday: MONDAY,
+  startTime,
+})
+
+const appointmentAt = (startTime: string) => ({
+  patientId: '11111111-1111-4111-8111-111111111111',
+  scheduledOn: '2026-08-03',
+  startTime,
+})
+
+describe('la hora de una sesión', () => {
+  it('acepta los cuatro cuartos de hora', () => {
+    for (const time of ['09:00', '09:15', '09:30', '09:45', '00:00', '23:45']) {
+      expect(ScheduleInput.parse(scheduleAt(time)).startTime).toBe(time)
+      expect(AppointmentInput.parse(appointmentAt(time)).startTime).toBe(time)
+    }
+  })
+
+  it('rechaza cualquier otro minuto, con un mensaje en castellano', () => {
+    const result = AppointmentInput.safeParse(appointmentAt('13:33'))
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.message).toContain('15 minutos')
+
+    expect(ScheduleInput.safeParse(scheduleAt('13:33')).success).toBe(false)
+    expect(ScheduleInput.safeParse(scheduleAt('09:01')).success).toBe(false)
+  })
+
+  it('rechaza una hora que no existe', () => {
+    // `\d{2}:\d{2}` dejaba pasar esto y lo rechazaba Postgres después, con un
+    // error que no le dice nada a nadie.
+    expect(AppointmentInput.safeParse(appointmentAt('99:99')).success).toBe(false)
+    expect(AppointmentInput.safeParse(appointmentAt('24:00')).success).toBe(false)
+    expect(AppointmentInput.safeParse(appointmentAt('9:00')).success).toBe(false)
   })
 })

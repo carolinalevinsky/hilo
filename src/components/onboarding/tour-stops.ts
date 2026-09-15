@@ -47,7 +47,9 @@ export const TOUR_STOPS: TourStop[] = [
     body: 'Tu semana por hora. Desde acá registrás la sesión del día, y el día anterior podés mandar los recordatorios por WhatsApp de una sola vez.',
   },
   {
-    target: '/materiales',
+    // El `href` de la entrada de la sidebar, que es lo que busca `app-tour.tsx`.
+    // Si no coincide, la parada no resalta nada y cae en la tarjeta centrada.
+    target: '/planificacion',
     title: 'Planificación',
     body: 'La biblioteca de materiales de tu profesión, con buscador y filtros por área y por edad. Y el planificador, para dejar armada la sesión que viene.',
   },
@@ -58,7 +60,7 @@ export const TOUR_STOPS: TourStop[] = [
   },
   {
     target: '/cobros',
-    title: 'Cobros',
+    title: 'Pagos',
     body: 'Quién pagó y quién debe, mes a mes. Si conectás Mercado Pago, armás el link de pago desde acá y te avisa solo cuando entra la plata.',
   },
 ]

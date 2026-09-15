@@ -83,14 +83,21 @@
 
      They used to be written literally in the JSX: twelve different values
      between 10px and 15.5px, each screen having picked its own, so two cards
-     that meant the same thing agreed only by accident. Five steps now, named
+     that meant the same thing agreed only by accident. Six steps now, named
      for the job rather than the number:
 
+       text-nano   10px    the week grid, where a whole week has to fit
        text-micro  11px    chips, badges, the smallest label
        text-meta   12.5px  the quiet second line under something
        text-body   13px    running text, form hints, list detail
        text-item   14.5px  the title of a row in a list
        text-lead   15.5px  the title of a card
+
+     `text-nano` is the one step that belongs to a surface and not to a kind of
+     text. The week calendar is the densest thing in the product — a 45-minute
+     session is 42 pixels tall and has to hold a time, a name and an age — and
+     it was the last place still writing `text-[10px]` by hand. One step below
+     micro, used there and nowhere else, is better than that literal coming back.
 
      Font size only, on purpose: no `--text-*--line-height` companion, so the
      line height stays inherited exactly as it did with the arbitrary values
@@ -101,6 +108,7 @@
      patient band, the stat card — and folding them together would be inventing
      agreement that does not exist.
   */
+  --text-nano: 10px;
   --text-micro: 11px;
   --text-meta: 12.5px;
   --text-body: 13px;

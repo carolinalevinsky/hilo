@@ -6,6 +6,8 @@ import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE, withLifetime } from '@/lib/au
 import type { Database } from '@/lib/database.types'
 import { env, publicConfig } from '@/lib/env'
 
+import { fetchSurvivingStaleClock } from './postgrest-clock'
+
 /**
  * Database clients.
  *
@@ -36,6 +38,9 @@ export async function getDb() {
       // this cookie carries the refresh token, and `@supabase/ssr` writes it
       // without `HttpOnly` and without `Secure` unless told otherwise.
       cookieOptions: AUTH_COOKIE_OPTIONS,
+      // A token minted seconds ago can be refused as "issued at future" by
+      // PostgREST. See `./postgrest-clock`.
+      global: { fetch: fetchSurvivingStaleClock() },
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll: (cookiesToSet) => {

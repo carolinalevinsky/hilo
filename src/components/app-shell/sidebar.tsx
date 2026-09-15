@@ -8,9 +8,7 @@ import {
   isNavItemActive,
   type NavItem,
 } from '@/components/app-shell/nav-items'
-import { useAsk } from '@/components/assistant/ask-dock'
 import { Wordmark } from '@/components/brand/wordmark'
-import { MessageCircle } from '@/components/icons'
 import { cn } from '@/lib/utils'
 
 /**
@@ -27,7 +25,6 @@ export function Sidebar({
   disciplineLabel: string
 }) {
   const pathname = usePathname()
-  const askHilo = useAsk()
 
   return (
     <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 bg-[linear-gradient(180deg,var(--brand-violet-dark),var(--brand-violet)_60%,var(--brand-violet-light))] px-4 py-5.5 text-sidebar-foreground lg:flex">
@@ -61,19 +58,8 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Under Cobros, and deliberately not shaped like a nav pill: it does not
-          take you anywhere, it opens a panel beside what you are already
-          looking at. See `ask-dock.tsx` for why it is not floating over
-          the page on a desktop. */}
-      <button
-        type="button"
-        onClick={askHilo}
-        aria-haspopup="dialog"
-        className="mt-3 flex items-center gap-2.5 rounded-xl bg-white/12 px-3.5 py-2.5 text-item font-semibold text-white transition-colors hover:bg-white/20"
-      >
-        <MessageCircle className="size-[19px]" />
-        Preguntá a Ombúa
-      </button>
+      {/* "Preguntá a Ombúa" used to sit here, under Pagos. It is the floating
+          button in the bottom-right corner now — see `ask-dock.tsx`. */}
 
       <div className="flex-1" />
 

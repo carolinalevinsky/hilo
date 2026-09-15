@@ -24,7 +24,7 @@ import { deletePaymentAction } from './actions'
 import { currentUser } from '../session'
 import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: pageTitle('Cobros') }
+export const metadata: Metadata = { title: pageTitle('Pagos') }
 
 const money = (value: number) =>
   `$ ${value.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`
@@ -59,7 +59,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
   return (
     <>
       <PageHeader
-        title="Cobros"
+        title="Pagos"
         subtitle="Lo cobrado y lo pendiente, mes a mes."
         action={
           patients.length > 0 ? (
@@ -72,7 +72,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
         <Card>
           <EmptyState
             icon={Wallet}
-            title="Todavía no hay cobros"
+            title="Todavía no hay pagos"
             text="Cargá un paciente con su honorario y acá vas a llevar el control de lo cobrado y lo pendiente, mes a mes."
             action={
               <Button asChild>

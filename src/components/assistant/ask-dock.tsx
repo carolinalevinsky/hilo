@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from '@/components/icons'
+import { MessageCircle, X } from '@/components/icons'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { createContext, useCallback, useContext, useState } from 'react'
 
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 
 /**
  * "Preguntá a Ombúa", reachable from every screen — v1's `.fab`
- * (`legacy/index.html:145`), without the floating.
+ * (`legacy/index.html:145`).
  *
  * The question a practitioner has does not arrive while they are on the home
  * screen. It arrives while they are looking at a goal that has not moved, or at
@@ -44,22 +44,28 @@ import { cn } from '@/lib/utils'
  * `no-print` because it is interface: `globals.css` drops it out of a printed
  * document along with the nav.
  *
- * ─── Why nothing floats any more ──────────────────────────────────────────
+ * ─── Where the trigger lives ──────────────────────────────────────────────
  *
- * A fixed button in the bottom-right corner covers whatever is in the
- * bottom-right corner. On a desktop that was Google Calendar's *Conectar*
- * button on Perfil, the 14:00 row of the Agenda, and a line of the patient
- * ficha, so the button moved into the sidebar. On a phone it was worse and it
- * lasted longer: measured at 375 px it sat on top of `#progressNote` — the
- * Comentarios field, the one thing a session is written into — and on the ficha
- * it covered a goal's progress slider and its edit button. A corner is never
- * free real estate; it is just real estate you cannot see from a desktop.
+ * On a desktop it is the floating button in the bottom-right corner, the shape
+ * everyone already knows a chat by — v1's `.fab` again. It had been moved into
+ * the sidebar, and that was reversed deliberately.
  *
- * So the trigger lives in the navigation on both sizes: the sidebar above `lg`,
- * the bottom bar below it. Nothing is fixed over the content any more, which is
- * why the panel now stops above the bar instead of reaching the bottom edge.
- * Both entry points open the same panel, which is why the open state lives in a
- * provider rather than in a button.
+ * What the move was avoiding is real and still is: a fixed button in the
+ * bottom-right corner covers whatever is in the bottom-right corner. On a
+ * desktop that was Google Calendar's *Conectar* button on Perfil, the 14:00 row
+ * of the Agenda, and a line of the patient ficha. If one of those becomes
+ * unreachable, moving that screen's content is the fix — the button is where it
+ * is on purpose now.
+ *
+ * On a phone the button does **not** float, and that part is not up for
+ * revisiting. Measured at 375 px a floating button sat on top of
+ * `#progressNote` — the Comentarios field, the one thing a session is written
+ * into — and on the ficha it covered a goal's progress slider and its edit
+ * button. A phone has a bottom bar and the trigger lives in it, which is also
+ * why the panel stops above the bar instead of reaching the bottom edge.
+ *
+ * So: the fab above `lg`, the bottom bar below it. Both open the same panel,
+ * which is why the open state lives in a provider rather than in a button.
  */
 
 const AskContext = createContext<(() => void) | null>(null)
@@ -78,8 +84,38 @@ export function AskProvider({ children }: { children: React.ReactNode }) {
   return (
     <AskContext.Provider value={openPanel}>
       {children}
+      <AskFab open={open} onOpen={openPanel} />
       <AskDock open={open} setOpen={setOpen} />
     </AskContext.Provider>
+  )
+}
+
+/**
+ * El botón flotante, sólo de `lg` para arriba: abajo de eso el disparador es el
+ * de la barra inferior (`mobile-nav.tsx`), y dos no tiene sentido.
+ *
+ * Desaparece mientras el panel está abierto porque el panel se apoya justo
+ * encima, en la misma esquina. Cerrarlo se hace con la ✕ del panel o con Escape,
+ * así que el botón no necesita ser un interruptor de ida y vuelta.
+ */
+function AskFab({ open, onOpen }: { open: boolean; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      aria-label="Preguntá a Ombúa"
+      title="Preguntá a Ombúa"
+      className={cn(
+        'no-print fixed right-5 bottom-5 z-50 hidden size-14 items-center justify-center rounded-full',
+        'bg-violet text-white shadow-[0_8px_24px_rgb(108_92_231_/_45%)] transition hover:brightness-107',
+        'focus-visible:ring-2 focus-visible:ring-violet focus-visible:ring-offset-2 focus-visible:outline-none',
+        open ? 'lg:hidden' : 'lg:flex',
+      )}
+    >
+      <MessageCircle className="size-6" />
+    </button>
   )
 }
 

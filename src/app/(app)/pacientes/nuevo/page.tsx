@@ -25,7 +25,12 @@ export default function NewPatientPage() {
         subtitle="Con el nombre alcanza para empezar. El resto lo completás cuando quieras."
       />
 
-      <Card className="max-w-2xl">
+      {/* `max-w-2xl` put the whole alta in a 672px column and left half of a
+          desktop empty, which made creating a patient look like far more work
+          than it is. The cap stays — a field stretched across a 27" monitor is
+          unreadable — but it is now wide enough for the three-column grid the
+          form lays out at `xl`. */}
+      <Card className="max-w-[1400px]">
         <CardContent>
           <PatientForm />
         </CardContent>

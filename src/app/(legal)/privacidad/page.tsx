@@ -53,14 +53,13 @@ export default function PrivacyPage() {
         confirma.
       </p>
       <p>
-        <b>Dictado y grabación de sesiones.</b> Los botones de dictar y de grabar una sesión
-        usan el reconocimiento de voz del propio navegador. Para convertir la voz en texto,
-        el navegador envía el audio a su servicio de dictado —en Chrome, el de Google; en
-        Safari, el de Apple— y devuelve el texto. Ese audio no pasa por los servidores de
-        Ombúa ni queda guardado en Ombúa: lo que se recibe y se guarda es únicamente el texto,
-        y sólo cuando el/la profesional lo confirma. Si preferís que el audio de una sesión
-        no salga del dispositivo, escribí la nota a mano o usá el dictado del teclado de tu
-        teléfono, que procesa la voz en el propio equipo.
+        <b>Dictado por voz.</b> El botón de dictar usa el reconocimiento de voz del propio
+        navegador. Para convertir la voz en texto, el navegador envía el audio a su servicio
+        de dictado —en Chrome, el de Google; en Safari, el de Apple— y devuelve el texto. Ese
+        audio no pasa por los servidores de Ombúa ni queda guardado en Ombúa: lo que se recibe
+        y se guarda es únicamente el texto, y sólo cuando el/la profesional lo confirma. Si
+        preferís que el audio no salga del dispositivo, escribí a mano o usá el dictado del
+        teclado de tu teléfono, que procesa la voz en el propio equipo.
       </p>
       <p>
         <b>Dónde se guardan y cómo se protegen.</b> Los datos se almacenan en servidores con

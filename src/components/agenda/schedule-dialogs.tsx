@@ -23,7 +23,12 @@ import { type AgendaSlot, slotWeekday } from '@/lib/agenda-slot'
 import { FREQUENCY_LABELS } from '@/lib/appointment-labels'
 import { today } from '@/lib/dates'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
-import { WEEK_ORDER, weekdayName } from '@/lib/week'
+import {
+  QUARTER_HOURS,
+  WEEK_ORDER,
+  snapToQuarterHour,
+  weekdayName,
+} from '@/lib/week'
 
 type PatientOption = { id: string; full_name: string }
 
@@ -39,9 +44,10 @@ type PatientOption = { id: string; full_name: string }
  *   **Una vez** es una fecha sola: una recuperación, una primera entrevista, una
  *   evaluación.
  *
- *   **Cada semana** es la regla — "Tomás, los lunes a las nueve" — y llena la
+ *   **Recurrente** es la regla — "Tomás, los lunes a las nueve" — y llena la
  *   agenda sola de acá en adelante. Es de lo que está hecha la mayor parte de la
- *   semana.
+ *   semana. Se llamaba "Cada semana", y era mentira: el campo "Frecuencia"
+ *   también hace cada quince días y una vez por mes.
  *
  * Los horarios fijos que ya existen se siguen viendo y dando de baja en la
  * tarjeta "Horarios fijos", al pie de la Agenda.
@@ -118,7 +124,7 @@ export function ScheduleDialogs({
             </ModeButton>
             <ModeButton selected={repeats} onSelect={() => setRepeats(true)}>
               <CalendarClock className="size-4" />
-              Cada semana
+              Recurrente
             </ModeButton>
           </div>
 
@@ -194,15 +200,7 @@ function AppointmentFields({
             required
           />
         </Field>
-        <Field label="Hora" htmlFor="startTime">
-          <Input
-            id="startTime"
-            name="startTime"
-            type="time"
-            defaultValue={slot?.time ?? '09:00'}
-            required
-          />
-        </Field>
+        <TimeField id="startTime" defaultTime={slot?.time} />
       </div>
 
       <DurationField />
@@ -241,9 +239,9 @@ function ScheduleFields({
       <FormMessage message={state.message} />
 
       <p className="text-meta leading-relaxed text-muted-foreground">
-        Se agenda solo, semana a semana. Podés cancelar una sesión suelta sin tocar el
-        horario, y darlo de baja cuando quieras desde “Horarios fijos”, al pie de la
-        Agenda.
+        Se agenda solo, con la frecuencia que elijas. Podés cancelar una sesión suelta
+        sin tocar el horario, y darlo de baja cuando quieras desde “Horarios fijos”, al
+        pie de la Agenda.
       </p>
 
       <PatientSelect patients={patients} />
@@ -262,15 +260,7 @@ function ScheduleFields({
             ))}
           </Select>
         </Field>
-        <Field label="Hora" htmlFor="scheduleTime">
-          <Input
-            id="scheduleTime"
-            name="startTime"
-            type="time"
-            defaultValue={slot?.time ?? '09:00'}
-            required
-          />
-        </Field>
+        <TimeField id="scheduleTime" defaultTime={slot?.time} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -315,6 +305,36 @@ function PatientSelect({ patients }: { patients: PatientOption[] }) {
         {patients.map((patient) => (
           <option key={patient.id} value={patient.id}>
             {patient.full_name}
+          </option>
+        ))}
+      </Select>
+    </Field>
+  )
+}
+
+/**
+ * La hora, de a cuartos.
+ *
+ * Era un `<input type="time">` y dejaba agendar 13:33. Una sesión así no cae en
+ * ninguna franja de la grilla —queda dibujada entre dos líneas— y "los martes
+ * 13:33" no es un horario que alguien haya querido escribir: es un dedo que se
+ * fue un número.
+ *
+ * Lista y no `step={900}`: el `step` igual deja tipear cualquier cosa y protesta
+ * recién al enviar, con un cartel del navegador que no está en nuestras palabras.
+ * Y los otros campos de este mismo formulario —día, frecuencia, duración— ya son
+ * listas, así que también se ve mejor.
+ *
+ * La regla de verdad está en el servidor: `QuarterHour`, en
+ * `src/server/appointments.ts`. Esto es nada más la puerta.
+ */
+function TimeField({ id, defaultTime }: { id: string; defaultTime?: string }) {
+  return (
+    <Field label="Hora" htmlFor={id}>
+      <Select id={id} name="startTime" defaultValue={snapToQuarterHour(defaultTime)} required>
+        {QUARTER_HOURS.map((time) => (
+          <option key={time} value={time}>
+            {time}
           </option>
         ))}
       </Select>
