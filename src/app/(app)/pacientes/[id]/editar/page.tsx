@@ -36,7 +36,9 @@ export default async function EditPatientPage({
 
       <PageHeader title="Editar ficha" subtitle={patient.full_name} />
 
-      <Card className="max-w-2xl">
+      {/* Same width as the alta — it is the same form, and a narrower card here
+          would lay its three-column grid out differently on the same screen. */}
+      <Card className="max-w-[1400px]">
         <CardContent className="space-y-4">
           <PatientForm patient={patient} photoUrl={photoUrl} />
 

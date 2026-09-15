@@ -16,7 +16,7 @@ import {
   BILLING_FREQUENCY_LABELS,
   GUARDIAN_RELATIONSHIP_LABELS,
 } from '@/lib/patient-labels'
-import { WEEK_ORDER, weekdayName } from '@/lib/week'
+import { QUARTER_HOURS, WEEK_ORDER, weekdayName } from '@/lib/week'
 import type { Patient } from '@/server/patients'
 
 /**
@@ -49,8 +49,22 @@ export function PatientForm({
 
       <PhotoPicker currentUrl={photoUrl} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nombre y apellido" htmlFor="fullName" className="sm:col-span-2">
+      {/* One column on a phone, two from `sm`, three from `xl` — the same
+          progression the wide list screens use (`/pacientes`, `/materiales`).
+          The DOM order never changes, so the phone still reads in the order a
+          practitioner receives the information; the wider breakpoints only
+          decide how many of those fields share a row.
+
+          The spans below are what keeps the three-column rows from breaking
+          into ragged halves: at `xl` the patient's own data fills two rows, the
+          responsable's fills one, and the two long text fields take two thirds
+          each. That is six rows where it used to be ten. */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <Field
+          label="Nombre y apellido"
+          htmlFor="fullName"
+          className="sm:col-span-2 xl:col-span-1"
+        >
           <Input
             id="fullName"
             name="fullName"
@@ -109,7 +123,7 @@ export function PatientForm({
             completar la ficha le llega a una persona, y el informe "para la
             familia" lo lee alguien con nombre. Un solo responsable, a
             propósito — ver la migración `patient_guardian`. */}
-        <div className="border-t border-border pt-4 sm:col-span-2">
+        <div className="border-t border-border pt-4 sm:col-span-2 xl:col-span-3">
           <p className="text-body font-bold">Responsable</p>
           <p className="text-meta text-muted-foreground">
             Si es menor, el adulto a cargo: quien firma el consentimiento, paga y recibe los
@@ -162,7 +176,11 @@ export function PatientForm({
           />
         </Field>
 
-        <Field label="Motivo de consulta" htmlFor="referralReason" className="sm:col-span-2">
+        <Field
+          label="Motivo de consulta"
+          htmlFor="referralReason"
+          className="sm:col-span-2 xl:col-span-2"
+        >
           <Textarea
             id="referralReason"
             name="referralReason"
@@ -183,7 +201,7 @@ export function PatientForm({
             label="Primer objetivo"
             htmlFor="firstGoal"
             hint="opcional"
-            className="sm:col-span-2"
+            className="sm:col-span-2 xl:col-span-2"
           >
             <Input
               id="firstGoal"
@@ -228,7 +246,7 @@ export function PatientForm({
             Si todavía no, dejá la hora en blanco y la agendás cuando la tengas.
           </p>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
             <Field label="Día de la semana" htmlFor="weekday">
               <Select id="weekday" name="weekday" defaultValue="1">
                 {WEEK_ORDER.map((weekday) => (
@@ -239,8 +257,19 @@ export function PatientForm({
               </Select>
             </Field>
 
+            {/* De a cuartos de hora, igual que el diálogo de agendar, porque
+                escriben la misma regla y el servidor rechaza lo que no cae en
+                uno. La opción vacía sigue siendo el interruptor: es el valor
+                por defecto, y sin hora no se agenda nada. */}
             <Field label="Hora" htmlFor="startTime">
-              <Input id="startTime" name="startTime" type="time" />
+              <Select id="startTime" name="startTime" defaultValue="">
+                <option value="">Todavía no sé</option>
+                {QUARTER_HOURS.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </Select>
             </Field>
 
             <Field label="Frecuencia" htmlFor="frequency">
@@ -261,7 +290,7 @@ export function PatientForm({
           Cobro
         </legend>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
           <Field label="Honorario ($)" htmlFor="sessionFee" hint="opcional">
             <Input
               id="sessionFee"
