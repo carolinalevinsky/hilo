@@ -106,7 +106,7 @@ describe('offlineAnswer', () => {
 
   it('points at the screen that answers the question', () => {
     expect(offlineAnswer(CONTEXT, 'sugerime materiales')).toContain('Materiales')
-    expect(offlineAnswer(CONTEXT, '¿a quién le falta pagar?')).toContain('Cobros')
+    expect(offlineAnswer(CONTEXT, '¿a quién le falta pagar?')).toContain('Pagos')
     expect(offlineAnswer(CONTEXT, 'necesito un informe')).toContain('Informes')
   })
 

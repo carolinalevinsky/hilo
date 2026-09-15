@@ -72,16 +72,20 @@ export const NAV_ITEMS: NavItem[] = [
     alsoActiveFor: ['/reservas'],
   },
   {
-    // Lands on the materials library, which is the tab v1 opened
-    // (`legacy/index.html:611` — `planiTab('mat')` is the default). Both halves
-    // sit under one "Planificación" heading with the tabs between them, so this
-    // decides which one you see first, not which ones exist. Materials is the
-    // right first screen: it is the half you browse, and the planner is the half
-    // you go to once you have found something.
-    href: '/materiales',
+    // Lands on the planner, which is the first tab. All three halves sit under
+    // one "Planificación" heading with the tabs between them, so this decides
+    // which one you see first, not which ones exist.
+    //
+    // It used to land on Materiales, because that is the tab v1 opened
+    // (`legacy/index.html:611` — `planiTab('mat')` is the default). Materiales
+    // is the last tab now, and a sidebar entry that drops you on the far right
+    // of a row of tabs reads as though you arrived somewhere by accident. The
+    // planner is the question you came with; the library is the shelf you reach
+    // for once you know what you need.
+    href: '/planificacion',
     label: 'Planificación',
     icon: ClipboardList,
-    alsoActiveFor: ['/planificacion'],
+    alsoActiveFor: ['/materiales'],
   },
   {
     href: '/informes',
@@ -89,7 +93,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: FileText,
     alsoActiveFor: ['/evaluaciones'],
   },
-  { href: '/cobros', label: 'Cobros', icon: Wallet, onMobileBar: true },
+  { href: '/cobros', label: 'Pagos', icon: Wallet, onMobileBar: true },
 ]
 
 export const MOBILE_BAR_ITEMS = NAV_ITEMS.filter((item) => item.onMobileBar)

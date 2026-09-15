@@ -8,9 +8,7 @@ import {
   isNavItemActive,
   type NavItem,
 } from '@/components/app-shell/nav-items'
-import { useAskHilo } from '@/components/assistant/ask-hilo-dock'
 import { Brandmark } from '@/components/brandmark'
-import { MessageCircle } from '@/components/icons'
 import { cn } from '@/lib/utils'
 
 /**
@@ -27,7 +25,6 @@ export function Sidebar({
   disciplineLabel: string
 }) {
   const pathname = usePathname()
-  const askHilo = useAskHilo()
 
   return (
     <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 bg-[linear-gradient(180deg,#5a4bd4,#6c5ce7_60%,#7d6ef0)] px-4 py-5.5 text-[#e9e6ff] lg:flex">
@@ -62,19 +59,8 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Under Cobros, and deliberately not shaped like a nav pill: it does not
-          take you anywhere, it opens a panel beside what you are already
-          looking at. See `ask-hilo-dock.tsx` for why it is not floating over
-          the page on a desktop. */}
-      <button
-        type="button"
-        onClick={askHilo}
-        aria-haspopup="dialog"
-        className="mt-3 flex items-center gap-2.5 rounded-xl bg-white/12 px-3.5 py-2.5 text-item font-semibold text-white transition-colors hover:bg-white/20"
-      >
-        <MessageCircle className="size-[19px]" />
-        Preguntá a Hilo
-      </button>
+      {/* "Preguntá a Hilo" used to sit here, under Pagos. It is the floating
+          button in the bottom-right corner now — see `ask-hilo-dock.tsx`. */}
 
       <div className="flex-1" />
 

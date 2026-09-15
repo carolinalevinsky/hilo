@@ -21,17 +21,21 @@ import { cn } from '@/lib/utils'
  */
 
 /**
+ * The order is the work, not the catalogue: you plan the next session, you check
+ * what is already prepared, and Materiales sits last as the shelf you reach for
+ * when you need something to fill a plan with.
+ *
  * `exact` matters for `/planificacion`: without it the tab stays lit on
  * `/planificacion/proximas`, and two tabs highlighted at once means neither of
  * them tells you where you are. `/materiales` keeps the prefix match on purpose,
  * because a material's own page is still the library.
  */
 const TABS = [
-  { href: '/materiales', label: 'Materiales', exact: false },
   { href: '/planificacion', label: 'Planificar sesión', exact: true },
   // "Planes", not "Próximas sesiones" (P13): the upcoming sessions are the ones
   // in the Agenda. What this tab lists is what was prepared for them.
   { href: '/planificacion/proximas', label: 'Planes preparados', exact: false },
+  { href: '/materiales', label: 'Materiales', exact: false },
 ]
 
 export function PlanningTabs() {

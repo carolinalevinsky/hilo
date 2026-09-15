@@ -343,7 +343,7 @@ export function offlineAnswer(context: AssistantContext, question: string): stri
   // `pag`, not `pago`: "¿a quién le falta pagar?" is one of the quick chips and
   // the narrower stem missed it entirely.
   if (/(cobro|pag|factura|plata|dinero|deb)/.test(asked)) {
-    return 'En Cobros ves quién está al día y quién debe, mes a mes, y podés mandar el link de pago por WhatsApp.'
+    return 'En Pagos ves quién está al día y quién debe, mes a mes, y podés mandar el link de pago por WhatsApp.'
   }
 
   if (/(estadistica|metrica|numero|dato|cuanto)/.test(asked)) {
