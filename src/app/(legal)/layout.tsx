@@ -15,7 +15,7 @@ export default function LegalLayout({ children }: LayoutProps<'/'>) {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-5 py-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <Wordmark height={18} />
+            <Wordmark height={24} />
           </Link>
         </div>
       </header>

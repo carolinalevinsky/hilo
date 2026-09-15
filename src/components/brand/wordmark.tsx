@@ -16,6 +16,18 @@ import { cn } from '@/lib/utils'
  * `globals.css` lo cambia acá también. Las tres combinaciones son las que
  * entregó diseño; no inventar otras sin mirar el original.
  *
+ * ─── El punto se pierde en chico, y está aceptado ─────────────────────────
+ *
+ * El punto bordó mide el 14% del ancho de la "o": 3,45px cuando el logotipo va
+ * a 32, 3,0 en la barra lateral, 2,6 en legales. A ese tamaño, con suavizado y
+ * en una pantalla que no sea retina, deja de leerse como un punto de color.
+ *
+ * Se miró y se decidió dejarlo así: de lejos la palabra se lee igual, y el
+ * punto es un detalle para quien mira de cerca. Agrandarlo sería cambiar el
+ * dibujo que entregó diseño, y eso no se hace desde acá. Si alguna vez hace
+ * falta, lo que corresponde es una variante para tamaños chicos hecha por
+ * diseño, no retocar estos trazos.
+ *
  * El `viewBox` está recortado al dibujo y no es el del archivo, que trae aire
  * arriba y abajo — la palabra ocupa menos de la mitad de su alto. Con el del
  * archivo, `height={28}` daba una palabra de 13px y había que compensar a ojo
@@ -41,7 +53,14 @@ const DOT = { cx: 311.363, cy: 553, r: 23 } as const
 const TONES = {
   /** Fondo claro: la palabra en violeta, el punto en bordó. */
   violet: { letters: 'var(--brand-violet)', dot: 'var(--brand-bordo)' },
-  /** Fondo violeta u oscuro: la palabra en celeste, el punto en violeta. */
+  /**
+   * Fondo violeta u oscuro: la palabra en blanco, el punto en violeta.
+   *
+   * El punto va del color del fondo a propósito — se lee como el hueco de la
+   * "o", igual que en las variantes que entregó diseño.
+   */
+  white: { letters: '#fff', dot: 'var(--brand-violet)' },
+  /** La misma idea en celeste. Es la combinación del archivo original. */
   celeste: { letters: 'var(--brand-celeste)', dot: 'var(--brand-violet)' },
   /** Fondo claro, versión bordó: la palabra en bordó, el punto en celeste. */
   bordo: { letters: 'var(--brand-bordo)', dot: 'var(--brand-celeste)' },
@@ -53,7 +72,15 @@ export function Wordmark({
   className,
 }: {
   tone?: keyof typeof TONES
-  /** Alto de la palabra en píxeles. El ancho sale solo: la proporción es 4.14:1. */
+  /**
+   * Alto en píxeles, del acento de la ú a la base de las letras.
+   *
+   * Ojo: NO es el alto de las minúsculas. El acento se lleva la cuarta parte de
+   * arriba, así que las letras miden más o menos tres cuartos de este número —
+   * `height={22}` da una palabra de 16px, que al lado de un título de 22px se
+   * ve chica. Para que pese como un logo, va bastante más grande que el texto
+   * que tiene debajo.
+   */
   height?: number
   className?: string
 }) {

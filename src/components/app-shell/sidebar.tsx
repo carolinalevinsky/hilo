@@ -32,7 +32,7 @@ export function Sidebar({
         href="/inicio"
         className="mb-6 flex items-center gap-2.5 text-[22px] font-extrabold tracking-[-0.4px] text-white"
       >
-        <Wordmark tone="celeste" height={24} />
+        <Wordmark tone="white" height={28} />
       </Link>
 
       <nav className="flex flex-col gap-1">

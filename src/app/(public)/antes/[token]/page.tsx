@@ -46,7 +46,7 @@ export default async function IntakePage({ params }: PageProps<'/antes/[token]'>
     <div className="min-h-dvh bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-[520px]">
         <div className="mb-5 flex items-center gap-2.5">
-          <Wordmark height={22} />
+          <Wordmark height={28} />
         </div>
 
         <div className="rounded-lg bg-card px-6 py-6 shadow-card">

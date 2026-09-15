@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 export default function LandingPage() {
   return (
     <div className="app-auth-bg flex min-h-dvh flex-col items-center justify-center px-6 py-16 text-center text-white">
-      <Wordmark tone="celeste" height={34} className="mb-7" />
+      <Wordmark tone="white" height={46} className="mb-7" />
 
       <h1 className="max-w-xl text-[26px] leading-tight font-extrabold tracking-[-0.6px] sm:text-[32px]">
         Tus pacientes, tus sesiones y tus informes, en un solo lugar
