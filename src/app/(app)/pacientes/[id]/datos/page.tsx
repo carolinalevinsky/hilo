@@ -15,7 +15,7 @@ import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { buildPatientExport } from '@/server/patient-export'
 import { currentSession } from '../../../session'
 
-/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+/** Sin "· Ombúa": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
 export const metadata: Metadata = { title: 'Datos del paciente' }
 
 /** Same shape as Cobros: "$ 1.500", no decimals. */
@@ -23,7 +23,7 @@ const money = (value: number) =>
   `$ ${value.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`
 
 /**
- * Everything Hilo holds about one patient, on one printable page.
+ * Everything Ombúa holds about one patient, on one printable page.
  *
  * The right of access under Ley N.º 18.331 asks for an *intelligible* form, and
  * this is the half that satisfies that: a document a family can read, print, or
@@ -64,13 +64,13 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
         </div>
       </div>
 
-      <Card className="hilo-doc mx-auto max-w-[760px]">
+      <Card className="app-doc mx-auto max-w-[760px]">
         <CardContent className="px-6 py-7 sm:px-10">
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px]">
             Datos de {patient.full_name}
           </h1>
           <p className="mt-0.5 mb-6 text-meta text-muted-foreground">
-            Todo lo que Hilo guarda sobre {patient.full_name.split(' ')[0]}, al{' '}
+            Todo lo que Ombúa guarda sobre {patient.full_name.split(' ')[0]}, al{' '}
             {formatLongDate(data.generatedAt.slice(0, 10))} · {practitioner.full_name} ·{' '}
             {disciplineLabel(practitioner.discipline)}
           </p>

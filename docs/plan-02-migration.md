@@ -1,6 +1,6 @@
 # Plan 02 — Migration
 
-**Goal:** rebuild Hilo on the v2 architecture, carrying over everything the v1 prototype got right and none of what it got wrong.
+**Goal:** rebuild Ombúa on the v2 architecture, carrying over everything the v1 prototype got right and none of what it got wrong.
 
 **Prerequisite:** Plan 01 complete.
 
@@ -216,7 +216,7 @@ booking_requests
 ```sql
 materials
   id
-  practitioner_id               uuid null       -- null = shipped with Hilo
+  practitioner_id               uuid null       -- null = shipped with Ombúa
   category, title, content, age_range, discipline
 
 audit_log
@@ -400,7 +400,7 @@ Tables `patients`. Full CRUD, list with search and filter, patient detail page, 
 ### M3 — Clinical core
 Tables `goals`, `goal_progress`, `sessions`, `session_goals`. Record a session, tag which goals were worked, update progress, render the progress chart.
 
-**Done:** the full loop — create patient, set goals, record sessions, watch progress move. **This is the smallest version of Hilo that is genuinely useful.**
+**Done:** the full loop — create patient, set goals, record sessions, watch progress move. **This is the smallest version of Ombúa that is genuinely useful.**
 
 ### M4 — Scheduling
 Tables `schedules`, `appointments`. Weekly grid with real dates, recurrence rules, one-off appointments, attendance status, Google Calendar sync.
@@ -476,6 +476,6 @@ There is no data migration — there is no data. Before running this, confirm th
 
 M1 → M2 → M3 is a strict chain; nothing useful exists before M3 completes.
 
-After that, **M5 and M6 are the two that matter most and should not slip.** M5 is the product's differentiator — AI-assisted clinical reports are the reason someone would pay for Hilo. M6 carries the two real security fixes.
+After that, **M5 and M6 are the two that matter most and should not slip.** M5 is the product's differentiator — AI-assisted clinical reports are the reason someone would pay for Ombúa. M6 carries the two real security fixes.
 
 M4, M7, and M8 are genuinely reorderable. If time gets tight, M8 is the one to cut: the materials library and the assistant are nice, but a practitioner with patients, sessions, goals, reports, and payments has a working product.

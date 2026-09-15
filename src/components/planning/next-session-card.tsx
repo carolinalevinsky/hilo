@@ -67,7 +67,7 @@ export function NextSessionCard({
         {items.length === 0 ? (
           <>
             <p className="mb-3 text-body text-muted-foreground">
-              Hilo ordena los objetivos de {patientFirstName} por los que menos se movieron
+              Ombúa ordena los objetivos de {patientFirstName} por los que menos se movieron
               y te sugiere con qué trabajarlos.
             </p>
             <Button asChild size="sm">

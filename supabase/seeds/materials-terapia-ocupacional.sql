@@ -503,8 +503,8 @@ Es sucio. Bandeja abajo y trapo al lado, o se corta el ejercicio a los dos minut
 • Aros grandes en un palo parado.
 • Cuentas grandes en un cordón grueso con la punta dura.
 • Cuentas medianas en un cordón fino.
-• Fideos tipo rigatoni en un hilo.
-• Mostacillas en hilo de coser.
+• Fideos tipo rigatoni en un ombua.
+• Mostacillas en ombua de coser.
 Lo que se trabaja:
 Una mano sostiene y la otra hace. Esa división de tareas es lo que después sostiene cortar con tijera y escribir apoyando la hoja.
 Si abandona rápido:

@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { Brandmark } from '@/components/brandmark'
+import { Wordmark } from '@/components/brand/wordmark'
 import { IntakeForm } from '@/components/patient-forms/intake-form'
 import { ScaleForm } from '@/components/patient-forms/scale-form'
 import { SCALE_IDS, scaleIsReady, type ScaleId } from '@/lib/scales'
 import { formByToken } from '@/server/patient-forms'
+import { pageTitle } from '@/lib/brand'
 
 export const metadata: Metadata = {
   // Neutral: the same page serves the questionnaires, and a tab title is read
   // by whoever glances at the phone.
-  title: 'Formulario · Hilo',
+  title: pageTitle('Formulario'),
   // A page behind a secret link has no business in a search engine, and a
   // crawler that followed a pasted link would be one more place it ended up.
   robots: { index: false, follow: false },
@@ -45,8 +46,7 @@ export default async function IntakePage({ params }: PageProps<'/antes/[token]'>
     <div className="min-h-dvh bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-[520px]">
         <div className="mb-5 flex items-center gap-2.5">
-          <Brandmark />
-          <span className="text-[21px] font-extrabold tracking-[-0.3px]">Hilo</span>
+          <Wordmark height={22} />
         </div>
 
         <div className="rounded-lg bg-card px-6 py-6 shadow-card">

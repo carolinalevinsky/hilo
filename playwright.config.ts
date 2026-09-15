@@ -8,7 +8,7 @@ import { defineConfig, devices } from '@playwright/test'
  * two-practitioner RLS test, the prompts as snapshots. What none of those can
  * say is whether the *product* works — whether someone can sign up, load a
  * patient, write down a session and get a report out. That is one path, it is
- * the path Hilo exists for, and it is the one thing worth paying browser time
+ * the path Ombúa exists for, and it is the one thing worth paying browser time
  * for. See `docs/plan-02-migration.md` §8.
  *
  * ─── Why the browser lives in the repo ─────────────────────────────────────

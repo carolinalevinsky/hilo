@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { Wordmark } from '@/components/brand/wordmark'
+
 /**
  * The reading shell for the terms and the privacy policy.
  *
@@ -13,8 +15,7 @@ export default function LegalLayout({ children }: LayoutProps<'/'>) {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-5 py-4">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="size-6 rounded-[8px] bg-violet" />
-            <span className="text-[19px] font-extrabold tracking-[-0.3px]">Hilo</span>
+            <Wordmark height={18} />
           </Link>
         </div>
       </header>

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 /**
- * Hilo's icons, transcribed from v1 (`legacy/index.html:924-968`).
+ * Ombúa's icons, transcribed from v1 (`legacy/index.html:924-968`).
  *
  * Every icon in the product is drawn from those paths. They are not decoration:
  * a set has a voice — stroke weight, corner radius, how much white it leaves —
@@ -34,7 +34,7 @@ import {
  * has exactly one place icons come from, and the exceptions are visible in one
  * list instead of scattered.
  *
- * If one of those nine is ever drawn in Hilo's own hand, it replaces its
+ * If one of those nine is ever drawn in Ombúa's own hand, it replaces its
  * re-export here and nothing else in the codebase moves.
  */
 

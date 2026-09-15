@@ -273,7 +273,7 @@ describe('la Agenda ve lo mismo que Planificación', () => {
     const row = week.find((session) => session.appointmentId === cita)
 
     expect(row?.plan.map((line) => line.title)).toEqual(['El que preparé'])
-    // Sin el plan, Hilo sugeriría el más atrasado.
+    // Sin el plan, Ombúa sugeriría el más atrasado.
     expect(row?.focus?.title).toBe('El que preparé')
     expect(row?.focusChosen).toBe(true)
   })

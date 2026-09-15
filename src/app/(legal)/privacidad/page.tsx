@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Política de Privacidad · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Política de Privacidad') }
 
 /**
  * Transcribed from `legacy/index.html:1867`.
@@ -16,8 +17,8 @@ export default function PrivacyPage() {
       <h1>Política de Privacidad</h1>
 
       <p>
-        <b>Responsable del tratamiento.</b> El/la profesional que usa Hilo es el/la
-        responsable del tratamiento de los datos de sus pacientes. Hilo (Hepic) es la
+        <b>Responsable del tratamiento.</b> El/la profesional que usa Ombúa es el/la
+        responsable del tratamiento de los datos de sus pacientes. Ombúa (Hepic) es la
         herramienta que utiliza para gestionarlos.
       </p>
       <p>
@@ -45,7 +46,7 @@ export default function PrivacyPage() {
       </p>
       <p>
         <b>Archivos enviados a la IA.</b> Al subir un material propio (un PDF o una imagen)
-        y pedir que Hilo lo describa, ese archivo se envía al proveedor de IA para poder
+        y pedir que Ombúa lo describa, ese archivo se envía al proveedor de IA para poder
         leerlo. La pantalla de carga lo advierte antes de elegir el archivo y
         recomienda que no contenga datos de ningún paciente. La descripción que devuelve la
         IA queda como borrador editable y no se guarda hasta que el/la profesional la
@@ -56,7 +57,7 @@ export default function PrivacyPage() {
         usan el reconocimiento de voz del propio navegador. Para convertir la voz en texto,
         el navegador envía el audio a su servicio de dictado —en Chrome, el de Google; en
         Safari, el de Apple— y devuelve el texto. Ese audio no pasa por los servidores de
-        Hilo ni queda guardado en Hilo: lo que se recibe y se guarda es únicamente el texto,
+        Ombúa ni queda guardado en Ombúa: lo que se recibe y se guarda es únicamente el texto,
         y sólo cuando el/la profesional lo confirma. Si preferís que el audio de una sesión
         no salga del dispositivo, escribí la nota a mano o usá el dictado del teclado de tu
         teléfono, que procesa la voz en el propio equipo.

@@ -50,7 +50,7 @@ function anthropic() {
  * It is identical on every request, which is exactly the shape prompt caching is
  * for — see the cache breakpoint in `systemPrompt()` below.
  */
-const BASE_INSTRUCTIVO = `Sos el asistente clínico de "Hilo", una herramienta para profesionales de la salud y la educación en Uruguay: psicopedagogía, fonoaudiología, terapia ocupacional, psicología, psicomotricidad y kinesiología.
+const BASE_INSTRUCTIVO = `Sos el asistente clínico de "Ombúa", una herramienta para profesionales de la salud y la educación en Uruguay: psicopedagogía, fonoaudiología, terapia ocupacional, psicología, psicomotricidad y kinesiología.
 
 Escribís SIEMPRE en español rioplatense (Uruguay), con criterio clínico, prudencia y calidez profesional. Tu redacción es clara, ordenada y del nivel que una profesional firmaría y presentaría a una institución o familia.
 
@@ -199,7 +199,7 @@ export type ChatMessage = {
 /**
  * The same stream, with the turns that came before it.
  *
- * Only "Preguntale a Hilo" uses this, and only because the practitioner asked
+ * Only "Preguntale a Ombúa" uses this, and only because the practitioner asked
  * for a thread that remembers. The turns are the caller's — nothing here loads
  * or stores them, and the server keeps no transcript. Whoever calls this is
  * responsible for how many turns travel; see `HISTORY_LIMIT` in `assistant.ts`.

@@ -196,7 +196,7 @@ console.log(`Cargando ${files.length} archivos en la base remota…\n`)
 // comando con barra invertida: con ocho `\i` corría el primero y descartaba los
 // otros siete **sin decir nada**, y el script informaba éxito. Cargó 49 de 301 y
 // dio el visto bueno.
-const lista = join(mkdtempSync(join(tmpdir(), 'hilo-seed-')), 'todos.sql')
+const lista = join(mkdtempSync(join(tmpdir(), 'ombua-seed-')), 'todos.sql')
 writeFileSync(lista, files.map((name) => `\\i ${join(DIR, name)}`).join('\n') + '\n')
 
 try {

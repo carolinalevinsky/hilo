@@ -12,7 +12,7 @@ import {
 } from './assistant'
 
 /**
- * "Preguntale a Hilo".
+ * "Preguntale a Ombúa".
  *
  * Two things are asserted here and the second is why the file exists.
  *

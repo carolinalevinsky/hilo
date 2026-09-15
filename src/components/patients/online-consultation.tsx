@@ -35,7 +35,7 @@ import { firstName, whatsappLink } from '@/lib/whatsapp'
  *
  * Two ways to run the call, and the practitioner's own wins. Someone with a Zoom
  * account, or a room their institution gave them, should not be nudged onto a
- * service Hilo happens to have picked.
+ * service Ombúa happens to have picked.
  *
  * **The message carries no clinical content** — a first name, and a link. Same
  * rule as the appointment reminder and the fortnightly digest.
@@ -50,7 +50,7 @@ export function OnlineConsultation({
   patientId: string
   patientName: string
   patientPhone: string | null
-  /** Hilo's room. Null until the first time this is opened. */
+  /** Ombúa's room. Null until the first time this is opened. */
   roomUrl: string | null
   /** The practitioner's own link, if they set one. */
   videoUrl: string | null
@@ -58,9 +58,9 @@ export function OnlineConsultation({
   const [open, setOpen] = useState(false)
   const [state, formAction, pending] = useActionState(saveVideoUrlAction, EMPTY_FORM_STATE)
 
-  // La sala de Hilo está apagada para la v1 —ver `src/lib/features.ts`— pero la
+  // La sala de Ombúa está apagada para la v1 —ver `src/lib/features.ts`— pero la
   // sala propia no: que una profesional use su Zoom o su Meet es asunto suyo, y
-  // lo que se apagó es que Hilo abra una sala pública de `meet.jit.si`. Por eso
+  // lo que se apagó es que Ombúa abra una sala pública de `meet.jit.si`. Por eso
   // se filtra `roomUrl` y no `videoUrl`.
   //
   // Una ficha que ya tenga `room_id` de antes deja de mostrarlo. La columna
@@ -157,7 +157,7 @@ export function OnlineConsultation({
               </form>
             ) : (
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Por ahora Hilo no abre salas de video propias. Si usás Zoom, Meet o
+                Por ahora Ombúa no abre salas de video propias. Si usás Zoom, Meet o
                 cualquier otra, pegá el link acá abajo y queda guardado para esta ficha.
               </p>
             )
@@ -186,7 +186,7 @@ export function OnlineConsultation({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Pegá tu Zoom, tu Meet o el de tu institución y Hilo usa ese. Vacío, vuelve al
+            Pegá tu Zoom, tu Meet o el de tu institución y Ombúa usa ese. Vacío, vuelve al
             suyo.
           </p>
         </form>
@@ -206,7 +206,7 @@ export function OnlineConsultation({
  * mismo criterio que usa archivar un paciente, más liviano porque esto se
  * arregla mandando un link y aquello no.
  *
- * No aparece cuando la profesional puso su propia sala: ahí la de Hilo no es la
+ * No aparece cuando la profesional puso su propia sala: ahí la de Ombúa no es la
  * que se comparte, y ofrecer cambiarla sería ofrecer arreglar algo que no está
  * roto.
  */

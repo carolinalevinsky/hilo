@@ -1,4 +1,4 @@
--- Materiales escritos para Hilo, no heredados del v1.
+-- Materiales escritos para Ombúa, no heredados del v1.
 --
 -- El v1 traía 45, y repartidos de una forma que dejaba dos profesiones enteras
 -- sin nada: psicomotricidad en cero y fisioterapia en cero. Una psicomotricista

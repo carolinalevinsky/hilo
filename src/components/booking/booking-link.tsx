@@ -10,7 +10,7 @@ import { firstName, whatsappLink } from '@/lib/whatsapp'
  * The link a practitioner hands to families, with the two things they do with
  * it: copy it, or send it.
  *
- * Shown in full and readable — `hilo.uy/reservar/lucia-fernandez` — because it
+ * Shown in full and readable — `ombua.com/reservar/lucia-fernandez` — because it
  * gets pasted into an Instagram bio and read off a card. That is also why the
  * slug exists at all: v1's link carried a UUID.
  */

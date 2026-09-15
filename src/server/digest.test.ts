@@ -147,7 +147,7 @@ function daysAgo(days: number): string {
 const thisPeriod = digestPeriod(new Date())
 
 function practitioner(id: string, fullName: string, digestSentAt: string | null = null) {
-  return { id, email: `${id}@hilo.test`, full_name: fullName, digest_sent_at: digestSentAt }
+  return { id, email: `${id}@ombua.test`, full_name: fullName, digest_sent_at: digestSentAt }
 }
 
 function patient(
@@ -241,7 +241,7 @@ describe('digestRecipients', () => {
     expect(recipients).toEqual([
       {
         practitionerId: LUCIA.id,
-        email: 'lucia@hilo.test',
+        email: 'lucia@ombua.test',
         summary: {
           practitionerName: 'Lucía Fernández',
           sessionsThisFortnight: 2,
@@ -252,7 +252,7 @@ describe('digestRecipients', () => {
       },
       {
         practitionerId: MARTIN.id,
-        email: 'martin@hilo.test',
+        email: 'martin@ombua.test',
         summary: {
           practitionerName: 'Martín Sosa',
           sessionsThisFortnight: 1,

@@ -11,7 +11,7 @@ import {
   isNavItemActive,
   type NavItem,
 } from '@/components/app-shell/nav-items'
-import { useAskHilo } from '@/components/assistant/ask-hilo-dock'
+import { useAsk } from '@/components/assistant/ask-dock'
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils'
  * Because the alternative is a button floating over the page, and on a phone
  * the bottom-right corner of the page is never empty: it was measured sitting
  * on top of the Comentarios field of "Registrar sesión" and on top of a goal's
- * progress slider on the ficha. See `ask-hilo-dock.tsx`.
+ * progress slider on the ficha. See `ask-dock.tsx`.
  *
  * It is an action and the other five are destinations, and it is drawn as one:
  * a violet circle with no label, between Cobros and Más. That is not only
@@ -37,7 +37,7 @@ import { cn } from '@/lib/utils'
  */
 export function MobileNav() {
   const pathname = usePathname()
-  const askHilo = useAskHilo()
+  const askHilo = useAsk()
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
@@ -110,8 +110,8 @@ export function MobileNav() {
           type="button"
           onClick={askHilo}
           aria-haspopup="dialog"
-          aria-label="Preguntá a Hilo"
-          title="Preguntá a Hilo"
+          aria-label="Preguntá a Ombúa"
+          title="Preguntá a Ombúa"
           className="mx-1 flex size-11 shrink-0 items-center justify-center self-center rounded-full bg-violet text-white shadow-[0_4px_12px_rgb(108_92_231_/_35%)] hover:brightness-107"
         >
           <MessageCircle className="size-5" />

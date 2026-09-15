@@ -15,8 +15,9 @@ import {
   progressByPatient,
 } from '@/server/statistics'
 import { currentUser } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Estadísticas · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Estadísticas') }
 
 export default async function StatisticsPage() {
   const user = await currentUser()

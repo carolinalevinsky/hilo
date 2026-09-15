@@ -140,14 +140,14 @@ export function AppointmentMenu({
                decidido dice "Ocupado".
 
                `details` no lleva nada del paciente a propósito: el motivo de
-               consulta, los objetivos y la nota clínica no salen de Hilo por
+               consulta, los objetivos y la nota clínica no salen de Ombúa por
                este camino bajo ninguna configuración. */
             href={googleCalendarLink({
               date: appointment.scheduled_on,
               time: appointment.start_time,
               durationMinutes: appointment.duration_minutes,
               title: calendarEventTitle(name, calendarPrivacy),
-              details: 'Agendado desde Hilo',
+              details: 'Agendado desde Ombúa',
             })}
             target="_blank"
             rel="noopener noreferrer"

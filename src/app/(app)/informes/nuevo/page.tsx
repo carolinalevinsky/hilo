@@ -10,8 +10,9 @@ import { listPatients } from '@/server/patients'
 import { listTemplates } from '@/server/prompt-templates'
 
 import { currentPractitioner, currentUser } from '../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Nuevo informe · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Nuevo informe') }
 
 export default async function NewReportPage({ searchParams }: PageProps<'/informes/nuevo'>) {
   const params = await searchParams
@@ -36,7 +37,7 @@ export default async function NewReportPage({ searchParams }: PageProps<'/inform
 
       <PageHeader
         title="Nuevo informe"
-        subtitle="Hilo lo escribe con los objetivos, el avance y las notas que ya cargaste."
+        subtitle="Ombúa lo escribe con los objetivos, el avance y las notas que ya cargaste."
       />
 
       <Card>

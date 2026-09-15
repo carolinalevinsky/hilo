@@ -3,7 +3,7 @@ import { getDb, getServiceDb } from './db'
 /**
  * The audit trail.
  *
- * This exists because Hilo holds health data protected by Ley N.º 18.331, and
+ * This exists because Ombúa holds health data protected by Ley N.º 18.331, and
  * "who touched which record, and when" is a question that has to be answerable.
  * It is about twenty lines of code, not enterprise ceremony.
  *
@@ -26,7 +26,7 @@ import { getDb, getServiceDb } from './db'
 
 // `connect` y `disconnect` son de otra clase que el resto: no cambian un dato,
 // cambian a quién más se le está dando acceso. Conectar Google decide que las
-// horas de los pacientes empiecen a salir de Hilo, y desconectar decide que
+// horas de los pacientes empiecen a salir de Ombúa, y desconectar decide que
 // dejen de salir. Si alguna vez hay que reconstruir qué se compartió y desde
 // cuándo, es lo único que lo cuenta.
 type Action =

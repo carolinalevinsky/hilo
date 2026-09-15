@@ -79,7 +79,7 @@ test('forgets the password, gets the email, sets a new one, and signs in with it
   await test.step('receives a Spanish email with a link that works anywhere', async () => {
     const mail = await waitForEmail(email)
 
-    expect(mail.subject).toBe('Cambiá tu contraseña de Hilo')
+    expect(mail.subject).toBe('Cambiá tu contraseña de Ombúa')
 
     // The two things that make the link work when it is opened on a phone.
     expect(mail.link).toContain('/confirmar')

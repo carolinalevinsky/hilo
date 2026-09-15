@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
 import { PatientForm } from '@/components/patients/patient-form'
 import { Card, CardContent } from '@/components/ui/card'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Nuevo paciente · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Nuevo paciente') }
 
 export default function NewPatientPage() {
   return (

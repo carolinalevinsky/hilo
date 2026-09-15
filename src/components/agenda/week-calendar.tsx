@@ -59,7 +59,7 @@ const hourOf = (time: string) => Number(time.slice(0, 2))
 const minutesOf = (time: string) => hourOf(time) * 60 + Number(time.slice(3, 5))
 
 /**
- * Una cosa dibujable en la columna de un día, ya sea sesión de Hilo o evento de
+ * Una cosa dibujable en la columna de un día, ya sea sesión de Ombúa o evento de
  * Google. Se mezclan a propósito: el solape hay que resolverlo entre las dos, no
  * dentro de cada una.
  */
@@ -148,7 +148,7 @@ export function WeekCalendar({
     .filter((day) => day.index < 5 || showWeekend)
 
   // Cuántas sesiones quedaron fuera de la vista por ser de fin de semana. Sólo
-  // las de Hilo: un cumpleaños en Google que no se vea no es un problema, una
+  // las de Ombúa: un cumpleaños en Google que no se vea no es un problema, una
   // sesión que no se vea sí.
   const hiddenCount = showWeekend
     ? 0
@@ -218,7 +218,7 @@ export function WeekCalendar({
                 key={day.date}
                 className={cn(
                   'border-b border-l border-border px-1.5 py-3 text-center text-body font-bold',
-                  isToday ? 'bg-violet-soft' : 'bg-[#faf9ff]',
+                  isToday ? 'bg-violet-soft' : 'bg-violet-whisper',
                 )}
               >
                 {weekdayName(day.weekday)}
@@ -451,7 +451,7 @@ function Event({
 }
 
 /**
- * Un evento del calendario de Google que Hilo no creó.
+ * Un evento del calendario de Google que Ombúa no creó.
  *
  * Deliberadamente distinto de una sesión: gris, sin color de paciente, sin menú
  * y sin enlace. No hay nada que editar acá — esto vive en Google y se cambia en

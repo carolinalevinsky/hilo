@@ -1,6 +1,6 @@
 import { MobileNav } from '@/components/app-shell/mobile-nav'
 import { Sidebar } from '@/components/app-shell/sidebar'
-import { AskHiloProvider } from '@/components/assistant/ask-hilo-dock'
+import { AskProvider } from '@/components/assistant/ask-dock'
 import { InstallPrompt } from '@/components/install-prompt'
 import { Toaster } from '@/components/ui/sonner'
 import { disciplineLabel } from '@/lib/disciplines'
@@ -41,7 +41,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
   return (
     // The assistant panel is opened from two places — the sidebar on a desktop,
     // the bottom bar on a phone — so the provider sits above both.
-    <AskHiloProvider>
+    <AskProvider>
       <div className="grid min-h-dvh lg:grid-cols-[236px_minmax(0,1fr)]">
         <Sidebar
           fullName={practitioner.full_name}
@@ -58,6 +58,6 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
         <MobileNav />
         <Toaster position="top-center" />
       </div>
-    </AskHiloProvider>
+    </AskProvider>
   )
 }

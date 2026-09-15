@@ -1,5 +1,13 @@
 import type { MetadataRoute } from 'next'
 
+import {
+  BRAND_BACKGROUND,
+  BRAND_COLORS,
+  BRAND_LONG_DESCRIPTION,
+  BRAND_NAME,
+  BRAND_SHORT_NAME,
+} from '@/lib/brand'
+
 /**
  * The web app manifest, served at `/manifest.webmanifest`.
  *
@@ -12,16 +20,15 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Hilo',
-    short_name: 'Hilo',
-    description:
-      'Historias clínicas, agenda, objetivos, informes y cobros — todo tu consultorio en un solo lugar.',
+    name: BRAND_NAME,
+    short_name: BRAND_SHORT_NAME,
+    description: BRAND_LONG_DESCRIPTION,
     // Not '/': the landing page redirects a signed-in practitioner anyway, and
     // an installed app that starts on a marketing page feels like a browser.
     start_url: '/inicio',
     display: 'standalone',
-    background_color: '#f5f6fb', // --background
-    theme_color: '#6c5ce7', // --hilo-violet
+    background_color: BRAND_BACKGROUND,
+    theme_color: BRAND_COLORS.violet,
     lang: 'es-UY',
     dir: 'ltr',
     // The app is used on a phone between sessions, one hand, standing up.

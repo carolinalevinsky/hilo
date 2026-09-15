@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 
 /**
- * The offer to install Hilo, shown once and never again after it is refused.
+ * The offer to install Ombúa, shown once and never again after it is refused.
  *
  * Only Chromium fires `beforeinstallprompt`, and it is the only way to open the
  * install dialog — the event cannot be constructed and it works exactly once.
@@ -29,7 +29,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-const DISMISSED = 'hilo:install-dismissed'
+const DISMISSED = 'ombua:install-dismissed'
 
 export function InstallPrompt() {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
@@ -89,7 +89,7 @@ export function InstallPrompt() {
       <Download className="size-[18px] shrink-0 text-violet" />
 
       <p className="min-w-0 flex-1 text-body leading-snug text-violet">
-        <span className="font-semibold">Instalá Hilo en este dispositivo.</span>{' '}
+        <span className="font-semibold">Instalá Ombúa en este dispositivo.</span>{' '}
         Queda en la pantalla de inicio y la abrís como una app, sin pasar por el
         navegador.
       </p>

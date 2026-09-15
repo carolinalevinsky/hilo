@@ -121,7 +121,7 @@ export class MercadoPagoError extends Error {}
  * Creates a Checkout Pro preference on the practitioner's own Mercado Pago
  * account and returns the link to send the family.
  *
- * The money goes practitioner → family directly; Hilo is not a party to it and
+ * The money goes practitioner → family directly; Ombúa is not a party to it and
  * never holds funds. That is also what the terms say (clause 12).
  *
  * `externalReference` is what ties the eventual webhook back to a patient and a

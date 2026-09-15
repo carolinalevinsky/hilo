@@ -143,7 +143,7 @@ export async function updateCalendarPrivacy(practitionerId: string, input: unkno
   if (error) throw error
 
   // Queda en el registro de auditoría, como cualquier cambio sobre el perfil.
-  // Este más que ninguno: es el que decide qué sale de Hilo hacia afuera.
+  // Este más que ninguno: es el que decide qué sale de Ombúa hacia afuera.
   await logAction(practitionerId, 'update', 'practitioner', practitionerId)
   return row
 }

@@ -4,8 +4,8 @@
  * Two places need this, and both take the destination from something a stranger
  * can write: `?volver=` on the sign-in screen, and `?next=` on the link inside
  * an email. Redirecting to whatever arrives is an open redirect — a URL on
- * Hilo's own domain that hands someone, freshly signed in, to a page that is not
- * Hilo. For a tool whose sign-in screen guards clinical records, that is a
+ * Ombúa's own domain that hands someone, freshly signed in, to a page that is not
+ * Ombúa. For a tool whose sign-in screen guards clinical records, that is a
  * credible way to phish a practitioner.
  *
  * ─── Why this parses instead of checking prefixes ──────────────────────────
@@ -15,7 +15,7 @@
  * `/\ejemplo.com` is the one it let through, and a browser reads that as
  * another host too:
  *
- *     new URL('/\\ejemplo.com', 'https://app.hilo.uy')  →  https://ejemplo.com/
+ *     new URL('/\\ejemplo.com', 'https://app.ombua.com')  →  https://ejemplo.com/
  *
  * That is the WHATWG URL parser, not a quirk: after the first slash, a
  * backslash puts it into "special authority ignore slashes" state and what
@@ -33,7 +33,7 @@
  * A host no registry will ever resolve. `.invalid` is reserved by RFC 2606 for
  * exactly this, so a bug that let one of these escape would be inert.
  */
-const NOWHERE = 'https://hilo.invalid'
+const NOWHERE = 'https://ombua.invalid'
 
 export function internalPath(value: unknown, fallback: string): string {
   // Checked before parsing, not instead of it: a bare `pacientes` would resolve
@@ -50,7 +50,7 @@ export function internalPath(value: unknown, fallback: string): string {
   if (url.origin !== NOWHERE) return fallback
 
   // Rebuilt from the parsed parts rather than returned as it arrived, so what
-  // ships is what was actually checked. `hash` is dropped: nothing in Hilo
+  // ships is what was actually checked. `hash` is dropped: nothing in Ombúa
   // navigates by fragment, and it is the one part that never reaches the server.
   return `${url.pathname}${url.search}`
 }

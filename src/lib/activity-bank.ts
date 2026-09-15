@@ -7,7 +7,7 @@
  * sonidos con palmas".
  *
  * This is clinical domain knowledge, not a heuristic worth improving. It was
- * written by someone who does this work, it covers the six disciplines Hilo
+ * written by someone who does this work, it covers the six disciplines Ombúa
  * serves, and every phrase is something you can do with a child on a Tuesday.
  * Keep the wording; add rows if a discipline is missing one.
  *

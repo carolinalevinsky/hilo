@@ -10,7 +10,7 @@
  * ─── What is recorded, and what leaves ─────────────────────────────────────
  *
  * What reaches this module is text, and no audio is ever uploaded to or stored
- * by Hilo. That much was always true.
+ * by Ombúa. That much was always true.
  *
  * What this block used to also claim — that the audio is not sent anywhere at
  * all — was not. The browser's `SpeechRecognition` is server-based by default
@@ -27,7 +27,7 @@
  *
  * The draft is a draft. It goes into the field, the practitioner edits it, and
  * nothing is saved until they press the button — same as every other AI output
- * in Hilo.
+ * in Ombúa.
  */
 
 /** A rambling transcript is normal; anything past this is not a session. */
@@ -62,7 +62,7 @@ ${transcript.trim().slice(0, MAX_TRANSCRIPT)}`
  *
  * The transcript itself, tidied — which is worth more than an error, because it
  * is what the practitioner said and it is already in front of them to edit.
- * Every other AI path in Hilo has a fallback computed from real data; this one's
+ * Every other AI path in Ombúa has a fallback computed from real data; this one's
  * is the rawest possible version of that idea.
  */
 export function offlineSessionNote(transcript: string): string {

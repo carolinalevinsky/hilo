@@ -42,7 +42,7 @@ import { getPhotoUrl, listPatients } from '@/server/patients'
 import { listPlanItems, planSuggestions } from '@/server/session-plans'
 import { currentSession } from '../session'
 
-/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+/** Sin "· Ombúa": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
 export const metadata: Metadata = { title: 'Planificar sesión' }
 
 /**
@@ -86,7 +86,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
           <EmptyState
             icon={ClipboardList}
             title="Planificá tu primera sesión"
-            text="Cargá un paciente y sus objetivos, y Hilo prioriza los que menos se movieron y te deja la próxima sesión casi armada."
+            text="Cargá un paciente y sus objetivos, y Ombúa prioriza los que menos se movieron y te deja la próxima sesión casi armada."
             action={
               <Button asChild>
                 <Link href="/pacientes/nuevo">Cargar mi primer paciente</Link>
@@ -218,7 +218,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
         <div className="space-y-4">
           <Card>
             <CardContent>
-              <PanelTitle icon={Sparkles}>Sugerencias de Hilo</PanelTitle>
+              <PanelTitle icon={Sparkles}>Sugerencias de Ombúa</PanelTitle>
 
               {suggestions.length === 0 ? (
                 <p className="text-body text-muted-foreground">
@@ -229,12 +229,12 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
                   >
                     Cargá el primero
                   </Link>{' '}
-                  y Hilo arma las sugerencias.
+                  y Ombúa arma las sugerencias.
                 </p>
               ) : (
                 <>
                   <p className="mb-2.5 text-meta text-muted-foreground">
-                    Según los objetivos de {firstName}, Hilo prioriza los que menos se
+                    Según los objetivos de {firstName}, Ombúa prioriza los que menos se
                     movieron:
                   </p>
 
@@ -444,7 +444,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
 
             You are assembling a list. The list goes where you can see it, and
             the things you add to it go underneath. */}
-        <Card className="hilo-doc h-fit max-lg:order-first">
+        <Card className="app-doc h-fit max-lg:order-first">
           <CardContent>
             <PanelTitle icon={ClipboardList} hint={String(items.length)}>
               Sesión de {firstName}
@@ -502,7 +502,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
 
             {/* Anything, in your own words. Not everything that goes into a
                 session is a goal or a library material, and until this existed
-                the planner could only assemble the parts Hilo already knew
+                the planner could only assemble the parts Ombúa already knew
                 about. */}
             <form
               action={addActivityToPlanAction}

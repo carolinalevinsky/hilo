@@ -90,7 +90,7 @@ export function BillingDialog({
         <DialogHeader>
           <DialogTitle>Arancel de {patientName}</DialogTitle>
           <DialogDescription>
-            Lo que Hilo usa para calcular cuánto tendría que entrar cada mes.
+            Lo que Ombúa usa para calcular cuánto tendría que entrar cada mes.
           </DialogDescription>
         </DialogHeader>
 

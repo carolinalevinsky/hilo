@@ -24,7 +24,7 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE="hilo-dev:latest"
+IMAGE="ombua-dev:latest"
 
 # Los directorios de build, fuera del alcance de iCloud.
 #
@@ -81,8 +81,8 @@ args=(
   # muere con "Unable to update lock within the stale threshold". Y no va en la
   # imagen porque entonces subir @playwright/test obligaría a reconstruirla.
   # Un volumen sobrevive al --rm, es rápido, y se borra con
-  # `docker volume rm hilo-playwright` si algo queda raro.
-  --volume hilo-playwright:/root/.cache/ms-playwright
+  # `docker volume rm ombua-playwright` si algo queda raro.
+  --volume ombua-playwright:/root/.cache/ms-playwright
   --workdir "$REPO"
   --add-host host.docker.internal:host-gateway
   --env HOSTNAME=0.0.0.0

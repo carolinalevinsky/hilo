@@ -6,8 +6,9 @@ import { FormMessage } from '@/components/auth/form-message'
 import { SignInForm } from '@/components/auth/sign-in-form'
 
 import { noticeFor } from '../notices'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Entrar · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Entrar') }
 
 export default async function SignInPage({ searchParams }: PageProps<'/entrar'>) {
   const { volver, aviso } = await searchParams

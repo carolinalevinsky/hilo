@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Términos y Condiciones · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Términos y Condiciones') }
 
 /**
  * Transcribed from `legacy/index.html:1849`. The wording is the product's, not
@@ -16,12 +17,12 @@ export default function TermsPage() {
       <h1>Términos y Condiciones de uso</h1>
 
       <p>
-        <b>1. Aceptación.</b> Al crear una cuenta y usar Hilo (“la Herramienta”, operada por
+        <b>1. Aceptación.</b> Al crear una cuenta y usar Ombúa (“la Herramienta”, operada por
         Hepic) aceptás estos Términos y la Política de Privacidad. Si no estás de acuerdo, no
         la uses.
       </p>
       <p>
-        <b>2. Qué es Hilo.</b> Hilo es una herramienta digital de gestión y asistencia para
+        <b>2. Qué es Ombúa.</b> Ombúa es una herramienta digital de gestión y asistencia para
         profesionales de la salud y la educación.{' '}
         <b>
           No reemplaza el juicio profesional, no brinda diagnóstico ni tratamiento, y no
@@ -30,7 +31,7 @@ export default function TermsPage() {
       </p>
       <p>
         <b>3. Rol de las partes.</b> El/la profesional es el/la <b>responsable</b> del
-        tratamiento de los datos de sus pacientes y del contenido clínico. Hilo es únicamente
+        tratamiento de los datos de sus pacientes y del contenido clínico. Ombúa es únicamente
         el proveedor de la herramienta. El criterio y la firma de todo documento son siempre
         del/de la profesional.
       </p>
@@ -85,7 +86,7 @@ export default function TermsPage() {
       </p>
       <p>
         <b>12. Pagos.</b> Los cobros a las familias se realizan directamente entre el/la
-        profesional y la familia; Hilo solo facilita el medio (por ejemplo, Mercado Pago) y
+        profesional y la familia; Ombúa solo facilita el medio (por ejemplo, Mercado Pago) y
         no es parte de esa relación ni retiene los fondos.
       </p>
       <p>

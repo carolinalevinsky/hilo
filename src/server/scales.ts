@@ -14,7 +14,7 @@ import {
 } from './patient-forms'
 
 /**
- * PHQ-9 and GAD-7, answered by the patient from a link and scored by Hilo.
+ * PHQ-9 and GAD-7, answered by the patient from a link and scored by Ombúa.
  *
  * The link is a `patient_forms` row of kind 'scale' — same token, same hash,
  * same "retire the unanswered one" rule as "Antes de empezar". The answers go

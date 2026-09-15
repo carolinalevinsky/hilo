@@ -212,5 +212,5 @@ Menos pasos, más apoyo visual y un ejemplo antes de cada intento.
 Variación más difícil:
 Sin apoyos, un paso más, o pedirle que explique cómo lo resolvió.
 
-Escrito por Hilo sin conexión al modelo, a partir de "${lower}". Revisalo y ajustalo antes de usarlo.`
+Escrito por Ombúa sin conexión al modelo, a partir de "${lower}". Revisalo y ajustalo antes de usarlo.`
 }

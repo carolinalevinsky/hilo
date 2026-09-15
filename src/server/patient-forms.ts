@@ -258,7 +258,7 @@ export const ConsentTemplateInput = z.object({
     .default(null),
 })
 
-/** Null goes back to Hilo's model. */
+/** Null goes back to Ombúa's model. */
 export async function updateConsentTemplate(practitionerId: string, input: unknown) {
   const { template } = ConsentTemplateInput.parse(input)
   const db = await getDb()

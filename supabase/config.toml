@@ -261,7 +261,7 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Hilo's own templates: Spanish, Hilo's colours, and — the part that matters —
+# Ombúa's own templates: Spanish, Ombúa's colours, and — the part that matters —
 # built around `{{ .TokenHash }}` rather than `{{ .ConfirmationURL }}`, so a link
 # requested on a laptop still works when it is opened on a phone. Read the
 # comment at the top of either file before changing the URL in it.
@@ -270,11 +270,11 @@ otp_expiry = 3600
 # *Authentication → Email Templates* in the dashboard, so both have to be
 # updated — docs/launch.md §1 has the exact text.
 [auth.email.template.confirmation]
-subject = "Confirmá tu cuenta de Hilo"
+subject = "Confirmá tu cuenta de Ombúa"
 content_path = "./supabase/templates/confirmacion.html"
 
 [auth.email.template.recovery]
-subject = "Cambiá tu contraseña de Hilo"
+subject = "Cambiá tu contraseña de Ombúa"
 content_path = "./supabase/templates/recuperacion.html"
 
 # Uncomment to customize email template

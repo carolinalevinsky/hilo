@@ -62,9 +62,9 @@ describe('internalPath', () => {
 
     for (const attempt of attempts) {
       const result = internalPath(attempt, '/inicio')
-      const resolved = new URL(result, 'https://app.hilo.uy')
+      const resolved = new URL(result, 'https://app.ombua.com')
       expect(resolved.origin, `${JSON.stringify(attempt)} escaped the origin`).toBe(
-        'https://app.hilo.uy',
+        'https://app.ombua.com',
       )
     }
   })

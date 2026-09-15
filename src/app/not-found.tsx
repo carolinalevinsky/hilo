@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'No encontramos esta página · Hilo' }
+export const metadata: Metadata = { title: pageTitle('No encontramos esta página') }
 
 /**
  * The 404 — and of the three screens added here, the one a real person actually
@@ -29,7 +30,7 @@ export default function NotFound() {
           <EmptyState
             icon={Compass}
             title="No encontramos esta página"
-            text="El enlace puede estar viejo, o lo que buscabas ya no está en Hilo. Desde el inicio llegás a todo lo demás."
+            text="El enlace puede estar viejo, o lo que buscabas ya no está en Ombúa. Desde el inicio llegás a todo lo demás."
             action={
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button asChild>

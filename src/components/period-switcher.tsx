@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 /**
- * `‹  Agosto 2026  ›` — the way Hilo moves through time.
+ * `‹  Agosto 2026  ›` — the way Ombúa moves through time.
  *
  * Ported from v1 (`legacy/index.html:2426-2433`). The shape matters more than it
  * looks like it should: the period is the *title* of everything under it, so it

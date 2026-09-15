@@ -21,7 +21,7 @@ import type { AppointmentWithPatient } from '@/server/appointments'
  * cancelada— y las acciones reales son las que ya vivían en el menú `···`, que
  * se reusa entero acá abajo en vez de reescribirse.
  *
- * Reprogramar no está porque Hilo no sabe hacerlo: hoy se cancela y se agenda de
+ * Reprogramar no está porque Ombúa no sabe hacerlo: hoy se cancela y se agenda de
  * nuevo. Un botón que diga otra cosa sería mentira.
  */
 

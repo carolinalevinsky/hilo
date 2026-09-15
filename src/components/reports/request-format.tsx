@@ -101,7 +101,7 @@ export function RequestFormat() {
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               />
               {/* Lo pide expresamente, y no es una formalidad: este texto es lo
-                  único de Hilo que sale por correo, y alcanza con que alguien
+                  único de Ombúa que sale por correo, y alcanza con que alguien
                   escriba un nombre sin pensar. */}
               <p className="text-xs leading-relaxed text-muted-foreground">
                 Contanos del formato, no del paciente: no escribas nombres ni datos

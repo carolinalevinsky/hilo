@@ -417,7 +417,7 @@ describe('a child row pointing at somebody else’s patient', () => {
 describe('the materials library', () => {
   // `materials` is the only table in the schema whose policies are not the
   // standard one-liner, so it cannot ride along in `the clinical tables` above:
-  // an unfiltered read correctly returns every row Hilo ships. The split is read
+  // an unfiltered read correctly returns every row Ombúa ships. The split is read
   // shared-or-own, write own-only, and both halves need watching — one of them
   // guards clinical privacy, the other guards everyone else's library.
 
@@ -441,9 +441,9 @@ describe('the materials library', () => {
       .from('materials')
       .insert({
         practitioner_id: null,
-        title: 'Juego de rimas de la biblioteca de Hilo',
+        title: 'Juego de rimas de la biblioteca de Ombúa',
         area: 'Lectura',
-        content: 'Actividad que viene con Hilo',
+        content: 'Actividad que viene con Ombúa',
       })
       .select()
       .single()
@@ -464,7 +464,7 @@ describe('the materials library', () => {
     expect(data?.map((row) => row.id)).not.toContain(materialB)
   })
 
-  it('does show a practitioner the materials that ship with Hilo', async () => {
+  it('does show a practitioner the materials that ship with Ombúa', async () => {
     const { data, error } = await asA.from('materials').select('id')
 
     // The half that would break silently if someone "simplified" the read policy
@@ -476,7 +476,7 @@ describe('the materials library', () => {
 
   it('does not let a practitioner publish a material to everyone', async () => {
     // The `with check` on `write_own`. A NULL practitioner_id means "shipped with
-    // Hilo", so without this any user could plant a row in every other
+    // Ombúa", so without this any user could plant a row in every other
     // practitioner's library.
     const { error } = await asA.from('materials').insert({
       practitioner_id: null,
@@ -766,7 +766,7 @@ describe('el refresh token de Google', () => {
   // Vale más que el token de Mercado Pago. Aquél mueve plata y se puede
   // revocar rápido; éste no vence, y con él se lee y se escribe el calendario
   // entero de esa persona —el del consultorio y el de su vida— hasta que ella
-  // se acuerde de sacarle el permiso a Hilo desde Google.
+  // se acuerde de sacarle el permiso a Ombúa desde Google.
   //
   // Por eso la tabla usa `using (false)` en vez de la política de filas propias
   // que usa todo el resto: ninguna pantalla necesita este dato en el navegador,
@@ -812,7 +812,7 @@ describe('practitioner_by_slug', () => {
   /**
    * The one `security definer` function the public surface leans on, and the
    * only thing standing between a stranger and the list of health professionals
-   * who use Hilo.
+   * who use Ombúa.
    *
    * It is reached through the service role — the booking page has no session,
    * which is why the function exists at all — so nobody else needs EXECUTE. It

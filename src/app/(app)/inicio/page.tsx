@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { TodaySessionCard } from '@/components/agenda/today-session-card'
-import { AskHilo } from '@/components/assistant/ask-hilo'
+import { Ask } from '@/components/assistant/ask'
 import { AppTour } from '@/components/onboarding/app-tour'
 import { FirstSteps } from '@/components/onboarding/first-steps'
 import { PageHeader } from '@/components/page-header'
@@ -22,8 +22,9 @@ import { listPatients } from '@/server/patients'
 import { todayBriefing } from '@/server/planning'
 import { countSessions } from '@/server/sessions'
 import { currentSession } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Inicio · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Inicio') }
 
 export default async function HomePage() {
   const { user, practitioner } = await currentSession()
@@ -160,7 +161,7 @@ export default async function HomePage() {
           {/* Last, not first. v1 put the box above the patient list and it
               competed with the work; the question someone has here is about a
               session they have just seen listed above it. */}
-          <AskHilo />
+          <Ask />
 
           {/* Estadísticas hangs off the foot of Inicio, exactly as in v1
               (`legacy/index.html:568`). It is a place you go once in a while

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { REMEMBERED_EMAIL } from '@/lib/storage-keys'
 
 /**
  * Where the remembered address lives. v1 used the same key
@@ -19,7 +20,7 @@ import { EMPTY_FORM_STATE } from '@/lib/form-state'
  * one. It is the practitioner's own email on their own device, which is the same
  * thing the browser's autofill already keeps.
  */
-const REMEMBERED_EMAIL = 'hilo_email'
+
 
 export function SignInForm({ back }: { back?: string }) {
   const [state, formAction, pending] = useActionState(signInAction, EMPTY_FORM_STATE)

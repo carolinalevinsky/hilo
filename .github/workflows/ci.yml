@@ -25,7 +25,7 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ci-placeholder
       ANTHROPIC_API_KEY: ci-placeholder
       RESEND_API_KEY: ci-placeholder
-      MAIL_FROM: Hilo <ci@example.com>
+      MAIL_FROM: Ombúa <ci@example.com>
       CRON_SECRET: ci-placeholder
       MP_WEBHOOK_SECRET: ci-placeholder
       GOOGLE_CLIENT_ID: ci-placeholder

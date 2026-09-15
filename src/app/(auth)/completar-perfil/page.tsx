@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation'
 import { CompleteProfileForm } from '@/components/auth/complete-profile-form'
 import { requireUser } from '@/server/auth'
 import { findPractitioner } from '@/server/practitioners'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Completá tu perfil · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Completá tu perfil') }
 
 /**
  * Where a signed-in account without a profile lands.

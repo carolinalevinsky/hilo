@@ -12,8 +12,9 @@ import { listGoals } from '@/server/goals'
 import { getPatient } from '@/server/patients'
 import { getSession } from '@/server/sessions'
 import { currentUser } from '../../../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Editar registro · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Editar registro') }
 
 export default async function EditSessionPage({
   params,

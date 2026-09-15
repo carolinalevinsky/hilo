@@ -7,8 +7,9 @@ import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { areasFor } from '@/lib/material-areas'
 import { currentSession } from '../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Nuevo material · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Nuevo material') }
 
 export default async function NewMaterialPage() {
   const { practitioner } = await currentSession()

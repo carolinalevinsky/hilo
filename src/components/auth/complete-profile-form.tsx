@@ -73,7 +73,7 @@ export function CompleteProfileForm() {
       </div>
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
-        {pending ? 'Guardando…' : 'Entrar a Hilo'}
+        {pending ? 'Guardando…' : 'Entrar a Ombúa'}
       </Button>
     </form>
   )

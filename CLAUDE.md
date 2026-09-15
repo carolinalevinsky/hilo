@@ -1,6 +1,6 @@
-# Hilo
+# Ombúa
 
-Hilo is a tool for health and education professionals in Uruguay —
+Ombúa is a tool for health and education professionals in Uruguay —
 speech therapy, psychopedagogy, occupational therapy, psychology,
 psychomotricity and kinesiology. They use it to keep patient records, plan
 sessions, track therapeutic goals, write clinical reports, and get paid.

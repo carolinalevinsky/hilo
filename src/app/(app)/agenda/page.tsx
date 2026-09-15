@@ -8,6 +8,7 @@ import { BookingChip } from '@/components/agenda/booking-chip'
 import { ConnectGoogle } from '@/components/agenda/connect-google'
 import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { readAgendaSlot } from '@/lib/agenda-slot'
+import { GOOGLE_NOTICE_COOKIE } from '@/lib/storage-keys'
 import { SessionPanel } from '@/components/agenda/session-panel'
 import { PeriodNav } from '@/components/period-nav'
 import { WeekViewSelect } from '@/components/agenda/week-view-select'
@@ -40,19 +41,10 @@ import { deactivateScheduleAction } from './actions'
 
 import { currentOrigin } from '../origin'
 import { currentPractitioner, currentUser } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Agenda · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Agenda') }
 
-/**
- * "Ahora no" al aviso de Google Calendar, por un mes.
- *
- * Vive acá y no en `ConnectGoogle` porque ese archivo es `'use client'`: una
- * constante exportada desde un módulo de cliente llega a un componente de
- * servidor como una referencia, no como su texto, y `cookies().get()` devuelve
- * `undefined` en silencio. La página es la que lee, así que la página es la
- * dueña del nombre.
- */
-const GOOGLE_NOTICE_COOKIE = 'hilo_agenda_google'
 
 export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>) {
   const params = await searchParams
@@ -77,8 +69,8 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // earlier this week is not missing from the grid. It deliberately does not
   // reach further back: a rule that has existed for five months would otherwise
   // conjure five months of appointments marked "agendada", inventing a history
-  // of sessions nobody recorded. Weeks before Hilo was in use are empty because
-  // Hilo genuinely does not know what happened in them.
+  // of sessions nobody recorded. Weeks before Ombúa was in use are empty because
+  // Ombúa genuinely does not know what happened in them.
   const horizon = weekDates(todayDate(), Math.max(offset, 0) + 3)
   await materialiseAppointments(
     user.id,
@@ -125,7 +117,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     findGoogleAccount(user.id),
   ])
 
-  // Lo que ya está ocupado en Google y no lo puso Hilo: la reunión de trabajo, la
+  // Lo que ya está ocupado en Google y no lo puso Ombúa: la reunión de trabajo, la
   // cena, el cumpleaños. No se guarda en ningún lado — se lee, se dibuja y se
   // olvida. Ver `listBusyBlocks`.
   //

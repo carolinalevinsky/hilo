@@ -1,4 +1,4 @@
-# Hilo — hallazgos de QA
+# Ombúa — hallazgos de QA
 
 Dos partes: lo que salió de leer el código, y lo que salió de probar la app a mano.
 
@@ -176,7 +176,7 @@ sincronización.
 
 Aparte: si borrás un evento en Google y después lo restaurás, `applyEvent` (`:355`)
 actualiza fecha y hora pero no vuelve el `status` a `scheduled`. La sesión queda
-cancelada en Hilo para siempre.
+cancelada en Ombúa para siempre.
 
 ## F. El digest quincenal
 
@@ -354,7 +354,7 @@ Dos cambios: `step="900"` para que sea de a 15 minutos, y agregar fecha real.
 
 ### P8 — Mercado Pago [DECIDIR]
 
-La postura de Tomás: no meterse ahora. Que los pagos **no dependan de Hilo** es un
+La postura de Tomás: no meterse ahora. Que los pagos **no dependan de Ombúa** es un
 compromiso grande para asumir en la v1.
 
 Lo que se queda: registrar pagos a mano, subir comprobantes, el libro mensual de
@@ -420,7 +420,7 @@ así que se llega al error después de intentar.
 
 Lo de fondo es lo que decía Tomás: pedir la declaración no alcanza. Los términos
 tienen que decir qué pasa si resulta que no tenía permiso — quién responde, y que
-Hilo puede bajar el material sin aviso.
+Ombúa puede bajar el material sin aviso.
 
 ## Producto y usabilidad
 
@@ -476,7 +476,7 @@ aplicando arriba de cualquier prompt que escriba la usuaria.
 
 Que invite a hacer las cosas que menciona en vez de sólo listarlas.
 
-### P22 — "Instalá Hilo", ¿qué es?
+### P22 — "Instalá Ombúa", ¿qué es?
 
 Es el aviso de instalar la PWA (`app/manifest.ts`). No se entiende qué ofrece. O se
 explica en una frase, o se saca.

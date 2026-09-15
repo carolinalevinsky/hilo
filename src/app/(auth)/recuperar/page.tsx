@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { PasswordResetForm } from '@/components/auth/password-reset-form'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Recuperar tu cuenta · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Recuperar tu cuenta') }
 
 export default function PasswordResetPage() {
   return (

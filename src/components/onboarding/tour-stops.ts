@@ -33,7 +33,7 @@ export const TOUR_STOPS: TourStop[] = [
     // dicho qué es esto ni por qué apareció, que es la forma más rápida de que
     // alguien lo cierre sin leer.
     target: null,
-    title: '¡Hola! Bienvenida a Hilo',
+    title: '¡Hola! Bienvenida a Ombúa',
     body: 'Te muestro en un minuto dónde está cada cosa. Son cinco pantallas y podés saltarlo cuando quieras.',
   },
   {
@@ -54,7 +54,7 @@ export const TOUR_STOPS: TourStop[] = [
   {
     target: '/informes',
     title: 'Informes y evaluaciones',
-    body: 'Hilo los escribe con lo que ya cargaste en las sesiones. Vos los revisás, los corregís y los firmás. Nunca inventa un resultado que no le hayas dado.',
+    body: 'Ombúa los escribe con lo que ya cargaste en las sesiones. Vos los revisás, los corregís y los firmás. Nunca inventa un resultado que no le hayas dado.',
   },
   {
     target: '/cobros',

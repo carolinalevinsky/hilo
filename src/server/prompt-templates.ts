@@ -8,7 +8,7 @@ import { getDb } from './db'
  * Thomas's QA: rather than asking for a new format through "me falta este
  * formato", let her paste the prompt she already uses and run it with the
  * patient's data. Carolina chose that they can be saved with a name and reused,
- * and that they always sit **below** Hilo's clinical rules.
+ * and that they always sit **below** Ombúa's clinical rules.
  *
  * "Below" is concrete. The clinical block (`BASE_INSTRUCTIVO` in `ai.ts`) stays
  * where it is, cached, in the system prompt, untouched. What she writes goes at
@@ -43,7 +43,7 @@ export const TemplateName = z
 
 /**
  * The block that goes at the end of the user prompt, or `null` when there is
- * nothing to add. Fenced so the model can tell her text from Hilo's; a fence
+ * nothing to add. Fenced so the model can tell her text from Ombúa's; a fence
  * inside her text is neutralised so it cannot close the block early.
  */
 export function customInstructionsBlock(text: string | null | undefined): string | null {

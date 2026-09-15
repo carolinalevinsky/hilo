@@ -8,7 +8,7 @@ import { confirmEmailLink, exchangeAuthCode } from '@/server/auth'
 import { RECOVERY_COOKIE, RECOVERY_COOKIE_OPTIONS, RECOVERY_PATH } from '../recovery-cookie'
 
 /**
- * Where every link Hilo emails comes back to.
+ * Where every link Ombúa emails comes back to.
  *
  * Supabase sends the practitioner to its own `/auth/v1/verify` first; this is
  * the address it hands them on afterwards. Without it the confirmation email has
@@ -17,7 +17,7 @@ import { RECOVERY_COOKIE, RECOVERY_COOKIE_OPTIONS, RECOVERY_PATH } from '../reco
  *
  * It is a route handler, not a page: nothing is rendered here. It reads the
  * link, asks `src/server/auth.ts` to turn it into a session, and redirects.
- * Both link shapes are handled — the token hash Hilo's own templates send, and
+ * Both link shapes are handled — the token hash Ombúa's own templates send, and
  * the `?code=` of Supabase's stock ones — because which arrives depends on a
  * dashboard setting rather than on this repository.
  *

@@ -12,8 +12,9 @@ import { formatLongDate } from '@/lib/dates'
 import { formatTime } from '@/lib/week'
 import { upcomingPlans } from '@/server/session-plans'
 import { currentUser } from '../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Planes preparados · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Planes preparados') }
 
 /**
  * Everything left prepared, in one place.

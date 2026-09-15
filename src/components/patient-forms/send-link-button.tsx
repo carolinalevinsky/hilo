@@ -16,7 +16,7 @@ import { whatsappLink } from '@/lib/whatsapp'
  *
  * `create` is a Server Action already bound to its patient (and scale), handed
  * down from a Server Component. `message` has `{url}` where the link goes, and
- * nothing clinical — same rule as every other message Hilo writes
+ * nothing clinical — same rule as every other message Ombúa writes
  * (`@/lib/whatsapp`).
  */
 export function SendLinkButton({

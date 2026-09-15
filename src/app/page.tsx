@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { Wordmark } from '@/components/brand/wordmark'
+
 import { Button } from '@/components/ui/button'
 
 /**
@@ -9,11 +11,8 @@ import { Button } from '@/components/ui/button'
  */
 export default function LandingPage() {
   return (
-    <div className="hilo-auth-bg flex min-h-dvh flex-col items-center justify-center px-6 py-16 text-center text-white">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="size-9 rounded-[11px] bg-white/90" />
-        <span className="text-[34px] font-extrabold tracking-[-0.8px]">Hilo</span>
-      </div>
+    <div className="app-auth-bg flex min-h-dvh flex-col items-center justify-center px-6 py-16 text-center text-white">
+      <Wordmark tone="celeste" height={34} className="mb-7" />
 
       <h1 className="max-w-xl text-[26px] leading-tight font-extrabold tracking-[-0.6px] sm:text-[32px]">
         Tus pacientes, tus sesiones y tus informes, en un solo lugar

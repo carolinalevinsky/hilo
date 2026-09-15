@@ -47,30 +47,39 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* ── Hilo palette ────────────────────────────────────────────────────────
-     Ported verbatim from the v1 prototype (legacy/index.html lines 28–33).
-     These were chosen deliberately and they are the product's visual identity —
-     they are not Tailwind defaults to be talked out of.
+  /* ── Ombúa palette ────────────────────────────────────────────────────────
+     The three brand colours came off the logotype; the five accents below them
+     are states — paid, pending, overdue — and the colours that tell one
+     patient's row from another's. That is why the rebrand replaced the first
+     three and left the rest alone.
+
+     The hex values live in `src/lib/brand.ts`, which is the one place they are
+     written. CSS cannot import TypeScript, so these are a copy — and
+     `brand.test.ts` fails the build if the copy stops matching.
 
      Each accent has a soft companion used for chip and badge backgrounds:
        bg-violet text-white      → a filled accent
        bg-violet-soft text-violet → a tinted chip
   */
-  --color-violet: var(--hilo-violet);
-  --color-violet-soft: var(--hilo-violet-soft);
-  --color-teal: var(--hilo-teal);
-  --color-teal-soft: var(--hilo-teal-soft);
-  --color-coral: var(--hilo-coral);
-  --color-coral-soft: var(--hilo-coral-soft);
-  --color-amber: var(--hilo-amber);
-  --color-amber-soft: var(--hilo-amber-soft);
-  --color-green: var(--hilo-green);
-  --color-green-soft: var(--hilo-green-soft);
-  --color-blue: var(--hilo-blue);
-  --color-blue-soft: var(--hilo-blue-soft);
+  --color-violet: var(--brand-violet);
+  --color-violet-soft: var(--brand-violet-soft);
+  --color-violet-whisper: var(--brand-violet-whisper);
+  --color-celeste: var(--brand-celeste);
+  --color-bordo: var(--brand-bordo);
+  --color-bordo-soft: var(--brand-bordo-soft);
+  --color-teal: var(--brand-teal);
+  --color-teal-soft: var(--brand-teal-soft);
+  --color-coral: var(--brand-coral);
+  --color-coral-soft: var(--brand-coral-soft);
+  --color-amber: var(--brand-amber);
+  --color-amber-soft: var(--brand-amber-soft);
+  --color-green: var(--brand-green);
+  --color-green-soft: var(--brand-green-soft);
+  --color-blue: var(--brand-blue);
+  --color-blue-soft: var(--brand-blue-soft);
 
   /* ── Type scale ──────────────────────────────────────────────────────────
-     Hilo's small sizes, which are most of the text in the product.
+     Ombúa's small sizes, which are most of the text in the product.
 
      They used to be written literally in the JSX: twelve different values
      between 10px and 15.5px, each screen having picked its own, so two cards
@@ -98,66 +107,81 @@
   --text-item: 14.5px;
   --text-lead: 15.5px;
 
-  --shadow-card: var(--hilo-shadow);
+  --shadow-card: var(--brand-shadow);
 }
 
 :root {
-  /* Raw v1 values. Kept as hex exactly as the prototype defined them, so a
-     colour can be compared against legacy/index.html without conversion. */
-  --hilo-violet: #6c5ce7;
-  --hilo-violet-soft: #efeaff;
-  --hilo-teal: #12b5a5;
-  --hilo-teal-soft: #e2f7f4;
-  --hilo-coral: #ff6b6b;
-  --hilo-coral-soft: #ffe9e9;
-  --hilo-amber: #f7a800;
-  --hilo-amber-soft: #fff3d9;
-  --hilo-green: #21bf73;
-  --hilo-green-soft: #e2f6ec;
-  --hilo-blue: #4c8dff;
-  --hilo-blue-soft: #e7f0ff;
-  --hilo-shadow: 0 1px 2px rgb(30 36 54 / 4%), 0 5px 16px rgb(30 36 54 / 4.5%);
+  /* Copiados de `src/lib/brand.ts`. No editar acá sin editar allá: el test los
+     compara y falla si dejan de coincidir. */
+  --brand-violet: #7161ea;
+  --brand-violet-soft: #f1effd;
+  --brand-violet-whisper: #f9f9fe;
+  --brand-celeste: #d1e1f8;
+  --brand-bordo: #551c1a;
+  --brand-bordo-soft: #f4eae9;
+  --brand-teal: #12b5a5;
+  --brand-teal-soft: #e2f7f4;
+  --brand-coral: #ff6b6b;
+  --brand-coral-soft: #ffe9e9;
+  --brand-amber: #f7a800;
+  --brand-amber-soft: #fff3d9;
+  --brand-green: #21bf73;
+  --brand-green-soft: #e2f6ec;
+  --brand-blue: #4c8dff;
+  --brand-blue-soft: #e7f0ff;
+  /* Los dos extremos del degradé de entrada, de la barra lateral y del
+     encabezado de los mails. También en `brand.ts`, porque un cliente de correo
+     no evalúa `color-mix` ni lee variables CSS. */
+  --brand-violet-dark: #5f50d7;
+  --brand-violet-light: #8273f3;
 
-  /* shadcn's semantic tokens, mapped onto the Hilo palette. Components use
+  --brand-shadow: 0 1px 2px rgb(30 36 54 / 4%), 0 5px 16px rgb(30 36 54 / 4.5%);
+
+  /* shadcn's semantic tokens, mapped onto the Ombúa palette. Components use
      these names, so overriding them here is what makes every shadcn component
-     arrive already looking like Hilo. */
+     arrive already looking like Ombúa. */
   --background: #f5f6fb;
   --foreground: #1e2436;
   --card: #ffffff;
   --card-foreground: #1e2436;
   --popover: #ffffff;
   --popover-foreground: #1e2436;
-  --primary: var(--hilo-violet);
+  --primary: var(--brand-violet);
   --primary-foreground: #ffffff;
-  --secondary: var(--hilo-violet-soft);
-  --secondary-foreground: var(--hilo-violet);
+  --secondary: var(--brand-violet-soft);
+  --secondary-foreground: var(--brand-violet);
   --muted: #f1f2f8;
   --muted-foreground: #7a839a;
-  --accent: var(--hilo-violet-soft);
-  --accent-foreground: var(--hilo-violet);
-  --destructive: var(--hilo-coral);
+  --accent: var(--brand-violet-soft);
+  --accent-foreground: var(--brand-violet);
+  --destructive: var(--brand-coral);
   --border: #eceef5;
   --input: #eceef5;
-  --ring: var(--hilo-violet);
-  --chart-1: var(--hilo-violet);
-  --chart-2: var(--hilo-teal);
-  --chart-3: var(--hilo-blue);
-  --chart-4: var(--hilo-amber);
-  --chart-5: var(--hilo-green);
+  --ring: var(--brand-violet);
+  --chart-1: var(--brand-violet);
+  --chart-2: var(--brand-teal);
+  --chart-3: var(--brand-blue);
+  --chart-4: var(--brand-amber);
+  --chart-5: var(--brand-green);
   --radius: 18px;
-  --sidebar: var(--hilo-violet);
-  --sidebar-foreground: #e9e6ff;
+  --sidebar: var(--brand-violet);
+  /* El celeste de la marca, aclarado.
+     El celeste puro sobre el violeta da 3.5:1, por debajo del 3.8:1 que tenía
+     el lila de antes, y esto es texto de menú que se lee todo el día. El
+     logotipo de arriba sí usa el celeste tal cual: es un gráfico grande y a ese
+     tamaño 4.4:1 alcanza de sobra. */
+  --sidebar-foreground: color-mix(in oklab, var(--brand-celeste), white 40%);
   --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: var(--hilo-violet);
+  --sidebar-primary-foreground: var(--brand-violet);
   --sidebar-accent: #ffffff;
-  --sidebar-accent-foreground: var(--hilo-violet);
+  --sidebar-accent-foreground: var(--brand-violet);
   --sidebar-border: rgb(255 255 255 / 12%);
   --sidebar-ring: #ffffff;
 }
 
-/* Hilo has no dark theme yet — v1 never had one and nobody has designed it.
+/* Ombúa has no dark theme yet — v1 never had one and nobody has designed it.
    These are shadcn's neutral defaults, left in place so components do not break
-   if `.dark` is ever applied. Do not treat them as the Hilo dark palette; if a
+   if `.dark` is ever applied. Do not treat them as the Ombúa dark palette; if a
    dark mode is wanted, it needs designing, not inverting. */
 .dark {
   --background: oklch(0.145 0 0);
@@ -195,10 +219,19 @@
 
 /* The sign-in screen's background. Ported from legacy/index.html:503 — it is
    the only non-white surface in the product and the first thing anyone sees. */
-.hilo-auth-bg {
+.app-auth-bg {
   background:
-    radial-gradient(900px 500px at 18% -10%, rgb(169 77 240 / 90%), transparent 60%),
-    linear-gradient(140deg, #5a4bd4, #6c5ce7 55%, #7d6ef0);
+    radial-gradient(
+      900px 500px at 18% -10%,
+      color-mix(in oklab, var(--brand-violet), #d94df0 50%) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      140deg,
+      var(--brand-violet-dark),
+      var(--brand-violet) 55%,
+      var(--brand-violet-light)
+    );
 }
 
 /* The progress slider on a goal.
@@ -207,14 +240,14 @@
    with six different track colours — one of them nearly black. Painting the fill
    as a gradient and the thumb by hand is the only way to get one consistent
    control. */
-.hilo-range {
+.app-range {
   appearance: none;
   height: 8px;
   border-radius: 999px;
   outline: none;
 }
 
-.hilo-range::-webkit-slider-thumb {
+.app-range::-webkit-slider-thumb {
   appearance: none;
   width: 18px;
   height: 18px;
@@ -225,7 +258,7 @@
   cursor: pointer;
 }
 
-.hilo-range::-moz-range-thumb {
+.app-range::-moz-range-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -235,7 +268,7 @@
   cursor: pointer;
 }
 
-.hilo-range:focus-visible {
+.app-range:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--range-color), transparent 70%);
 }
 
@@ -255,7 +288,7 @@
     background: #fff;
   }
 
-  .hilo-doc {
+  .app-doc {
     max-width: none;
     box-shadow: none;
     padding: 0;

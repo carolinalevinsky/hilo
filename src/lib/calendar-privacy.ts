@@ -6,11 +6,11 @@ import { firstName } from '@/lib/whatsapp'
  * Un evento de calendario es un lugar raro: lo mira la profesional en el celular
  * en la calle, aparece en la pantalla compartida de una reunión, lo lee quien
  * tenga el calendario compartido, y vive en un servidor de otra empresa en otro
- * país. Nada de eso lo controla Hilo.
+ * país. Nada de eso lo controla Ombúa.
  *
  * Por eso el título del evento es una decisión y no un descuido, y por eso
  * arranca en lo más reservado. Ninguna de las tres opciones manda la nota
- * clínica, el motivo de consulta ni los objetivos: eso no sale de Hilo por este
+ * clínica, el motivo de consulta ni los objetivos: eso no sale de Ombúa por este
  * camino bajo ninguna configuración.
  */
 export const CALENDAR_PRIVACY = ['busy', 'initials', 'first_name'] as const

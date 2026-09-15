@@ -50,7 +50,7 @@ export function SignUpForm() {
     setAttempt((count) => count + 1)
   }
 
-  // Only reachable with email confirmation on: with it off — how Hilo runs today
+  // Only reachable with email confirmation on: with it off — how Ombúa runs today
   // — a successful sign-up redirects and this component never re-renders. It
   // exists so that turning confirmation on is a switch in Supabase and nothing
   // else, instead of a sign-up that appears to fail.
