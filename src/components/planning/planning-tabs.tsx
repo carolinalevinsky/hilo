@@ -38,7 +38,15 @@ export function PlanningTabs() {
   const pathname = usePathname()
 
   return (
-    <div role="tablist" className="mb-4 flex flex-wrap gap-2.5">
+    // One control with three positions, not three loose pills. v1 drew these as
+    // a `.seg` of separate bordered buttons (`legacy/index.html:609`); the track
+    // around them is the one addition, and it is what says the three are views of
+    // the same place rather than three destinations that happen to sit in a row.
+    // The selected one keeps v1's violet.
+    <div
+      role="tablist"
+      className="no-print mb-4 inline-flex max-w-full flex-wrap gap-1 rounded-xl border border-border bg-muted p-1"
+    >
       {TABS.map((tab) => {
         const active = tab.exact
           ? pathname === tab.href
@@ -50,10 +58,10 @@ export function PlanningTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'rounded-full border px-4 py-2.5 text-body font-bold transition-colors',
+              'rounded-lg px-4 py-2 text-body font-bold transition-colors',
               active
-                ? 'border-violet bg-violet-soft text-violet'
-                : 'border-border bg-card text-foreground hover:bg-muted',
+                ? 'bg-card text-violet shadow-card'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {tab.label}

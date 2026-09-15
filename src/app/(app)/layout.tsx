@@ -42,7 +42,10 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     // The assistant panel is opened from two places — the sidebar on a desktop,
     // the bottom bar on a phone — so the provider sits above both.
     <AskHiloProvider>
-      <div className="grid min-h-dvh lg:grid-cols-[236px_minmax(0,1fr)]">
+      {/* `print:block`: the print stylesheet hides the sidebar, and a hidden grid
+          item leaves its column behind — the page landed in the 236 px one and
+          every printed document came out as a strip down the left edge. */}
+      <div className="grid min-h-dvh print:block lg:grid-cols-[236px_minmax(0,1fr)]">
         <Sidebar
           fullName={practitioner.full_name}
           disciplineLabel={disciplineLabel(practitioner.discipline)}

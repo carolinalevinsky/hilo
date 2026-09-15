@@ -1,35 +1,21 @@
-import {
-  BookOpen,
-  ClipboardList,
-  type LucideIcon,
-  Plus,
-  Sparkles,
-  Target,
-  User,
-} from '@/components/icons'
+import { ClipboardList } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import {
-  addActivityToPlanAction,
-  addGoalToPlanAction,
-  addMaterialToPlanAction,
-  clearPlanAction,
-  removePlanItemAction,
-} from '@/app/(app)/planificacion/actions'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
-import { PatientAvatar } from '@/components/patients/patient-avatar'
-import { MaterialSearch } from '@/components/materials/material-search'
-import { PlanSessionPicker } from '@/components/planning/plan-controls'
+import { CustomActivity } from '@/components/planning/custom-activity'
+import { GoalSuggestions } from '@/components/planning/goal-suggestions'
+import { LibraryPicker } from '@/components/planning/library-picker'
 import { PlanningTabs } from '@/components/planning/planning-tabs'
-import { PrintButton } from '@/components/print-button'
+import { SessionContextCard } from '@/components/planning/session-context-card'
+import { SessionPlanCard } from '@/components/planning/session-plan-card'
+import { StepHeading } from '@/components/planning/step-heading'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { ageLabel } from '@/lib/age'
+import { Card } from '@/components/ui/card'
 import { formatLongDate, today, toDateInput, todayDate } from '@/lib/dates'
-import { ageGroupLabel } from '@/lib/patient-labels'
 import { formatTime } from '@/lib/week'
+import { firstName } from '@/lib/whatsapp'
 import {
   getAppointment,
   listAppointments,
@@ -59,6 +45,20 @@ export const metadata: Metadata = { title: 'Planificar sesión' }
  * **session**, not a patient. The screen opens on the soonest one and says when
  * it is; what you assemble is what "Plan de la semana" shows for that session in
  * the Agenda, and what registering it starts from.
+ *
+ * ─── Why the screen is numbered ────────────────────────────────────────────
+ *
+ * Four cards of equal weight, each a different kind of thing, and nothing said
+ * which to touch first — so the screen read as a dashboard when it is a task.
+ * It is three steps: choose the session, fill it, look at what came out and save
+ * it. The panels did not change; the order they are announced in did, and the
+ * two columns say plainly that everything on the left flows into the one on the
+ * right.
+ *
+ * The page stays a Server Component and every write is a Server Action, as
+ * before. Each step is its own component in `src/components/planning/` — this
+ * file had grown to six hundred lines of JSX, in which the data loading above
+ * was impossible to find.
  */
 
 /** How far ahead the session picker looks: a month of planning. */
@@ -164,275 +164,69 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
     .filter((row) => !upcoming.some((appointment) => appointment.patient_id === row.id))
     .map((row) => ({ id: row.id, label: row.full_name }))
 
-  const inPlan = new Set(items.map((item) => item.material?.id).filter(Boolean))
-  const firstName = patient.full_name.split(' ')[0]
-  const age = ageLabel(patient.date_of_birth)
-  const average = averageProgress(suggestions.map((goal) => ({ progress: goal.progress })))
+  // Every form on this screen writes into the same plan, so they all carry the
+  // same two fields.
+  const target = { patientId: patient.id, appointmentId }
+  // What is in the plan, and which row it is: the "Agregado" chip is also the
+  // way out, so every state on the left needs the id it would remove. First one
+  // wins — the same goal added twice is one state and one undo.
+  const itemOfGoal = new Map<string, string>()
+  const itemOfMaterial = new Map<string, string>()
+  for (const item of items) {
+    if (item.goalId && !itemOfGoal.has(item.goalId)) itemOfGoal.set(item.goalId, item.id)
+    if (item.material && !itemOfMaterial.has(item.material.id)) {
+      itemOfMaterial.set(item.material.id, item.id)
+    }
+  }
+  const name = firstName(patient.full_name)
 
   return (
     <>
       <PlanningHeader />
 
-      {/* Which session this is. v1 put the patient above both columns so the
-          answer to "whose session is this?" is never off-screen; now it also
-          answers "which one". */}
-      <Card className="mb-4">
-        <CardContent className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[200px] flex-1">
-            <label
-              htmlFor="plan-session"
-              className="mb-1 block text-meta font-bold text-muted-foreground"
-            >
-              Qué sesión estás preparando
-            </label>
-            <PlanSessionPicker
-              sessions={sessionOptions}
-              unscheduled={unscheduled}
-              selected={session ? `s:${session.id}` : `p:${patient.id}`}
-            />
-          </div>
-          <PatientAvatar
-            fullName={patient.full_name}
-            color={patient.color}
-            size={40}
-            photoUrl={photoUrl}
+      <SessionContextCard
+        patient={patient}
+        photoUrl={photoUrl}
+        sessions={sessionOptions}
+        unscheduled={unscheduled}
+        selected={session ? `s:${session.id}` : `p:${patient.id}`}
+        averageProgress={
+          suggestions.length > 0
+            ? averageProgress(suggestions.map((goal) => ({ progress: goal.progress })))
+            : null
+        }
+      />
+
+      {/* `items-start`: see the same note in `estadisticas/page.tsx`. The plan is
+          short and the sources beside it are long, so a stretched column left a
+          third of a screen of empty card. */}
+      <div className="grid items-start gap-4 print:block lg:grid-cols-12 lg:gap-6">
+        {/* Everything something can come from. `no-print`, with the session card
+            above it: what gets printed is the plan, not the workbench that
+            produced it. */}
+        <div className="no-print lg:col-span-7">
+          <StepHeading
+            step={2}
+            title="Elegí qué va a pasar en la sesión"
+            hint={`Objetivos de ${name}, materiales de tu biblioteca, o algo tuyo. Todo lo que sumes cae en el plan.`}
           />
 
-          <p className="w-full text-meta text-muted-foreground">
-            {[age, ageGroupLabel(patient.age_group), `avance general ${average}%`]
-              .filter(Boolean)
-              .join(' · ')}
-            . Armá acá lo que vas a hacer en esa sesión: queda guardado, lo ves en la Agenda
-            y en la ficha, y cuando la registres arrancás de ahí.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* `items-start`: see the same note in `estadisticas/page.tsx`. The session
-          card is short and the suggestions beside it are long, so the stretched
-          column left a third of a screen of empty card.
-
-          Below `lg` the two columns stack and the order flips — see the note on
-          the plan card itself. */}
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <div className="space-y-4">
-          <Card>
-            <CardContent>
-              <PanelTitle icon={Sparkles}>Sugerencias de Hilo</PanelTitle>
-
-              {suggestions.length === 0 ? (
-                <p className="text-body text-muted-foreground">
-                  {firstName} todavía no tiene objetivos activos.{' '}
-                  <Link
-                    href={`/pacientes/${patient.id}`}
-                    className="font-semibold text-violet underline"
-                  >
-                    Cargá el primero
-                  </Link>{' '}
-                  y Hilo arma las sugerencias.
-                </p>
-              ) : (
-                <>
-                  <p className="mb-2.5 text-meta text-muted-foreground">
-                    Según los objetivos de {firstName}, Hilo prioriza los que menos se
-                    movieron:
-                  </p>
-
-                  <ul className="space-y-2">
-                    {suggestions.map((goal) => {
-                      const [best, ...others] = goal.materials
-
-                      return (
-                        <li
-                          key={goal.goalId}
-                          className="flex items-start gap-2.5 rounded-xl bg-muted/60 p-2.5"
-                        >
-                          <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-violet-soft text-violet">
-                            <Target className="size-[18px]" />
-                          </span>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-body font-bold">
-                                {goal.title}{' '}
-                                <span className="font-normal text-muted-foreground">
-                                  ({goal.progress}%)
-                                </span>
-                              </p>
-
-                              {/* One button per goal, and it adds exactly what the
-                                  line under it says. There used to be an
-                                  "Agregar" here and a "Con este" on each of three
-                                  materials — sixteen buttons for four goals, two
-                                  of them doing nearly the same thing. */}
-                              <form action={addGoalToPlanAction} className="shrink-0">
-                                <PlanFields patientId={patient.id} appointmentId={appointmentId} />
-                                <input type="hidden" name="goalId" value={goal.goalId} />
-                                {best ? (
-                                  <input type="hidden" name="materialId" value={best.id} />
-                                ) : null}
-                                <Button
-                                  type="submit"
-                                  size="sm"
-                                  variant={goal.added ? 'outline' : 'default'}
-                                  disabled={goal.added}
-                                >
-                                  {goal.added ? 'Agregado' : 'Agregar'}
-                                </Button>
-                              </form>
-                            </div>
-
-                            <p className="mt-0.5 text-meta text-muted-foreground">
-                              {goal.activity}
-                              {best ? (
-                                <>
-                                  {' · con '}
-                                  <Link
-                                    href={`/materiales/${best.id}`}
-                                    className="font-semibold text-foreground hover:underline"
-                                  >
-                                    {best.title}
-                                  </Link>
-                                </>
-                              ) : null}
-                            </p>
-
-                            {/* The other two stay a click away: a choice, not a
-                                wall. Each opens — the title is a link — so you can
-                                read what it is before deciding. */}
-                            {others.length > 0 && !goal.added ? (
-                              <details className="mt-1.5">
-                                <summary className="cursor-pointer text-micro font-semibold text-violet">
-                                  Otros materiales para este objetivo ({others.length})
-                                </summary>
-                                <ul className="mt-1.5 space-y-1">
-                                  {others.map((material) => (
-                                    <li
-                                      key={material.id}
-                                      className="flex items-center gap-2 rounded-lg bg-card px-2 py-1.5"
-                                    >
-                                      <Link
-                                        href={`/materiales/${material.id}`}
-                                        className="min-w-0 flex-1 hover:underline"
-                                      >
-                                        <span className="block truncate text-meta font-bold">
-                                          {material.title}
-                                        </span>
-                                        <span className="block truncate text-micro text-muted-foreground">
-                                          {[material.area, material.focus]
-                                            .filter(Boolean)
-                                            .join(' · ')}
-                                        </span>
-                                      </Link>
-
-                                      <form action={addGoalToPlanAction} className="shrink-0">
-                                        <PlanFields
-                                          patientId={patient.id}
-                                          appointmentId={appointmentId}
-                                        />
-                                        <input type="hidden" name="goalId" value={goal.goalId} />
-                                        <input
-                                          type="hidden"
-                                          name="materialId"
-                                          value={material.id}
-                                        />
-                                        <Button
-                                          type="submit"
-                                          size="sm"
-                                          variant="outline"
-                                          disabled={inPlan.has(material.id)}
-                                        >
-                                          Agregar con este
-                                        </Button>
-                                      </form>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </details>
-                            ) : null}
-
-                            {goal.materials.length === 0 ? (
-                              <p className="mt-1.5 text-micro text-muted-foreground">
-                                No encontré materiales para este objetivo. Buscá abajo o
-                                agregá una actividad tuya.
-                              </p>
-                            ) : null}
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent>
-              <PanelTitle icon={BookOpen} hint="de la biblioteca">
-                Buscar material
-              </PanelTitle>
-
-              {/* On a phone the two side by side leave the box too narrow to
-                  read what you typed, so the link drops underneath. */}
-              <div className="flex flex-wrap gap-2">
-                <div className="min-w-[180px] flex-1">
-                  <MaterialSearch initial={search} />
-                </div>
-                <Button asChild variant="outline" className="max-sm:w-full">
-                  <Link href="/materiales">Ir a la biblioteca</Link>
-                </Button>
-              </div>
-
-              <div className="mt-3">
-                {!search ? (
-                  <p className="text-meta text-muted-foreground">
-                    Escribí para buscar en la biblioteca, por área, objetivo o título.
-                  </p>
-                ) : results.length === 0 ? (
-                  <p className="text-meta text-muted-foreground">
-                    Sin resultados. Probá otra palabra, o generá uno con IA desde
-                    Materiales.
-                  </p>
-                ) : (
-                  <ul className="space-y-2">
-                    {/* Ten, as in v1: this is a picker inside a column, not the
-                        library — the library is one click away. */}
-                    {results.slice(0, 10).map((material) => (
-                      <li
-                        key={material.id}
-                        className="flex items-center gap-2.5 rounded-xl border border-border p-2.5"
-                      >
-                        <span className="shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
-                          {material.area}
-                        </span>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-body font-bold">{material.title}</p>
-                          <p className="truncate text-micro text-muted-foreground">
-                            {[material.focus, material.age_range].filter(Boolean).join(' · ')}
-                          </p>
-                        </div>
-
-                        <form action={addMaterialToPlanAction}>
-                          <PlanFields patientId={patient.id} appointmentId={appointmentId} />
-                          <input type="hidden" name="materialId" value={material.id} />
-                          <Button
-                            type="submit"
-                            size="sm"
-                            variant={inPlan.has(material.id) ? 'outline' : 'default'}
-                            disabled={inPlan.has(material.id)}
-                          >
-                            {inPlan.has(material.id) ? 'Agregado' : 'Agregar'}
-                          </Button>
-                        </form>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <GoalSuggestions
+              target={target}
+              firstName={name}
+              suggestions={suggestions}
+              itemOfGoal={itemOfGoal}
+              itemOfMaterial={itemOfMaterial}
+            />
+            <LibraryPicker
+              target={target}
+              search={search}
+              results={results}
+              inPlan={itemOfMaterial}
+            />
+            <CustomActivity target={target} />
+          </div>
         </div>
 
         {/* `max-lg:order-first`: on a phone this used to be last, and last is
@@ -443,172 +237,33 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
             from: they were saved, and invisible.
 
             You are assembling a list. The list goes where you can see it, and
-            the things you add to it go underneath. */}
-        <Card className="hilo-doc h-fit max-lg:order-first">
-          <CardContent>
-            <PanelTitle icon={ClipboardList} hint={String(items.length)}>
-              Sesión de {firstName}
-            </PanelTitle>
+            the things you add to it go underneath — which is also why it sticks
+            on a desktop: the sources scroll, the plan stays. */}
+        <div className="max-lg:order-first print:w-full lg:sticky lg:top-6 lg:col-span-5">
+          <div className="no-print">
+            <StepHeading
+              step={3}
+              tone="violet"
+              title="Revisá el plan y guardalo"
+              hint="Es lo que vas a tener a mano cuando la atiendas."
+            />
+          </div>
 
-            {/* When, right under the name. "Próxima sesión de Tomás" never said,
-                and a plan without a date is a list you cannot place. */}
-            <p className="-mt-1.5 mb-3 text-meta font-semibold">
-              {session
-                ? whenLabel(session)
-                : 'Sin sesión agendada todavía: lo que prepares queda para la próxima que agendes.'}
-            </p>
-
-            {items.length === 0 ? (
-              <p className="text-meta text-muted-foreground">
-                Todavía no agregaste nada. Sumá desde las sugerencias, buscá un material, o
-                escribí abajo una actividad tuya.
-              </p>
-            ) : (
-              <ol className="space-y-2">
-                {items.map((item, index) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center gap-2.5 rounded-xl bg-muted/60 p-2.5"
-                  >
-                    <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-teal-soft text-body font-extrabold text-[#12706a]">
-                      {index + 1}
-                    </span>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-item font-bold">
-                        {item.title ?? item.material?.title ?? 'Actividad'}
-                      </p>
-                      <p className="text-meta text-muted-foreground">
-                        {item.title && item.material
-                          ? `Material: ${item.material.title}`
-                          : item.material
-                            ? [item.material.area, item.material.focus]
-                                .filter(Boolean)
-                                .join(' · ')
-                            : 'Actividad'}
-                      </p>
-                    </div>
-
-                    <form action={removePlanItemAction} className="no-print">
-                      <input type="hidden" name="itemId" value={item.id} />
-                      <Button type="submit" size="sm" variant="ghost">
-                        Quitar
-                      </Button>
-                    </form>
-                  </li>
-                ))}
-              </ol>
-            )}
-
-            {/* Anything, in your own words. Not everything that goes into a
-                session is a goal or a library material, and until this existed
-                the planner could only assemble the parts Hilo already knew
-                about. */}
-            <form
-              action={addActivityToPlanAction}
-              className="no-print mt-3 flex flex-wrap gap-2"
-            >
-              <PlanFields patientId={patient.id} appointmentId={appointmentId} />
-              <input
-                name="activity"
-                required
-                maxLength={200}
-                placeholder="Ej: juego de la oca con sílabas"
-                aria-label="Agregar una actividad tuya"
-                className="h-9 min-w-[180px] flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              />
-              <Button type="submit" size="sm" variant="outline">
-                <Plus className="size-4" />
-                Sumar
-              </Button>
-            </form>
-
-            {/* "Registrar esta sesión" and "Imprimir" used to be here with an
-                empty plan too, which offers to register a session that has
-                nothing in it and to print a blank page. Both belong to a plan
-                that exists. */}
-            {/* "Guardar planificación" is the end of the task, not the moment
-                the rows are written — those went in as you added them. Planning
-                is something you finish, and a screen with no way to finish it
-                leaves you looking for the button that says you are done. So the
-                button exists and it is honest about what it does: it closes the
-                plan and takes you to the list of what you have ready.
-
-                "Registrar ahora" stays beside it for the Tuesday when you are
-                planning with the child already in the room. It carries the
-                session, so the record is tied to it and uses this plan. */}
-            <div className="no-print mt-3.5 flex flex-wrap gap-2">
-              {items.length > 0 ? (
-                <>
-                  <Button asChild>
-                    <Link href="/planificacion/proximas">Guardar planificación</Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link
-                      href={
-                        session
-                          ? `/pacientes/${patient.id}/sesiones/nueva?agenda=${session.id}`
-                          : `/pacientes/${patient.id}/sesiones/nueva?plan=1`
-                      }
-                    >
-                      Registrar ahora
-                    </Link>
-                  </Button>
-                  <PrintButton label="Imprimir" size="default" />
-                  <form action={clearPlanAction}>
-                    <PlanFields patientId={patient.id} appointmentId={appointmentId} />
-                    <Button type="submit" variant="ghost">
-                      Vaciar
-                    </Button>
-                  </form>
-                </>
-              ) : (
-                <Button asChild variant="outline">
-                  <Link href={`/pacientes/${patient.id}`}>
-                    <User className="size-[15px]" />
-                    Ver ficha de {firstName}
-                  </Link>
-                </Button>
-              )}
-            </div>
-
-            {items.length > 0 ? (
-              <p className="no-print mt-2.5 text-meta text-muted-foreground">
-                Se va guardando a medida que agregás, así que no hay nada que perder si
-                cerrás. Lo vas a ver en la Agenda, en <b>Planes preparados</b> y en la
-                ficha de {firstName}, y cuando registres la sesión arrancás de acá.
-              </p>
-            ) : null}
-          </CardContent>
-        </Card>
+          <SessionPlanCard
+            target={target}
+            patientName={patient.full_name}
+            when={session ? whenLabel(session) : null}
+            items={items}
+          />
+        </div>
       </div>
-    </>
-  )
-}
-
-/**
- * Who and which session every write on this screen is for. The session travels
- * empty for a patient with nothing scheduled; the server reads that as "their
- * next one, whenever it is".
- */
-function PlanFields({
-  patientId,
-  appointmentId,
-}: {
-  patientId: string
-  appointmentId: string | null
-}) {
-  return (
-    <>
-      <input type="hidden" name="patientId" value={patientId} />
-      <input type="hidden" name="appointmentId" value={appointmentId ?? ''} />
     </>
   )
 }
 
 function PlanningHeader() {
   return (
-    <>
+    <div className="no-print">
       {/* Same title and subtitle as /materiales: to a practitioner these are one
           screen with two tabs, as they were in v1. */}
       <PageHeader
@@ -616,24 +271,6 @@ function PlanningHeader() {
         subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
       />
       <PlanningTabs />
-    </>
-  )
-}
-
-function PanelTitle({
-  icon: Icon,
-  hint,
-  children,
-}: {
-  icon: LucideIcon
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <h2 className="mb-3 flex items-center gap-2 text-item font-extrabold">
-      <Icon className="size-[18px] text-violet" />
-      {children}
-      {hint ? <span className="font-normal text-muted-foreground">{hint}</span> : null}
-    </h2>
+    </div>
   )
 }

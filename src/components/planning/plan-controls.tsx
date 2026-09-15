@@ -1,6 +1,7 @@
 'use client'
 
 import { useUrlState } from '@/components/use-url-state'
+import { cn } from '@/lib/utils'
 
 /**
  * The control on the planner that changes what the server queries: which
@@ -25,11 +26,14 @@ export function PlanSessionPicker({
   sessions,
   unscheduled,
   selected,
+  className,
 }: {
   sessions: Option[]
   unscheduled: Option[]
   /** `s:<appointment id>` or `p:<patient id>`, as the server resolved it. */
   selected: string
+  /** Room for the patient's photo inside the field, on the planner. */
+  className?: string
 }) {
   const { params, set } = useUrlState()
 
@@ -60,7 +64,7 @@ export function PlanSessionPicker({
             : { paciente: id, sesion: '', q: '' },
         )
       }}
-      className={SELECT_CLASSES}
+      className={cn(SELECT_CLASSES, className)}
     >
       {sessions.length > 0 ? (
         <optgroup label="Próximas sesiones">
