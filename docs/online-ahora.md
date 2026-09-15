@@ -144,8 +144,10 @@ verificaciones:
 
 ## 6. El dominio
 
-El dominio de Ombúa es **`ombua.com`**. Aparece como ejemplo en `launch.md`, en
-`.env.example` y en un comentario de `booking-link.tsx`.
+El dominio de Ombúa es **`ombua.com`**, y la app vive en **`app.ombua.com`** —
+el subdominio, no el apex. Los dos aparecen como ejemplo y no son lo mismo: los
+links de reserva y los de los mails salen de `app.ombua.com`, mientras que las
+direcciones de correo (`hola@ombua.com`) van en el apex.
 
 Hasta que esté apuntado, la URL de Vercel funciona perfecto — es una dirección
 real, con HTTPS, y no vence. Que el dominio exista no cambia nada por sí solo:

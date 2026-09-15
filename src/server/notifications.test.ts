@@ -47,7 +47,7 @@ describe('sendBookingNotification', () => {
       to: 'lucia@ombua.test',
       practitionerName: 'Lucía Fernández',
       request,
-      appUrl: 'https://ombua.com',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent).toHaveLength(1)
@@ -56,7 +56,7 @@ describe('sendBookingNotification', () => {
     expect(sent[0]?.html).toContain('Hola Lucía,')
     expect(sent[0]?.html).toContain('099 123 456')
     expect(sent[0]?.html).toContain('Lunes 09:00')
-    expect(sent[0]?.html).toContain('https://ombua.com/reservas')
+    expect(sent[0]?.html).toContain('https://app.ombua.com/reservas')
   })
 
   it('says the date the family asked for, when there is one (P7)', async () => {
@@ -69,7 +69,7 @@ describe('sendBookingNotification', () => {
         preferred_date: '2026-09-17',
         preferred_time: '14:15:00',
       },
-      appUrl: 'https://ombua.com',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).toContain('17 de setiembre')
@@ -89,7 +89,7 @@ describe('sendBookingNotification', () => {
         name: '<script>alert(1)</script>',
         note: 'Hola & "chau" <b>',
       },
-      appUrl: 'https://ombua.com',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).not.toContain('<script>')
@@ -102,7 +102,7 @@ describe('sendBookingNotification', () => {
       to: 'lucia@ombua.test',
       practitionerName: 'Lucía Fernández',
       request: { ...request, preferred_weekday: null, preferred_time: null, note: null },
-      appUrl: 'https://ombua.com',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).not.toContain('Turno pedido')
@@ -124,14 +124,14 @@ describe('sendDigest', () => {
         patientsWithBalance: 3,
         outstandingTotal: 4500,
       },
-      appUrl: 'https://ombua.com',
+      appUrl: 'https://app.ombua.com',
     })
 
     const html = sent[0]?.html ?? ''
 
     expect(html).toContain('12')
     expect(html).toContain('3 · $ 4.500')
-    expect(html).toContain('https://ombua.com/inicio')
+    expect(html).toContain('https://app.ombua.com/inicio')
 
     // Nothing that names a patient or describes their treatment.
     for (const forbidden of ['Tomás', 'Malena', 'objetivo', 'sesión con', 'evolución']) {
@@ -149,7 +149,7 @@ describe('sendDigest', () => {
         patientsWithBalance: 0,
         outstandingTotal: 0,
       },
-      appUrl: 'https://ombua.com',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).not.toContain('Reservas sin confirmar')
