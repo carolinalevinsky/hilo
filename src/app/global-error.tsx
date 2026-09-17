@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 
+import { BRAND_COLORS } from '@/lib/brand'
+
 /**
  * The last boundary. It only runs when the root layout itself threw, so by the
  * time it renders there is no root layout — this file supplies its own `<html>`
@@ -71,12 +73,12 @@ export default function GlobalError({
               height: '64px',
               margin: '0 auto 14px',
               borderRadius: '18px',
-              background: '#efeaff',
+              background: BRAND_COLORS.violetSoft,
             }}
           />
 
           <h1 style={{ margin: '0 0 6px', fontSize: '19px', fontWeight: 800 }}>
-            Hilo no pudo abrir
+            Ombúa no pudo abrir
           </h1>
 
           <p
@@ -107,7 +109,7 @@ export default function GlobalError({
                 border: 0,
                 borderRadius: '12px',
                 padding: '10px 16px',
-                background: '#6c5ce7',
+                background: BRAND_COLORS.violet,
                 color: '#ffffff',
                 fontSize: '14px',
                 fontWeight: 600,

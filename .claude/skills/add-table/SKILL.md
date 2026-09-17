@@ -1,9 +1,9 @@
 ---
 name: add-table
-description: Add or change a table in Hilo's database — migration, RLS policy, reset, regenerate types. Use for any schema change.
+description: Add or change a table in Ombúa's database — migration, RLS policy, reset, regenerate types. Use for any schema change.
 ---
 
-# Changing Hilo's database
+# Changing Ombúa's database
 
 Always in this order. Skipping a step produces a database that does not match
 its own history.

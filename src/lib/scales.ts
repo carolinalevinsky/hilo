@@ -12,7 +12,7 @@
  * checked the source. Both are free to reproduce and use (Pfizer, the copyright
  * holder, requires no permission).
  *
- * Until every text below is filled in, `scaleIsReady` is false and Hilo does
+ * Until every text below is filled in, `scaleIsReady` is false and Ombúa does
  * not offer to send that scale. A questionnaire with a placeholder where a
  * question should be must never reach a patient.
  *

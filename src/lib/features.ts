@@ -10,8 +10,8 @@
  * **El código se queda.** Sacarlo significaría escribirlo de nuevo el día que
  * vuelva, y volver es el plan.
  *
- * `mercadoPago` — cobrar por Mercado Pago desde Hilo. Que los pagos de una
- * profesional dependan de que Hilo funcione es un compromiso grande para asumir
+ * `mercadoPago` — cobrar por Mercado Pago desde Ombúa. Que los pagos de una
+ * profesional dependan de que Ombúa funcione es un compromiso grande para asumir
  * en una v1. Lo que sigue prendido es todo el registro: anotar pagos a mano,
  * subir comprobantes y el libro mensual de Cobros. Eso no toca plata.
  *

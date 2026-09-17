@@ -154,7 +154,7 @@ function GoalRow({
         onChange={(event) => setValue(Number(event.target.value))}
         onPointerUp={() => commit(value)}
         onKeyUp={() => commit(value)}
-        className="hilo-range mt-2 w-full cursor-pointer"
+        className="app-range mt-2 w-full cursor-pointer"
         style={
           {
             '--range-color': color,

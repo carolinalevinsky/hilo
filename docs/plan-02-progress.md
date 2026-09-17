@@ -148,11 +148,11 @@ assistant).
 | `src/server/statistics.ts` | All the numbers, computed. Nothing stored. |
 | `src/server/planning.ts` | Next 7 days, each with its lowest-progress goal and a matching material. |
 | `src/server/digest.ts` | **Defect #12.** Bounded, rotating, and it throws rather than reading a failed query as a quiet fortnight. |
-| `src/server/assistant.ts` | "Preguntale a Hilo": context, prompt, and v1's offline `chatReply` kept as the fallback. |
+| `src/server/assistant.ts` | "Preguntale a Ombúa": context, prompt, and v1's offline `chatReply` kept as the fallback. |
 | `src/app/api/digest/route.ts`, `vercel.json` | The cron, 11:00 on the 1st and the 15th. |
 | `src/app/api/ai/asistente/route.ts` | Session, quota, pinned model, streamed — and the quota is *released* when the model produced nothing. |
 | `src/app/(app)/materiales/`, `estadisticas/`, `planificacion/` | The three screens. |
-| `src/components/assistant/ask-hilo.tsx` | The card on `/inicio`. |
+| `src/components/assistant/ask.tsx` | The card on `/inicio`. |
 | `eslint.config.mjs` | `src/server/digest.ts` is the fifth `SERVICE_DB_ALLOWED` entry — **a cron run has no user session.** |
 
 Tests added: `digest.test.ts` (29), `assistant.test.ts` (13), the `materials`
@@ -213,7 +213,7 @@ patient whose id is not a UUID, which makes Postgres throw for real.
 **The proxy matcher must keep excluding `robots.txt` and
 `manifest.webmanifest`.** They are generated routes, so the file-extension rule
 does not catch them, and without the exclusion a signed-out request for either
-gets an HTML redirect to `/entrar` — the manifest one silently makes Hilo
+gets an HTML redirect to `/entrar` — the manifest one silently makes Ombúa
 uninstallable.
 
 **`/reservar/<slug>` is disallowed in `robots.ts` on purpose.** Public by design
@@ -252,7 +252,7 @@ of it was visible from a test, because every piece that *did* exist was correct.
 | `src/app/(auth)/recovery-cookie.ts` | The marker itself, and why a session alone is not enough. |
 | `src/app/(auth)/notices.ts` | The codes `/entrar?aviso=` accepts, so no wording travels in a URL. |
 | `src/lib/safe-path.ts` | One guard for `?next=` and `?volver=`, both of which come from an address bar. |
-| `supabase/templates/*.html` | The two emails, in Spanish, in Hilo's colours. |
+| `supabase/templates/*.html` | The two emails, in Spanish, in Ombúa's colours. |
 | `e2e/password-recovery.spec.ts`, `e2e/support/mailpit.ts` | The second end-to-end test: it reads the real email out of Mailpit and clicks the real link. |
 
 ### Decisions in here worth knowing before changing them
@@ -326,7 +326,7 @@ allowlist, RLS policy shapes, or the report/assessment flow.
 ```
 
 The dev server is already running on port 3000 in a container. Sign in as
-`lucia@hilo.test` / `hilo-de-prueba`; the practitioner's booking slug is
+`lucia@ombua.test` / `ombua-de-prueba`; the practitioner's booking slug is
 `lucia-fernandez`.
 
 `.env.local` carries a **real `ANTHROPIC_API_KEY`**, so an AI generation here

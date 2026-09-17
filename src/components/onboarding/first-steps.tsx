@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils'
  *
  * Four steps, in the order a first week goes: somebody to see, what you are
  * working on with them, when you see them, and what happened. The goal comes
- * before the session because everything that makes Hilo more than a notebook
+ * before the session because everything that makes Ombúa more than a notebook
  * hangs off a goal — the progress chart, the material the planner suggests, most
  * of what a report is built from — and because the record of the first session
  * can then say which goal it worked.
@@ -90,7 +90,7 @@ export function FirstSteps({
           </span>
         </div>
         <p className="mb-3 text-meta text-muted-foreground">
-          Cuatro pasos para empezar a usar Hilo. Se hacen acá mismo.
+          Cuatro pasos para empezar a usar Ombúa. Se hacen acá mismo.
         </p>
 
         <Step
@@ -107,7 +107,7 @@ export function FirstSteps({
           title={
             firstPatient ? `Ponele un objetivo a ${firstPatient.firstName}` : 'Ponele un objetivo'
           }
-          text="Es lo que Hilo usa para seguir el progreso, sugerirte materiales y armar los informes."
+          text="Es lo que Ombúa usa para seguir el progreso, sugerirte materiales y armar los informes."
           action={
             firstPatient ? (
               <GoalStepForm patientId={firstPatient.id} patientName={firstPatient.firstName} />
@@ -134,7 +134,7 @@ export function FirstSteps({
           text={
             todaysAppointment
               ? `Es el registro de la sesión de hoy a las ${todaysAppointment.startTime}: al guardarlo queda marcada como que vino.`
-              : 'Anotá cómo salió la sesión. Es lo que Hilo lee después para armar los informes.'
+              : 'Anotá cómo salió la sesión. Es lo que Ombúa lee después para armar los informes.'
           }
           action={
             firstPatient ? (
@@ -180,7 +180,7 @@ export function FirstSteps({
           </p>
 
           <p className="mb-2 text-meta text-muted-foreground">
-            Con lo que cargás, Hilo te arma:
+            Con lo que cargás, Ombúa te arma:
           </p>
           <ul className="grid gap-2 sm:grid-cols-3">
             <Promise icon={FileText} text="Informes para el colegio o la mutualista" />

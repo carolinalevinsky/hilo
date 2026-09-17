@@ -29,7 +29,7 @@ import type { AppointmentWithPatient } from '@/server/appointments'
  * deja de ofrecerlas para no decir lo mismo dos veces en la misma tarjeta. Ver
  * `AttendanceToggle` y la prop `hideAttendanceActions`.
  *
- * Reprogramar no está porque Hilo no sabe hacerlo: hoy se cancela y se agenda de
+ * Reprogramar no está porque Ombúa no sabe hacerlo: hoy se cancela y se agenda de
  * nuevo. Un botón que diga otra cosa sería mentira.
  */
 export function SessionPanel({

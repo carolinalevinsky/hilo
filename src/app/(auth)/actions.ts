@@ -58,7 +58,7 @@ export async function signUpAction(
 
   // With confirmation on there is no session yet, so there is nowhere to send
   // them — the form shows "revisá tu correo" instead. With it off, which is how
-  // Hilo runs today, they are already signed in.
+  // Ombúa runs today, they are already signed in.
   if (result.needsConfirmation) {
     return formOk('Te mandamos un correo para confirmar la cuenta.')
   }

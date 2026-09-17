@@ -3,11 +3,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { BookingForm } from '@/components/booking/booking-form'
-import { Brandmark } from '@/components/brandmark'
+import { Wordmark } from '@/components/brand/wordmark'
 import { disciplineLabel } from '@/lib/disciplines'
 import { practitionerBySlug } from '@/server/booking'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Pedir un turno · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Pedir un turno') }
 
 /**
  * The page a family opens from the link a practitioner sent them.
@@ -33,8 +34,7 @@ export default async function BookingPage({ params }: PageProps<'/reservar/[slug
     <div className="min-h-dvh bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-[440px]">
         <div className="mb-5 flex items-center gap-2.5">
-          <Brandmark />
-          <span className="text-[21px] font-extrabold tracking-[-0.3px]">Hilo</span>
+          <Wordmark height={28} />
         </div>
 
         <div className="rounded-lg bg-card px-6 py-6 shadow-card">
@@ -63,7 +63,7 @@ export default async function BookingPage({ params }: PageProps<'/reservar/[slug
         </div>
 
         <p className="mt-4 text-center text-micro text-muted-foreground">
-          Hecho con Hilo · tus datos se comparten sólo con {practitioner.full_name}.{' '}
+          Hecho con Ombúa · tus datos se comparten sólo con {practitioner.full_name}.{' '}
           <Link href="/privacidad" className="underline">
             Cómo los cuidamos
           </Link>

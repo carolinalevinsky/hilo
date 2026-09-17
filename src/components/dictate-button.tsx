@@ -25,7 +25,7 @@ import {
  *
  * Two ways to receive what was said, because the fields differ. A textarea is
  * uncontrolled and is written straight through `targetId` — that is every note
- * field in the app. "Preguntale a Hilo" is a controlled input, so a write to
+ * field in the app. "Preguntale a Ombúa" is a controlled input, so a write to
  * `.value` would show text React does not know about: the box would look full
  * and "Preguntar" would stay disabled. That one passes `onText` and its own
  * `value` instead.

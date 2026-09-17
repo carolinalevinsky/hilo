@@ -83,7 +83,7 @@ function isPublic(pathname: string) {
  *
  * Y esto pasa justo en el camino más común que existe: abrir el dominio pelado,
  * que es lo que hace un favorito. El token de acceso dura una hora, así que
- * siempre está vencido cuando alguien abre Hilo a la mañana.
+ * siempre está vencido cuando alguien abre Ombúa a la mañana.
  */
 function redirectKeepingSession(url: URL, carrying: NextResponse) {
   const redirect = NextResponse.redirect(url)
@@ -159,7 +159,7 @@ export const config = {
      * `public/`, so the extension rule above does not catch them — and being
      * caught here meant a signed-out request for either got an HTML redirect to
      * `/entrar`. A crawler read that instead of the disallow rules, and the
-     * browser read it instead of the manifest, so Hilo was not installable from
+     * browser read it instead of the manifest, so Ombúa was not installable from
      * the landing page. Same shape as the `/api/*` bug: a redirect turning a
      * machine-readable answer into a page for a human.
      */

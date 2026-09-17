@@ -31,8 +31,9 @@ import { countPatients } from '@/server/patients'
 import { quota, quotaWarning } from '@/server/plans'
 import { listReports } from '@/server/reports'
 import { currentSession } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Informes y evaluaciones · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Informes y evaluaciones') }
 
 export default async function DocumentsPage() {
   const { user, practitioner } = await currentSession()
@@ -79,7 +80,7 @@ export default async function DocumentsPage() {
           <EmptyState
             icon={FileText}
             title="Los informes salen de tus pacientes"
-            text="Cargá un paciente, registrá algunas sesiones y Hilo arma el informe con lo que ya tenés escrito."
+            text="Cargá un paciente, registrá algunas sesiones y Ombúa arma el informe con lo que ya tenés escrito."
             action={
               <Button asChild>
                 <Link href="/pacientes/nuevo">Cargar mi primer paciente</Link>
@@ -90,7 +91,7 @@ export default async function DocumentsPage() {
       ) : (
         <>
           {/* There used to be a violet strip here saying "Empezá por un formato:
-              elegís el paciente y Hilo arma el borrador". It was the third time
+              elegís el paciente y Ombúa arma el borrador". It was the third time
               the same instruction appeared above the fold: the page subtitle
               says where reports end up, and the card below says "Formatos
               disponibles · Tocá Crear y elegí el paciente" two centimetres
@@ -124,7 +125,7 @@ export default async function DocumentsPage() {
 
                 <FormatCard
                   title="Evaluación con instrumento"
-                  blurb="Cargás los puntajes y Hilo los interpreta y arma los objetivos"
+                  blurb="Cargás los puntajes y Ombúa los interpreta y arma los objetivos"
                   chip="Evaluación"
                   href="/evaluaciones/nueva"
                   style={FORMAT_STYLE.assessment}
@@ -188,7 +189,7 @@ export default async function DocumentsPage() {
             <Card>
               <CardHeader>
                 {/* "Cargadas" y no "generadas": una evaluación la hacés vos con
-                    el instrumento y Hilo interpreta los puntajes. Decir que la
+                    el instrumento y Ombúa interpreta los puntajes. Decir que la
                     generó él sería contar mal de quién es el trabajo. */}
                 <CardTitle>Últimas evaluaciones cargadas</CardTitle>
               </CardHeader>

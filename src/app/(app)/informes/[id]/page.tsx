@@ -21,10 +21,10 @@ import { getReport } from '@/server/reports'
 import { currentPractitioner, currentUser } from '../../session'
 
 /**
- * Sin "· Hilo", a diferencia del resto de las pantallas.
+ * Sin "· Ombúa", a diferencia del resto de las pantallas.
  *
  * Esta se imprime. El navegador pone el título de la página en el encabezado
- * del PDF y lo usa como nombre del archivo, así que el "· Hilo" que en una
+ * del PDF y lo usa como nombre del archivo, así que el "· Ombúa" que en una
  * pestaña ubica, en un informe firmado que se entrega en un colegio es la marca
  * de un proveedor metida en un documento clínico ajeno.
  */

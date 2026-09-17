@@ -1,11 +1,12 @@
 import { calendarEventTitle } from '@/lib/calendar-privacy'
 import { TIME_ZONE, zonedParts } from '@/lib/dates'
+import { GOOGLE_EVENT_MARKER } from '@/lib/storage-keys'
 
 import { getDb } from './db'
 import { connectionFor, findGoogleAccount, pullStateFor, saveSyncPoint } from './google'
 
 /**
- * Escribir en el calendario de Google lo que pasa en Hilo.
+ * Escribir en el calendario de Google lo que pasa en Ombúa.
  *
  * Aparte de `google.ts` a propósito: aquél guarda la credencial que no vence y
  * es el sexto lugar del proyecto con clave de servicio; éste sólo recibe un
@@ -16,7 +17,7 @@ import { connectionFor, findGoogleAccount, pullStateFor, saveSyncPoint } from '.
  *
  * **Que Google falle no puede impedir agendar.** Si la cuenta no está conectada,
  * si el token no sirve, si Google está caído o tarda: la sesión se guarda igual
- * en Hilo y estas funciones se van en silencio. Un consultorio no puede quedarse
+ * en Ombúa y estas funciones se van en silencio. Un consultorio no puede quedarse
  * sin poder anotar una hora porque una empresa de otro país tuvo un mal día.
  *
  * Lo que no significa perder el cambio. Una sesión que no llegó a Google queda
@@ -68,7 +69,7 @@ function endOf(date: string, time: string, minutes: number): string {
 export function eventBody(appointment: AppointmentForSync, title: string) {
   return {
     summary: title,
-    description: 'Agendado desde Hilo',
+    description: 'Agendado desde Ombúa',
     start: {
       dateTime: `${appointment.scheduled_on}T${withSeconds(appointment.start_time)}`,
       timeZone: TIME_ZONE,
@@ -83,10 +84,10 @@ export function eventBody(appointment: AppointmentForSync, title: string) {
     },
     // Para reconocer del otro lado qué eventos son nuestros. La sincronización
     // de vuelta lo necesita: sin esto no habría forma de distinguir una sesión
-    // de Hilo de un almuerzo que la profesional agendó a mano, y tocar lo que no
+    // de Ombúa de un almuerzo que la profesional agendó a mano, y tocar lo que no
     // es nuestro sería peor que no sincronizar.
     extendedProperties: {
-      private: { hilo_appointment_id: appointment.id },
+      private: { [GOOGLE_EVENT_MARKER]: appointment.id },
     },
   }
 }
@@ -198,7 +199,7 @@ export async function pushAppointment(
 
   if (!response) return false
 
-  // 404 y 410: el evento existía para Hilo y ya no del lado de Google — lo
+  // 404 y 410: el evento existía para Ombúa y ya no del lado de Google — lo
   // borraron a mano. Se limpia el id y se crea de cero, porque insistir contra
   // un evento que no está es fallar para siempre en silencio.
   if (existing && (response.status === 404 || response.status === 410)) {
@@ -238,11 +239,11 @@ export type GoogleEvent = {
 }
 
 /**
- * Trae de Google lo que cambió y lo aplica en Hilo.
+ * Trae de Google lo que cambió y lo aplica en Ombúa.
  *
  * ─── La regla, y no se negocia ─────────────────────────────────────────────
  *
- * **Borrar un evento en Google nunca borra una sesión en Hilo.** Cancela el
+ * **Borrar un evento en Google nunca borra una sesión en Ombúa.** Cancela el
  * horario y nada más. La nota clínica es lo que después lee la IA para armar un
  * informe, y es lo único de todo esto que no se puede volver a escribir. Un dedo
  * torpe en el celular, en el auto, no puede llevarse eso puesto.
@@ -251,7 +252,7 @@ export type GoogleEvent = {
  *
  * ─── Qué se toca y qué no ──────────────────────────────────────────────────
  *
- * Sólo los eventos que Hilo creó, reconocidos por la marca que se les puso al
+ * Sólo los eventos que Ombúa creó, reconocidos por la marca que se les puso al
  * escribirlos. El almuerzo, el cumpleaños y la reunión del consorcio quedan
  * donde están: tocar lo que no es nuestro sería peor que no sincronizar.
  *
@@ -379,7 +380,7 @@ async function applyEvent(
   practitionerId: string,
   event: GoogleEvent,
 ): Promise<boolean> {
-  const appointmentId = event.extendedProperties?.private?.hilo_appointment_id
+  const appointmentId = event.extendedProperties?.private?.[GOOGLE_EVENT_MARKER]
   if (!appointmentId) return false
 
   const db = await getDb()
@@ -421,11 +422,11 @@ async function applyEvent(
   //
   // Un evento borrado en Google y después restaurado vuelve por acá. Sin esto se
   // le actualizaba la fecha y la hora pero no el estado, así que la sesión
-  // existía, decía cuándo era, y seguía tachada en Hilo para siempre.
+  // existía, decía cuándo era, y seguía tachada en Ombúa para siempre.
   //
   // El `.eq('status', 'cancelled')` es lo que lo hace seguro: sólo levanta la
   // cancelación que este mismo archivo escribió. Un "vino" o un "no vino" los
-  // puso una persona en Hilo, Google no sabe nada de eso, y no se tocan. Un
+  // puso una persona en Ombúa, Google no sabe nada de eso, y no se tocan. Un
   // evento cancelado ya salió por el camino de arriba, así que llegar hasta acá
   // significa que en Google existe.
   await db
@@ -441,8 +442,8 @@ async function applyEvent(
 /**
  * Lo que ya está ocupado en el calendario de Google, para pintarlo en la Agenda.
  *
- * Es lo contrario de `pullFromGoogle`: aquél sincroniza **sólo** lo que Hilo
- * creó, y esto trae **sólo** lo que Hilo no creó. Juntos cubren el calendario
+ * Es lo contrario de `pullFromGoogle`: aquél sincroniza **sólo** lo que Ombúa
+ * creó, y esto trae **sólo** lo que Ombúa no creó. Juntos cubren el calendario
  * entero sin pisarse — un evento aparece como sesión o como bloque ocupado,
  * nunca como los dos.
  *
@@ -456,7 +457,7 @@ async function applyEvent(
  *    historia clínica, que después es lo que leen los informes y las
  *    estadísticas.
  *
- * 2. El título de un evento personal es dato de la profesional, no de Hilo.
+ * 2. El título de un evento personal es dato de la profesional, no de Ombúa.
  *    Mostrarlo en su propia pantalla es una cosa; copiarlo a la base de datos de
  *    una aplicación clínica es otra, y no hay ninguna necesidad que lo pida.
  *
@@ -567,10 +568,10 @@ export function toBusyBlocks(
   for (const event of items) {
     if (event.status === 'cancelled') continue
 
-    // Lo que Hilo escribió ya está en la grilla como sesión, con su paciente y
+    // Lo que Ombúa escribió ya está en la grilla como sesión, con su paciente y
     // su menú. Mostrarlo otra vez como bloque gris sería el mismo horario dos
     // veces.
-    if (event.extendedProperties?.private?.hilo_appointment_id) continue
+    if (event.extendedProperties?.private?.[GOOGLE_EVENT_MARKER]) continue
 
     const startIso = event.start?.dateTime
 
@@ -613,11 +614,11 @@ export function toBusyBlocks(
  *
  * Borra el evento en vez de marcarlo cancelado: un evento cancelado de Google
  * sigue ocupando su lugar en la grilla, tachado, y una agenda llena de horas
- * tachadas no se lee. En Hilo la cancelación queda registrada igual, que es
+ * tachadas no se lee. En Ombúa la cancelación queda registrada igual, que es
  * donde importa.
  *
  * El `gcal_event_id` se limpia pase lo que pase. Si Google no contestó, el
- * evento puede quedar allá huérfano — molesto, pero preferible a que Hilo crea
+ * evento puede quedar allá huérfano — molesto, pero preferible a que Ombúa crea
  * que sigue existiendo y después intente actualizar algo que no controla.
  */
 export async function removeAppointment(

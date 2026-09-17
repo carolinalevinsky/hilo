@@ -234,7 +234,7 @@ export async function countSessions(practitionerId: string, patientId?: string) 
 }
 
 /**
- * Deletes a session. The one thing in Hilo that is genuinely removed rather than
+ * Deletes a session. The one thing in Ombúa that is genuinely removed rather than
  * soft-deleted, because a session that did not happen is a typo, not history —
  * and leaving it in would corrupt both the count of sessions held and what a
  * report says about the treatment.

@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "hilo",
+      "name": "ombua",
       "url": "http://localhost:3000"
     }
   ]

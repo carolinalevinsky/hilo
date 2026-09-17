@@ -44,24 +44,24 @@ describe('sendBookingNotification', () => {
 
   it('emails the practitioner with what they need to call back', async () => {
     await sendBookingNotification({
-      to: 'lucia@hilo.test',
+      to: 'lucia@ombua.test',
       practitionerName: 'Lucía Fernández',
       request,
-      appUrl: 'https://hilo.uy',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent).toHaveLength(1)
-    expect(sent[0]?.to).toEqual(['lucia@hilo.test'])
+    expect(sent[0]?.to).toEqual(['lucia@ombua.test'])
     expect(sent[0]?.subject).toContain('Familia Pérez')
     expect(sent[0]?.html).toContain('Hola Lucía,')
     expect(sent[0]?.html).toContain('099 123 456')
     expect(sent[0]?.html).toContain('Lunes 09:00')
-    expect(sent[0]?.html).toContain('https://hilo.uy/reservas')
+    expect(sent[0]?.html).toContain('https://app.ombua.com/reservas')
   })
 
   it('says the date the family asked for, when there is one (P7)', async () => {
     await sendBookingNotification({
-      to: 'lucia@hilo.test',
+      to: 'lucia@ombua.test',
       practitionerName: 'Lucía Fernández',
       request: {
         ...request,
@@ -69,7 +69,7 @@ describe('sendBookingNotification', () => {
         preferred_date: '2026-09-17',
         preferred_time: '14:15:00',
       },
-      appUrl: 'https://hilo.uy',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).toContain('17 de setiembre')
@@ -82,14 +82,14 @@ describe('sendBookingNotification', () => {
     // is the one place in the codebase that builds markup by concatenation, so
     // it is the one place that has to prove it escapes.
     await sendBookingNotification({
-      to: 'lucia@hilo.test',
+      to: 'lucia@ombua.test',
       practitionerName: 'Lucía Fernández',
       request: {
         ...request,
         name: '<script>alert(1)</script>',
         note: 'Hola & "chau" <b>',
       },
-      appUrl: 'https://hilo.uy',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).not.toContain('<script>')
@@ -99,10 +99,10 @@ describe('sendBookingNotification', () => {
 
   it('leaves out a slot the family did not ask for', async () => {
     await sendBookingNotification({
-      to: 'lucia@hilo.test',
+      to: 'lucia@ombua.test',
       practitionerName: 'Lucía Fernández',
       request: { ...request, preferred_weekday: null, preferred_time: null, note: null },
-      appUrl: 'https://hilo.uy',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).not.toContain('Turno pedido')
@@ -116,7 +116,7 @@ describe('sendDigest', () => {
     // families and a financial judgement about them into an inbox. The number is
     // enough to make someone open the app; the app is where the names belong.
     await sendDigest({
-      to: 'lucia@hilo.test',
+      to: 'lucia@ombua.test',
       summary: {
         practitionerName: 'Lucía Fernández',
         sessionsThisFortnight: 12,
@@ -124,14 +124,14 @@ describe('sendDigest', () => {
         patientsWithBalance: 3,
         outstandingTotal: 4500,
       },
-      appUrl: 'https://hilo.uy',
+      appUrl: 'https://app.ombua.com',
     })
 
     const html = sent[0]?.html ?? ''
 
     expect(html).toContain('12')
     expect(html).toContain('3 · $ 4.500')
-    expect(html).toContain('https://hilo.uy/inicio')
+    expect(html).toContain('https://app.ombua.com/inicio')
 
     // Nothing that names a patient or describes their treatment.
     for (const forbidden of ['Tomás', 'Malena', 'objetivo', 'sesión con', 'evolución']) {
@@ -141,7 +141,7 @@ describe('sendDigest', () => {
 
   it('omits a line when there is nothing to say in it', async () => {
     await sendDigest({
-      to: 'lucia@hilo.test',
+      to: 'lucia@ombua.test',
       summary: {
         practitionerName: 'Lucía Fernández',
         sessionsThisFortnight: 4,
@@ -149,7 +149,7 @@ describe('sendDigest', () => {
         patientsWithBalance: 0,
         outstandingTotal: 0,
       },
-      appUrl: 'https://hilo.uy',
+      appUrl: 'https://app.ombua.com',
     })
 
     expect(sent[0]?.html).not.toContain('Reservas sin confirmar')

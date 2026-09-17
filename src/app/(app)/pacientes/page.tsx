@@ -18,8 +18,9 @@ import {
   type PatientListOptions,
 } from '@/server/patients'
 import { currentUser } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Pacientes · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Pacientes') }
 
 function readParam(value: string | string[] | undefined) {
   return typeof value === 'string' ? value : undefined

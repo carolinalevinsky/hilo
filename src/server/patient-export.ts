@@ -7,7 +7,7 @@ import { listReports } from './reports'
 import { listSessions } from './sessions'
 
 /**
- * Everything Hilo holds about one patient, assembled in one place.
+ * Everything Ombúa holds about one patient, assembled in one place.
  *
  * This is the right of access under Ley N.º 18.331 (art. 14): the person the
  * data is about — or whoever has their patria potestad — can ask what is held,

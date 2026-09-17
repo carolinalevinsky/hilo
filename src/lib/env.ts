@@ -29,7 +29,7 @@ const serverEnv = z.object({
    * Quién firma los correos. Se valida la dirección, no que la cadena exista.
    *
    * `z.email()` a secas no sirve porque la forma que documentamos lleva nombre
-   * visible —`Hilo <hola@hilo.uy>`— y `min(1)` no servía porque acepta
+   * visible —`Ombúa <hola@ombua.com>`— y `min(1)` no servía porque acepta
    * cualquier cosa: el build arrancaba contento y después se caían todos los
    * correos en silencio, incluido el de recuperar la contraseña. El porqué
    * completo está en `mail-from.ts`.
@@ -42,7 +42,7 @@ const serverEnv = z.object({
     .trim()
     .refine((value) => mailFromAddress(value) !== null, {
       message:
-        'MAIL_FROM tiene que ser una dirección de correo, sola o con nombre visible: Hilo <hola@hilo.uy>',
+        'MAIL_FROM tiene que ser una dirección de correo, sola o con nombre visible: Ombúa <hola@ombua.com>',
     }),
 
   CRON_SECRET: z.string().min(1),
@@ -88,7 +88,7 @@ const publicEnv = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   /**
-   * Where Hilo lives. Used to build the links inside emails and the booking link
+   * Where Ombúa lives. Used to build the links inside emails and the booking link
    * a practitioner hands to families — both of which are read outside a request,
    * so neither can derive it from headers.
    */

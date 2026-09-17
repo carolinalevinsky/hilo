@@ -61,7 +61,7 @@ export function ScalesCard({
       <CardHeader>
         <CardTitle>Escalas</CardTitle>
         <p className="text-meta text-muted-foreground">
-          Las contesta {patientFirstName} desde el celular y Hilo las puntúa.
+          Las contesta {patientFirstName} desde el celular y Ombúa las puntúa.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">

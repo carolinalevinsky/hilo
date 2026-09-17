@@ -23,7 +23,7 @@ export function ClinicalDocument({
   footer: { name: string; discipline: string }
 }) {
   return (
-    <article className="hilo-doc mx-auto max-w-[720px] rounded-lg bg-card px-6 py-8 shadow-card sm:px-10">
+    <article className="app-doc mx-auto max-w-[720px] rounded-lg bg-card px-6 py-8 shadow-card sm:px-10">
       <h1 className="text-center text-[20px] font-extrabold tracking-[-0.4px]">{title}</h1>
       <p className="mt-1 text-center text-meta text-muted-foreground">{subtitle}</p>
 

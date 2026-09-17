@@ -15,8 +15,9 @@ import { getPatient } from '@/server/patients'
 import { listPlanItems, planSummary } from '@/server/session-plans'
 import { listSessions, sessionForAppointment } from '@/server/sessions'
 import { currentUser } from '../../../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Registrar sesión · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Registrar sesión') }
 
 export default async function NewSessionPage({
   params,

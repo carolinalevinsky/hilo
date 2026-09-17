@@ -210,7 +210,7 @@ export function PatientForm({
               placeholder="Ej: Producir /r/ en posición inicial"
             />
             <p className="text-xs text-muted-foreground">
-              Lo que vas a trabajar. Con esto Hilo sigue el avance y arma los informes.
+              Lo que vas a trabajar. Con esto Ombúa sigue el avance y arma los informes.
               Después agregás los que quieras desde la ficha.
             </p>
           </Field>

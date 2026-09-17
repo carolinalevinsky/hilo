@@ -69,7 +69,7 @@ export type AuthResult = { ok: true } | { ok: false; message: string }
 /**
  * Sign-up says one more thing than the rest: whether a session exists yet.
  *
- * With email confirmation off — how Hilo runs today — `signUp` returns a session
+ * With email confirmation off — how Ombúa runs today — `signUp` returns a session
  * and the practitioner is working seconds later. With it on, it returns none,
  * and sending them to `/inicio` would bounce straight back to the sign-in
  * screen. The caller needs to know which happened, so it is a value here rather
@@ -149,7 +149,7 @@ export async function signIn(input: unknown): Promise<AuthResult> {
       return {
         ok: false,
         message:
-          'Te falta confirmar tu correo. Buscá el mail de Hilo y tocá el enlace; fijate también en spam.',
+          'Te falta confirmar tu correo. Buscá el mail de Ombúa y tocá el enlace; fijate también en spam.',
       }
     }
 
@@ -174,7 +174,7 @@ function firstMessage(error: z.ZodError): string {
 // ─── Confirming an emailed link ─────────────────────────────────────────────
 
 /**
- * The link types Hilo sends. Anything else arriving at `/confirmar` is treated
+ * The link types Ombúa sends. Anything else arriving at `/confirmar` is treated
  * as a bad link rather than passed through to Supabase.
  *
  * This enum is why the route handler does not import `@supabase/*` for its
@@ -210,7 +210,7 @@ export async function confirmEmailLink(input: unknown): Promise<AuthResult> {
 /**
  * The `?code=` half of the same flow, for Supabase's stock email templates.
  *
- * Hilo ships its own Spanish templates (`supabase/templates/`), which use the
+ * Ombúa ships its own Spanish templates (`supabase/templates/`), which use the
  * token hash above — but a project whose templates were never customised sends
  * `{{ .ConfirmationURL }}`, and that lands here instead. Handling both is a few
  * lines and means a forgotten dashboard setting degrades instead of breaking.
@@ -253,7 +253,7 @@ export const PasswordResetRequest = z.object({
  * health professional has an account here, which is exactly the fact that must
  * not leak. Supabase behaves the same way for the same reason.
  *
- * `redirectTo` is only read by the stock template — Hilo's own template has the
+ * `redirectTo` is only read by the stock template — Ombúa's own template has the
  * destination in it. It is passed anyway so that both templates land in the same
  * place.
  */

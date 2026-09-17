@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import { deleteAuthUserByEmail, uniqueEmail } from './support/supabase'
 
 /**
- * The one path Hilo exists for: sign up, load a patient, write down a session,
+ * The one path Ombúa exists for: sign up, load a patient, write down a session,
  * get a report out. `docs/plan-02-migration.md` §8.
  *
  * Everything else is tested where it is cheaper — the business rules as unit
@@ -86,11 +86,16 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
     // worth the line on its own: a tour that could not be dismissed would block
     // every new account from reaching the product at all.
     await page.getByRole('button', { name: 'Saltar' }).click()
-    await expect(page.getByRole('dialog', { name: /Recorrido por Hilo/ })).toBeHidden()
+    await expect(page.getByRole('dialog', { name: /Recorrido por Ombúa/ })).toBeHidden()
   })
 
   await test.step('loads a patient', async () => {
-    await page.getByRole('link', { name: 'Cargar paciente' }).click()
+    // The full form, not the quick one. Inicio's first step now loads a patient
+    // from a name alone, and its button is also called "Cargar paciente" — but
+    // this test needs the screen that has the birth date and the motivo, which
+    // is the one behind the link beside it.
+    await page.getByRole('link', { name: /ficha completa/ }).click()
+    await expect(page).toHaveURL(/\/pacientes\/nuevo$/)
 
     await page.getByLabel('Nombre y apellido').fill(PATIENT)
     await page.getByLabel('Fecha de nacimiento').fill('2019-04-12')
@@ -164,7 +169,7 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
 
     // A real report, not an empty shell. Deliberately not *which* report — the
     // model's version and the offline draft are both correct here.
-    const body = await page.locator('.hilo-doc').innerText()
+    const body = await page.locator('.app-doc').innerText()
     expect(body.length).toBeGreaterThan(400)
     expect(body).toContain('Joaquín')
   })

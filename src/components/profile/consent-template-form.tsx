@@ -12,12 +12,12 @@ import { EMPTY_FORM_STATE } from '@/lib/form-state'
 /**
  * The consent a family signs from "Antes de empezar", editable.
  *
- * It opens with Hilo's model already in the box rather than an empty one: the
+ * It opens with Ombúa's model already in the box rather than an empty one: the
  * point of shipping a model is that nobody starts from a blank page. Saving a
  * text identical to the model stores nothing (the action turns it into null),
  * so a practitioner who never touched it keeps receiving the model's fixes.
  *
- * `key` on the textarea: after "Volver al modelo de Hilo" the server sends the
+ * `key` on the textarea: after "Volver al modelo de Ombúa" the server sends the
  * model back, and an uncontrolled textarea would otherwise keep showing the old
  * text until a reload.
  */
@@ -53,7 +53,7 @@ export function ConsentTemplateForm({ current }: { current: string | null }) {
         </Button>
         {current ? (
           <Button type="submit" name="reset" value="1" variant="outline" disabled={pending}>
-            Volver al modelo de Hilo
+            Volver al modelo de Ombúa
           </Button>
         ) : null}
       </div>

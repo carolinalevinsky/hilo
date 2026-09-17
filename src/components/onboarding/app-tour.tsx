@@ -39,7 +39,7 @@ import { Button } from '@/components/ui/button'
  */
 
 /** Dispatch this to start the tour from anywhere. See `TourButton`. */
-export const TOUR_EVENT = 'hilo:tour'
+export const TOUR_EVENT = 'ombua:tour'
 
 type Box = { top: number; left: number; width: number; height: number }
 
@@ -142,7 +142,7 @@ export function AppTour({ seen }: { seen: boolean }) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Recorrido por Hilo, paso ${step + 1} de ${TOUR_STOPS.length}`}
+      aria-label={`Recorrido por Ombúa, paso ${step + 1} de ${TOUR_STOPS.length}`}
       // Above everything. The bottom bar on a phone is `z-70` and the sheet
       // behind it `z-80`, and the assistant button is `z-50` like this used to
       // be: same layer, later in the DOM, so it sat on top of "Saltar".
@@ -169,11 +169,15 @@ export function AppTour({ seen }: { seen: boolean }) {
             // Both in one declaration. A Tailwind `ring-2` would be a second
             // box-shadow on the same element, and an inline one replaces the
             // class outright, so the ring simply never appeared.
-            boxShadow: '0 0 0 2px #fff, 0 0 0 9999px rgba(15,10,45,0.66)',
+            // El mismo casi negro que el fondo de abajo, en rgba porque acá va
+            // adentro de un box-shadow.
+            boxShadow: '0 0 0 2px #fff, 0 0 0 9999px rgba(20,17,41,0.66)',
           }}
         />
       ) : (
-        <div key="atenuado" aria-hidden className="absolute inset-0 bg-[#0f0a2d]/65" />
+        // El violeta de la marca llevado a casi negro. Literal y no una
+        // variable porque el modificador de opacidad no acepta `var()` acá.
+        <div key="atenuado" aria-hidden className="absolute inset-0 bg-[#141129]/65" />
       )}
 
       {/* Width, position and the ring are inline styles rather than classes.

@@ -33,7 +33,7 @@ function localConfig() {
 
 /** Unique per run, so a crashed run cannot collide with the next one. */
 export function uniqueEmail(prefix: string) {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}@hilo.test`
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}@ombua.test`
 }
 
 /**

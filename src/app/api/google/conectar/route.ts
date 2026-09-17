@@ -1,10 +1,9 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { GOOGLE_STATE_COOKIE as STATE_COOKIE } from '@/lib/storage-keys'
 import { getUser } from '@/server/auth'
 import { consentUrl } from '@/server/google'
-
-export const STATE_COOKIE = 'hilo_google_state'
 
 /**
  * Manda a la profesional a autorizar en Google.
@@ -19,7 +18,7 @@ export const STATE_COOKIE = 'hilo_google_state'
  *
  * Sin eso, alguien puede armar un link a `/api/google/callback?code=…` con un
  * código de *su* cuenta de Google y hacérselo abrir a la profesional estando
- * logueada. Hilo cerraría la conexión sin sospechar nada, y a partir de ahí las
+ * logueada. Ombúa cerraría la conexión sin sospechar nada, y a partir de ahí las
  * sesiones de sus pacientes se escribirían en el calendario del atacante — con
  * el nombre que ella haya elegido mostrar. El callback compara los dos valores y
  * corta si no coinciden.

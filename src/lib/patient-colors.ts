@@ -1,3 +1,5 @@
+import { BRAND_COLORS } from './brand'
+
 /**
  * The six accent colours a patient can carry, in both forms the interface needs.
  *
@@ -6,17 +8,17 @@
  * place a class will not do: the gradient on the patient header, which is
  * generated from the colour.
  *
- * They match `--hilo-*` in `globals.css`, which came from v1
- * (`legacy/index.html:886`).
+ * Los hex salen de `brand.ts`, que es donde vive la paleta. Acá no se escribe
+ * ningún color: se elige cuáles de los de la marca puede llevar un paciente.
  */
 
 export const PATIENT_COLOR_HEX: Record<string, string> = {
-  violet: '#6c5ce7',
-  teal: '#12b5a5',
-  coral: '#ff6b6b',
-  blue: '#4c8dff',
-  amber: '#f7a800',
-  green: '#21bf73',
+  violet: BRAND_COLORS.violet,
+  teal: BRAND_COLORS.teal,
+  coral: BRAND_COLORS.coral,
+  blue: BRAND_COLORS.blue,
+  amber: BRAND_COLORS.amber,
+  green: BRAND_COLORS.green,
 }
 
 /**

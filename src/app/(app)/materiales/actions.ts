@@ -203,7 +203,7 @@ export async function uploadMaterialAction(
       focus: null,
       kind: formData.get('kind') ?? 'worksheet',
       objective: null,
-      content: 'Todavía sin descripción. Escribila o pedile a Hilo que lea el archivo.',
+      content: 'Todavía sin descripción. Escribila o pedile a Ombúa que lea el archivo.',
       ageRange: formData.get('ageRange'),
       visibility: 'private',
     })

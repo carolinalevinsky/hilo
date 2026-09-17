@@ -168,7 +168,7 @@ export function SessionForm({
           placeholder="Logró la /r/ en posición inicial de forma consistente, muy conectado al juego."
         />
         <p className="text-xs text-muted-foreground">
-          Esto es lo que Hilo lee después para armar los informes, y lo que se entrega
+          Esto es lo que Ombúa lee después para armar los informes, y lo que se entrega
           si la familia pide sus datos. Cuanto más concreto, mejor sale el borrador.
         </p>
       </div>

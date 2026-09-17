@@ -14,8 +14,8 @@
  * The `network` case in `speechErrorMessage` was the evidence sitting in this
  * same file.
  *
- * What is true is the narrower thing: only text reaches Hilo. The audio goes to
- * the browser's own dictation service and never to a Hilo server. Both facts
+ * What is true is the narrower thing: only text reaches Ombúa. The audio goes to
+ * the browser's own dictation service and never to a Ombúa server. Both facts
  * belong on screen together — see `src/components/sessions/record-session.tsx`,
  * which is where the promise was printed and where the correction lives.
  *

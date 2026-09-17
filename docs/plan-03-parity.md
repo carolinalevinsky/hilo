@@ -26,7 +26,7 @@ up rendered.
 | C1 | Stat card: white, icon in a tinted rounded square, big bold number, muted label under it | Two unrelated styles; none at all on Inicio | done — `src/components/stat-card.tsx` |
 | C2 | Period switcher: centred, `‹  Agosto 2026  ›`, with a "MES ACTUAL" caption | Left-aligned pill buttons | done — `src/components/period-switcher.tsx` |
 | C3 | Patient avatar: solid patient colour, white initials | Soft tint, coloured initials | done — `patientSolidClasses` |
-| C4 | "Preguntá a Hilo" floats on every screen | Only a card on Inicio | done — `ask-hilo-fab.tsx` |
+| C4 | "Preguntá a Ombúa" floats on every screen | Only a card on Inicio | done — `ask-fab.tsx` |
 | C5 | Brandmark: rounded square with three lines | A plain square, drawn differently in four places | done — `src/components/brandmark.tsx` |
 | C6 | v1's own 44 icons | lucide — every icon a different drawing | done — `src/components/icons.tsx` |
 
@@ -87,7 +87,7 @@ face to a patient is something you think of while looking at them.
 "Consulta online" is back too, second in the row as in v1 — see below for why its
 link is not v1's. So are "Exportar datos", "Próxima sesión" above the history,
 **"Evaluaciones e informes"** (the patient's own documents, which had lived only
-on `/informes`), and **"Memoria de Hilo"**.
+on `/informes`), and **"Memoria de Ombúa"**.
 
 Still open, and it is more than a component edit:
 
@@ -212,7 +212,7 @@ touch those three columns.
 
 The one widening of who can read what, so it gets its own section.
 
-The read policy on `materials` is now: what ships with Hilo, plus your own
+The read policy on `materials` is now: what ships with Ombúa, plus your own
 (published or not), plus what another practitioner published. The write policies
 are untouched and deliberately not widened — **publishing makes a row readable by
 everyone; it does not make it writable by anyone but its author.**
@@ -260,7 +260,7 @@ later `JSON.stringify` of "everything".
 v1's button built a Jitsi room from the patient's own name:
 
 ```
-https://meet.jit.si/Hilo-tomas-perez-x7k2p
+https://meet.jit.si/Ombúa-tomas-perez-x7k2p
 ```
 
 `meet.jit.si` rooms are public to anyone holding the URL. That link puts a
@@ -272,7 +272,7 @@ and a link already shared with a family stopped working.
 **Built, in the safe shape.** A random id stored on the patient
 (`patients.room_id`): meaningless, because it is random, and stable, because it
 is stored. The room is created when first asked for, not on every ficha that
-loads. There is also a field for your own Zoom or Meet, which wins over Hilo's —
+loads. There is also a field for your own Zoom or Meet, which wins over Ombúa's —
 and it is validated as `http(s)` on the server, because `javascript:alert(1)` is
 a valid string and an `href` will run it with the practitioner's session.
 
@@ -347,7 +347,7 @@ has no button in it, which is exactly what the first pass missed. 24 headings an
 - **"Evaluaciones e informes" on the ficha.** The patient's documents lived only
   on `/informes`, which lists everybody's — the right screen for "what did I
   write this month", the wrong one for "what do I already have on this child".
-- **"Memoria de Hilo".** It looks like decoration and is not: it answers the
+- **"Memoria de Ombúa".** It looks like decoration and is not: it answers the
   first-month doubt about whether all this is being written into a hole.
 - **"Plan de la semana"** under the agenda grid. See Agenda above.
 

@@ -10,8 +10,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { removePhotoAction } from '@/app/(app)/pacientes/actions'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { currentUser } from '../../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Editar ficha · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Editar ficha') }
 
 export default async function EditPatientPage({
   params,

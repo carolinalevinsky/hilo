@@ -23,7 +23,7 @@ import {
  *
  * ───────────────────────────────────────────────────────────────────────────
  *
- * "Grabá y Hilo arma el registro" — v1's promise
+ * "Grabá y Ombúa arma el registro" — v1's promise
  * (`legacy/index.html:1943`), delivered.
  *
  * You press record at the start of the session, leave the phone on the table,
@@ -43,7 +43,7 @@ import {
  * saying dictation needs the internet, which on-device recognition would not.
  *
  * So audio of a therapy session with a child reaches a third party that is not
- * Hilo and is not in the privacy notice as a processor of it. Hilo itself still
+ * Ombúa and is not in the privacy notice as a processor of it. Ombúa itself still
  * only ever receives and stores text — that part was true — but "the audio does
  * not leave this device" was a promise this product could not keep, and it was
  * printed under the button.
@@ -254,7 +254,7 @@ export function RecordSession({
       <p className="mt-2 text-meta text-muted-foreground">
         {state === 'recording'
           ? 'Estoy escuchando. Dejá el teléfono sobre la mesa y seguí con la sesión.'
-          : 'Grabás y Hilo arma el registro solo. Para pasar la voz a texto, el navegador manda el audio a su servicio de dictado (en Chrome, el de Google). Hilo recibe y guarda solo el texto.'}
+          : 'Grabás y Ombúa arma el registro solo. Para pasar la voz a texto, el navegador manda el audio a su servicio de dictado (en Chrome, el de Google). Ombúa recibe y guarda solo el texto.'}
       </p>
 
       {note ? (

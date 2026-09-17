@@ -207,7 +207,7 @@ export type TodaySession = PlannedSession & {
  * into the room.
  *
  * This is v1's home screen (`legacy/index.html:1088-1101`) and the reason to
- * open Hilo between two patients: what happened last time, which goal has moved
+ * open Ombúa between two patients: what happened last time, which goal has moved
  * least, and anything that needs saying — a goal that has stalled, a month that
  * has not been paid. v2's home listed a name and a time, which is the one thing
  * a practitioner already knows.

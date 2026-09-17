@@ -106,5 +106,5 @@ export async function deleteTestPractitioner(id: string) {
 
 /** A unique email per run, so a leftover row from a crashed test cannot collide. */
 export function testEmail(prefix: string) {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}@hilo.test`
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}@ombua.test`
 }

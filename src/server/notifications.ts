@@ -1,5 +1,12 @@
 import { Resend } from 'resend'
 
+import {
+  BRAND_BACKGROUND,
+  BRAND_COLORS,
+  BRAND_NAME,
+  BRAND_VIOLET_DARK,
+  BRAND_VIOLET_LIGHT,
+} from '@/lib/brand'
 import { formatLongDate } from '@/lib/dates'
 import { env } from '@/lib/env'
 import { weekdayName } from '@/lib/week'
@@ -62,10 +69,10 @@ function layout({
   footer: string
 }) {
   return `
-  <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f5fb;padding:24px">
+  <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:${BRAND_BACKGROUND};padding:24px">
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(30,36,54,.08)">
-      <div style="background:linear-gradient(120deg,#6c4cf0,#8a5cf0);padding:20px 24px;color:#fff">
-        <div style="font-weight:800;font-size:18px">Hilo</div>
+      <div style="background:linear-gradient(120deg,${BRAND_VIOLET_DARK},${BRAND_VIOLET_LIGHT});padding:20px 24px;color:#fff">
+        <div style="font-weight:800;font-size:18px">${BRAND_NAME}</div>
         <div style="opacity:.9;font-size:13px;margin-top:2px">${escapeHtml(subtitle)}</div>
       </div>
       <div style="padding:22px 24px;color:#20293a">${body}</div>
@@ -75,7 +82,7 @@ function layout({
 }
 
 function button(href: string, label: string) {
-  return `<a href="${escapeHtml(href)}" style="display:inline-block;margin-top:14px;background:#6c5ce7;color:#fff;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;font-size:14px">${escapeHtml(label)}</a>`
+  return `<a href="${escapeHtml(href)}" style="display:inline-block;margin-top:14px;background:${BRAND_COLORS.violet};color:#fff;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;font-size:14px">${escapeHtml(label)}</a>`
 }
 
 /**
@@ -83,7 +90,7 @@ function button(href: string, label: string) {
  *
  * A failed email must not roll back the thing it was announcing. If the booking
  * row is written and Resend is down, the request still exists and the
- * practitioner sees it in their inbox next time they open Hilo — which is a much
+ * practitioner sees it in their inbox next time they open Ombúa — which is a much
  * better outcome than a 500 shown to the family who just filled in the form.
  */
 async function send(options: { to: string; subject: string; html: string }) {
@@ -163,9 +170,9 @@ export async function sendBookingNotification({
         <p style="margin:0 0 12px">Hola ${escapeHtml(firstName(practitionerName))},</p>
         <p style="margin:0 0 14px">Te entró una reserva nueva:</p>
         <div style="border:1px solid #eceef6;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.7">${rows}</div>
-        <p style="margin:16px 0 0;font-size:13.5px;color:#586074">Entrá a Hilo y confirmala para que quede en tu agenda.</p>
-        ${button(`${appUrl}/reservas`, 'Abrir Hilo')}`,
-    footer: 'Recibís este aviso porque tenés reservas activas en Hilo.',
+        <p style="margin:16px 0 0;font-size:13.5px;color:#586074">Entrá a Ombúa y confirmala para que quede en tu agenda.</p>
+        ${button(`${appUrl}/reservas`, 'Abrir Ombúa')}`,
+    footer: 'Recibís este aviso porque tenés reservas activas en Ombúa.',
   })
 
   return send({
@@ -217,16 +224,16 @@ export async function sendDigest({
           ${summary.pendingBookings > 0 ? line('Reservas sin confirmar', String(summary.pendingBookings)) : ''}
           ${summary.patientsWithBalance > 0 ? line('Pacientes con saldo', `${summary.patientsWithBalance} · ${money}`) : ''}
         </div>
-        <p style="margin:16px 0 0;font-size:13.5px;color:#586074">El detalle está en Hilo, con nombre y apellido.</p>
-        ${button(`${appUrl}/inicio`, 'Abrir Hilo')}`,
+        <p style="margin:16px 0 0;font-size:13.5px;color:#586074">El detalle está en Ombúa, con nombre y apellido.</p>
+        ${button(`${appUrl}/inicio`, 'Abrir Ombúa')}`,
     footer: 'Recibís este resumen cada quince días. Si no querés recibirlo más, escribinos.',
   })
 
-  return send({ to, subject: 'Tu resumen de Hilo', html })
+  return send({ to, subject: 'Tu resumen de Ombúa', html })
 }
 
 /**
- * Aviso a quien mantiene Hilo de que falta un formato de informe.
+ * Aviso a quien mantiene Ombúa de que falta un formato de informe.
  *
  * Va a `OWNER_EMAIL` y no a la profesional: es un pedido *hacia adentro*, y
  * quien tiene que enterarse es quien puede agregar el formato.
@@ -261,9 +268,9 @@ export async function sendFormatRequestNotification({
     subtitle: 'Pedido de formato',
     body: `
         <p style="margin:0 0 12px">${escapeHtml(practitionerName)} (${escapeHtml(discipline)}) pidió un formato de informe que todavía no existe:</p>
-        <blockquote style="margin:0 0 14px;padding:12px 14px;background:#f4f2ff;border-radius:11px;font-size:14px;line-height:1.6">${escapeHtml(detail)}</blockquote>
+        <blockquote style="margin:0 0 14px;padding:12px 14px;background:${BRAND_COLORS.violetWhisper};border-radius:11px;font-size:14px;line-height:1.6">${escapeHtml(detail)}</blockquote>
         <p style="margin:0;font-size:13.5px;color:#586074">Contestale a ${escapeHtml(practitionerEmail)}.</p>`,
-    footer: 'Este aviso lo genera Hilo cuando alguien pide un formato nuevo.',
+    footer: 'Este aviso lo genera Ombúa cuando alguien pide un formato nuevo.',
   })
 
   return send({ to, subject: `Pedido de formato · ${practitionerName}`, html })

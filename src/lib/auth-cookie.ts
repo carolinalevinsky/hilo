@@ -23,7 +23,7 @@
  * and `secure` by hand, and the one that is worth more than both together took
  * a library default nobody had read.
  *
- * Hilo has no browser Supabase client and cannot grow one by accident: rule 2 in
+ * Ombúa has no browser Supabase client and cannot grow one by accident: rule 2 in
  * `eslint.config.mjs` refuses `@supabase/*` from `src/app/` and
  * `src/components/`. So nothing needs to read this from JavaScript, and
  * `httpOnly` costs nothing.
@@ -37,7 +37,7 @@
  * ─── How long it lives ─────────────────────────────────────────────────────
  *
  * `@supabase/ssr` stamps every write with `maxAge: 400 days`, and nothing here
- * overrides that by default: on your own computer, Hilo stays signed in.
+ * overrides that by default: on your own computer, Ombúa stays signed in.
  *
  * The sign-in form has a box for the other case — a shared computer, the one
  * at the school or the clinic. Unticked, `signInAction` sets
@@ -64,7 +64,7 @@ export const AUTH_COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === 'production',
 
   /**
-   * `lax` and not `strict`: the links Hilo emails — confirming an account,
+   * `lax` and not `strict`: the links Ombúa emails — confirming an account,
    * resetting a password — arrive from a mail client, and `strict` would drop
    * the cookie on that first navigation and sign the practitioner out exactly
    * when they were trying to get in.
@@ -78,8 +78,12 @@ export const AUTH_COOKIE_OPTIONS = {
  * Present means "sign me out when the browser closes". Written by
  * `signInAction` when the box is unticked, cleared by signing in with it
  * ticked or by signing out. It carries no secret — only the choice.
+ *
+ * Re-exported so every reader keeps importing it from here. The name itself
+ * lives with the other storage keys, which still say "ombua" on purpose —
+ * `src/lib/storage-keys.ts` explains why.
  */
-export const SESSION_ONLY_COOKIE = 'hilo_sesion_temporal'
+export { SESSION_ONLY_COOKIE } from './storage-keys'
 
 /**
  * The options an auth cookie is written with, given that choice.

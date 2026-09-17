@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   // It used to pass `alreadyCounted: true` unconditionally, which subtracted one
   // from a count this row had never entered and, worse, left `source` as
   // `manual` forever: uploading and describing files never counted at all. That
-  // made the single most expensive call in Hilo — the only one that ships a whole
+  // made the single most expensive call in Ombúa — the only one that ships a whole
   // PDF or photo to Anthropic — the one call nothing capped.
   const counted = material.source === 'ai'
 

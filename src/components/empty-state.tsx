@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 /**
  * The "there is nothing here yet" block. Ported from `legacy/index.html:973`.
  *
- * Every list in Hilo mounts one. An empty screen with no explanation reads as
+ * Every list in Ombúa mounts one. An empty screen with no explanation reads as
  * broken; an empty screen that says what goes here and offers the button reads
  * as the beginning of something.
  */

@@ -4,28 +4,28 @@ import { mailFromAddress } from './mail-from'
 
 describe('mailFromAddress', () => {
   it('acepta la dirección sola', () => {
-    expect(mailFromAddress('hola@hilo.uy')).toBe('hola@hilo.uy')
+    expect(mailFromAddress('hola@ombua.com')).toBe('hola@ombua.com')
   })
 
   it('acepta la forma con nombre visible, que es la que documentamos', () => {
-    expect(mailFromAddress('Hilo <hola@hilo.uy>')).toBe('hola@hilo.uy')
+    expect(mailFromAddress('Ombúa <hola@ombua.com>')).toBe('hola@ombua.com')
   })
 
   it('acepta el valor que usa CI, para que esto no ponga la build en rojo', () => {
-    expect(mailFromAddress('Hilo <ci@example.com>')).toBe('ci@example.com')
+    expect(mailFromAddress('Ombúa <ci@example.com>')).toBe('ci@example.com')
   })
 
   it('acepta el valor de ejemplo del .env.example', () => {
-    expect(mailFromAddress('Hilo <onboarding@resend.dev>')).toBe('onboarding@resend.dev')
+    expect(mailFromAddress('Ombúa <onboarding@resend.dev>')).toBe('onboarding@resend.dev')
   })
 
   it('acepta un nombre con acentos y espacios, que es lo natural en español', () => {
-    expect(mailFromAddress('Hilo · Notificaciones <avisos@hilo.uy>')).toBe('avisos@hilo.uy')
+    expect(mailFromAddress('Ombúa · Notificaciones <avisos@ombua.com>')).toBe('avisos@ombua.com')
   })
 
   it('ignora los espacios de las puntas', () => {
-    expect(mailFromAddress('  Hilo <hola@hilo.uy>  ')).toBe('hola@hilo.uy')
-    expect(mailFromAddress('Hilo < hola@hilo.uy >')).toBe('hola@hilo.uy')
+    expect(mailFromAddress('  Ombúa <hola@ombua.com>  ')).toBe('hola@ombua.com')
+    expect(mailFromAddress('Ombúa < hola@ombua.com >')).toBe('hola@ombua.com')
   })
 
   /**
@@ -35,12 +35,12 @@ describe('mailFromAddress', () => {
    * sería tirar abajo el build por una configuración que anda bien.
    */
   it('tolera un salto de línea al final, que es el pegado de siempre', () => {
-    expect(mailFromAddress('Hilo <hola@hilo.uy>\r')).toBe('hola@hilo.uy')
-    expect(mailFromAddress('Hilo <hola@hilo.uy>\n')).toBe('hola@hilo.uy')
+    expect(mailFromAddress('Ombúa <hola@ombua.com>\r')).toBe('hola@ombua.com')
+    expect(mailFromAddress('Ombúa <hola@ombua.com>\n')).toBe('hola@ombua.com')
   })
 
   it('acepta los ángulos sin nombre adelante', () => {
-    expect(mailFromAddress('<hola@hilo.uy>')).toBe('hola@hilo.uy')
+    expect(mailFromAddress('<hola@ombua.com>')).toBe('hola@ombua.com')
   })
 
   /**
@@ -52,16 +52,16 @@ describe('mailFromAddress', () => {
     const malos: Array<[string, string]> = [
       ['vacío', ''],
       ['sólo espacios', '   '],
-      ['sin arroba', 'hilo.uy'],
-      ['sólo el nombre visible', 'Hilo'],
-      ['el ángulo que falta', 'Hilo <hola@hilo.uy'],
-      ['el otro ángulo que falta', 'Hilo hola@hilo.uy>'],
-      ['sin dominio', 'Hilo <hola@>'],
-      ['sin buzón', 'Hilo <@hilo.uy>'],
-      ['ángulos vacíos', 'Hilo <>'],
-      ['un salto de línea en el medio', 'Hilo\n<hola@hilo.uy>'],
-      ['un salto de línea adentro de los ángulos', 'Hilo <hola@\nhilo.uy>'],
-      ['dos direcciones', 'Hilo <hola@hilo.uy, otra@hilo.uy>'],
+      ['sin arroba', 'ombua.com'],
+      ['sólo el nombre visible', 'Ombúa'],
+      ['el ángulo que falta', 'Ombúa <hola@ombua.com'],
+      ['el otro ángulo que falta', 'Ombúa hola@ombua.com>'],
+      ['sin dominio', 'Ombúa <hola@>'],
+      ['sin buzón', 'Ombúa <@ombua.com>'],
+      ['ángulos vacíos', 'Ombúa <>'],
+      ['un salto de línea en el medio', 'Ombúa\n<hola@ombua.com>'],
+      ['un salto de línea adentro de los ángulos', 'Ombúa <hola@\nhilo.uy>'],
+      ['dos direcciones', 'Ombúa <hola@ombua.com, otra@ombua.com>'],
     ]
 
     for (const [nombre, valor] of malos) {
@@ -86,17 +86,17 @@ describe('el arranque', () => {
   })
 
   it('se cae, nombrando la variable, si MAIL_FROM no es una dirección', async () => {
-    vi.stubEnv('MAIL_FROM', 'Hilo')
+    vi.stubEnv('MAIL_FROM', 'Ombúa')
     vi.resetModules()
 
     await expect(import('./env')).rejects.toThrow(/MAIL_FROM/)
   })
 
   it('arranca con la forma que documentamos, y guarda el valor recortado', async () => {
-    vi.stubEnv('MAIL_FROM', '  Hilo <hola@hilo.uy>\n')
+    vi.stubEnv('MAIL_FROM', '  Ombúa <hola@ombua.com>\n')
     vi.resetModules()
 
     const { env } = await import('./env')
-    expect(env.MAIL_FROM).toBe('Hilo <hola@hilo.uy>')
+    expect(env.MAIL_FROM).toBe('Ombúa <hola@ombua.com>')
   })
 })

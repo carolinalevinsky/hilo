@@ -5,7 +5,7 @@ instrucción fue **redactar, no publicar**. Así que acá no hay ningún cambio
 aplicado: las dos pantallas siguen exactamente como estaban.
 
 Lo que sí hay es la parte que un abogado no puede escribir solo, porque hay que
-mirar el código para saberla: **qué hace Hilo de verdad con los datos, y en qué
+mirar el código para saberla: **qué hace Ombúa de verdad con los datos, y en qué
 puntos los dos documentos publicados no lo dicen o dicen otra cosa.** Con esto
 al lado, la revisión legal se vuelve corta.
 
@@ -60,7 +60,7 @@ encargados:
 | **Anthropic** | El texto que se manda a redactar: el contexto del informe o de la evaluación, el dictado de una sesión, la pregunta al asistente, y el archivo que se sube para que lo describa. No la base entera — sólo lo de ese pedido. |
 | **Resend** | Correo. El resumen semanal va **sin nombres**: cuenta cuántas sesiones y cuánto saldo, y un link. La única excepción está en el punto 4. |
 | **Google Calendar** | Sólo si la profesional lo conecta, y sólo lo que ella eligió que salga: "Ocupado", las iniciales, o el nombre de pila. Nunca el motivo ni la nota. |
-| **El servicio de dictado del navegador** (Google en Chrome, Apple en Safari) | El audio, cuando se usa dictar. **No pasa por Hilo**: va del navegador a ese servicio y vuelve como texto. Esto ya está bien explicado en el documento. |
+| **El servicio de dictado del navegador** (Google en Chrome, Apple en Safari) | El audio, cuando se usa dictar. **No pasa por Ombúa**: va del navegador a ese servicio y vuelve como texto. Esto ya está bien explicado en el documento. |
 | **Mercado Pago** | Nada, por ahora: está apagado para la v1 (ver el punto 3). |
 
 Dos cosas que conviene decir junto a esa tabla, porque son ciertas y son buenas:
@@ -84,19 +84,19 @@ tabla, no después.
 Cláusula 12, `terminos/page.tsx:87`:
 
 > **Pagos.** Los cobros a las familias se realizan directamente entre el/la
-> profesional y la familia; Hilo solo facilita el medio (por ejemplo, Mercado
+> profesional y la familia; Ombúa solo facilita el medio (por ejemplo, Mercado
 > Pago) y no es parte de esa relación ni retiene los fondos.
 
 **Mercado Pago está apagado** desde el commit `3a01b1a` (P8): la bandera está en
 `src/lib/features.ts` y el corte se hace en el servidor, no escondiendo un
 botón. El párrafo describe algo que hoy no se puede hacer.
 
-El fondo de la cláusula —Hilo no es parte de la relación de cobro y no retiene
+El fondo de la cláusula —Ombúa no es parte de la relación de cobro y no retiene
 fondos— sigue siendo correcto y hay que conservarlo. Lo que sobra es el ejemplo.
 Redacción propuesta:
 
 > **12. Pagos.** Los cobros a las familias se acuerdan y se realizan directamente
-> entre el/la profesional y la familia. Hilo lleva el registro de lo cobrado y lo
+> entre el/la profesional y la familia. Ombúa lleva el registro de lo cobrado y lo
 > pendiente; no interviene en el pago, no es parte de esa relación y no retiene
 > fondos en ningún momento.
 

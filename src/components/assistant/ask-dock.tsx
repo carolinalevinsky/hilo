@@ -4,11 +4,11 @@ import { MessageCircle, X } from '@/components/icons'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { createContext, useCallback, useContext, useState } from 'react'
 
-import { AskHilo } from '@/components/assistant/ask-hilo'
+import { Ask } from '@/components/assistant/ask'
 import { cn } from '@/lib/utils'
 
 /**
- * "Preguntá a Hilo", reachable from every screen — v1's `.fab`
+ * "Preguntá a Ombúa", reachable from every screen — v1's `.fab`
  * (`legacy/index.html:145`).
  *
  * The question a practitioner has does not arrive while they are on the home
@@ -68,25 +68,25 @@ import { cn } from '@/lib/utils'
  * which is why the open state lives in a provider rather than in a button.
  */
 
-const AskHiloContext = createContext<(() => void) | null>(null)
+const AskContext = createContext<(() => void) | null>(null)
 
-/** Opens the assistant panel. Only valid under `AskHiloProvider`. */
-export function useAskHilo() {
-  const open = useContext(AskHiloContext)
-  if (!open) throw new Error('useAskHilo used outside AskHiloProvider')
+/** Opens the assistant panel. Only valid under `AskProvider`. */
+export function useAsk() {
+  const open = useContext(AskContext)
+  if (!open) throw new Error('useAsk used outside AskProvider')
   return open
 }
 
-export function AskHiloProvider({ children }: { children: React.ReactNode }) {
+export function AskProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const openPanel = useCallback(() => setOpen(true), [])
 
   return (
-    <AskHiloContext.Provider value={openPanel}>
+    <AskContext.Provider value={openPanel}>
       {children}
-      <AskHiloFab open={open} onOpen={openPanel} />
-      <AskHiloDock open={open} setOpen={setOpen} />
-    </AskHiloContext.Provider>
+      <AskFab open={open} onOpen={openPanel} />
+      <AskDock open={open} setOpen={setOpen} />
+    </AskContext.Provider>
   )
 }
 
@@ -98,15 +98,15 @@ export function AskHiloProvider({ children }: { children: React.ReactNode }) {
  * encima, en la misma esquina. Cerrarlo se hace con la ✕ del panel o con Escape,
  * así que el botón no necesita ser un interruptor de ida y vuelta.
  */
-function AskHiloFab({ open, onOpen }: { open: boolean; onOpen: () => void }) {
+function AskFab({ open, onOpen }: { open: boolean; onOpen: () => void }) {
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-haspopup="dialog"
       aria-expanded={open}
-      aria-label="Preguntá a Hilo"
-      title="Preguntá a Hilo"
+      aria-label="Preguntá a Ombúa"
+      title="Preguntá a Ombúa"
       className={cn(
         'no-print fixed right-5 bottom-5 z-50 hidden size-14 items-center justify-center rounded-full',
         'bg-violet text-white shadow-[0_8px_24px_rgb(108_92_231_/_45%)] transition hover:brightness-107',
@@ -119,7 +119,7 @@ function AskHiloFab({ open, onOpen }: { open: boolean; onOpen: () => void }) {
   )
 }
 
-function AskHiloDock({
+function AskDock({
   open,
   setOpen,
 }: {
@@ -146,7 +146,7 @@ function AskHiloDock({
             'sm:inset-x-auto sm:right-5 sm:bottom-[calc(84px+env(safe-area-inset-bottom))] sm:h-[min(620px,calc(100svh-11rem))] sm:w-[400px] sm:rounded-2xl lg:bottom-5 lg:h-[min(620px,calc(100svh-3.5rem))]',
           )}
         >
-          <DialogPrimitive.Title className="sr-only">Preguntale a Hilo</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">Preguntale a Ombúa</DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
             Preguntas sobre cualquier paciente o sobre tu práctica.
           </DialogPrimitive.Description>
@@ -158,7 +158,7 @@ function AskHiloDock({
             <X className="size-4" />
           </DialogPrimitive.Close>
 
-          <AskHilo fill />
+          <Ask fill />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

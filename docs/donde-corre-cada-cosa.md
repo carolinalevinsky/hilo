@@ -1,6 +1,6 @@
 # Dónde corre cada cosa, y por qué importa
 
-Hilo hace varias consultas por pantalla, una atrás de la otra: no puede empezar
+Ombúa hace varias consultas por pantalla, una atrás de la otra: no puede empezar
 la segunda hasta que vuelve la primera. Con la base al lado eso no se nota. Con
 la base en otro continente, cada una de esas esperas se suma.
 

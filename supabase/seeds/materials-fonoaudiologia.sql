@@ -312,7 +312,7 @@ Es exactamente la habilidad que se usa para leer y escribir palabras nuevas.'),
   (null, 'speech_therapy', 'Articulación', 'Praxias orofaciales', 'La boca cerrada y la respiración nasal', 'guide', 'Trabajar el cierre labial en chicos que respiran por la boca', '6-7 años', 'Antes que nada:
 Un chico que respira por la boca todo el tiempo necesita una consulta otorrinolaringológica. Si hay una obstrucción, ningún ejercicio la resuelve.
 Los ejercicios, si ya está descartado:
-• Sostener un botón atado a un hilo con los labios, mientras alguien tira suave.
+• Sostener un botón atado a un ombua con los labios, mientras alguien tira suave.
 • Sostener un palito de helado entre los labios, sin dientes.
 • Inflar los cachetes y mantener treinta segundos.
 • Tomar agua con sorbete, con los labios bien cerrados.

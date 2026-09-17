@@ -5,7 +5,7 @@ import type { ChatMessage } from './ai'
 import { getDb } from './db'
 
 /**
- * "Preguntale a Hilo" — the in-app assistant.
+ * "Preguntale a Ombúa" — the in-app assistant.
  *
  * v1's `chatSend` (`legacy/index.html:2590`), with its offline `chatReply`
  * (`legacy/index.html:2561`) kept as the fallback rather than thrown away: when
@@ -133,14 +133,14 @@ export async function gatherAssistantContext(
  */
 export function assistantInstructions(discipline: string): string {
   return [
-    `Sos Hilo, copiloto clínico de un/a profesional de ${discipline} en Uruguay.`,
+    `Sos Ombúa, copiloto clínico de un/a profesional de ${discipline} en Uruguay.`,
     'Respondés en español rioplatense, usando "vos", claro y cálido, sin rodeos.',
     'Podés dar orientación clínica general y sugerencias de trabajo.',
     'No inventás datos de pacientes que no estén en el contexto: si te preguntan por alguien que no aparece, decilo.',
     'No hacés diagnósticos cerrados y no afirmás resultados que no estén en los datos.',
     'Respuestas breves: dos o tres frases, salvo que te pidan más.',
     'Escribís en texto plano, sin markdown ni viñetas.',
-    'Es una conversación: si la consulta se apoya en lo que ya venían hablando, seguí el hilo sin repetir lo dicho.',
+    'Es una conversación: si la consulta se apoya en lo que ya venían hablando, seguí el ombua sin repetir lo dicho.',
   ].join(' ')
 }
 
@@ -219,7 +219,7 @@ export function assistantRoster(context: AssistantContext): string {
 }
 
 /**
- * Who Hilo is, and then the roster.
+ * Who Ombúa is, and then the roster.
  *
  * The roster sits in the system prompt rather than inside the question, and that
  * is what makes a thread affordable: it travels once per request instead of once
@@ -333,7 +333,7 @@ export function offlineAnswer(context: AssistantContext, question: string): stri
   }
 
   if (/(informe|reporte)/.test(asked)) {
-    return 'En Informes tocás "Nuevo informe", elegís el paciente y para quién es (colegio, familia o mutualista), y se arma con lo que Hilo ya sabe. Vos lo editás y lo firmás.'
+    return 'En Informes tocás "Nuevo informe", elegís el paciente y para quién es (colegio, familia o mutualista), y se arma con lo que Ombúa ya sabe. Vos lo editás y lo firmás.'
   }
 
   if (/(evalua|test|puntaje|interpret|wisc|bender|prolec|analisis)/.test(asked)) {

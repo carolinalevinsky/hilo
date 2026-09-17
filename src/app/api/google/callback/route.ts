@@ -2,10 +2,9 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { NextRequest } from 'next/server'
 
+import { GOOGLE_STATE_COOKIE as STATE_COOKIE } from '@/lib/storage-keys'
 import { getUser } from '@/server/auth'
 import { completeConnection } from '@/server/google'
-
-import { STATE_COOKIE } from '../conectar/route'
 
 /** Vuelve al perfil diciendo qué pasó, sin filtrar nada de Google en la URL. */
 function backToProfile(result: string): never {

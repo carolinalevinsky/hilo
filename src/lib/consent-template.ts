@@ -1,7 +1,7 @@
 /**
  * The informed consent a family signs from the "Antes de empezar" link.
  *
- * Hilo ships a model so that nobody has to start from a blank page, and each
+ * Ombúa ships a model so that nobody has to start from a blank page, and each
  * practitioner can replace it with their own in Mi perfil. Either way the text
  * is filled in and **copied onto the link when it is created** — see
  * `patient_forms.consent_text` — so what a family signed stays exactly what
@@ -9,7 +9,7 @@
  *
  * ─── What the model is, and is not ─────────────────────────────────────────
  *
- * It is written from the three laws that apply to every discipline Hilo
+ * It is written from the three laws that apply to every discipline Ombúa
  * serves: consent recorded in the historia clínica and, for a minor, from
  * whoever is responsible for them with the child's view taken into account
  * (Ley 19.529); the historia belongs to the patient and they can have a copy
@@ -39,7 +39,7 @@ Entiendo que:
 
 • {profesional} lleva una historia clínica con los datos, las evaluaciones y el registro de cada sesión. La historia clínica es de {paciente} y puedo pedir una copia (Ley N.º 18.335).
 
-• Los datos se guardan en Hilo, la herramienta que usa {profesional}, y se tratan según la Ley N.º 18.331 de protección de datos personales. Puedo pedir acceder a ellos o corregirlos.
+• Los datos se guardan en Ombúa, la herramienta que usa {profesional}, y se tratan según la Ley N.º 18.331 de protección de datos personales. Puedo pedir acceder a ellos o corregirlos.
 
 • Puedo retirar este consentimiento cuando quiera, avisándole a {profesional}. Eso no cambia lo que ya se hizo hasta ese momento.
 

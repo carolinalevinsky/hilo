@@ -14,8 +14,9 @@ import { Card } from '@/components/ui/card'
 import { areasFor, materialKindLabel } from '@/lib/material-areas'
 import { MATERIALS_PAGE, materialOrigin, pageMaterials } from '@/server/materials'
 import { currentSession } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Materiales · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Materiales') }
 
 function readParam(value: string | string[] | undefined) {
   return typeof value === 'string' ? value : undefined

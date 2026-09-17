@@ -26,7 +26,7 @@ import {
  * one click adds it, and what you assemble persists until you register the
  * session.
  *
- * Nothing here is automatic. Hilo proposes an order; the practitioner builds the
+ * Nothing here is automatic. Ombúa proposes an order; the practitioner builds the
  * list.
  */
 
@@ -337,7 +337,7 @@ async function nextPosition(practitionerId: string, patientId: string): Promise<
  *
  * `materialId` is the one the practitioner picked from the three offered. When
  * it is absent — the goal was added without choosing, or from a screen that does
- * not offer the choice — Hilo falls back to its own best match, which is what
+ * not offer the choice — Ombúa falls back to its own best match, which is what
  * this function always used to do.
  *
  * The title is copied rather than read through `goal_id` — see the migration.
@@ -402,7 +402,7 @@ export async function addGoalToPlan(
 /**
  * An activity the practitioner typed, belonging to no goal and no material.
  *
- * The planner could only assemble things Hilo already knew about: a goal, or a
+ * The planner could only assemble things Ombúa already knew about: a goal, or a
  * material from the library. Half of what goes into a session is neither — "el
  * juego de la oca con sílabas", "terminar la lámina de la vez pasada" — and
  * having nowhere to put it is what makes a planner feel like it is planning

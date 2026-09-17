@@ -9,8 +9,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { areasFor } from '@/lib/material-areas'
 import { getMaterial, getMaterialFileUrl, materialFileName } from '@/server/materials'
 import { currentSession } from '../../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Editar material · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Editar material') }
 
 /**
  * Editing a material you wrote.
@@ -19,7 +20,7 @@ export const metadata: Metadata = { title: 'Editar material · Hilo' }
  * nothing was saved, so every change was gone on reload. Same affordance, in a
  * form that persists.
  *
- * Only your own: Hilo's shipped materials and other practitioners' published
+ * Only your own: Ombúa's shipped materials and other practitioners' published
  * ones are read-only here, and the way to change one of those is to copy it.
  */
 export default async function EditMaterialPage({

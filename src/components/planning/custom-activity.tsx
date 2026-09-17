@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
  *
  * Not everything that goes into a session is a goal or a library material —
  * "el juego de la oca con sílabas", "terminar la lámina de la vez pasada" — and
- * until this existed the planner could only assemble the parts Hilo already knew
+ * until this existed the planner could only assemble the parts Ombúa already knew
  * about.
  *
  * It sits with the other two sources rather than inside the plan, because it is

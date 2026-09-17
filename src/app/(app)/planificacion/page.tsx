@@ -28,7 +28,7 @@ import { getPhotoUrl, listPatients } from '@/server/patients'
 import { listPlanItems, planSuggestions } from '@/server/session-plans'
 import { currentSession } from '../session'
 
-/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+/** Sin "· Ombúa": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
 export const metadata: Metadata = { title: 'Planificar sesión' }
 
 /**
@@ -86,7 +86,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
           <EmptyState
             icon={ClipboardList}
             title="Planificá tu primera sesión"
-            text="Cargá un paciente y sus objetivos, y Hilo prioriza los que menos se movieron y te deja la próxima sesión casi armada."
+            text="Cargá un paciente y sus objetivos, y Ombúa prioriza los que menos se movieron y te deja la próxima sesión casi armada."
             action={
               <Button asChild>
                 <Link href="/pacientes/nuevo">Cargar mi primer paciente</Link>

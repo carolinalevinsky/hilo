@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { HiloMemory, PatientDocuments } from '@/components/documents/patient-documents'
+import { AssistantMemory, PatientDocuments } from '@/components/documents/patient-documents'
 import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientActions } from '@/components/patients/patient-actions'
@@ -35,8 +35,9 @@ import { listPlanItems } from '@/server/session-plans'
 import { listSessions } from '@/server/sessions'
 
 import { currentPractitioner, currentUser } from '../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Paciente · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Paciente') }
 
 export default async function PatientPage({ params }: PageProps<'/pacientes/[id]'>) {
   const { id } = await params
@@ -327,10 +328,10 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               acá que no hace falta a los dos segundos de abrir la pantalla. */}
           <Card className="max-lg:order-3">
             <CardHeader>
-              <CardTitle>Memoria de Hilo</CardTitle>
+              <CardTitle>Memoria de Ombúa</CardTitle>
             </CardHeader>
             <CardContent>
-              <HiloMemory
+              <AssistantMemory
                 firstName={firstName(patient.full_name)}
                 sessions={sessions.length}
                 goals={goals.length}

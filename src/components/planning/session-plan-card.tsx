@@ -16,7 +16,7 @@ import type { PlanItem } from '@/server/session-plans'
  * Everything on this screen exists to fill this card, so it is drawn as the one
  * thing that is not a panel — a violet head, the items numbered in the order
  * they will be worked, and the actions at the foot of it. It is the only part
- * that gets printed and handed over, which is why it carries `hilo-doc` and why
+ * that gets printed and handed over, which is why it carries `app-doc` and why
  * the head has print colours of its own: white on violet prints as white on
  * white, and a printed plan with no title on it is a list of activities for
  * nobody.
@@ -67,7 +67,7 @@ export function SessionPlanCard({
   return (
     // `h-fit`: the card is short and the column beside it is long, so a
     // stretched card left a third of a screen of empty white.
-    <Card className="hilo-doc h-fit gap-0 py-0">
+    <Card className="app-doc h-fit gap-0 py-0">
       <header className="bg-violet px-4 py-3.5 text-white print:bg-transparent print:text-foreground">
         <div className="flex items-start justify-between gap-2.5">
           <div className="min-w-0">

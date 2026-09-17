@@ -12,7 +12,7 @@ import {
  * The practitioner's own instructions (P20).
  *
  * Two halves. The prompt: her text goes at the end, fenced, after a sentence
- * that says Hilo's clinical rules win — and nowhere when there is none. The
+ * that says Ombúa's clinical rules win — and nowhere when there is none. The
  * saved ones: against real Postgres, because what is under test is the unique
  * name per kind (saving again updates) and that nobody sees anybody else's.
  */
