@@ -90,7 +90,12 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
   })
 
   await test.step('loads a patient', async () => {
-    await page.getByRole('link', { name: 'Cargar paciente' }).click()
+    // The full form, not the quick one. Inicio's first step now loads a patient
+    // from a name alone, and its button is also called "Cargar paciente" — but
+    // this test needs the screen that has the birth date and the motivo, which
+    // is the one behind the link beside it.
+    await page.getByRole('link', { name: /ficha completa/ }).click()
+    await expect(page).toHaveURL(/\/pacientes\/nuevo$/)
 
     await page.getByLabel('Nombre y apellido').fill(PATIENT)
     await page.getByLabel('Fecha de nacimiento').fill('2019-04-12')
