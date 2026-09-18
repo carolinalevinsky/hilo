@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 
 import { createPatientAction, updatePatientAction } from '@/app/(app)/pacientes/actions'
 import { FormMessage } from '@/components/auth/form-message'
@@ -8,9 +8,10 @@ import { PhotoPicker } from '@/components/patients/photo-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
-import { FREQUENCY_LABELS } from '@/lib/appointment-labels'
+import { NEW_PATIENT_FREQUENCY_LABELS } from '@/lib/appointment-labels'
 import {
   AGE_GROUP_LABELS,
   BILLING_FREQUENCY_LABELS,
@@ -27,6 +28,11 @@ import type { Patient } from '@/server/patients'
  *
  * A page rather than a modal: this is long enough that on a phone a modal means
  * scrolling inside a scroll, and a page can be linked to.
+ *
+ * **Lo obligatorio se marca una vez.** Antes cada campo que no lo era decía
+ * "· opcional" al lado del nombre: nueve veces la misma palabra, una por campo,
+ * y los dos que sí hacían falta no decían nada. Ahora el asterisco marca los
+ * dos, una línea lo explica arriba, y el resto de las etiquetas quedan limpias.
  */
 export function PatientForm({
   patient,
@@ -41,8 +47,47 @@ export function PatientForm({
     EMPTY_FORM_STATE,
   )
 
+  // La población decide qué preguntas tienen sentido más abajo, así que es lo
+  // único del formulario que el cliente necesita saber.
+  const [ageGroup, setAgeGroup] = useState<string>(patient?.age_group ?? 'children')
+  // Un adolescente puede venir solo. Arranca en "sí" para quien todavía no
+  // existe, y en lo que diga la ficha para quien ya está cargado.
+  const [hasGuardian, setHasGuardian] = useState(!patient || Boolean(patient.guardian_name))
+  const [frequency, setFrequency] = useState('weekly')
+  const [weekday, setWeekday] = useState('1')
+
+  const showsGuardian = ageGroup !== 'adults' && (ageGroup !== 'adolescents' || hasGuardian)
+
+  /**
+   * Un solo campo que vive en dos lugares: arriba con el paciente cuando viene
+   * solo, y adentro del bloque del responsable cuando hay un adulto a cargo —
+   * que es cuando el número es de él, y cuando se completa junto con su nombre.
+   *
+   * Controlado, y por eso: cambiar la población lo mueve de un lugar al otro, y
+   * un campo que se desmonta y se vuelve a montar arranca vacío. El valor vive
+   * acá, así que el número escrito sigue estando después de la mudanza.
+   */
+  const [phone, setPhone] = useState(patient?.phone ?? '')
+  const phoneField = (
+    <Field
+      label={showsGuardian ? 'Teléfono del responsable' : 'Teléfono'}
+      htmlFor="phone"
+      required
+    >
+      <Input
+        id="phone"
+        name="phone"
+        type="tel"
+        required
+        placeholder="Ej: 099 123 456"
+        value={phone}
+        onChange={(event) => setPhone(event.target.value)}
+      />
+    </Field>
+  )
+
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className="space-y-6">
       {patient ? <input type="hidden" name="patientId" value={patient.id} /> : null}
 
       <FormMessage message={state.message} />
@@ -56,15 +101,15 @@ export function PatientForm({
           decide how many of those fields share a row.
 
           The spans below are what keeps the three-column rows from breaking
-          into ragged halves: at `xl` the patient's own data fills two rows, the
-          responsable's fills one, and the two long text fields take two thirds
-          each. That is six rows where it used to be ten. */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Field
-          label="Nombre y apellido"
-          htmlFor="fullName"
-          className="sm:col-span-2 xl:col-span-1"
-        >
+          into ragged halves: at `xl` the patient's own data fills two rows and
+          the long text fields take two thirds each. */}
+      <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
+        {/* Sin `col-span`: el nombre ocupaba dos columnas y dejaba la grilla
+            corrida por uno, así que el último campo de la sección —Mutualista—
+            terminaba solo, con un hueco al lado que parecía un error. Con todos
+            los campos del mismo ancho las filas cierran, y media fila alcanza
+            de sobra para un nombre. */}
+        <Field label="Nombre y apellido" htmlFor="fullName" required>
           <Input
             id="fullName"
             name="fullName"
@@ -74,33 +119,58 @@ export function PatientForm({
           />
         </Field>
 
-        <Field label="Fecha de nacimiento" htmlFor="dateOfBirth" hint="opcional">
+        <Field label="Fecha de nacimiento" htmlFor="dateOfBirth">
           <Input
             id="dateOfBirth"
             name="dateOfBirth"
             type="date"
             defaultValue={patient?.date_of_birth ?? ''}
           />
-          <p className="text-xs text-muted-foreground">
-            Guardamos la fecha, no la edad, así nunca queda vieja.
-          </p>
         </Field>
 
         <Field label="Población" htmlFor="ageGroup">
-          <Select id="ageGroup" name="ageGroup" defaultValue={patient?.age_group ?? 'children'}>
+          <NativeSelect
+            id="ageGroup"
+            name="ageGroup"
+            value={ageGroup}
+            onChange={(event) => setAgeGroup(event.target.value)}
+          >
             {Object.entries(AGE_GROUP_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </Field>
 
-        <Field label="Colegio / escuela" htmlFor="school" hint="opcional">
+        {/* El teléfono, cuando el paciente lo contesta él mismo. Cuando hay un
+            adulto a cargo el campo no está acá: está abajo, adentro del bloque
+            del responsable, que es de quien es ese número. Ver `phoneField`. */}
+        {showsGuardian ? null : phoneField}
+
+        {/* Las dos preguntas de la escuela, escondidas con adultos por lo mismo
+            que el responsable: "Colegio / escuela" y "Grado o nivel" son
+            preguntas de escolaridad, y a una persona de cuarenta años no le
+            corresponden. Se esconden, no se desmontan, así que a quien ya las
+            tenía cargadas no se le borran.
+
+            El grado no sale de la edad, aunque lo parezca: se repite, se entra
+            tarde, hay escuela especial, y la fecha de nacimiento es opcional
+            —sin ella no hay edad de la que deducir nada—. Además es lo que se
+            lee al lado de la sesión y arriba del informe. */}
+        <Field
+          label="Colegio / escuela"
+          htmlFor="school"
+          className={ageGroup === 'adults' ? 'hidden' : undefined}
+        >
           <Input id="school" name="school" defaultValue={patient?.school ?? ''} />
         </Field>
 
-        <Field label="Grado o nivel" htmlFor="schoolLevel" hint="opcional">
+        <Field
+          label="Grado o nivel"
+          htmlFor="schoolLevel"
+          className={ageGroup === 'adults' ? 'hidden' : undefined}
+        >
           <Input
             id="schoolLevel"
             name="schoolLevel"
@@ -109,70 +179,11 @@ export function PatientForm({
           />
         </Field>
 
-        <Field label="Mutualista" htmlFor="healthInsurer" hint="opcional">
+        <Field label="Mutualista" htmlFor="healthInsurer">
           <Input
             id="healthInsurer"
             name="healthInsurer"
             defaultValue={patient?.health_insurer ?? ''}
-          />
-        </Field>
-
-        {/* El adulto a cargo, en su propio bloque. Hasta ahora el alta sólo tenía
-            "Teléfono de la familia", sin nombre: el consentimiento que pide la
-            Ley 19.529 para un menor lo firma una persona, el link para
-            completar la ficha le llega a una persona, y el informe "para la
-            familia" lo lee alguien con nombre. Un solo responsable, a
-            propósito — ver la migración `patient_guardian`. */}
-        <div className="border-t border-border pt-4 sm:col-span-2 xl:col-span-3">
-          <p className="text-body font-bold">Responsable</p>
-          <p className="text-meta text-muted-foreground">
-            Si es menor, el adulto a cargo: quien firma el consentimiento, paga y recibe los
-            informes. Si es adulto, alcanza con su teléfono.
-          </p>
-        </div>
-
-        <Field label="Nombre del responsable" htmlFor="guardianName" hint="opcional">
-          <Input
-            id="guardianName"
-            name="guardianName"
-            placeholder="Nombre y apellido"
-            defaultValue={patient?.guardian_name ?? ''}
-          />
-        </Field>
-
-        <Field label="Es su…" htmlFor="guardianRelationship" hint="opcional">
-          <Select
-            id="guardianRelationship"
-            name="guardianRelationship"
-            defaultValue={patient?.guardian_relationship ?? ''}
-          >
-            <option value="">Elegí</option>
-            {Object.entries(GUARDIAN_RELATIONSHIP_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </Select>
-        </Field>
-
-        <Field label="Teléfono" htmlFor="phone" hint="opcional">
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder="Ej: 099 123 456"
-            defaultValue={patient?.phone ?? ''}
-          />
-          <p className="text-xs text-muted-foreground">Para recordatorios, cobros y el link de la ficha.</p>
-        </Field>
-
-        <Field label="Correo del responsable" htmlFor="guardianEmail" hint="opcional">
-          <Input
-            id="guardianEmail"
-            name="guardianEmail"
-            type="email"
-            placeholder="nombre@correo.com"
-            defaultValue={patient?.guardian_email ?? ''}
           />
         </Field>
 
@@ -200,7 +211,6 @@ export function PatientForm({
           <Field
             label="Primer objetivo"
             htmlFor="firstGoal"
-            hint="opcional"
             className="sm:col-span-2 xl:col-span-2"
           >
             <Input
@@ -216,45 +226,156 @@ export function PatientForm({
           </Field>
         )}
 
-        <Field label="Inicio del tratamiento" htmlFor="startDate" hint="opcional">
-          <Input
-            id="startDate"
-            name="startDate"
-            type="date"
-            defaultValue={patient?.start_date ?? ''}
-          />
-        </Field>
+        {/* Sólo al editar. En el alta nadie sabe todavía cuándo empieza el
+            tratamiento —es la fecha de la primera sesión, que todavía no
+            ocurrió— y pedirlo ahí era pedir una fecha inventada o dejar el
+            campo vacío para siempre. Ahora lo escribe la primera sesión que se
+            registra (ver `startTreatmentOn`), y acá queda para corregirlo:
+            quien viene de años de papel pone la fecha real. */}
+        {editing ? (
+          <Field label="Inicio del tratamiento" htmlFor="startDate">
+            <Input
+              id="startDate"
+              name="startDate"
+              type="date"
+              defaultValue={patient?.start_date ?? ''}
+            />
+            <p className="text-xs text-muted-foreground">
+              Se completa solo con la primera sesión que registres.
+            </p>
+          </Field>
+        ) : null}
       </div>
 
+      {/* El adulto a cargo, en su propio bloque. Hasta ahora el alta sólo tenía
+          "Teléfono de la familia", sin nombre: el consentimiento que pide la
+          Ley 19.529 para un menor lo firma una persona, el link para
+          completar la ficha le llega a una persona, y el informe "para la
+          familia" lo lee alguien con nombre. Un solo responsable, a
+          propósito — ver la migración `patient_guardian`.
+
+          Quién lo ve: con niños, siempre. Con adultos, nadie — preguntarle a
+          una persona de cuarenta años quién es su madre era ruido en la mitad
+          del formulario. Con adolescentes depende, que es justo el caso que no
+          se puede resolver de antemano: a los trece hay un adulto a cargo y a
+          los diecinueve puede no haberlo.
+
+          Se esconde con `hidden` en vez de desmontarse: los campos siguen en el
+          formulario, así que cambiar la población de un paciente ya cargado no
+          le borra en silencio el responsable que tenía. Esto es historia
+          clínica; lo que se borra se borra a propósito. */}
+      <fieldset
+        aria-labelledby="seccion-responsable"
+        className={
+          ageGroup === 'adults' ? 'hidden' : 'space-y-4 border-t border-border pt-6'
+        }
+      >
+        {/* Un `<p>` nombrado con `aria-labelledby`, y no el elemento que el HTML
+            tiene para esto: el navegador lo dibuja *adentro* del borde del
+            `fieldset` y le abre un hueco, así que el título de cada sección
+            quedaba con media raya colgando a la derecha. Con esto la línea que
+            separa una sección de la otra se dibuja entera, y el grupo se sigue
+            anunciando igual en un lector de pantalla. */}
+        <p id="seccion-responsable" className={SECTION_TITLE}>
+          Responsable
+        </p>
+
+        {ageGroup === 'adolescents' ? (
+          <div className="max-w-xs">
+            <Field label="¿Tiene un adulto a cargo?" htmlFor="hasGuardian">
+              {/* Sin `name`: es un interruptor de esta pantalla, no un dato del
+                  paciente. Lo que se guarda son los campos de abajo. */}
+              <NativeSelect
+                id="hasGuardian"
+                value={hasGuardian ? 'yes' : 'no'}
+                onChange={(event) => setHasGuardian(event.target.value === 'yes')}
+              >
+                <option value="yes">Sí</option>
+                <option value="no">No, viene solo/a</option>
+              </NativeSelect>
+            </Field>
+          </div>
+        ) : null}
+
+        <div
+          className={
+            showsGuardian ? 'grid gap-x-4 gap-y-5 sm:grid-cols-2 xl:grid-cols-3' : 'hidden'
+          }
+        >
+          <Field label="Nombre del responsable" htmlFor="guardianName">
+            <Input
+              id="guardianName"
+              name="guardianName"
+              placeholder="Nombre y apellido"
+              defaultValue={patient?.guardian_name ?? ''}
+            />
+          </Field>
+
+          {showsGuardian ? phoneField : null}
+
+          <Field label="Es su…" htmlFor="guardianRelationship">
+            <NativeSelect
+              id="guardianRelationship"
+              name="guardianRelationship"
+              defaultValue={patient?.guardian_relationship ?? ''}
+            >
+              <option value="">Elegí</option>
+              {Object.entries(GUARDIAN_RELATIONSHIP_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+
+          <Field label="Correo del responsable" htmlFor="guardianEmail">
+            <Input
+              id="guardianEmail"
+              name="guardianEmail"
+              type="email"
+              placeholder="nombre@correo.com"
+              defaultValue={patient?.guardian_email ?? ''}
+            />
+          </Field>
+        </div>
+      </fieldset>
+
       {/* Also only when creating. The form was already asking "sesiones por mes"
-          two fieldsets down — it wanted to know how often you see them — but had
+          one fieldset down — it wanted to know how often you see them — but had
           nowhere to say *when*, so the day and time had to be repeated in the
-          Agenda dialog. This writes the same standing rule that dialog writes,
-          and the Agenda materialises the occurrences from it.
+          Agenda dialog. This writes the same rule that dialog writes, and the
+          Agenda materialises the occurrences from it.
+
+          El título decía "Cuándo la ves", que le ponía género a un paciente que
+          puede no tenerlo: la mitad de las fichas de una fonoaudióloga son
+          varones. Lo que hace este bloque es agendar, así que se llama así.
 
           The hour is empty on purpose and is the switch: no hour, no schedule.
           A pre-filled 09:00 would agendar every patient at nine for somebody
           who has not decided yet. */}
       {editing ? null : (
-        <fieldset className="space-y-4 border-t border-border pt-5">
-          <legend className="text-body font-bold text-muted-foreground uppercase">
-            Cuándo la ves
-          </legend>
-
-          <p className="text-meta leading-relaxed text-muted-foreground">
-            Si ya sabés el día y la hora, la sesión queda agendada sola en tu Agenda.
-            Si todavía no, dejá la hora en blanco y la agendás cuando la tengas.
+        <fieldset
+          aria-labelledby="seccion-agenda"
+          className="space-y-4 border-t border-border pt-6"
+        >
+          <p id="seccion-agenda" className={SECTION_TITLE}>
+            Agenda
           </p>
 
-          <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
+          <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
             <Field label="Día de la semana" htmlFor="weekday">
-              <Select id="weekday" name="weekday" defaultValue="1">
-                {WEEK_ORDER.map((weekday) => (
-                  <option key={weekday} value={weekday}>
-                    {weekdayName(weekday)}
+              <NativeSelect
+                id="weekday"
+                name="weekday"
+                value={weekday}
+                onChange={(event) => setWeekday(event.target.value)}
+              >
+                {WEEK_ORDER.map((day) => (
+                  <option key={day} value={day}>
+                    {weekdayName(day)}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </Field>
 
             {/* De a cuartos de hora, igual que el diálogo de agendar, porque
@@ -262,36 +383,51 @@ export function PatientForm({
                 uno. La opción vacía sigue siendo el interruptor: es el valor
                 por defecto, y sin hora no se agenda nada. */}
             <Field label="Hora" htmlFor="startTime">
-              <Select id="startTime" name="startTime" defaultValue="">
+              <NativeSelect id="startTime" name="startTime" defaultValue="">
                 <option value="">Todavía no sé</option>
                 {QUARTER_HOURS.map((time) => (
                   <option key={time} value={time}>
                     {time}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </Field>
 
             <Field label="Frecuencia" htmlFor="frequency">
-              <Select id="frequency" name="frequency" defaultValue="weekly">
-                {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+              <NativeSelect
+                id="frequency"
+                name="frequency"
+                value={frequency}
+                onChange={(event) => setFrequency(event.target.value)}
+              >
+                {Object.entries(NEW_PATIENT_FREQUENCY_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </Field>
           </div>
+
+          {frequency === 'once' ? (
+            <p className="text-meta text-muted-foreground">
+              Queda agendada una sola sesión, el {weekdayName(Number(weekday)).toLowerCase()}{' '}
+              que viene. No se repite.
+            </p>
+          ) : null}
         </fieldset>
       )}
 
-      <fieldset className="space-y-4 border-t border-border pt-5">
-        <legend className="text-body font-bold text-muted-foreground uppercase">
-          Cobro
-        </legend>
+      <fieldset
+        aria-labelledby="seccion-pagos"
+        className="space-y-4 border-t border-border pt-6"
+      >
+        <p id="seccion-pagos" className={SECTION_TITLE}>
+          Pagos
+        </p>
 
-        <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
-          <Field label="Honorario ($)" htmlFor="sessionFee" hint="opcional">
+        <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
+          <Field label="Honorario ($)" htmlFor="sessionFee">
             <Input
               id="sessionFee"
               name="sessionFee"
@@ -305,7 +441,7 @@ export function PatientForm({
           </Field>
 
           <Field label="Frecuencia de pago" htmlFor="billingFrequency">
-            <Select
+            <NativeSelect
               id="billingFrequency"
               name="billingFrequency"
               defaultValue={patient?.billing_frequency ?? 'monthly'}
@@ -315,7 +451,7 @@ export function PatientForm({
                   {label}
                 </option>
               ))}
-            </Select>
+            </NativeSelect>
           </Field>
 
           <Field
@@ -344,16 +480,21 @@ export function PatientForm({
   )
 }
 
+/** El título de una sección del formulario. */
+const SECTION_TITLE = 'text-body font-bold text-muted-foreground uppercase'
+
 function Field({
   label,
   htmlFor,
   hint,
+  required,
   className,
   children,
 }: {
   label: string
   htmlFor: string
   hint?: string
+  required?: boolean
   className?: string
   children: React.ReactNode
 }) {
@@ -361,6 +502,11 @@ function Field({
     <div className={`space-y-1.5 ${className ?? ''}`}>
       <Label htmlFor={htmlFor}>
         {label}
+        {required ? (
+          <span aria-hidden="true" className="text-coral">
+            *
+          </span>
+        ) : null}
         {hint ? <span className="font-normal text-muted-foreground"> · {hint}</span> : null}
       </Label>
       {children}
@@ -368,16 +514,3 @@ function Field({
   )
 }
 
-/**
- * A native select. Radix's does not submit with a form and would need client
- * state plus a hidden input to match what this already does — and on a phone the
- * native picker is the better control.
- */
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

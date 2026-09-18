@@ -205,3 +205,21 @@ export function googleCalendarLink({
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
+
+/**
+ * La próxima fecha que cae en ese día de la semana, hoy incluido.
+ *
+ * El alta pregunta por un día de la semana —"los martes"—, que es lo que
+ * necesita una regla que se repite. "Solo esta vez" no es una regla: es una
+ * sesión sola, y una sesión sola necesita una fecha. Ésta es la traducción.
+ *
+ * Hoy cuenta: quien da de alta un paciente un martes de mañana lo está
+ * agendando para esta tarde, no para dentro de siete días. Si la hora ya pasó,
+ * la sesión queda agendada hoy más temprano — visible en la Agenda de hoy, que
+ * es donde quien la agendó va a mirar.
+ */
+export function nextDateForWeekday(weekday: number, from = todayDate()): string {
+  const date = new Date(from)
+  date.setDate(from.getDate() + ((weekday - from.getDay() + 7) % 7))
+  return toDateInput(date)
+}

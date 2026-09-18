@@ -94,6 +94,9 @@ test('sign up, load a patient, register a session, get a report', async ({ page 
 
     await page.getByLabel('Nombre y apellido').fill(PATIENT)
     await page.getByLabel('Fecha de nacimiento').fill('2019-04-12')
+    // Obligatorio, como el nombre: es por donde salen los recordatorios, los
+    // cobros y el link de la ficha.
+    await page.getByLabel('Teléfono').fill('099 123 456')
     await page.getByLabel('Motivo de consulta').fill('Dificultades en la producción de /r/.')
 
     await page.getByRole('button', { name: 'Crear paciente' }).click()

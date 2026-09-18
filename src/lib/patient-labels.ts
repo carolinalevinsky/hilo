@@ -9,10 +9,16 @@
  * paciente" (`legacy/index.html:987`). It is not a filter, it is a register.
  */
 
+/**
+ * En singular, porque donde más se leen es al lado del nombre de una persona:
+ * "Tomás · 7 años · Niño/a", la ficha, el panel al costado de la sesión. En
+ * plural ("Niños y niñas") sonaba a categoría de un listado, y el listado es el
+ * único lugar donde estaba bien.
+ */
 export const AGE_GROUP_LABELS = {
-  children: 'Niños y niñas',
-  adolescents: 'Adolescentes',
-  adults: 'Adultos',
+  children: 'Niño/a',
+  adolescents: 'Adolescente',
+  adults: 'Adulto',
 } as const
 
 /** How to refer to the patient in running text, per age group. */

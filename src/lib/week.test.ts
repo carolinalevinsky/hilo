@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { weekOffsetFrom } from './week'
+import { nextDateForWeekday, weekOffsetFrom } from './week'
 
 /**
  * El parámetro `semana` de la Agenda viene de la barra de direcciones, así que
@@ -31,5 +31,33 @@ describe('weekOffsetFrom', () => {
       expect(Number.isFinite(offset)).toBe(true)
       expect(Math.abs(offset)).toBeLessThanOrEqual(104)
     }
+  })
+})
+
+/**
+ * "Solo esta vez" en el alta: el formulario pide un día de la semana y una
+ * sesión sola necesita una fecha.
+ */
+describe('nextDateForWeekday', () => {
+  // Miércoles 16 de setiembre de 2026.
+  const wednesday = new Date(2026, 8, 16)
+
+  it('devuelve hoy cuando hoy es ese día', () => {
+    expect(nextDateForWeekday(3, wednesday)).toBe('2026-09-16')
+  })
+
+  it('avanza hasta el próximo', () => {
+    expect(nextDateForWeekday(4, wednesday)).toBe('2026-09-17')
+    expect(nextDateForWeekday(0, wednesday)).toBe('2026-09-20')
+  })
+
+  it('da la vuelta a la semana en lugar de volver para atrás', () => {
+    // El martes ya pasó: el que viene es el de la semana próxima.
+    expect(nextDateForWeekday(2, wednesday)).toBe('2026-09-22')
+  })
+
+  it('cruza el fin de mes sin inventar un 31 de setiembre', () => {
+    const lastWednesday = new Date(2026, 8, 30)
+    expect(nextDateForWeekday(1, lastWednesday)).toBe('2026-10-05')
   })
 })

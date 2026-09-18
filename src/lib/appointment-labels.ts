@@ -80,3 +80,20 @@ export const FREQUENCY_LABELS = {
 export function frequencyLabel(value: string) {
   return FREQUENCY_LABELS[value as keyof typeof FREQUENCY_LABELS] ?? FREQUENCY_LABELS.weekly
 }
+
+/**
+ * Lo que ofrece el alta de un paciente: las tres frecuencias de arriba, más una
+ * cuarta opción que no es una frecuencia.
+ *
+ * "Solo esta vez" no escribe un horario fijo: escribe una sesión sola, el
+ * próximo día elegido. Es la primera entrevista, la consulta única, la que se
+ * agenda sin saber todavía si va a haber tratamiento — y hasta ahora el alta no
+ * la podía expresar, así que quien la necesitaba tenía que dejar la hora en
+ * blanco acá e ir a agendarla de nuevo a la Agenda.
+ *
+ * La bifurcación vive en `saveAgendaIfPresent`, en las acciones de pacientes.
+ */
+export const NEW_PATIENT_FREQUENCY_LABELS = {
+  ...FREQUENCY_LABELS,
+  once: 'Solo esta vez',
+} as const

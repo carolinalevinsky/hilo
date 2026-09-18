@@ -65,7 +65,6 @@ export function PhotoPicker({ currentUrl }: { currentUrl?: string | null }) {
         <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
           <Camera className="size-4" />
           {preview ? 'Cambiar foto' : 'Agregar foto'}
-          <span className="text-muted-foreground">· opcional</span>
         </Button>
         {objectUrl ? (
           <Button type="button" variant="ghost" size="sm" onClick={clear}>

@@ -38,7 +38,7 @@ export default async function EditPatientPage({
 
       {/* Same width as the alta — it is the same form, and a narrower card here
           would lay its three-column grid out differently on the same screen. */}
-      <Card className="max-w-[1400px]">
+      <Card className="max-w-[1400px] [--card-spacing:--spacing(6)]">
         <CardContent className="space-y-4">
           <PatientForm patient={patient} photoUrl={photoUrl} />
 

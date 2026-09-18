@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { formError, formOk, type FormState } from '@/lib/form-state'
-import { createSchedule } from '@/server/appointments'
+import { nextDateForWeekday } from '@/lib/week'
+import { createAppointment, createSchedule } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
 import { createGoal } from '@/server/goals'
 import {
@@ -96,19 +97,26 @@ async function saveFirstGoalIfPresent(
 }
 
 /**
- * The standing appointment typed on the alta, if there was one.
+ * Lo que se agenda desde el alta, si se agendó algo.
  *
  * **The hour is the switch.** Weekday and frequency are selects and always come
  * back with a value; the hour is the only field somebody has to deliberately
  * fill, so an empty hour means "I have not decided yet" and nothing is written.
  *
- * The rule it writes is the same one the "Agendar sesión" dialog writes, and
- * the Agenda turns it into occurrences on its own — see `materialiseAppointments`.
+ * Dos caminos, y los elige la frecuencia:
+ *
+ *   "Solo esta vez" escribe una sesión sola, el próximo día elegido. Es la
+ *   primera entrevista o la consulta única, y hasta ahora el alta no la sabía
+ *   decir: había que dejar la hora en blanco e ir a agendarla a la Agenda.
+ *
+ *   Cualquier otra escribe la regla —la misma que escribe el diálogo "Agendar
+ *   sesión"—, y la Agenda materializa las ocurrencias sola; ver
+ *   `materialiseAppointments`.
  *
  * Returns whether anything was written, so the caller only revalidates the
  * Agenda when there is a reason to.
  */
-async function saveScheduleIfPresent(
+async function saveAgendaIfPresent(
   practitionerId: string,
   patientId: string,
   formData: FormData,
@@ -116,13 +124,19 @@ async function saveScheduleIfPresent(
   const startTime = String(formData.get('startTime') ?? '').trim()
   if (!startTime) return false
 
+  const frequency = String(formData.get('frequency') ?? 'weekly')
+  const weekday = Number(formData.get('weekday') ?? 1)
+
   try {
-    await createSchedule(practitionerId, {
-      patientId,
-      weekday: formData.get('weekday'),
-      startTime,
-      frequency: formData.get('frequency') ?? 'weekly',
-    })
+    if (frequency === 'once') {
+      await createAppointment(practitionerId, {
+        patientId,
+        scheduledOn: nextDateForWeekday(weekday),
+        startTime,
+      })
+    } else {
+      await createSchedule(practitionerId, { patientId, weekday, startTime, frequency })
+    }
     return true
   } catch (error) {
     console.error('[patients] no se pudo agendar el horario', { patientId, error })
@@ -146,7 +160,7 @@ export async function createPatientAction(
 
   await savePhotoIfPresent(user.id, patientId, formData)
   await saveFirstGoalIfPresent(user.id, patientId, formData)
-  const scheduled = await saveScheduleIfPresent(user.id, patientId, formData)
+  const scheduled = await saveAgendaIfPresent(user.id, patientId, formData)
 
   revalidatePath('/pacientes')
   if (scheduled) revalidatePath('/agenda')
