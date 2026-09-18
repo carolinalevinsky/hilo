@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { BILLING_FREQUENCY_LABELS } from '@/lib/patient-labels'
 
@@ -114,18 +115,17 @@ export function BillingDialog({
 
             <div className="space-y-1.5">
               <Label htmlFor="billing-frequency">Frecuencia</Label>
-              <select
+              <NativeSelect
                 id="billing-frequency"
                 name="billingFrequency"
                 defaultValue={billingFrequency}
-                className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {Object.entries(BILLING_FREQUENCY_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
           </div>
 

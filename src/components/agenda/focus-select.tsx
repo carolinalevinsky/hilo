@@ -1,5 +1,7 @@
 'use client'
 
+import { NativeSelect } from '@/components/ui/native-select'
+
 /**
  * The goal picker in "Plan de la semana", which saves as soon as you pick.
  *
@@ -25,18 +27,18 @@ export function FocusSelect({
   options: { id: string; title: string; progress: number }[]
 }) {
   return (
-    <select
+    <NativeSelect
       name={name}
       defaultValue={defaultValue}
       aria-label={label}
       onChange={(event) => event.currentTarget.form?.requestSubmit()}
-      className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-body outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="h-8 pl-2.5 text-body"
     >
       {options.map((option) => (
         <option key={option.id} value={option.id}>
           {option.title} ({option.progress}%)
         </option>
       ))}
-    </select>
+    </NativeSelect>
   )
 }

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { deleteTemplateAction } from '@/app/(app)/prompt-template-actions'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 
 const CUSTOM_INSTRUCTIONS_MAX = 4000
@@ -52,7 +53,7 @@ export function CustomInstructionsField({
             <Label htmlFor="templateId" className="sr-only">
               Tus instrucciones guardadas
             </Label>
-            <select
+            <NativeSelect
               id="templateId"
               name="templateId"
               value={chosenId}
@@ -62,7 +63,7 @@ export function CustomInstructionsField({
                 setText(next?.body ?? '')
                 setName(next?.name ?? '')
               }}
-              className="h-9 min-w-[200px] flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              wrapperClassName="w-auto min-w-[200px] flex-1"
             >
               <option value="">Usar unas guardadas…</option>
               {templates.map((template) => (
@@ -70,7 +71,7 @@ export function CustomInstructionsField({
                   {template.name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
 
             {chosen ? (
               <button

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { today } from '@/lib/dates'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { PAYMENT_METHOD_LABELS } from '@/lib/patient-labels'
@@ -77,7 +78,7 @@ export function PaymentDialog({
 
             <div className="space-y-1.5">
               <Label htmlFor="payment-patient">Paciente</Label>
-              <Select
+              <NativeSelect
                 id="payment-patient"
                 name="patientId"
                 required
@@ -91,7 +92,7 @@ export function PaymentDialog({
                     {patient.full_name}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -122,13 +123,13 @@ export function PaymentDialog({
 
             <div className="space-y-1.5">
               <Label htmlFor="payment-method">Medio</Label>
-              <Select id="payment-method" name="method" defaultValue="cash">
+              <NativeSelect id="payment-method" name="method" defaultValue="cash">
                 {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </div>
 
             <div className="space-y-1.5">
@@ -151,11 +152,3 @@ export function PaymentDialog({
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

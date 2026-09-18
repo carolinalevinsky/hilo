@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { Results } from '@/components/results'
 import { Input } from '@/components/ui/input'
+import { NativeSelect } from '@/components/ui/native-select'
 import { useUrlState } from '@/components/use-url-state'
 import { AGE_GROUP_LABELS, ageGroupLabel } from '@/lib/patient-labels'
 import { cn } from '@/lib/utils'
@@ -150,18 +151,19 @@ export function PatientFilters({
           </Group>
 
           <Group label="Orden" className="sm:ml-auto">
-            <select
+            <NativeSelect
               value={sort}
               onChange={(event) => set('orden', event.target.value)}
               aria-label="Ordenar pacientes"
-              className="h-9 rounded-lg border border-input bg-background px-3 text-body outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="text-body"
+              wrapperClassName="w-auto"
             >
               {Object.entries(SORT_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </Group>
         </div>
       ) : null}

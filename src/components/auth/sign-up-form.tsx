@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { DISCIPLINES } from '@/lib/disciplines'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 
@@ -109,13 +110,12 @@ export function SignUpForm() {
           state and a hidden input to do what one native element already does —
           and on a phone the native picker is the better control anyway.
         */}
-        <select
+        <NativeSelect
           key={`discipline-${attempt}`}
           id="discipline"
           name="discipline"
           required
           defaultValue={typed.discipline ?? ''}
-          className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <option value="" disabled>
             Elegí tu profesión
@@ -125,7 +125,7 @@ export function SignUpForm() {
               {d.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <Label

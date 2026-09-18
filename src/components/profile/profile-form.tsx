@@ -7,6 +7,7 @@ import { FormMessage } from '@/components/auth/form-message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { DISCIPLINES } from '@/lib/disciplines'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 
@@ -47,19 +48,18 @@ export function ProfileForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="discipline">Tu profesión</Label>
-        <select
+        <NativeSelect
           id="discipline"
           name="discipline"
           defaultValue={discipline}
           required
-          className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {DISCIPLINES.map((d) => (
             <option key={d.id} value={d.id}>
               {d.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
         <p className="text-xs text-muted-foreground">
           Define qué instrumentos de evaluación y qué materiales ves en la app.
         </p>

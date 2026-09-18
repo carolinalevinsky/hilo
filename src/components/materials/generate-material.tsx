@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { AGE_RANGES } from '@/lib/material-areas'
 
@@ -62,24 +63,24 @@ export function GenerateMaterial({ areas }: { areas: string[] }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="gen-area">Área</Label>
-              <Select id="gen-area" name="area" required>
+              <NativeSelect id="gen-area" name="area" required>
                 {areas.map((name) => (
                   <option key={name} value={name}>
                     {name}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="gen-age">Edad</Label>
-              <Select id="gen-age" name="ageRange" defaultValue="6-7 años">
+              <NativeSelect id="gen-age" name="ageRange" defaultValue="6-7 años">
                 {AGE_RANGES.map((range) => (
                   <option key={range} value={range}>
                     {range}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </div>
           </div>
 
@@ -109,11 +110,3 @@ export function GenerateMaterial({ areas }: { areas: string[] }) {
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

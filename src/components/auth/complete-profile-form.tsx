@@ -7,6 +7,7 @@ import { FormMessage } from '@/components/auth/form-message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { DISCIPLINES } from '@/lib/disciplines'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 
@@ -53,13 +54,13 @@ export function CompleteProfileForm() {
 
       <div className="space-y-1.5">
         <Label htmlFor="discipline">Profesión</Label>
-        <select
+        <NativeSelect
           key={`discipline-${attempt}`}
           id="discipline"
           name="discipline"
           defaultValue={typed.discipline ?? ''}
           required
-          className="h-9 w-full rounded-lg border border-input bg-transparent px-3 text-body shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="bg-transparent text-body shadow-xs"
         >
           <option value="" disabled>
             Elegí tu profesión
@@ -69,7 +70,7 @@ export function CompleteProfileForm() {
               {discipline.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <Button type="submit" size="lg" className="w-full" disabled={pending}>

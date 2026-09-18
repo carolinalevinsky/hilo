@@ -1,7 +1,7 @@
 'use client'
 
+import { NativeSelect } from '@/components/ui/native-select'
 import { useUrlState } from '@/components/use-url-state'
-import { cn } from '@/lib/utils'
 
 /**
  * The control on the planner that changes what the server queries: which
@@ -16,9 +16,6 @@ import { cn } from '@/lib/utils'
  * the coming ones first, with their day and time, and underneath the patients
  * with nothing scheduled in the next four weeks, who can still be prepared for.
  */
-
-const SELECT_CLASSES =
-  'h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
 
 type Option = { id: string; label: string }
 
@@ -50,7 +47,7 @@ export function PlanSessionPicker({
       : selected
 
   return (
-    <select
+    <NativeSelect
       id="plan-session"
       value={shown}
       // Changing session must also drop the library search: the results carry
@@ -64,7 +61,7 @@ export function PlanSessionPicker({
             : { paciente: id, sesion: '', q: '' },
         )
       }}
-      className={cn(SELECT_CLASSES, className)}
+      className={className}
     >
       {sessions.length > 0 ? (
         <optgroup label="Próximas sesiones">
@@ -84,6 +81,6 @@ export function PlanSessionPicker({
           ))}
         </optgroup>
       ) : null}
-    </select>
+    </NativeSelect>
   )
 }

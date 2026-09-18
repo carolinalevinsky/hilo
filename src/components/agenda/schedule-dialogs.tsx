@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { type AgendaSlot, slotWeekday } from '@/lib/agenda-slot'
 import { FREQUENCY_LABELS } from '@/lib/appointment-labels'
 import { today } from '@/lib/dates'
@@ -248,7 +249,7 @@ function ScheduleFields({
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Día de la semana" htmlFor="weekday">
-          <Select
+          <NativeSelect
             id="weekday"
             name="weekday"
             defaultValue={slot ? String(slotWeekday(slot)) : '1'}
@@ -258,20 +259,23 @@ function ScheduleFields({
                 {weekdayName(weekday)}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </Field>
         <TimeField id="scheduleTime" defaultTime={slot?.time} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Una pizca más ancha la frecuencia que la fecha: "Todas las semanas" no
+          entra en media fila y se le corta la última letra, mientras que al
+          lado un campo de fecha sobra espacio. */}
+      <div className="grid grid-cols-[1.35fr_1fr] gap-3">
         <Field label="Frecuencia" htmlFor="frequency">
-          <Select id="frequency" name="frequency" defaultValue="weekly">
+          <NativeSelect id="frequency" name="frequency" defaultValue="weekly">
             {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </Field>
         <Field label="Desde" htmlFor="startsOn">
           <Input
@@ -298,7 +302,7 @@ function ScheduleFields({
 function PatientSelect({ patients }: { patients: PatientOption[] }) {
   return (
     <Field label="Paciente" htmlFor="patientId">
-      <Select id="patientId" name="patientId" required defaultValue="">
+      <NativeSelect id="patientId" name="patientId" required defaultValue="">
         <option value="" disabled>
           Elegí un paciente
         </option>
@@ -307,7 +311,7 @@ function PatientSelect({ patients }: { patients: PatientOption[] }) {
             {patient.full_name}
           </option>
         ))}
-      </Select>
+      </NativeSelect>
     </Field>
   )
 }
@@ -331,13 +335,13 @@ function PatientSelect({ patients }: { patients: PatientOption[] }) {
 function TimeField({ id, defaultTime }: { id: string; defaultTime?: string }) {
   return (
     <Field label="Hora" htmlFor={id}>
-      <Select id={id} name="startTime" defaultValue={snapToQuarterHour(defaultTime)} required>
+      <NativeSelect id={id} name="startTime" defaultValue={snapToQuarterHour(defaultTime)} required>
         {QUARTER_HOURS.map((time) => (
           <option key={time} value={time}>
             {time}
           </option>
         ))}
-      </Select>
+      </NativeSelect>
     </Field>
   )
 }
@@ -346,12 +350,12 @@ function DurationField({ idPrefix = 'one-off' }: { idPrefix?: string }) {
   const id = `${idPrefix}-duration`
   return (
     <Field label="Duración" htmlFor={id}>
-      <Select id={id} name="durationMinutes" defaultValue="45">
+      <NativeSelect id={id} name="durationMinutes" defaultValue="45">
         <option value="30">30 minutos</option>
         <option value="45">45 minutos</option>
         <option value="60">1 hora</option>
         <option value="90">1 hora y media</option>
-      </Select>
+      </NativeSelect>
     </Field>
   )
 }
@@ -378,11 +382,3 @@ function Field({
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}
