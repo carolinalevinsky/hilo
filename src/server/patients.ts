@@ -152,6 +152,38 @@ export async function updatePatient(
 }
 
 /**
+ * El inicio del tratamiento, escrito por la primera sesión que se registra.
+ *
+ * Era un campo del alta, y ahí la pregunta no tiene respuesta: el día que se
+ * carga un paciente la primera sesión todavía no ocurrió, así que se ponía una
+ * fecha inventada o se dejaba vacío para siempre. Vacío no es gratis — el
+ * informe clínico dice "Inicio del tratamiento: no consignado"
+ * (`report-prompt.ts`) y la ficha muestra un guión.
+ *
+ * La condición vive en el `where` y no en un `if` acá: `is('start_date', null)`
+ * hace que la segunda sesión no pise lo que escribió la primera, y que dos
+ * registros guardados a la vez no puedan pisarse entre ellos. Quien tiene la
+ * fecha real —quien viene de años de papel— la corrige en "Editar paciente",
+ * y esto ya no la vuelve a tocar.
+ */
+export async function startTreatmentOn(
+  practitionerId: string,
+  patientId: string,
+  heldOn: string,
+) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('patients')
+    .update({ start_date: heldOn })
+    .eq('id', patientId)
+    .eq('practitioner_id', practitionerId)
+    .is('start_date', null)
+
+  if (error) throw error
+}
+
+/**
  * Just the money: what a session costs, how often it is charged, and how many
  * there are in a month.
  *

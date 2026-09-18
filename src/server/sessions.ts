@@ -5,6 +5,7 @@ import type { Database } from '@/lib/database.types'
 import { setAppointmentStatus } from './appointments'
 import { logAction } from './audit'
 import { getDb } from './db'
+import { startTreatmentOn } from './patients'
 
 /**
  * Sessions — the clinical record of what actually happened.
@@ -94,8 +95,34 @@ export async function createSession(
   await linkGoals(practitionerId, session.id, data.goalIds)
   await logAction(practitionerId, 'create', 'session', session.id)
 
+  await markTreatmentStart(practitionerId, patientId, data.heldOn)
   if (data.appointmentId) await markAttended(practitionerId, data.appointmentId)
   return session
+}
+
+/**
+ * La primera sesión de un paciente es el inicio de su tratamiento, y lo escribe
+ * ella: nadie lo sabe el día del alta. Ver `startTreatmentOn`, que es quien se
+ * encarga de que sólo la primera cuente.
+ *
+ * Se traga su propio error por lo mismo que `markAttended`: el registro es la
+ * historia clínica y esto es una fecha derivada de él. Fallar acá haría que el
+ * formulario informe un fracaso por una sesión que quedó guardada, y el reintento
+ * chocaría después con la regla de una por franja.
+ */
+async function markTreatmentStart(
+  practitionerId: string,
+  patientId: string,
+  heldOn: string,
+) {
+  try {
+    await startTreatmentOn(practitionerId, patientId, heldOn)
+  } catch (error) {
+    console.error('[sessions] no se pudo marcar el inicio del tratamiento', {
+      patientId,
+      error,
+    })
+  }
 }
 
 /**
