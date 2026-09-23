@@ -2,7 +2,7 @@ import { ChevronDown } from '@/components/icons'
 import { cn } from '@/lib/utils'
 
 /**
- * El `<select>` del sistema, con la flecha de Hilo.
+ * El `<select>` del sistema, con la flecha de Ombúa.
  *
  * Es nativo a propósito: el de Radix (`ui/select.tsx`) no se envía con el
  * formulario —necesita estado del cliente y un input escondido para hacer lo
