@@ -52,7 +52,7 @@ export function GenerateMaterial({ areas }: { areas: string[] }) {
         <DialogHeader>
           <DialogTitle>Generar material con IA</DialogTitle>
           <DialogDescription>
-            Decile a Hilo qué necesitás y te arma una actividad original, a medida del
+            Decile a Ombúa qué necesitás y te arma una actividad original, a medida del
             objetivo y la edad.
           </DialogDescription>
         </DialogHeader>

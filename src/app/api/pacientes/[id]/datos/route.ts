@@ -56,5 +56,5 @@ function filename(fullName: string): string {
       .toLowerCase()
       .slice(0, 60) || 'paciente'
 
-  return `hilo-datos-${slug}.json`
+  return `ombua-datos-${slug}.json`
 }

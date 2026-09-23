@@ -1,4 +1,4 @@
-# Auditoría de seguridad — Hilo
+# Auditoría de seguridad — Ombúa
 
 ## Tu rol
 
@@ -58,7 +58,7 @@ en vez de creerse.
 
 ## Qué es esta aplicación
 
-Hilo es una herramienta para profesionales de la salud y la educación en Uruguay
+Ombúa es una herramienta para profesionales de la salud y la educación en Uruguay
 —fonoaudiología, psicopedagogía, terapia ocupacional, psicología, psicomotricidad
 y kinesiología. La usan para llevar historias clínicas de pacientes (en su
 mayoría, niños), planificar sesiones, seguir objetivos terapéuticos, escribir
@@ -400,7 +400,7 @@ Verificá cada plantilla y cada llamada en `src/server/notifications.ts`:
   ¿Se cifra en reposo? ¿Aparece en algún log, en algún error, o en alguna
   respuesta?
 - La sincronización entrante desde Google: ¿puede un evento creado en Google
-  sobrescribir o borrar contenido clínico de Hilo?
+  sobrescribir o borrar contenido clínico de Ombúa?
 - Al desconectar la cuenta, ¿se revoca el token contra Google o sólo se borra la
   fila?
 

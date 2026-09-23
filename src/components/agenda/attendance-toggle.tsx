@@ -47,7 +47,7 @@ export function AttendanceToggle({
           está tres centímetros más abajo y lleva a otra pantalla: la misma forma
           para "elegí una de estas dos" y para "andá a otro lado". La pista gris
           con la mitad elegida levantada es la misma que usan las solapas de
-          `schedule-dialogs.tsx`, así que la forma ya significa eso en Hilo. */}
+          `schedule-dialogs.tsx`, así que la forma ya significa eso en Ombúa. */}
       <div
         role="group"
         aria-label="Asistencia"

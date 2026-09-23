@@ -10,7 +10,7 @@
 const LOCALE = 'es-UY'
 
 /**
- * La zona horaria del país donde se usa Hilo.
+ * La zona horaria del país donde se usa Ombúa.
  *
  * Adentro de la aplicación no hace falta: las horas se guardan como hora de
  * pared —`15:00` es las tres de la tarde— y se muestran igual. Hace falta en el

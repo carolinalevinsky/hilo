@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Geist_Mono } from 'next/font/google'
+
+import { BRAND_COLORS, BRAND_DESCRIPTION, BRAND_NAME } from '@/lib/brand'
+
 import './globals.css'
 
 // Inter is the v1 typeface. Keeping it is not inertia — it was chosen, it reads
@@ -17,9 +20,8 @@ const geistMono = Geist_Mono({
 
 // User-facing text is Rioplatense Spanish. Code and comments are English.
 export const metadata: Metadata = {
-  title: 'Hilo',
-  description:
-    'La herramienta de gestión para profesionales de la salud y la educación.',
+  title: BRAND_NAME,
+  description: BRAND_DESCRIPTION,
   icons: {
     // iOS ignores the manifest's `icons`, so the home screen icon has to be
     // declared here as well or it falls back to a screenshot of the page.
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
     // What makes "Agregar a inicio" on iOS open standalone instead of Safari.
     // iOS has no `beforeinstallprompt`, so this is the whole iOS install story.
     capable: true,
-    title: 'Hilo',
+    title: BRAND_NAME,
     statusBarStyle: 'default',
   },
   other: {
@@ -44,7 +46,7 @@ export const metadata: Metadata = {
 // Separate from `metadata` because Next.js 16 requires it: `themeColor` moved
 // out of the metadata export. It tints the phone's status and address bars.
 export const viewport: Viewport = {
-  themeColor: '#6c5ce7',
+  themeColor: BRAND_COLORS.violet,
 }
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

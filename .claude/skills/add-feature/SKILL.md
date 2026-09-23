@@ -1,9 +1,9 @@
 ---
 name: add-feature
-description: Add a feature to Hilo — the two-file pattern (logic in src/server/, Server Action in src/app/). Use whenever adding or changing anything a practitioner can do.
+description: Add a feature to Ombúa — the two-file pattern (logic in src/server/, Server Action in src/app/). Use whenever adding or changing anything a practitioner can do.
 ---
 
-# Adding a feature to Hilo
+# Adding a feature to Ombúa
 
 Two files. Resist adding a third.
 

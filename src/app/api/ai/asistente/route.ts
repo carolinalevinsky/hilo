@@ -15,7 +15,7 @@ import { getPractitioner } from '@/server/practitioners'
 import { sseResponse, type SseEvent } from '../sse'
 
 /**
- * "Preguntale a Hilo".
+ * "Preguntale a Ombúa".
  *
  * The same four steps as the other two AI routes, in the same order, before a
  * single token is bought: resolve the session, load the practitioner, check the

@@ -15,7 +15,7 @@ import type { PlanSuggestion } from '@/server/session-plans'
  *
  * v1 sorted every active goal by progress ascending and showed all of them, and
  * that is the part of planning that takes the time: not writing the list, but
- * deciding what goes in it. Hilo proposes an order; the practitioner builds the
+ * deciding what goes in it. Ombúa proposes an order; the practitioner builds the
  * list.
  */
 export function GoalSuggestions({
@@ -39,7 +39,7 @@ export function GoalSuggestions({
     <PlanningPanel
       icon={Sparkles}
       title={`Objetivos de ${firstName}`}
-      hint="Hilo los ordena: primero los que menos se movieron."
+      hint="Ombúa los ordena: primero los que menos se movieron."
       aside={
         active > 0 ? (
           <span className="text-meta text-muted-foreground">
@@ -57,7 +57,7 @@ export function GoalSuggestions({
           >
             Cargá el primero
           </Link>{' '}
-          y Hilo arma las sugerencias.
+          y Ombúa arma las sugerencias.
         </p>
       ) : (
         <ul className="space-y-2.5">

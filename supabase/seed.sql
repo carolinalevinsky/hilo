@@ -4,7 +4,7 @@
 -- look at instead of a sign-up form and an empty database. It never runs in
 -- production: Supabase only applies `seed.sql` to a local reset.
 --
--- Sign in with:  lucia@hilo.test  /  hilo-de-prueba
+-- Sign in with:  lucia@ombua.test  /  ombua-de-prueba
 --
 -- The patients, goals, and session notes are v1's demo fixtures
 -- (`legacy/index.html:889`), which were written by someone who knows the domain
@@ -38,8 +38,8 @@ values (
   '11111111-1111-4111-8111-111111111111',
   'authenticated',
   'authenticated',
-  'lucia@hilo.test',
-  extensions.crypt('hilo-de-prueba', extensions.gen_salt('bf')),
+  'lucia@ombua.test',
+  extensions.crypt('ombua-de-prueba', extensions.gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}',
   '{"full_name":"Lucía Fernández","discipline":"psychopedagogy"}',
@@ -56,7 +56,7 @@ values (
   gen_random_uuid(),
   '11111111-1111-4111-8111-111111111111',
   '11111111-1111-4111-8111-111111111111',
-  '{"sub":"11111111-1111-4111-8111-111111111111","email":"lucia@hilo.test","email_verified":true}',
+  '{"sub":"11111111-1111-4111-8111-111111111111","email":"lucia@ombua.test","email_verified":true}',
   'email',
   now(),
   now(),

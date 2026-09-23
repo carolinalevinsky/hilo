@@ -4,7 +4,7 @@ import { SCALES, scaleIsReady, severityBand } from './scales'
 
 describe('scales', () => {
   // The wording is pasted from the official version by a person. Until it is,
-  // Hilo must not offer to send the questionnaire — see `@/lib/scales`.
+  // Ombúa must not offer to send the questionnaire — see `@/lib/scales`.
   it('is not ready while any official text is still missing', () => {
     const missing = Object.values(SCALES).some((scale) =>
       [scale.instruction, ...scale.items, ...scale.options].some((text) =>

@@ -21,7 +21,7 @@ import type { Material, MaterialFileLinks, MaterialVisibility } from '@/server/m
 /**
  * Writing or editing a material.
  *
- * One form for both, as everywhere else in Hilo: the fields are identical and
+ * One form for both, as everywhere else in Ombúa: the fields are identical and
  * two of them would drift. `material` being present is what switches it.
  *
  * The visibility selector is v1's (`legacy/index.html:823-836`) and in v1 it did
@@ -63,9 +63,9 @@ export function MaterialForm({
   const objective = useRef<HTMLInputElement>(null)
   const [generation, setGeneration] = useState<string | null>(
     generateFor
-      ? 'Hilo está escribiendo la actividad…'
+      ? 'Ombúa está escribiendo la actividad…'
       : describeFile
-        ? 'Hilo está leyendo el archivo…'
+        ? 'Ombúa está leyendo el archivo…'
         : null,
   )
   const started = useRef(false)
@@ -84,7 +84,7 @@ export function MaterialForm({
     if (!material || !field || !adjustment.trim()) return
 
     const previous = field.value
-    setGeneration('Hilo está ajustando la actividad…')
+    setGeneration('Ombúa está ajustando la actividad…')
     setAdjusting(true)
     field.value = ''
 
@@ -148,7 +148,7 @@ export function MaterialForm({
         if (content.current && body.content) content.current.value = body.content
 
         setGeneration(
-          'Lo escribió Hilo leyendo el archivo. Revisalo y corregí lo que haga falta.',
+          'Lo escribió Ombúa leyendo el archivo. Revisalo y corregí lo que haga falta.',
         )
       })
       .catch((error: Error) => {
@@ -303,7 +303,7 @@ export function MaterialForm({
           defaultValue={material?.objective ?? ''}
         />
         <p className="text-xs text-muted-foreground">
-          Con esto Hilo te lo sugiere solo cuando tenés un objetivo parecido.
+          Con esto Ombúa te lo sugiere solo cuando tenés un objetivo parecido.
         </p>
       </div>
 
@@ -385,7 +385,7 @@ export function MaterialForm({
 
         <p className="rounded-xl bg-violet-soft px-3 py-2.5 text-meta text-violet">
           {visibility === 'public'
-            ? 'Público: cualquier profesional de Hilo lo ve en su biblioteca y puede copiarlo, con tu nombre. Vos seguís siendo quien lo edita.'
+            ? 'Público: cualquier profesional de Ombúa lo ve en su biblioteca y puede copiarlo, con tu nombre. Vos seguís siendo quien lo edita.'
             : 'Privado: queda solo en tu biblioteca. Nadie más lo ve.'}
         </p>
 

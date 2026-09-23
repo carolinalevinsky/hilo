@@ -167,7 +167,7 @@ una lista vacía que quiere decir "no sé", un mensaje interno que se muestra co
 si fuera para vos.
 
 Arreglar los tres cierra los casos. Lo que no cierra es la clase, y eso sigue
-abierto: hoy los `console.error` de Hilo se pierden en Vercel a los pocos días y
+abierto: hoy los `console.error` de Ombúa se pierden en Vercel a los pocos días y
 nadie los lee nunca. Elegir a dónde van —una tabla propia en Supabase, o un
 servicio de afuera con el papeleo que eso implica— es la decisión que queda por
 tomar, y es tuya.

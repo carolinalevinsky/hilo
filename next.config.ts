@@ -100,14 +100,14 @@ const nextConfig: NextConfig = {
           // Sin esto, un archivo servido con el tipo equivocado puede terminar
           // ejecutándose como script.
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          // Hilo no se embebe en ningún lado. El `iframe` del material va en la
-          // otra dirección: es Hilo mostrando algo de Supabase.
+          // Ombúa no se embebe en ningún lado. El `iframe` del material va en la
+          // otra dirección: es Ombúa mostrando algo de Supabase.
           { key: 'X-Frame-Options', value: 'DENY' },
           // Es el default de los navegadores modernos; escrito, deja de depender
           // de cuál usa cada quien.
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // El micrófono lo usan el botón de dictado y el registro por voz, los
-          // dos dentro de Hilo. La cámara no la usa nada: la videollamada abre
+          // dos dentro de Ombúa. La cámara no la usa nada: la videollamada abre
           // `meet.jit.si` en otra pestaña, que es otro origen y tiene su propio
           // permiso.
           {

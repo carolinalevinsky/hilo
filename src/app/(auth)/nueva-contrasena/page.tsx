@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { NewPasswordForm } from '@/components/auth/new-password-form'
 
 import { RECOVERY_COOKIE } from '../recovery-cookie'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Contraseña nueva · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Contraseña nueva') }
 
 /**
  * Where a recovery link lands after `/confirmar` has turned it into a session.

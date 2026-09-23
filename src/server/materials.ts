@@ -9,7 +9,7 @@ import { getDb } from './db'
 /**
  * The materials library.
  *
- * Rows with a NULL `practitioner_id` ship with Hilo and everyone sees them; rows
+ * Rows with a NULL `practitioner_id` ship with Ombúa and everyone sees them; rows
  * with an id belong to one practitioner. The policy handles the split, so
  * nothing here has to remember it — a plain select returns both.
  */
@@ -46,8 +46,8 @@ export type MaterialSource = 'manual' | 'ai'
 export function materialOrigin(
   material: Pick<Material, 'practitioner_id' | 'visibility'>,
   practitionerId: string,
-): 'hilo' | 'mine' | 'community' {
-  if (material.practitioner_id === null) return 'hilo'
+): 'ombua' | 'mine' | 'community' {
+  if (material.practitioner_id === null) return 'ombua'
   if (material.practitioner_id === practitionerId) return 'mine'
   return 'community'
 }
@@ -189,12 +189,12 @@ function filteredMaterials(
     query = query.eq('practitioner_id', practitionerId)
   } else if (filters.onlyCommunity) {
     // Published by someone else. `neq` on a uuid column is null-unsafe in
-    // Postgres — Hilo's own rows have a NULL author and `neq` would drop them
+    // Postgres — Ombúa's own rows have a NULL author and `neq` would drop them
     // silently either way — so the two conditions are stated separately.
     query = query.eq('visibility', 'public').not('practitioner_id', 'is', null)
     query = query.neq('practitioner_id', practitionerId)
   } else {
-    // Hilo's materials for this discipline, plus everything the practitioner
+    // Ombúa's materials for this discipline, plus everything the practitioner
     // wrote, plus what the community published. A shared material with no
     // discipline suits everyone.
     query = query.or(
@@ -447,7 +447,7 @@ export async function createMaterial(
  * It exists for the uploaded file that gets described. Generating a material
  * from a sentence sets `source` at insert time, but an upload is a file the
  * practitioner already owned — that alone costs nothing and must not spend an
- * allowance. It becomes an AI material at the moment somebody asks Hilo to read
+ * allowance. It becomes an AI material at the moment somebody asks Ombúa to read
  * it, which is the moment the file is sent to Anthropic, and that is where this
  * is called from.
  *

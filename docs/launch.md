@@ -1,11 +1,11 @@
-# Poner Hilo en producción
+# Poner Ombúa en producción
 
 Everything in this file happens **outside the repository**, in the Supabase,
 Vercel, Resend and Mercado Pago dashboards. The code is finished; this is the
 list of things that only exist once and that nobody remembers a year later.
 
 Work through it in order. Steps 1 to 4 can be done days ahead; step 8 is the one
-that makes Hilo live.
+that makes Ombúa live.
 
 ---
 
@@ -104,7 +104,7 @@ way production does.
 1. Add and verify the sending domain (DNS: SPF, DKIM).
 2. Create an API key → `RESEND_API_KEY`.
 3. Set `MAIL_FROM` to something a practitioner would recognise, e.g.
-   `Hilo <hola@hilo.uy>`. It appears in the booking notification and the
+   `Ombúa <hola@ombua.com>`. It appears in the booking notification and the
    fortnightly digest.
 
 Until the domain is verified, Resend only delivers to the address that owns the
@@ -113,7 +113,7 @@ booking that never arrived.
 
 ### Resend as Supabase's mail server
 
-The booking notification and the digest are sent by Hilo through the Resend API.
+The booking notification and the digest are sent by Ombúa through the Resend API.
 The confirmation and password-recovery emails are sent by **Supabase**, which has
 its own mail server — and by default that is a shared one limited to a handful of
 messages an hour, meant for testing and not for people who need to get back into
@@ -129,7 +129,7 @@ Settings*:
 | Username | `resend` |
 | Password | the `RESEND_API_KEY` |
 | Sender email | the same address as `MAIL_FROM` |
-| Sender name | `Hilo` |
+| Sender name | `Ombúa` |
 
 Then raise the rate limit in *Authentication → Rate Limits* — the default of a
 few emails per hour is a shared-server limit and no longer applies.
@@ -169,7 +169,7 @@ and the streamed output has never been seen, it is out of date.
 
 ## 4. Mercado Pago
 
-Each practitioner connects their **own** Mercado Pago account; Hilo never holds
+Each practitioner connects their **own** Mercado Pago account; Ombúa never holds
 money. What the deployment needs is:
 
 - `MP_WEBHOOK_SECRET` — the signing secret from the Mercado Pago application,

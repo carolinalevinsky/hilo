@@ -1,9 +1,9 @@
 ---
 name: clinical-ai
-description: Work on Hilo's AI features — clinical reports, assessment analysis, prompts. Use before touching src/server/ai.ts, any prompt text, or anything that calls Anthropic.
+description: Work on Ombúa's AI features — clinical reports, assessment analysis, prompts. Use before touching src/server/ai.ts, any prompt text, or anything that calls Anthropic.
 ---
 
-# Clinical AI in Hilo
+# Clinical AI in Ombúa
 
 The output of these features is a document that a licensed professional signs
 and sends to a school, a family, or a health insurer. Treat it accordingly.

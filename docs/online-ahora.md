@@ -29,7 +29,7 @@ Generá uno en:
 
 **https://supabase.com/dashboard/account/tokens**
 
-*Generate new token*, nombre "hilo v2", y copialo. Se muestra una sola vez.
+*Generate new token*, nombre "ombua v2", y copialo. Se muestra una sola vez.
 
 Después, en la terminal, desde la carpeta del worktree:
 
@@ -87,7 +87,7 @@ corresponde, y tu perfil queda bien armado. No perdés nada: no hay pacientes.
 Un proyecto **nuevo**, no el del v1. El del v1 está configurado para HTML plano
 y funciones sueltas; el v2 es una app de Next.js.
 
-*Add New → Project*, importá `carolinalevinsky/hilo`, y en **Branch** elegí
+*Add New → Project*, importá `carolinalevinsky/ombua`, y en **Branch** elegí
 `trabajo-nuevo`.
 
 Después, las nueve variables. Seis salen de copiar y pegar del proyecto viejo
@@ -142,17 +142,19 @@ verificaciones:
 
 ---
 
-## 6. Un dominio propio, si algún día querés
+## 6. El dominio
 
-**`hilo.uy` no es de Hilo.** Aparece como ejemplo en `launch.md` y en un comentario
-de `booking-link.tsx`, y en algún momento se dio por propio sin comprobarlo. No lo
-es: responde 403 y pertenece a otra persona.
+El dominio de Ombúa es **`ombua.com`**, y la app vive en **`app.ombua.com`** —
+el subdominio, no el apex. Los dos aparecen como ejemplo y no son lo mismo: los
+links de reserva y los de los mails salen de `app.ombua.com`, mientras que las
+direcciones de correo (`hola@ombua.com`) van en el apex.
 
-Mientras tanto la URL de Vercel funciona perfecto — es una dirección real, con
-HTTPS, y no vence.
+Hasta que esté apuntado, la URL de Vercel funciona perfecto — es una dirección
+real, con HTTPS, y no vence. Que el dominio exista no cambia nada por sí solo:
+lo que decide a dónde apuntan los links de los mails y el link de reservas es
+`NEXT_PUBLIC_APP_URL`, no el registro del dominio.
 
-El día que compres un dominio, apuntarlo son quince minutos y hay que tocar
-**tres** lugares, no uno:
+Apuntarlo son quince minutos y hay que tocar **tres** lugares, no uno:
 
 1. `NEXT_PUBLIC_APP_URL` en Vercel
 2. Site URL y Redirect URLs en Supabase

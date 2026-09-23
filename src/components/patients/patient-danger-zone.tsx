@@ -57,7 +57,7 @@ export function PatientDangerZone({
           </Link>
         </Button>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          Todo lo que Hilo guarda sobre {expected}, para leer, imprimir o descargar. La
+          Todo lo que Ombúa guarda sobre {expected}, para leer, imprimir o descargar. La
           familia tiene derecho a pedirlo (Ley N.º 18.331).
         </p>
       </div>

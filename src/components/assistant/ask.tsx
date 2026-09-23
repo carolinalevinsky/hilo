@@ -11,7 +11,7 @@ import { readSseStream } from '@/lib/sse-client'
 import { cn } from '@/lib/utils'
 
 /**
- * "Preguntale a Hilo", on the dashboard — v1 put it there
+ * "Preguntale a Ombúa", on the dashboard — v1 put it there
  * (`legacy/index.html:557`) and that was right: it is the screen someone opens
  * between sessions, and the question they have is about the next one.
  *
@@ -56,7 +56,7 @@ type Turn = {
  * its own, so there the thread takes whatever is left between the header and the
  * box you type in.
  */
-export function AskHilo({ fill = false }: { fill?: boolean }) {
+export function Ask({ fill = false }: { fill?: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([])
   const [question, setQuestion] = useState('')
   const [asking, setAsking] = useState(false)
@@ -146,7 +146,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
       >
         <CardTitle className="flex items-center gap-2">
           <MessageCircle className="size-[18px] text-violet" />
-          Preguntale a Hilo
+          Preguntale a Ombúa
           {turns.length ? (
             /* Icon only. The arrow says "start over" on its own, and the
                words were the widest thing in a header that also has to hold the
@@ -226,7 +226,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
             </div>
           </div>
         ) : (
-          /* An empty panel is not an empty box. Hilo speaks first, and the four
+          /* An empty panel is not an empty box. Ombúa speaks first, and the four
              questions under it are the answer to "¿y qué le pregunto?" — the
              thing a first-time user actually gets stuck on.
 
@@ -307,7 +307,7 @@ export function AskHilo({ fill = false }: { fill?: boolean }) {
               belongs on the right when it is the only one left. */}
           <div className="mt-2 flex items-center gap-2">
             {/* The same dictation as every note field. The audio goes to the
-                browser's dictation service, not to Hilo — see
+                browser's dictation service, not to Ombúa — see
                 `src/lib/speech.ts`. Icon only: this box is often used with a
                 patient still in the room. */}
             <DictateButton compact value={question} onText={setQuestion} />

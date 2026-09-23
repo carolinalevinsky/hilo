@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
  * is, one line about how to use it, and whatever belongs on the right of that.
  *
  * Three cards on this screen used to each draw their own heading, which is how
- * "Sugerencias de Hilo" ended up looking like a different kind of thing from
+ * "Sugerencias de Ombúa" ended up looking like a different kind of thing from
  * "Buscar material" when they are the same kind of thing — two places to take
  * something from.
  */

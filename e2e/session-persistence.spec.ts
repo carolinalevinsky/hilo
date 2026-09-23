@@ -10,7 +10,7 @@ import { createConfirmedUser, deleteAuthUserByEmail, uniqueEmail } from './suppo
  * navegador, y volver cuando el token de acceso ya venció.
  *
  * El segundo caso es el que se rompió. El token de acceso dura una hora, así
- * que **siempre** está vencido cuando alguien abre Hilo a la mañana. El proxy lo
+ * que **siempre** está vencido cuando alguien abre Ombúa a la mañana. El proxy lo
  * renueva y tiene que escribir la cookie nueva en la respuesta; si esa
  * respuesta es un redirect construido aparte, la cookie renovada se pierde y la
  * sesión se cae. Ese es exactamente el camino de entrar por la raíz del sitio.

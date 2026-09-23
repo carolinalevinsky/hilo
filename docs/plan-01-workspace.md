@@ -22,7 +22,7 @@ Four rules decide every choice in this plan. When something here seems arbitrary
 ## 1. Repository layout
 
 ```
-hilo/
+ombua/
 ├── CLAUDE.md                  project rules, loaded into every Claude session
 ├── .claude/
 │   └── skills/                project-specific skills (section 8)
@@ -52,7 +52,7 @@ hilo/
 
 The new app **is** the repository root. `legacy/` is reference material, not a sibling project.
 
-This is a deliberate choice against nesting v2 under a `hilo-v2/` prefix, and the reasoning is worth recording because the alternative looks tempting. A prefix would buy exactly one thing: keeping the v1 deployment alive while v2 is built. **v1 has no users and no real data** — it is a prototype with test rows — so that is worth very little. What the prefix costs is permanent and paid by the person least able to absorb it: remembering to `cd` before opening Claude, two Vercel projects to keep straight, two `CLAUDE.md` files, `working-directory` in CI, and "which app is broken?" as the first question in every incident.
+This is a deliberate choice against nesting v2 under a `ombua-v2/` prefix, and the reasoning is worth recording because the alternative looks tempting. A prefix would buy exactly one thing: keeping the v1 deployment alive while v2 is built. **v1 has no users and no real data** — it is a prototype with test rows — so that is worth very little. What the prefix costs is permanent and paid by the person least able to absorb it: remembering to `cd` before opening Claude, two Vercel projects to keep straight, two `CLAUDE.md` files, `working-directory` in CI, and "which app is broken?" as the first question in every incident.
 
 With the app at the root, everything behaves the way every tutorial, every generator default, and every Claude session already expects. Nothing is lost either: `legacy/` keeps every file, and the `v1-prototype` tag makes v1 redeployable in minutes if it is ever wanted back.
 
@@ -76,7 +76,7 @@ git mv vercel.json legacy/vercel.json
 
 Write `legacy/README.md`:
 
-> This is the Hilo v1 prototype — a single 343 KB `index.html` plus four Vercel
+> This is the Ombúa v1 prototype — a single 343 KB `index.html` plus four Vercel
 > serverless functions. **It is frozen and unmaintained.** It is kept as a
 > reference for visual design, Spanish product copy, the clinical AI prompts,
 > and the email templates, all of which carry over to v2. Do not import from it,
@@ -473,7 +473,7 @@ Several of these already exist on the project from v1 and can be reused. `RESEND
 | `ANTHROPIC_API_KEY` | **server only** | |
 | `MP_WEBHOOK_SECRET` | **server only** | |
 | `RESEND_API_KEY` | **server only** | transactional email |
-| `MAIL_FROM` | server | e.g. `Hilo <avisos@hilo.uy>` |
+| `MAIL_FROM` | server | e.g. `Ombúa <avisos@ombua.com>` |
 | `CRON_SECRET` | **server only** | set by Vercel; the digest route must reject calls without it |
 
 The `NEXT_PUBLIC_` prefix is not a naming style — it is the switch that puts a value into the JavaScript bundle the browser downloads. This distinction belongs in `CLAUDE.md` in exactly these words.

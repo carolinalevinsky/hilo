@@ -11,8 +11,9 @@ import { listBookingRequests } from '@/server/booking'
 
 import { currentOrigin } from '../origin'
 import { currentPractitioner, currentUser } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Reservas · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Reservas') }
 
 export default async function BookingsPage() {
   const user = await currentUser()

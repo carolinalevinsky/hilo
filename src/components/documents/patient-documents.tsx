@@ -88,7 +88,7 @@ export function PatientDocuments({
 }
 
 /**
- * "Memoria de Hilo" — v1's card (`legacy/index.html:1216`).
+ * "Memoria de Ombúa" — v1's card (`legacy/index.html:1216`).
  *
  * It looks like decoration and is not. It is the answer to the question a
  * practitioner has in month one, which is "am I writing all this into a hole?" —
@@ -105,7 +105,7 @@ export function PatientDocuments({
  * `sessions` and `goals` are still taken, because whether anything exists at
  * all is a different message.
  */
-export function HiloMemory({
+export function AssistantMemory({
   firstName,
   sessions,
   goals,
@@ -121,7 +121,7 @@ export function HiloMemory({
       {nothingYet ? (
         <>
           Todavía no cargaste nada de {firstName}. A medida que registres sesiones y
-          evaluaciones, todo se guarda acá, y después Hilo lo usa para armar los informes
+          evaluaciones, todo se guarda acá, y después Ombúa lo usa para armar los informes
           por vos.
         </>
       ) : (

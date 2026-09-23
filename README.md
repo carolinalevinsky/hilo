@@ -1,4 +1,4 @@
-# Hilo
+# Ombúa
 
 Herramienta de gestión para profesionales de la salud y la educación en Uruguay:
 fonoaudiología, psicopedagogía, terapia ocupacional, psicología, psicomotricidad

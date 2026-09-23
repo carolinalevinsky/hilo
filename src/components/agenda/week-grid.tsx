@@ -88,7 +88,7 @@ export function WeekGrid({
                   </li>
                 ))}
 
-                {/* Debajo de las sesiones: lo de Hilo primero, que es lo que se
+                {/* Debajo de las sesiones: lo de Ombúa primero, que es lo que se
                     viene a hacer acá. Ver `Busy` en `week-calendar.tsx`. */}
                 {dayBusy.map((block) => (
                   <li

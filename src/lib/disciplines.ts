@@ -1,5 +1,5 @@
 /**
- * The six disciplines Hilo serves.
+ * The six disciplines Ombúa serves.
  *
  * The identifiers are English because they are stored in the database and
  * checked by a constraint (`practitioners.discipline`). The labels are

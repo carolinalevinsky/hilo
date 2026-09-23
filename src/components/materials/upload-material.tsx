@@ -26,7 +26,7 @@ import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
  * filing cabinet. Asking them to retype it is asking them not to bother, and a
  * library that only holds what was typed into it stays empty.
  *
- * The file alone is not enough for Hilo to be useful about it later:
+ * The file alone is not enough for Ombúa to be useful about it later:
  * `bestMaterialFor` matches on words, so a PDF with no description is a title
  * nobody will ever be offered again. Hence the model reads it and drafts the
  * description — and the practitioner corrects it before anything is saved.
@@ -55,7 +55,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
         <DialogHeader>
           <DialogTitle>Subir un material que ya tenés</DialogTitle>
           <DialogDescription>
-            Un PDF o una foto de una ficha, un juego o una lámina. Hilo lo lee y escribe
+            Un PDF o una foto de una ficha, un juego o una lámina. Ombúa lo lee y escribe
             la descripción; vos la corregís antes de guardar.
           </DialogDescription>
         </DialogHeader>
@@ -64,7 +64,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
           <FormMessage message={state.message} />
 
           <p className="rounded-xl bg-amber-soft px-3 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
-            Para describirlo, Hilo le manda el archivo al modelo de IA. Fijate que no
+            Para describirlo, Ombúa le manda el archivo al modelo de IA. Fijate que no
             tenga el nombre de ningún paciente escrito. Una foto sacada en el consultorio
             a veces lo tiene.
           </p>

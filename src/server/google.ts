@@ -36,7 +36,7 @@ const USERINFO = 'https://www.googleapis.com/oauth2/v2/userinfo'
  * `calendar.events` deja crear, mover y cancelar eventos. No da acceso a
  * contactos, ni a Gmail, ni a Drive, ni a crear o borrar calendarios enteros.
  * `userinfo.email` es para mostrar "conectado como …" y que quien tenga dos
- * cuentas sepa a cuál le está escribiendo Hilo.
+ * cuentas sepa a cuál le está escribiendo Ombúa.
  *
  * Pedir de más acá no tiene costo visible y es exactamente por eso que conviene
  * mirarlo dos veces: el permiso queda concedido hasta que alguien se acuerde de
@@ -152,7 +152,7 @@ export async function completeConnection(
     return {
       ok: false,
       message:
-        'Google no nos dio permiso permanente. Entrá a la configuración de tu cuenta de Google, quitá el acceso de Hilo, y conectá de nuevo.',
+        'Google no nos dio permiso permanente. Entrá a la configuración de tu cuenta de Google, quitá el acceso de Ombúa, y conectá de nuevo.',
     }
   }
 
@@ -342,9 +342,9 @@ export async function saveSyncPoint(
  * Desconecta la cuenta.
  *
  * Le avisa a Google además de borrar la fila. Borrar sólo la fila deja el
- * permiso concedido del lado de Google para siempre — invisible desde Hilo,
+ * permiso concedido del lado de Google para siempre — invisible desde Ombúa,
  * visible en la lista de aplicaciones de la cuenta, y vivo. "Desconectar" tiene
- * que significar que Hilo ya no puede entrar, no que se olvidó de cómo.
+ * que significar que Ombúa ya no puede entrar, no que se olvidó de cómo.
  *
  * Si el aviso falla, la fila se borra igual: quedarse conectada porque Google no
  * contestó sería el peor de los dos resultados.

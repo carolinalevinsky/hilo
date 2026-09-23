@@ -8,7 +8,7 @@ import {
   isNavItemActive,
   type NavItem,
 } from '@/components/app-shell/nav-items'
-import { Brandmark } from '@/components/brandmark'
+import { Wordmark } from '@/components/brand/wordmark'
 import { cn } from '@/lib/utils'
 
 /**
@@ -27,13 +27,12 @@ export function Sidebar({
   const pathname = usePathname()
 
   return (
-    <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 bg-[linear-gradient(180deg,#5a4bd4,#6c5ce7_60%,#7d6ef0)] px-4 py-5.5 text-[#e9e6ff] lg:flex">
+    <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 bg-[linear-gradient(180deg,var(--brand-violet-dark),var(--brand-violet)_60%,var(--brand-violet-light))] px-4 py-5.5 text-sidebar-foreground lg:flex">
       <Link
         href="/inicio"
         className="mb-6 flex items-center gap-2.5 text-[22px] font-extrabold tracking-[-0.4px] text-white"
       >
-        <Brandmark variant="onViolet" />
-        Hilo
+        <Wordmark tone="white" height={28} />
       </Link>
 
       <nav className="flex flex-col gap-1">
@@ -59,8 +58,8 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* "Preguntá a Hilo" used to sit here, under Pagos. It is the floating
-          button in the bottom-right corner now — see `ask-hilo-dock.tsx`. */}
+      {/* "Preguntá a Ombúa" used to sit here, under Pagos. It is the floating
+          button in the bottom-right corner now — see `ask-dock.tsx`. */}
 
       <div className="flex-1" />
 
@@ -100,7 +99,7 @@ function NavPill({ item, active }: { item: NavItem; active: boolean }) {
         'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-item font-semibold transition-colors',
         active || pending
           ? 'bg-white text-violet shadow-[0_6px_16px_rgba(0,0,0,0.12)]'
-          : 'text-[#e2ddff] hover:bg-white/12',
+          : 'text-sidebar-foreground hover:bg-white/12',
       )}
     >
       <item.icon className="size-[19px]" />

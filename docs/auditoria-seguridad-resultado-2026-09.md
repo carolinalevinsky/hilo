@@ -1,7 +1,7 @@
-# Auditoría de seguridad — Hilo · resultado
+# Auditoría de seguridad — Ombúa · resultado
 
 **Fecha:** 6 de septiembre de 2026
-**Alcance:** las dieciséis líneas de investigación de `docs/auditoria-seguridad-hilo.md`.
+**Alcance:** las dieciséis líneas de investigación de `docs/auditoria-seguridad-ombua.md`.
 
 **Dos pasadas, y la segunda existe porque la primera se equivocó de rama:**
 
@@ -380,7 +380,7 @@ Hay un segundo oráculo con la misma información: `/api/reservas` responde 404
 existente (`reservas/route.ts:33-37`), **antes** de aplicar el límite de tasa,
 que se calcula recién en la línea 44.
 
-**Qué se filtra.** El padrón de profesionales de la salud que usan Hilo:
+**Qué se filtra.** El padrón de profesionales de la salud que usan Ombúa:
 nombre, disciplina y UUID. Nada clínico, pero "esta persona es fonoaudióloga y
 usa esta herramienta" es un dato personal, y la lista completa habilita
 phishing dirigido muy creíble sobre una población concreta.
@@ -512,13 +512,13 @@ no empieza con dos, así que pasa el filtro.
 usan Chrome, Firefox y Safari para resolver un `Location` relativo— al llegar
 al estado *relative slash state* con la barra invertida y un esquema especial,
 se pasa a *special authority ignore slashes state*, y `ejemplo.com` se parsea
-como **host**, no como ruta. `/\ejemplo.com` relativo a `https://app.hilo.uy/`
+como **host**, no como ruta. `/\ejemplo.com` relativo a `https://app.ombua.com/`
 resuelve a `https://ejemplo.com/`.
 
 La petición concreta:
 
 ```
-https://app.hilo.uy/entrar?volver=/\ejemplo.com
+https://app.ombua.com/entrar?volver=/\ejemplo.com
 ```
 
 `entrar/page.tsx:14` lo pone en un `<input type="hidden" name="volver">`
@@ -543,8 +543,8 @@ herramienta que guarda historias clínicas, desde una URL en el dominio legítim
 export function internalPath(value: unknown, fallback: string): string {
   if (typeof value !== 'string' || !value.startsWith('/')) return fallback
   try {
-    const url = new URL(value, 'https://hilo.invalid')
-    return url.origin === 'https://hilo.invalid' ? url.pathname + url.search : fallback
+    const url = new URL(value, 'https://ombua.invalid')
+    return url.origin === 'https://ombua.invalid' ? url.pathname + url.search : fallback
   } catch {
     return fallback
   }
@@ -1005,7 +1005,7 @@ tiene `using (true)`. Ninguna política de escritura carece de `with check`
 (revisé las de `materials`, que son las únicas separadas por operación, y
 `update_own` tiene los dos). Ningún `practitioner_id` es `nullable`, salvo
 `materials.practitioner_id`, que es NULL a propósito para el contenido que
-viene con Hilo y está cubierto por test. Todas usan `(select auth.uid())`
+viene con Ombúa y está cubierto por test. Todas usan `(select auth.uid())`
 envuelto — no encontré ni un `auth.uid()` desnudo. Las cuatro tablas más nuevas
 que me pediste mirar con lupa (`session_plan_items`, `assistant_questions`,
 `goal_progress`; `format_requests` no existe) tienen la política estándar,
@@ -1091,7 +1091,7 @@ y recién ahí el código— y borra la cookie pase lo que pase: **el clásico d
 conectar la cuenta de Google del atacante a la sesión de la víctima está
 cerrado**. `/confirmar` valida el tipo de token contra un `z.enum` antes de
 pasárselo a Supabase, y la excepción del enlace de recuperación está atada a la
-cookie `hilo-recovery`, que la Server Action vuelve a verificar por su cuenta
+cookie `ombua-recovery`, que la Server Action vuelve a verificar por su cuenta
 (`(auth)/actions.ts:158`) porque una acción es un endpoint. Todos los mensajes
 de error de autenticación son deliberadamente iguales, salvo
 `email_not_confirmed`, y el razonamiento de por qué esa excepción no filtra
@@ -1141,7 +1141,7 @@ ni un `getPublicUrl`. El tipo MIME y el tamaño se validan en el servidor con
 Zod **y** en el bucket con `allowed_mime_types` y `file_size_limit` — las dos
 listas coinciden. Ni SVG ni HTML están en ninguna de las dos listas, y el
 objeto se sirve desde `supabase.co`, otro origen, así que aunque se colara no
-sería XSS almacenado en el origen de Hilo. Probé mentalmente el camino de
+sería XSS almacenado en el origen de Ombúa. Probé mentalmente el camino de
 escribir `photo_path` a mano apuntando a la carpeta de otra: `createSignedUrl`
 va por `getDb()` y la política de `storage.objects` lo rechaza.
 
@@ -1224,7 +1224,7 @@ Lo digo explícito, porque el silencio se lee como "revisado y limpio".
    público. Y agregaría los tests que faltan para `patient-photos`.
 
 3. **El chat con memoria, que es lo que se está construyendo en esta rama.**
-   El diseño actual es bueno —el hilo vive en la pestaña, el servidor no guarda
+   El diseño actual es bueno —el ombua vive en la pestaña, el servidor no guarda
    transcripción, `parseHistory` valida forma y alterna estrictamente, y hay
    tope de diez turnos—. Pero es la única superficie donde el cuerpo de la
    petición se reenvía a Anthropic casi tal cual, y es donde este hallazgo del

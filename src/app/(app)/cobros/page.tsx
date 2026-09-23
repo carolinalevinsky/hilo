@@ -22,8 +22,9 @@ import { monthlyLedger } from '@/server/payments'
 
 import { deletePaymentAction } from './actions'
 import { currentUser } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Pagos · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Pagos') }
 
 const money = (value: number) =>
   `$ ${value.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`

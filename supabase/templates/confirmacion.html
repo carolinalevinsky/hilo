@@ -1,6 +1,6 @@
 <!--
   The email Supabase sends when a practitioner creates an account, in Spanish and
-  in Hilo's colours instead of GoTrue's English default.
+  in Ombúa's colours instead of GoTrue's English default.
 
   The link points at `{{ .SiteURL }}/confirmar` with a **token hash**, not at
   `{{ .ConfirmationURL }}`. The difference matters: the token hash works when the
@@ -9,19 +9,23 @@
   only be exchanged by the browser that started the sign-up.
 
   No clinical content is ever in an email — see src/server/notifications.ts.
+
+  Los colores son una copia de `src/lib/brand.ts`: GoTrue manda este archivo tal
+  cual, sin pasar por la app. `src/lib/brand.test.ts` los compara y falla si
+  dejan de coincidir.
 -->
-<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f5fb;padding:24px">
+<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f5f6fb;padding:24px">
   <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(30,36,54,.08)">
-    <div style="background:linear-gradient(120deg,#6c4cf0,#8a5cf0);padding:20px 24px;color:#fff">
-      <div style="font-weight:800;font-size:18px">Hilo</div>
+    <div style="background:linear-gradient(120deg,#5f50d7,#8273f3);padding:20px 24px;color:#fff">
+      <div style="font-weight:800;font-size:18px">Ombúa</div>
       <div style="opacity:.9;font-size:13px;margin-top:2px">Confirmá tu cuenta</div>
     </div>
     <div style="padding:22px 24px;color:#20293a">
       <p style="margin:0 0 10px;font-size:14px;line-height:1.6">
-        ¡Hola! Creaste una cuenta en Hilo. Tocá el botón y entrás derecho a tu espacio de trabajo.
+        ¡Hola! Creaste una cuenta en Ombúa. Tocá el botón y entrás derecho a tu espacio de trabajo.
       </p>
       <a href="{{ .SiteURL }}/confirmar?token_hash={{ .TokenHash }}&amp;type=signup&amp;next=/inicio"
-         style="display:inline-block;margin-top:14px;background:#6c5ce7;color:#fff;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;font-size:14px">
+         style="display:inline-block;margin-top:14px;background:#7161ea;color:#fff;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;font-size:14px">
         Confirmar mi cuenta
       </a>
       <p style="margin:16px 0 0;font-size:12.5px;line-height:1.6;color:#6b7280">
@@ -30,6 +34,6 @@
     </div>
   </div>
   <div style="max-width:520px;margin:12px auto 0;text-align:center;color:#9aa0b4;font-size:11.5px">
-    Hilo — tu trabajo clínico, ordenado.
+    Ombúa — tu trabajo clínico, ordenado.
   </div>
 </div>

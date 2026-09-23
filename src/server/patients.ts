@@ -340,7 +340,7 @@ export async function ensurePatientRoom(
  * tenga la URL, así que quien la recibió una vez puede entrar a **todas** las
  * sesiones siguientes: un familiar, alguien a quien se la reenviaron por
  * WhatsApp, alguien de quien esa familia se separó. Y no hay nada de eso que
- * Hilo pueda ver.
+ * Ombúa pueda ver.
  *
  * La migración de `room_id` resolvió bien la mitad de v1 —el nombre del niño ya
  * no está en la URL— y dejó esta mitad sin tratar. Esto es la otra mitad, y es

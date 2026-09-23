@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
  * A questionnaire, as the patient sees it on their phone.
  *
  * The wording is exactly the instrument's — see `@/lib/scales` for why it is
- * not adapted to `vos` like the rest of Hilo. Four big targets per item rather
+ * not adapted to `vos` like the rest of Ombúa. Four big targets per item rather
  * than a slider or a select: this is answered with a thumb, and the four
  * options are the whole scale.
  *

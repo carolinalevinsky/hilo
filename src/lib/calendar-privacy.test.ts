@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { calendarEventTitle } from '@/lib/calendar-privacy'
 
 /**
- * Qué sale de Hilo hacia el calendario de otra empresa.
+ * Qué sale de Ombúa hacia el calendario de otra empresa.
  *
  * Estos tests son cortos y aburridos a propósito. Lo que cuidan no lo es: cada
  * caso es una fila que dice qué queda escrito, para siempre, en un servidor

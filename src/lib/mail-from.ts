@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
 /**
- * Quién firma los correos que manda Hilo.
+ * Quién firma los correos que manda Ombúa.
  *
  * Resend acepta dos formas, y las dos son legítimas: la dirección sola
- * (`hola@hilo.uy`) o con nombre visible (`Hilo <hola@hilo.uy>`). La segunda es
+ * (`hola@ombua.com`) o con nombre visible (`Ombúa <hola@ombua.com>`). La segunda es
  * la que documenta `docs/launch.md`, y es la razón por la que `MAIL_FROM` no se
  * podía validar con un `z.email()` a secas.
  *
@@ -28,7 +28,7 @@ const ADDRESS = z.email()
  * La dirección que hay adentro, o `null` si no hay una válida.
  *
  * Devuelve la dirección en vez de un booleano para que el test pueda afirmar
- * *qué* leyó y no sólo que dijo que sí. `Hilo <hola@hilo.uy>` → `hola@hilo.uy`
+ * *qué* leyó y no sólo que dijo que sí. `Ombúa <hola@ombua.com>` → `hola@ombua.com`
  * distingue un parseo correcto de uno que aceptó la cadena por otro motivo.
  */
 export function mailFromAddress(value: string): string | null {
@@ -47,7 +47,7 @@ export function mailFromAddress(value: string): string | null {
     if (code < 0x20 || code === 0x7f) return null
   }
 
-  // `Hilo <hola@hilo.uy>` → el nombre visible puede ser cualquier cosa menos
+  // `Ombúa <hola@ombua.com>` → el nombre visible puede ser cualquier cosa menos
   // otro par de ángulos; lo que se valida es lo de adentro.
   const angled = /^[^<>]*<([^<>]+)>$/.exec(trimmed)
   const address = angled?.[1]?.trim() ?? trimmed

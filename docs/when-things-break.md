@@ -82,7 +82,7 @@ Error: {"code":"PGRST303","message":"JWT issued at future"}
 de Supabase que lo valida cree que son las 19:54:55. Como está fechado en el
 futuro, lo rechaza.
 
-**No es de este código.** Hilo no fabrica ese token: lo emite Supabase Auth y lo
+**No es de este código.** Ombúa no fabrica ese token: lo emite Supabase Auth y lo
 valida PostgREST, las dos partes del mismo proyecto. Son dos relojes de Supabase
 que se corrieron entre sí.
 
@@ -106,7 +106,7 @@ sentido que la app reintente sola.
 
 ## Rollback en Vercel
 
-1. Entrá a [vercel.com](https://vercel.com) → el proyecto **hilo** → pestaña
+1. Entrá a [vercel.com](https://vercel.com) → el proyecto **ombua** → pestaña
    **Deployments**.
 2. Buscá el último deployment que funcionaba. Están ordenados por fecha y cada
    uno muestra el commit.

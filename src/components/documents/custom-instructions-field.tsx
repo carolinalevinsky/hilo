@@ -20,7 +20,7 @@ const CUSTOM_INSTRUCTIONS_MAX = 4000
  * by name, a box to paste or edit, and "Guardarlas para la próxima". Picking a
  * saved one fills the box and the name, so editing and saving again updates it.
  *
- * The hint says plainly what it cannot do. Hilo's clinical rules stay on top of
+ * The hint says plainly what it cannot do. Ombúa's clinical rules stay on top of
  * whatever is written here (see `customInstructionsBlock`), and a practitioner
  * should know that before she pastes a prompt that asks for a diagnosis.
  *
@@ -106,7 +106,7 @@ export function CustomInstructionsField({
             placeholder="Pegá el prompt que ya usás. Ej: armalo en tres párrafos, empezá por las fortalezas y usá un lenguaje que entienda la maestra."
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Hilo las suma a los datos del paciente. Sus reglas clínicas siguen mandando: no
+            Ombúa las suma a los datos del paciente. Sus reglas clínicas siguen mandando: no
             inventa datos ni da diagnósticos cerrados, aunque se lo pidas acá.
           </p>
         </div>

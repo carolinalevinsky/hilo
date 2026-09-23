@@ -62,7 +62,7 @@ export async function updateCalendarPrivacyAction(
  * Desconecta Google Calendar.
  *
  * `disconnect` le avisa a Google además de borrar la fila, así que después de
- * esto Hilo deja de poder entrar de verdad — no se olvida de cómo. La razón
+ * esto Ombúa deja de poder entrar de verdad — no se olvida de cómo. La razón
  * completa está en `src/server/google.ts`.
  */
 export async function disconnectGoogleAction(): Promise<void> {
@@ -72,7 +72,7 @@ export async function disconnectGoogleAction(): Promise<void> {
 }
 
 /**
- * Guarda el texto del consentimiento, o vuelve al modelo de Hilo.
+ * Guarda el texto del consentimiento, o vuelve al modelo de Ombúa.
  *
  * Guardar un texto idéntico al modelo es lo mismo que no haberlo tocado: se
  * guarda null, y así quien nunca lo cambió sigue recibiendo las correcciones
@@ -96,7 +96,7 @@ export async function updateConsentTemplateAction(
   revalidatePath('/perfil')
   return formOk(
     reset
-      ? 'Listo, volviste al modelo de Hilo.'
+      ? 'Listo, volviste al modelo de Ombúa.'
       : 'Listo. Los links que mandes desde ahora llevan este texto.',
   )
 }

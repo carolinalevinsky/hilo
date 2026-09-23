@@ -104,7 +104,7 @@ export function AssessmentForm({
               ))}
             </NativeSelect>
             <p className="text-xs text-muted-foreground">
-              Hilo interpreta según la escala que elijas: un 85 no significa lo mismo como
+              Ombúa interpreta según la escala que elijas: un 85 no significa lo mismo como
               puntaje estándar que como percentil.
             </p>
           </div>

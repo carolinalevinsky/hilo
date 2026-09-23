@@ -1,9 +1,9 @@
 ---
 name: add-screen
-description: Add a screen or page to Hilo — routing, Server Component data loading, shadcn layout, Spanish copy, empty states. Use when building any user-facing view.
+description: Add a screen or page to Ombúa — routing, Server Component data loading, shadcn layout, Spanish copy, empty states. Use when building any user-facing view.
 ---
 
-# Adding a screen to Hilo
+# Adding a screen to Ombúa
 
 ## Route
 
@@ -48,7 +48,7 @@ server-rendered page, not the whole page.
 
 ## Visual language
 
-shadcn components already carry Hilo's palette, because the tokens are mapped in
+shadcn components already carry Ombúa's palette, because the tokens are mapped in
 `globals.css`. Use the semantic classes:
 
 ```tsx

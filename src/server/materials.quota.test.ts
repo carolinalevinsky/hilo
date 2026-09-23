@@ -19,7 +19,7 @@ import {
  *
  * The bug this exists to prevent, found reviewing the upload feature: an
  * uploaded file is inserted as `manual`, because owning a PDF costs nothing, and
- * **nothing ever changed it**. Asking Hilo to read that file is the single most
+ * **nothing ever changed it**. Asking Ombúa to read that file is the single most
  * expensive call in the app — the only one that ships a whole document or photo
  * to Anthropic — and it was the one call no allowance capped. On top of that the
  * route passed `alreadyCounted: true`, subtracting one from a count the row had
@@ -100,7 +100,7 @@ describe('the monthly allowance for AI materials', () => {
     expect(await countAiMaterials()).toBe(1)
   })
 
-  it('charges for an uploaded file once Hilo is asked to read it', async () => {
+  it('charges for an uploaded file once Ombúa is asked to read it', async () => {
     // The fix: the describe route flips `source` before sending the file. This
     // is the assertion that fails against the old code, where the row stayed
     // `manual` and the count stayed put no matter how many files were read.

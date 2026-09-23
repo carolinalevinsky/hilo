@@ -11,7 +11,7 @@ import { ConfirmationLink, NewPassword, PasswordResetRequest } from './auth'
  * the enum here is the only place that list of strings exists.
  */
 describe('ConfirmationLink', () => {
-  it('accepts the two links Hilo actually sends', () => {
+  it('accepts the two links Ombúa actually sends', () => {
     expect(ConfirmationLink.safeParse({ tokenHash: 'abc', type: 'signup' }).success).toBe(true)
     expect(ConfirmationLink.safeParse({ tokenHash: 'abc', type: 'recovery' }).success).toBe(
       true,

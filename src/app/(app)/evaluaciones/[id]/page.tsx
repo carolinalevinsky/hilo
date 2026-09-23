@@ -21,7 +21,7 @@ import { listVersions } from '@/server/document-versions'
 
 import { currentPractitioner, currentUser } from '../../session'
 
-/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+/** Sin "· Ombúa": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
 export const metadata: Metadata = { title: 'Evaluación' }
 
 export default async function AssessmentPage({

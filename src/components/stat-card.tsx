@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 /**
  * The number card, ported from v1's `.kpi` (`legacy/index.html:118-124`).
  *
- * Every screen in Hilo that shows a total shows it in this shape: a white card,
+ * Every screen in Ombúa that shows a total shows it in this shape: a white card,
  * the icon in a tinted rounded square, the number large and tight, the label
  * quiet underneath. It reads in that order — symbol, quantity, meaning — which
  * is why the label goes below and not above. v2 had grown two different

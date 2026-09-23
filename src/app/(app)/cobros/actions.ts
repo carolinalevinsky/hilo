@@ -131,7 +131,7 @@ export async function createPaymentLinkAction(
       //
       // `external_reference` sigue llevando el `patient_id`, así que dos Tomás
       // en el mismo mes se distinguen donde hace falta distinguirlos, que es
-      // del lado de Hilo y no del lado de Mercado Pago.
+      // del lado de Ombúa y no del lado de Mercado Pago.
       title: `Sesiones de ${firstName(patientName)}`,
       externalReference: buildExternalReference(user.id, patientId, period),
     })

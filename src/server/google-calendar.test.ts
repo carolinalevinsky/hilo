@@ -9,7 +9,7 @@ import {
 import type { GoogleEvent } from '@/server/google-calendar'
 
 /**
- * Exactamente qué sale de Hilo hacia el calendario de Google.
+ * Exactamente qué sale de Ombúa hacia el calendario de Google.
  *
  * Se prueba `eventBody` y no las funciones que llaman a la API porque esto es lo
  * que se puede afirmar sin una cuenta de Google del otro lado — y porque es
@@ -134,7 +134,7 @@ describe('lo que se cuenta del paciente', () => {
   })
 
   it('la descripción es fija y no dice nada de nadie', () => {
-    expect(eventBody(sesion, 'Tomás').description).toBe('Agendado desde Hilo')
+    expect(eventBody(sesion, 'Tomás').description).toBe('Agendado desde Ombúa')
   })
 
   it('no manda invitados: una sesión no es una invitación a la familia', () => {
@@ -195,7 +195,7 @@ describe('lo que se muestra del calendario de Google', () => {
     })
   })
 
-  it('descarta lo que escribió Hilo, que ya está en la grilla como sesión', () => {
+  it('descarta lo que escribió Ombúa, que ya está en la grilla como sesión', () => {
     const propio = evento({
       extendedProperties: { private: { hilo_appointment_id: 'aaaa-0000' } },
     })

@@ -115,7 +115,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                     {session.patientName}
                   </Link>
 
-                  {/* What is prepared for this session, or what Hilo would
+                  {/* What is prepared for this session, or what Ombúa would
                       start from. One line: the whole list is one click away. */}
                   <p className="min-w-[180px] flex-1 truncate text-meta">
                     {session.plan.length > 0 ? (
@@ -125,7 +125,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                       </>
                     ) : session.focus ? (
                       <span className="text-muted-foreground">
-                        Sin preparar · Hilo sugiere {session.focus.title} (
+                        Sin preparar · Ombúa sugiere {session.focus.title} (
                         {session.focus.progress}%)
                       </span>
                     ) : (

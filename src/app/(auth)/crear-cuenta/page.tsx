@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 
 import { AuthTabs } from '@/components/auth/auth-tabs'
 import { SignUpForm } from '@/components/auth/sign-up-form'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Creá tu cuenta · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Creá tu cuenta') }
 
 export default function SignUpPage() {
   return (

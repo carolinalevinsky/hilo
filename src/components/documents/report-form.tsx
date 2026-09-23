@@ -98,7 +98,7 @@ export function ReportForm({
           placeholder="Ej: destacá el trabajo de la familia en casa y pedí más tiempo en las pruebas escritas."
         />
         <p className="text-xs text-muted-foreground">
-          Hilo ya tiene los objetivos, el avance y las notas de las sesiones. Esto es lo que
+          Ombúa ya tiene los objetivos, el avance y las notas de las sesiones. Esto es lo que
           sólo vos sabés.
         </p>
       </div>

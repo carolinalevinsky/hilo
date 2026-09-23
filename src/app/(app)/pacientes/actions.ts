@@ -241,7 +241,7 @@ export async function rotateRoomAction(formData: FormData) {
   revalidatePath(`/pacientes/${patientId}`)
 }
 
-/** The practitioner's own Zoom or Meet, which wins over Hilo's room. */
+/** The practitioner's own Zoom or Meet, which wins over Ombúa's room. */
 export async function saveVideoUrlAction(
   _previous: FormState,
   formData: FormData,

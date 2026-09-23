@@ -179,7 +179,7 @@ Reto:
 • Mover una plumita por la mesa sin que se caiga.
 • Apagar "velitas" imaginarias, una por una.'),
   (null, 'occupational_therapy', 'Motricidad fina', 'Motricidad fina', 'Manos que trabajan', 'worksheet', 'Fortalecer el agarre y la pinza', '3-5 años', 'Circuito de manos:
-• Pasar cuentas o fideos a un hilo.
+• Pasar cuentas o fideos a un ombua.
 • Abrochar y desabrochar botones.
 • Arrancar y pegar trocitos de papel.
 • Usar una pinza para pasar pompones de un frasco a otro.3 a 5 minutos cada una.'),

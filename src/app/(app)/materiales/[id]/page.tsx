@@ -20,7 +20,7 @@ import {
 import { listPatients } from '@/server/patients'
 import { currentUser } from '../../session'
 
-/** Sin "· Hilo": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
+/** Sin "· Ombúa": se imprime. Ver la nota en `informes/[id]/page.tsx`. */
 export const metadata: Metadata = { title: 'Material' }
 
 /**
@@ -28,14 +28,14 @@ export const metadata: Metadata = { title: 'Material' }
  *
  * Rendered by the same `DocumentBody` as a clinical report — a heading is a
  * short line ending in a colon, everything else is a paragraph. One renderer
- * for both means a material a practitioner typed and one that shipped with Hilo
+ * for both means a material a practitioner typed and one that shipped with Ombúa
  * look identical, and neither goes near `dangerouslySetInnerHTML`.
  */
 export default async function MaterialPage({ params }: PageProps<'/materiales/[id]'>) {
   const { id } = await params
   const user = await currentUser()
 
-  // RLS decides what is visible: Hilo's materials, plus this practitioner's own.
+  // RLS decides what is visible: Ombúa's materials, plus this practitioner's own.
   const [material, patients] = await Promise.all([getMaterial(id), listPatients(user.id)])
   if (!material) notFound()
 
@@ -75,7 +75,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
               </form>
             </>
           ) : (
-            // Hilo's own materials and other people's published ones: copying is
+            // Ombúa's own materials and other people's published ones: copying is
             // how you get one you can change. See `copyMaterial` for why it is a
             // copy and not a reference.
             <form action={copyMaterialAction}>
@@ -89,7 +89,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
         </div>
       </div>
 
-      <Card className="hilo-doc mx-auto max-w-[720px]">
+      <Card className="app-doc mx-auto max-w-[720px]">
         <CardContent className="px-6 py-7 sm:px-10">
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
             <span className="rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
@@ -126,7 +126,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
               to. See the migration for why it is denormalised. */}
           {origin === 'community' && material.author_name ? (
             <p className="mb-4 text-meta text-muted-foreground">
-              Publicado por <b>{material.author_name}</b> · comunidad Hilo
+              Publicado por <b>{material.author_name}</b> · comunidad Ombúa
             </p>
           ) : null}
 

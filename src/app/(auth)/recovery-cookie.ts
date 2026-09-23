@@ -14,8 +14,11 @@ import { publicConfig } from '@/lib/env'
  * password changes. Scoped to that one path so it is not attached to any other
  * request, `httpOnly` so no script can read it, and short-lived because the
  * whole flow takes a minute.
+ *
+ * El nombre vive en `@/lib/storage-keys`, junto a las otras claves que todavía
+ * llevan el nombre viejo a propósito.
  */
-export const RECOVERY_COOKIE = 'hilo-recovery'
+export { RECOVERY_COOKIE } from '@/lib/storage-keys'
 
 /** Where the recovery link lands, and the only path the cookie is sent on. */
 export const RECOVERY_PATH = '/nueva-contrasena'

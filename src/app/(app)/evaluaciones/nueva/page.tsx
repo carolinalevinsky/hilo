@@ -10,8 +10,9 @@ import { listPatients } from '@/server/patients'
 import { listTemplates } from '@/server/prompt-templates'
 
 import { currentPractitioner, currentUser } from '../../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Nueva evaluación · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Nueva evaluación') }
 
 export default async function NewAssessmentPage({
   searchParams,
@@ -38,7 +39,7 @@ export default async function NewAssessmentPage({
 
       <PageHeader
         title="Nueva evaluación"
-        subtitle="Cargá los puntajes y Hilo escribe la interpretación para que la revises."
+        subtitle="Cargá los puntajes y Ombúa escribe la interpretación para que la revises."
       />
 
       <Card>

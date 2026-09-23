@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { auditPhrase, auditWhen } from '@/lib/audit-labels'
 import { currentSession } from '../session'
+import { pageTitle } from '@/lib/brand'
 
-export const metadata: Metadata = { title: 'Mi perfil · Hilo' }
+export const metadata: Metadata = { title: pageTitle('Mi perfil') }
 
 /** Lo que dejó el ida y vuelta a Google, traducido. */
 const GOOGLE_RESULTS: Record<string, { ok: boolean; message: string }> = {
@@ -188,7 +189,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           )}
 
           <p className="mt-3 text-meta leading-relaxed text-muted-foreground">
-            Se guarda porque Hilo tiene datos de salud y hay que poder reconstruir qué
+            Se guarda porque Ombúa tiene datos de salud y hay que poder reconstruir qué
             pasó con ellos. Nadie más que vos lo ve, y no se puede editar — ni por vos.
           </p>
         </CardContent>

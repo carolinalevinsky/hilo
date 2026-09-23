@@ -34,7 +34,7 @@ export function MercadoPagoCard({ connected }: { connected: boolean }) {
       <CardHeader>
         <CardTitle>Cobrar por Mercado Pago</CardTitle>
         <p className="text-meta text-muted-foreground">
-          El dinero va directo a tu cuenta. Hilo sólo arma el link.
+          El dinero va directo a tu cuenta. Ombúa sólo arma el link.
         </p>
       </CardHeader>
 
