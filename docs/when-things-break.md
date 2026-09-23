@@ -23,6 +23,7 @@ la presión de encima para poder pensar.
 | Los datos se ven mal o faltan | **No toques nada.** Restaurá un backup en un proyecto nuevo y compará. |
 | Toda pantalla con datos da "No pudimos cargar esta pantalla" | Buscá `PGRST303` en los registros. Si está, [reiniciá el proyecto de Supabase](#jwt-issued-at-future). |
 | `tenant/user … not found`, o el dominio del proyecto no resuelve | [El proyecto de Supabase está pausado](#el-proyecto-de-supabase-se-pausó). Se reactiva desde el panel. |
+| No se puede entrar **ni crear cuenta** ("No pudimos conectarnos") | Lo mismo: [el proyecto está pausado](#el-proyecto-de-supabase-se-pausó). Un `host` lo confirma en un segundo. |
 | CI está en rojo y no se entiende el mensaje | Pegale el error completo a Claude. Los checks están escritos para explicarse. |
 | Algo se está incendiando y nada de esto encaja | Llamá a Tomás. |
 
@@ -39,11 +40,25 @@ FATAL: (ENOTFOUND) tenant/user postgres.<ref> not found
 Y el dominio del proyecto no resuelve:
 
 ```bash
-host <ref>.supabase.co     # → NXDOMAIN
+host qishbkqhtfsmcqkwewuy.supabase.co     # → NXDOMAIN
 ```
 
-La web sigue en pie, porque entrar y crear cuenta no consultan la base. Lo que
-falla es todo lo que sí: entrar de verdad, la agenda, los pacientes.
+Ése es el ref de producción, "Hilo V2". El `uepyfqibtocrekvnliyk` que aparece en
+`online-ahora.md` es el viejo y está muerto: despertar ése no arregla nada.
+
+La web sigue en pie —las pantallas cargan, el formulario se dibuja— pero **no se
+puede entrar ni crear cuenta**: las dos cosas pasan por Supabase Auth, que es
+parte del proyecto apagado. La pantalla dice *"No pudimos conectarnos. Probá de
+nuevo en un minuto."*
+
+**Si en cambio dice "El correo o la contraseña no coinciden", el deploy es
+viejo.** Ése era el mensaje hasta el 2026-09-23, porque `signIn` lo usaba para
+todo error que no fuera "falta confirmar el correo" — un error de red incluido.
+Costó media hora de dudar de una contraseña que estaba bien, y es lo que arregló
+`unreachable()` en `src/server/auth.ts`.
+
+Lo demás que falla es todo lo que lee datos: la agenda, los pacientes, los
+informes.
 
 **Qué es.** El plan gratuito de Supabase pausa los proyectos después de unos días
 sin actividad. No se pierde nada; se apaga.

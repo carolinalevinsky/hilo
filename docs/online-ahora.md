@@ -1,5 +1,17 @@
 # Poner el v2 online, reusando todo lo del v1
 
+> **Esto ya pasó, y el proyecto que nombra abajo ya no existe.**
+>
+> Es el registro de cómo se puso el v2 online en su momento, reusando las
+> cuentas del v1. Se guarda por eso y no como instructivo vigente.
+>
+> **Producción hoy corre sobre `qishbkqhtfsmcqkwewuy` ("Hilo V2")**, que es otro
+> proyecto: el `uepyfqibtocrekvnliyk` de las tablas de acá abajo está apagado y
+> su dominio ni siquiera resuelve. Si estás buscando cuál despertar porque nadie
+> puede entrar, es el primero — ver `when-things-break.md`. Y si dudás, la
+> respuesta que manda es el valor de `NEXT_PUBLIC_SUPABASE_URL` en las variables
+> de Vercel, no esta página.
+
 Esto **no** es `launch.md`. Aquel asume que hay que abrir cinco cuentas. Este es
 para la situación real: las cuentas ya existen, sos la única usuaria, y no hay
 pacientes reales que migrar.

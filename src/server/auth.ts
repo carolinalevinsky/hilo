@@ -58,6 +58,38 @@ export const SignUpInput = z.object({
 })
 
 /**
+ * Si el error es que no llegamos a Supabase, y no algo que Supabase contestó.
+ *
+ * Existe porque el 2026-09-23 el proyecto de producción estaba pausado —plan
+ * gratuito, se apaga solo a los días— y la pantalla de entrar dijo "El correo o
+ * la contraseña no coinciden". La contraseña estaba bien; el dominio del
+ * proyecto no resolvía. El mensaje mandó a buscar al lugar equivocado, que es
+ * exactamente lo que el comentario de `signIn` dice que hay que evitar.
+ *
+ * **Se reconoce por el nombre y no importando la clase.** `AuthRetryableFetchError`
+ * vive en `@supabase/auth-js`, que es una dependencia transitiva de
+ * `@supabase/supabase-js` y no está declarada en el `package.json` de acá;
+ * importar de ahí sería atarse a un paquete que no elegimos. El nombre es parte
+ * del contrato público del error y alcanza.
+ *
+ * `status` es 0 cuando el `fetch` ni salió —DNS que no resuelve, sin red, el
+ * proyecto apagado— y es el código HTTP cuando el servidor contestó algo
+ * reintentable (502, 503, 504). Las dos cosas son "no es tu contraseña".
+ *
+ * **Separar este caso no filtra nada.** La regla de privacidad de este archivo
+ * —no distinguir "no existe esa cuenta" de "contraseña incorrecta"— protege
+ * saber qué correos tienen cuenta acá. Esto falla *antes* de que Supabase mire
+ * ninguna cuenta: pasa igual con un correo inventado que con uno real.
+ */
+function unreachable(error: { name?: string; status?: number } | null): boolean {
+  if (!error) return false
+  return error.name === 'AuthRetryableFetchError' || error.status === 0
+}
+
+/** Lo que se muestra cuando el problema es nuestro y no de quien escribe. */
+const NO_CONNECTION = 'No pudimos conectarnos. Probá de nuevo en un minuto.'
+
+/**
  * The result shape every auth function returns.
  *
  * Expected failures — a taken email, a wrong password — are values, not
@@ -104,12 +136,15 @@ export async function signUp(input: unknown): Promise<SignUpResult> {
   })
 
   if (error) {
+    if (unreachable(error)) return { ok: false, message: NO_CONNECTION }
+
     if (error.code === 'user_already_exists' || error.status === 422) {
       return {
         ok: false,
         message: 'Ya hay una cuenta con ese correo. Probá entrar en vez de crearla.',
       }
     }
+
     return { ok: false, message: 'No pudimos crear la cuenta. Probá de nuevo en un momento.' }
   }
 
@@ -152,6 +187,9 @@ export async function signIn(input: unknown): Promise<AuthResult> {
           'Te falta confirmar tu correo. Buscá el mail de Ombúa y tocá el enlace; fijate también en spam.',
       }
     }
+
+    // Y si ni siquiera llegamos a preguntar, decirlo. Ver `unreachable`.
+    if (unreachable(error)) return { ok: false, message: NO_CONNECTION }
 
     // Para todo lo demás, el mismo mensaje a propósito: distinguir "no existe
     // esa cuenta" de "contraseña incorrecta" le dice a un desconocido qué
@@ -262,9 +300,15 @@ export async function requestPasswordReset(input: unknown): Promise<AuthResult> 
   if (!parsed.success) return { ok: false, message: firstMessage(parsed.error) }
 
   const db = await getDb()
-  await db.auth.resetPasswordForEmail(parsed.data.email, {
+  const { error } = await db.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${publicConfig.NEXT_PUBLIC_APP_URL}/confirmar?next=%2Fnueva-contrasena`,
   })
+
+  // La única falla que sí se cuenta. Todo lo demás sigue contestando que sí
+  // —es el párrafo de arriba—, pero decir "te mandamos el mail" cuando no salió
+  // ningún mail manda a alguien a esperar y a revisar spam por un correo que no
+  // existe. Que no hayamos podido conectarnos no dice nada de esa cuenta.
+  if (unreachable(error)) return { ok: false, message: NO_CONNECTION }
 
   return { ok: true }
 }
