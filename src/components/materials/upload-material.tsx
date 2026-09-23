@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
 
@@ -87,24 +88,24 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="upload-area">Área</Label>
-              <Select id="upload-area" name="area" required>
+              <NativeSelect id="upload-area" name="area" required>
                 {areas.map((name) => (
                   <option key={name} value={name}>
                     {name}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="upload-kind">Tipo</Label>
-              <Select id="upload-kind" name="kind" defaultValue="worksheet">
+              <NativeSelect id="upload-kind" name="kind" defaultValue="worksheet">
                 {Object.entries(MATERIAL_KIND_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
                 ))}
-              </Select>
+              </NativeSelect>
             </div>
           </div>
 
@@ -113,14 +114,14 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
               Edad
               <span className="font-normal text-muted-foreground"> · opcional</span>
             </Label>
-            <Select id="upload-age" name="ageRange" defaultValue="">
+            <NativeSelect id="upload-age" name="ageRange" defaultValue="">
               <option value="">Cualquier edad</option>
               {AGE_RANGES.map((range) => (
                 <option key={range} value={range}>
                   {range}
                 </option>
               ))}
-            </Select>
+            </NativeSelect>
           </div>
 
           <Button type="submit" size="lg" disabled={pending} className="w-full">
@@ -138,11 +139,3 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

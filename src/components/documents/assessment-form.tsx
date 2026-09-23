@@ -9,6 +9,7 @@ import { CustomInstructionsField } from '@/components/documents/custom-instructi
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { today } from '@/lib/dates'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
@@ -53,7 +54,7 @@ export function AssessmentForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="patientId">Paciente</Label>
-          <Select id="patientId" name="patientId" required defaultValue={defaultPatientId ?? ''}>
+          <NativeSelect id="patientId" name="patientId" required defaultValue={defaultPatientId ?? ''}>
             <option value="" disabled>
               Elegí un paciente
             </option>
@@ -62,7 +63,7 @@ export function AssessmentForm({
                 {patient.full_name}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </div>
 
         <div className="space-y-1.5">
@@ -73,7 +74,7 @@ export function AssessmentForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="instrumentId">Instrumento</Label>
-        <Select
+        <NativeSelect
           id="instrumentId"
           name="instrumentId"
           value={instrumentId}
@@ -85,7 +86,7 @@ export function AssessmentForm({
               {entry.name}
             </option>
           ))}
-        </Select>
+        </NativeSelect>
         <p className="text-xs text-muted-foreground">
           La lista se arma según tu profesión. Si usás otro, elegí “Otra”.
         </p>
@@ -95,13 +96,13 @@ export function AssessmentForm({
         <>
           <div className="space-y-1.5">
             <Label htmlFor="scale">Tipo de puntaje</Label>
-            <Select id="scale" name="scale" defaultValue="standard">
+            <NativeSelect id="scale" name="scale" defaultValue="standard">
               {Object.entries(SCORE_SCALES).map(([value, scale]) => (
                 <option key={value} value={value}>
                   {scale.label}
                 </option>
               ))}
-            </Select>
+            </NativeSelect>
             <p className="text-xs text-muted-foreground">
               Ombúa interpreta según la escala que elijas: un 85 no significa lo mismo como
               puntaje estándar que como percentil.
@@ -173,11 +174,3 @@ export function AssessmentForm({
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

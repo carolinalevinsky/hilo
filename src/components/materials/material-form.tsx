@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
@@ -235,7 +236,7 @@ export function MaterialForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="area">Área</Label>
-          <Select
+          <NativeSelect
             id="area"
             name="area"
             value={area}
@@ -247,7 +248,7 @@ export function MaterialForm({
                 {name}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </div>
 
         <div className="space-y-1.5">
@@ -255,25 +256,25 @@ export function MaterialForm({
             Dentro del área
             <span className="font-normal text-muted-foreground"> · opcional</span>
           </Label>
-          <Select id="focus" name="focus" defaultValue={material?.focus ?? ''}>
+          <NativeSelect id="focus" name="focus" defaultValue={material?.focus ?? ''}>
             <option value="">Sin especificar</option>
             {(areas[area] ?? []).map((name) => (
               <option key={name} value={name}>
                 {name}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="kind">Tipo</Label>
-          <Select id="kind" name="kind" defaultValue={material?.kind ?? 'activity'}>
+          <NativeSelect id="kind" name="kind" defaultValue={material?.kind ?? 'activity'}>
             {Object.entries(MATERIAL_KIND_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </div>
 
         <div className="space-y-1.5">
@@ -281,14 +282,14 @@ export function MaterialForm({
             Edad
             <span className="font-normal text-muted-foreground"> · opcional</span>
           </Label>
-          <Select id="ageRange" name="ageRange" defaultValue={material?.age_range ?? ''}>
+          <NativeSelect id="ageRange" name="ageRange" defaultValue={material?.age_range ?? ''}>
             <option value="">Cualquier edad</option>
             {AGE_RANGES.map((range) => (
               <option key={range} value={range}>
                 {range}
               </option>
             ))}
-          </Select>
+          </NativeSelect>
         </div>
       </div>
 
@@ -461,11 +462,3 @@ function VisibilityOption({
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

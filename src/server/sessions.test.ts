@@ -80,6 +80,15 @@ async function appointmentStatus(appointmentId: string) {
   return data?.status ?? null
 }
 
+async function startDateOf(patient: string) {
+  const { data } = await service
+    .from('patients')
+    .select('start_date')
+    .eq('id', patient)
+    .single()
+  return data?.start_date ?? null
+}
+
 async function recordsFor(appointmentId: string) {
   const { count } = await service
     .from('sessions')
@@ -199,5 +208,55 @@ describe('registrar una sesión de la agenda', () => {
       .eq('id', session.id)
       .single()
     expect(data).toEqual({ id: session.id, appointment_id: null, patient_id: patientId })
+  })
+})
+
+/**
+ * El inicio del tratamiento dejó de ser un campo del alta —el día que se carga
+ * un paciente esa fecha todavía no existe— y lo escribe la primera sesión.
+ *
+ * Contra Postgres de verdad y no con un doble, porque lo que hay que probar es
+ * justamente la condición que vive en el `where`: que la segunda sesión no pise
+ * lo que escribió la primera, ni la fecha que puso la profesional a mano.
+ */
+describe('el inicio del tratamiento', () => {
+  it('lo escribe la primera sesión', async () => {
+    const nuevo = await newPatient(practitionerId, 'Inicio Prueba')
+
+    await createSession(practitionerId, nuevo, {
+      heldOn: '2026-03-02',
+      progressNote: 'Primera sesión.',
+    })
+
+    expect(await startDateOf(nuevo)).toBe('2026-03-02')
+  })
+
+  it('la segunda no lo pisa', async () => {
+    const nuevo = await newPatient(practitionerId, 'Segunda Prueba')
+
+    await createSession(practitionerId, nuevo, {
+      heldOn: '2026-03-02',
+      progressNote: 'Primera sesión.',
+    })
+    await createSession(practitionerId, nuevo, {
+      heldOn: '2026-03-09',
+      progressNote: 'Segunda sesión.',
+    })
+
+    expect(await startDateOf(nuevo)).toBe('2026-03-02')
+  })
+
+  it('no toca la fecha que ya venía cargada', async () => {
+    // Quien viene de años de papel pone la fecha real al dar de alta o al
+    // editar; la primera sesión que registre después es la número doscientos.
+    const nuevo = await newPatient(practitionerId, 'Papel Prueba')
+    await service.from('patients').update({ start_date: '2019-04-01' }).eq('id', nuevo)
+
+    await createSession(practitionerId, nuevo, {
+      heldOn: '2026-03-02',
+      progressNote: 'Una más.',
+    })
+
+    expect(await startDateOf(nuevo)).toBe('2019-04-01')
   })
 })

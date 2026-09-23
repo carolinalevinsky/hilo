@@ -7,6 +7,7 @@ import { FormMessage } from '@/components/auth/form-message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { GUARDIAN_RELATIONSHIP_LABELS } from '@/lib/patient-labels'
@@ -95,14 +96,14 @@ export function IntakeForm({
                 <Input id="guardianName" name="guardianName" autoComplete="name" defaultValue={v.guardianName} />
               </Field>
               <Field label={`Sos su…`} htmlFor="guardianRelationship">
-                <Select id="guardianRelationship" name="guardianRelationship" defaultValue={v.guardianRelationship ?? ''}>
+                <NativeSelect id="guardianRelationship" name="guardianRelationship" defaultValue={v.guardianRelationship ?? ''}>
                   <option value="">Elegí</option>
                   {Object.entries(GUARDIAN_RELATIONSHIP_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
                       {label}
                     </option>
                   ))}
-                </Select>
+                </NativeSelect>
               </Field>
               <Field label="Teléfono" htmlFor="phone">
                 <Input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="Ej: 099 123 456" defaultValue={v.phone} />
@@ -166,7 +167,7 @@ export function IntakeForm({
 
         {minor ? (
           <Field label={`Firmás como… de ${patientFirstName}`} htmlFor="signerRelationship">
-            <Select id="signerRelationship" name="signerRelationship" required defaultValue={v.signerRelationship ?? ''}>
+            <NativeSelect id="signerRelationship" name="signerRelationship" required defaultValue={v.signerRelationship ?? ''}>
               <option value="" disabled>
                 Elegí
               </option>
@@ -175,7 +176,7 @@ export function IntakeForm({
                   {label}
                 </option>
               ))}
-            </Select>
+            </NativeSelect>
           </Field>
         ) : (
           <input type="hidden" name="signerRelationship" value="self" />
@@ -219,11 +220,3 @@ function Field({
   )
 }
 
-function Select(props: React.ComponentProps<'select'>) {
-  return (
-    <select
-      {...props}
-      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-    />
-  )
-}

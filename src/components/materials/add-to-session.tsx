@@ -2,6 +2,7 @@ import { Plus } from '@/components/icons'
 
 import { addMaterialFromLibraryAction } from '@/app/(app)/planificacion/actions'
 import { Button } from '@/components/ui/button'
+import { NativeSelect } from '@/components/ui/native-select'
 
 /**
  * "Sumar a la sesión" — v1's button under an open material
@@ -31,17 +32,18 @@ export function AddMaterialToSession({
     >
       <input type="hidden" name="materialId" value={materialId} />
 
-      <select
+      <NativeSelect
         name="patientId"
         aria-label="A qué paciente se lo sumás"
-        className="h-8 min-w-[150px] flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-8"
+        wrapperClassName="w-auto min-w-[150px] flex-1"
       >
         {patients.map((patient) => (
           <option key={patient.id} value={patient.id}>
             {patient.full_name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
 
       <Button type="submit" size="sm">
         <Plus className="size-4" />

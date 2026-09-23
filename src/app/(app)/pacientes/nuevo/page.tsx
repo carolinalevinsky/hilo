@@ -22,7 +22,7 @@ export default function NewPatientPage() {
 
       <PageHeader
         title="Nuevo paciente"
-        subtitle="Con el nombre alcanza para empezar. El resto lo completás cuando quieras."
+        subtitle="Con el nombre y un teléfono alcanza para empezar. El resto lo completás cuando quieras."
       />
 
       {/* `max-w-2xl` put the whole alta in a 672px column and left half of a
@@ -30,7 +30,7 @@ export default function NewPatientPage() {
           than it is. The cap stays — a field stretched across a 27" monitor is
           unreadable — but it is now wide enough for the three-column grid the
           form lays out at `xl`. */}
-      <Card className="max-w-[1400px]">
+      <Card className="max-w-[1400px] [--card-spacing:--spacing(6)]">
         <CardContent>
           <PatientForm />
         </CardContent>

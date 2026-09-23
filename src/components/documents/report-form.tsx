@@ -8,6 +8,7 @@ import { CustomInstructionsField } from '@/components/documents/custom-instructi
 import { DictateButton } from '@/components/dictate-button'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
@@ -40,12 +41,11 @@ export function ReportForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="patientId">Paciente</Label>
-        <select
+        <NativeSelect
           id="patientId"
           name="patientId"
           required
           defaultValue={defaultPatientId ?? ''}
-          className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <option value="" disabled>
             Elegí un paciente
@@ -55,7 +55,7 @@ export function ReportForm({
               {patient.full_name}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <fieldset className="space-y-1.5">
