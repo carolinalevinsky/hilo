@@ -46,6 +46,12 @@ const BAD_CREDENTIALS = {
   status: 400,
 }
 
+/** Lo que devuelve cuando contestó algo que no se pudo leer: proxy, portal cautivo. */
+const UNREADABLE_ANSWER = {
+  name: 'AuthUnknownError',
+  message: 'Unexpected token < in JSON at position 0',
+}
+
 const CREDENTIALS = { email: 'ana@ejemplo.uy', password: 'una-clave-de-prueba' }
 
 describe('entrar', () => {
@@ -55,6 +61,18 @@ describe('entrar', () => {
     const result = await signIn(CREDENTIALS)
 
     expect(result.ok).toBe(false)
+    expect(result.ok === false && result.message).toBe(
+      'No pudimos conectarnos. Probá de nuevo en un minuto.',
+    )
+  })
+
+  it('tampoco culpa a la contraseña cuando la respuesta no se pudo leer', async () => {
+    // Un proxy que devuelve HTML, una URL de Supabase mal configurada. No
+    // entendimos la respuesta: eso no es un veredicto sobre la contraseña.
+    holder.signInWithPassword = async () => ({ data: {}, error: UNREADABLE_ANSWER })
+
+    const result = await signIn(CREDENTIALS)
+
     expect(result.ok === false && result.message).toBe(
       'No pudimos conectarnos. Probá de nuevo en un minuto.',
     )

@@ -76,6 +76,15 @@ export const SignUpInput = z.object({
  * proyecto apagado— y es el código HTTP cuando el servidor contestó algo
  * reintentable (502, 503, 504). Las dos cosas son "no es tu contraseña".
  *
+ * `AuthUnknownError` entra por el mismo motivo: es lo que tira la librería
+ * cuando la respuesta no se pudo leer como JSON y el código no era de servidor
+ * —un portal cautivo, un proxy que devuelve HTML, una URL de Supabase mal
+ * configurada—. "No entendimos la respuesta" nunca es un veredicto sobre una
+ * contraseña. El riesgo de incluirlo es al revés y es chico: si algún día
+ * Supabase rechazara credenciales con un cuerpo que no es JSON, diríamos "no
+ * pudimos conectarnos" y se reintentaría sin éxito, que es más o menos lo mismo
+ * que hace alguien a quien le dicen que su contraseña está mal.
+ *
  * **Separar este caso no filtra nada.** La regla de privacidad de este archivo
  * —no distinguir "no existe esa cuenta" de "contraseña incorrecta"— protege
  * saber qué correos tienen cuenta acá. Esto falla *antes* de que Supabase mire
@@ -83,7 +92,11 @@ export const SignUpInput = z.object({
  */
 function unreachable(error: { name?: string; status?: number } | null): boolean {
   if (!error) return false
-  return error.name === 'AuthRetryableFetchError' || error.status === 0
+  return (
+    error.name === 'AuthRetryableFetchError' ||
+    error.name === 'AuthUnknownError' ||
+    error.status === 0
+  )
 }
 
 /** Lo que se muestra cuando el problema es nuestro y no de quien escribe. */
