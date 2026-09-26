@@ -275,3 +275,49 @@ export async function sendFormatRequestNotification({
 
   return send({ to, subject: `Pedido de formato · ${practitionerName}`, html })
 }
+
+// ─── An invitation ──────────────────────────────────────────────────────────
+
+/**
+ * The one email Ombúa sends to somebody who does not have an account.
+ *
+ * It carries a link with a token in it, which is the closest thing to a
+ * credential that leaves this system by mail — so the two sentences about what
+ * the link does and when it stops working are not padding. Somebody who was not
+ * expecting this has to be able to tell, from the message alone, whether it is
+ * for them.
+ *
+ * The inviter's name is in the body for the same reason. "Te invitaron a una
+ * herramienta clínica" from nobody in particular is indistinguishable from
+ * phishing; "Carolina te invitó" is a fact the reader can check against their
+ * own week.
+ *
+ * No clinical content, and there is none to leak here: at the moment this is
+ * sent, the recipient has no patients and no records.
+ */
+export async function sendInvitation({
+  to,
+  fullName,
+  inviterName,
+  link,
+}: {
+  to: string
+  fullName: string
+  inviterName: string
+  link: string
+}) {
+  const html = layout({
+    subtitle: 'Te invitaron a Ombúa',
+    body: `
+        <p style="margin:0 0 12px">Hola ${escapeHtml(firstName(fullName))},</p>
+        <p style="margin:0 0 14px"><b>${escapeHtml(inviterName)}</b> te invitó a usar Ombúa: tus pacientes, tus sesiones y tus informes en un solo lugar.</p>
+        <p style="margin:0;font-size:13.5px;color:#586074">Tocá el botón, elegí una contraseña y entrás derecho a tu espacio de trabajo.</p>
+        ${button(link, 'Crear mi cuenta')}
+        <p style="margin:16px 0 0;font-size:12.5px;line-height:1.6;color:#6b7280">
+          El enlace vence en catorce días y se usa una sola vez. Si no esperabas esta invitación, ignorá este correo: sin elegir una contraseña no se crea ninguna cuenta.
+        </p>`,
+    footer: 'Recibís este correo porque alguien te invitó a Ombúa.',
+  })
+
+  return send({ to, subject: `${inviterName} te invitó a Ombúa`, html })
+}

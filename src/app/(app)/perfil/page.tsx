@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import { signOutAction } from '@/app/(auth)/actions'
 import { disconnectGoogleAction } from '@/app/(app)/perfil/actions'
@@ -149,6 +150,28 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           <CalendarPrivacyForm value={practitioner.calendar_privacy} />
         </CardContent>
       </Card>
+
+      {/* La puerta al panel de invitaciones vive acá y no en el menú lateral.
+          `nav-items.ts` explica la regla: una pantalla que no es un destino del
+          día de trabajo no sube al menú, vive donde tiene sentido. Invitar es
+          una cosa de la cuenta, y "Mi perfil" es donde están las cosas de la
+          cuenta. Además sólo la ve quien puede hacerlo. */}
+      {practitioner.is_admin ? (
+        <Card className="mb-5">
+          <CardHeader>
+            <CardTitle>Invitaciones</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <p className="min-w-0 text-body text-muted-foreground">
+              Ombúa es por invitación. Desde acá abrís una cuenta nueva y ves cuáles
+              siguen sin usarse.
+            </p>
+            <Button asChild size="sm">
+              <Link href="/invitaciones">Abrir invitaciones</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* ─── El registro de auditoría ────────────────────────────────────
           Se escribía desde el primer día y no lo leía nadie: `listAuditLog` no

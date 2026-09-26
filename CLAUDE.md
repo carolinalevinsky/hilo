@@ -183,7 +183,7 @@ subquery once per query and a bare `auth.uid()` once per row.
 ## Security invariants
 
 **The service-role key bypasses Row Level Security completely.** It is used in
-exactly seven places, and every one of them earns it the same way: **there is no
+exactly eight places, and every one of them earns it the same way: **there is no
 user session for RLS to check against.** Not "it was easier", not "the policy was
 in the way".
 
@@ -197,15 +197,34 @@ in the way".
 7. `src/server/ai-usage.ts` — the AI quota ledger. A counter the counted party
    can delete is not a counter, and every table the quota used to count had a
    `for all` policy, so deleting a report gave the allowance back
+8. `src/server/invitations.ts` — somebody accepting an invitation is not a user
+   yet; the account is created by `auth.admin.createUser` a line later. The
+   `invitations` rows are written the same way and have a read-only policy, so a
+   practitioner sees who she invited and cannot forge it
 
 Everywhere else uses `getDb()`, which carries the user's session. A lint rule
-enforces this; an eighth place requires editing `SERVICE_DB_ALLOWED` in
+enforces this; a ninth place requires editing `SERVICE_DB_ALLOWED` in
 `eslint.config.mjs` — and this list here, which is the one a person reads.
 
 `npm run check:boundaries` proves the rule still fires. It reads the allowlisted
 files; it does not write them. A check that authors a source file in order to
 test it will eventually author the wrong thing, which is how `booking.ts` lost
 224 lines seven times — the story is in `docs/when-things-break.md`.
+
+**Ombúa is by invitation. There is no sign-up.** What closes the door is
+`enable_signup = false` in Supabase — `supabase/config.toml` for the local stack
+and *Authentication → Sign In / Providers* in the dashboard for production — and
+nothing else can. The anon key ships in the JavaScript bundle every visitor
+downloads, by design, so a `POST` at `/auth/v1/signup` never passes through a
+screen or a Server Action of ours. Removing a form is decoration; that switch is
+the lock.
+
+Accounts are created by `src/server/invitations.ts` with the admin API, which
+that switch does not apply to. Who may invite is `practitioners.is_admin`, a
+column granted with an `UPDATE` and never from the application — the column
+grants in `20260906120000` mean anything added to that table after them is
+unwritable through a session, and `src/server/rls.test.ts` watches that it stays
+so.
 
 **`NEXT_PUBLIC_` is not a naming style.** It is the switch that puts a value
 into the JavaScript bundle every visitor downloads. Never put it on a key,

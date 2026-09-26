@@ -49,6 +49,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
         <Sidebar
           fullName={practitioner.full_name}
           disciplineLabel={disciplineLabel(practitioner.discipline)}
+          isAdmin={practitioner.is_admin}
         />
 
         <main className="min-w-0 px-3.5 pt-4.5 pb-[calc(80px+env(safe-area-inset-bottom))] lg:px-8.5 lg:pt-11 lg:pb-16">
@@ -58,7 +59,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           {children}
         </main>
 
-        <MobileNav />
+        <MobileNav isAdmin={practitioner.is_admin} />
         <Toaster position="top-center" />
       </div>
     </AskProvider>

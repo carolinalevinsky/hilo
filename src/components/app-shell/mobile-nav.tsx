@@ -6,9 +6,9 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 import {
-  MOBILE_BAR_ITEMS,
-  MOBILE_SHEET_ITEMS,
   isNavItemActive,
+  mobileBarItemsFor,
+  mobileSheetItemsFor,
   type NavItem,
 } from '@/components/app-shell/nav-items'
 import { useAsk } from '@/components/assistant/ask-dock'
@@ -35,13 +35,15 @@ import { cn } from '@/lib/utils'
  * to 344 and "Más" runs off the right edge. Without a label it costs 44 px and
  * the five words keep their room.
  */
-export function MobileNav() {
+export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname()
+  const barItems = mobileBarItemsFor(isAdmin)
+  const sheetItems = mobileSheetItemsFor(isAdmin)
   const askHilo = useAsk()
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
-  const sheetHasActive = MOBILE_SHEET_ITEMS.some((item) => isNavItemActive(item, pathname))
+  const sheetHasActive = sheetItems.some((item) => isNavItemActive(item, pathname))
 
   return (
     <>
@@ -66,7 +68,7 @@ export function MobileNav() {
               </button>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {MOBILE_SHEET_ITEMS.map((item) => (
+              {sheetItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -97,7 +99,7 @@ export function MobileNav() {
       ) : null}
 
       <nav className="fixed inset-x-0 bottom-0 z-70 flex justify-around border-t border-border bg-card/96 px-1 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] shadow-[0_-4px_22px_rgba(30,36,54,0.07)] backdrop-blur-md lg:hidden">
-        {MOBILE_BAR_ITEMS.map((item) => (
+        {barItems.map((item) => (
           <Link key={item.href} href={item.href} className="flex min-w-0 flex-auto">
             <BarItem item={item} active={isNavItemActive(item, pathname)} />
           </Link>
@@ -117,7 +119,7 @@ export function MobileNav() {
           <MessageCircle className="size-5" />
         </button>
 
-        {MOBILE_SHEET_ITEMS.length > 0 ? (
+        {sheetItems.length > 0 ? (
           <button
             type="button"
             onClick={() => setSheetOpen(true)}

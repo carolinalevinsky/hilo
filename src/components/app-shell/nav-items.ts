@@ -3,6 +3,7 @@ import {
   ClipboardList,
   FileText,
   Home,
+  UserPlus,
   Users,
   Wallet,
   type LucideIcon,
@@ -96,5 +97,40 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/cobros', label: 'Pagos', icon: Wallet, onMobileBar: true },
 ]
 
-export const MOBILE_BAR_ITEMS = NAV_ITEMS.filter((item) => item.onMobileBar)
-export const MOBILE_SHEET_ITEMS = NAV_ITEMS.filter((item) => !item.onMobileBar)
+/**
+ * The seventh item, and the only one not in v1: inviting other professionals.
+ *
+ * It is kept apart from `NAV_ITEMS` rather than carrying an `adminOnly` flag,
+ * because a flag has to be remembered by every caller and the ones that forget
+ * it fail open — the item simply appears. Here the only way to get it is to ask
+ * for it, and the only thing that asks is the app shell, which has the
+ * practitioner's row in hand.
+ *
+ * Not on the mobile bar: the four down there are the screens opened between
+ * sessions, standing up, with a patient in the room. This is not one of them,
+ * so it lives behind "Más" like the other three.
+ */
+const ADMIN_ITEM: NavItem = {
+  href: '/invitaciones',
+  label: 'Invitaciones',
+  icon: UserPlus,
+}
+
+/**
+ * The menu this practitioner sees.
+ *
+ * Hiding the item is not what protects the screen: `/invitaciones` calls
+ * `notFound()` for anybody who is not an admin, and every action in
+ * `src/server/invitations.ts` checks again. This decides what is worth showing.
+ */
+export function navItemsFor(isAdmin: boolean): NavItem[] {
+  return isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS
+}
+
+export function mobileBarItemsFor(isAdmin: boolean): NavItem[] {
+  return navItemsFor(isAdmin).filter((item) => item.onMobileBar)
+}
+
+export function mobileSheetItemsFor(isAdmin: boolean): NavItem[] {
+  return navItemsFor(isAdmin).filter((item) => !item.onMobileBar)
+}

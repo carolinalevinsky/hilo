@@ -15,7 +15,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 const holder = vi.hoisted(() => ({
   signInWithPassword: null as unknown,
-  signUp: null as unknown,
   resetPasswordForEmail: null as unknown,
 }))
 
@@ -23,13 +22,12 @@ vi.mock('./db', () => ({
   getDb: async () => ({
     auth: {
       signInWithPassword: holder.signInWithPassword,
-      signUp: holder.signUp,
       resetPasswordForEmail: holder.resetPasswordForEmail,
     },
   }),
 }))
 
-const { signIn, signUp, requestPasswordReset } = await import('./auth')
+const { signIn, requestPasswordReset } = await import('./auth')
 
 /** Lo que devuelve `@supabase/auth-js` cuando el `fetch` ni salió. */
 const NETWORK_ERROR = {
@@ -97,41 +95,6 @@ describe('entrar', () => {
     const result = await signIn(CREDENTIALS)
 
     expect(result.ok === false && result.message).toMatch(/confirmar tu correo/)
-  })
-})
-
-describe('crear cuenta', () => {
-  it('distingue no poder conectarse de no poder crearla', async () => {
-    holder.signUp = async () => ({ data: {}, error: NETWORK_ERROR })
-
-    const result = await signUp({
-      fullName: 'Ana Prueba',
-      email: CREDENTIALS.email,
-      password: CREDENTIALS.password,
-      discipline: 'speech_therapy',
-      acceptedTerms: true,
-    })
-
-    expect(result.ok === false && result.message).toBe(
-      'No pudimos conectarnos. Probá de nuevo en un minuto.',
-    )
-  })
-
-  it('sigue diciendo lo suyo cuando el correo ya tiene cuenta', async () => {
-    holder.signUp = async () => ({
-      data: {},
-      error: { name: 'AuthApiError', code: 'user_already_exists', status: 422 },
-    })
-
-    const result = await signUp({
-      fullName: 'Ana Prueba',
-      email: CREDENTIALS.email,
-      password: CREDENTIALS.password,
-      discipline: 'speech_therapy',
-      acceptedTerms: true,
-    })
-
-    expect(result.ok === false && result.message).toMatch(/Ya hay una cuenta/)
   })
 })
 

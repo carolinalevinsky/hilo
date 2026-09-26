@@ -687,6 +687,59 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          discipline: string
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          last_sent_at: string
+          practitioner_id: string
+          sent_count: number
+          token_hash: string
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          discipline: string
+          email: string
+          expires_at: string
+          full_name: string
+          id?: string
+          last_sent_at?: string
+          practitioner_id: string
+          sent_count?: number
+          token_hash: string
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          discipline?: string
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          last_sent_at?: string
+          practitioner_id?: string
+          sent_count?: number
+          token_hash?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           age_range: string | null
@@ -1022,6 +1075,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_admin: boolean
           onboarded_at: string | null
           phone: string | null
           plan: string
@@ -1037,6 +1091,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_admin?: boolean
           onboarded_at?: string | null
           phone?: string | null
           plan?: string
@@ -1052,6 +1107,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_admin?: boolean
           onboarded_at?: string | null
           phone?: string | null
           plan?: string

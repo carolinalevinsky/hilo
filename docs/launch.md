@@ -82,20 +82,58 @@ made on a laptop and the email is read on a phone. `/confirmar` handles both
 shapes, so a forgotten template degrades rather than breaks — but it degrades
 into exactly the failure nobody can reproduce.
 
+### Sign-up is off, and this is the switch that does it
+
+In *Authentication → Sign In / Providers → Email*, turn **"Allow new users to
+sign up"** off.
+
+**Leave "Enable Email provider" on.** It is the toggle directly above and it
+looks like the thorough version of the same decision. It is not: it decides
+whether email is a way *in* at all, so turning it off stops everyone who already
+has an account from signing in. The server answers `email_provider_disabled`,
+which `/entrar` shows as "El correo o la contraseña no coinciden" — a message
+that sends whoever is locked out to check a password that was never the problem.
+The same trap is in `supabase/config.toml`; there is a comment on the line.
+
+**This is the only thing that closes the door.** Ombúa has no sign-up form any
+more, but that is decoration: the `anon` key ships in the JavaScript bundle every
+visitor downloads — by design — so anybody can `POST` straight at
+`/auth/v1/signup` without touching a screen of ours. This switch is what refuses
+it.
+
+`supabase/config.toml` sets the same thing for the local stack. Both have to be
+set; neither implies the other.
+
+Accounts are created from inside Ombúa, at `/invitaciones`, by
+`src/server/invitations.ts` using the admin API — which this switch does not
+apply to, on purpose.
+
+### The first admin
+
+Only a practitioner with `practitioners.is_admin = true` can invite, and nothing
+in the application can grant it: the column grants in
+`20260906120000_practitioners_column_grants.sql` leave every column added to that
+table afterwards unwritable through a user session. So the first one is granted
+by hand, once, in *SQL Editor*:
+
+```sql
+update practitioners set is_admin = true where email = '<the owner's email>';
+```
+
+That account then sees an **Invitaciones** card in *Mi perfil* and can invite
+everybody else. Every later admin is the same one-line UPDATE — deliberately, so
+that handing out the key is never something a screen can do by accident.
+
 ### Email confirmations
 
-They are **off** (`enable_confirmations = false`), deliberately: a practitioner
-signs up and is working the same minute.
+They are **off** (`enable_confirmations = false`), and with invitations they are
+close to redundant: accepting an invitation proves the address already, because
+the link only reaches the inbox it was sent to. `acceptInvitation` creates the
+account with `email_confirm: true` for that reason.
 
-Turning them on is now a switch and nothing else. The flow behind it is built and
-was run end to end — `signUp` reports that no session came back, the sign-up form
-shows "revisá tu correo" instead of redirecting, and `/confirmar` turns the
-emailed link into a session. The `practitioners` row is created by a trigger on
-`auth.users`, so it exists before anyone has signed in.
-
-For a clinical tool it is a reasonable thing to want. If you turn it on, do it in
-the dashboard *and* in `supabase/config.toml`, so local development behaves the
-way production does.
+They still apply to an address changed later from *Mi perfil*. If you turn
+confirmations on, do it in the dashboard *and* in `supabase/config.toml`, so
+local development behaves the way production does.
 
 ---
 
@@ -104,8 +142,9 @@ way production does.
 1. Add and verify the sending domain (DNS: SPF, DKIM).
 2. Create an API key → `RESEND_API_KEY`.
 3. Set `MAIL_FROM` to something a practitioner would recognise, e.g.
-   `Ombúa <hola@ombua.com>`. It appears in the booking notification and the
-   fortnightly digest.
+   `Ombúa <hola@ombua.com>`. It appears in the booking notification, the
+   fortnightly digest and the invitation — which is the one that goes to somebody
+   who has never heard of Ombúa, so it is the one where the sender matters most.
 
 Until the domain is verified, Resend only delivers to the address that owns the
 account. A booking notification that silently goes nowhere looks exactly like a
@@ -113,7 +152,10 @@ booking that never arrived.
 
 ### Resend as Supabase's mail server
 
-The booking notification and the digest are sent by Ombúa through the Resend API.
+The booking notification, the digest and the invitation are sent by Ombúa through
+the Resend API — the invitation deliberately so, rather than by Supabase's own
+invite, which is why its Spanish wording lives in `src/server/notifications.ts`
+and is covered by a test instead of living in the dashboard.
 The confirmation and password-recovery emails are sent by **Supabase**, which has
 its own mail server — and by default that is a shared one limited to a handful of
 messages an hour, meant for testing and not for people who need to get back into
@@ -241,6 +283,13 @@ With the real domain live, and signed out:
 curl -s https://<domain>/robots.txt          # disallow everything but the landing and legal pages
 curl -s https://<domain>/manifest.webmanifest # the PWA manifest, not an HTML redirect
 curl -s -o /dev/null -w '%{http_code}\n' https://<domain>/api/digest  # 401
+
+# Sign-up is closed, and this is the door that has to be locked — not the form.
+# Expect an error saying signups are disabled. A 200 with a user in it means the
+# dashboard switch in step 1 was not set, and anybody can open an account.
+curl -s -X POST "https://<project ref>.supabase.co/auth/v1/signup" \
+  -H "apikey: <the anon key>" -H 'Content-Type: application/json' \
+  -d '{"email":"prueba-alta-abierta@example.com","password":"una-clave-cualquiera"}'
 ```
 
 Then, signed in as a real account:
@@ -252,6 +301,11 @@ Then, signed in as a real account:
 5. Use "Olvidé mi contraseña", and **open the link on a different device than the
    one that asked for it**. That is the case the whole token-hash decision above
    exists for, and the only way to find out it was got wrong is to try it.
+6. Invite somebody from *Invitaciones*, to an address you can read, and accept it
+   from a different device. Check the mail actually arrived — Resend accepting a
+   message and a mailbox filing it as spam look identical from here, which is why
+   the screen also shows the link — and then cancel a second invitation and
+   confirm its link stops working.
 
 And once, deliberately: `select * from patients` from a second account's
 session, and confirm it returns nothing. `src/server/rls.test.ts` proves this

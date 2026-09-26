@@ -39,7 +39,12 @@ export const SIGNER_RELATIONSHIPS = ['self', ...GUARDIAN_RELATIONSHIPS] as const
 /** A refusal written to be read, shown as is. Anything else is logged. */
 export class PatientFormError extends Error {}
 
-function hashToken(token: string) {
+/**
+ * Exported because every kind of secret link in Ombúa shares this machinery —
+ * `scales.ts` and `invitations.ts` both look a row up by the hash of a token
+ * they were handed. The token in clear is never stored anywhere.
+ */
+export function hashToken(token: string) {
   return createHash('sha256').update(token).digest('hex')
 }
 
@@ -50,7 +55,8 @@ export function looksLikeToken(token: string) {
 
 /**
  * A new link secret: the token that goes in the URL, and its hash, which is
- * the only thing stored. Shared by every kind of link — see `scales.ts`.
+ * the only thing stored. Shared by every kind of link — see `scales.ts` and
+ * `invitations.ts`.
  */
 export function newLinkToken() {
   const token = randomBytes(32).toString('base64url')

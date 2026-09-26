@@ -1,10 +1,21 @@
 import { expect, test } from '@playwright/test'
 
-import { deleteAuthUserByEmail, uniqueEmail } from './support/supabase'
+import {
+  createConfirmedUser,
+  deleteAuthUserByEmail,
+  uniqueEmail,
+} from './support/supabase'
 
 /**
- * The one path Ombúa exists for: sign up, load a patient, write down a session,
- * get a report out. `docs/plan-02-migration.md` §8.
+ * The one path Ombúa exists for: load a patient, write down a session, get a
+ * report out. `docs/plan-02-migration.md` §8.
+ *
+ * The account is made before the browser opens; it used to be signed up through
+ * the screen. There is no sign-up screen any more — Ombúa is by invitation — and
+ * how an account comes into existence is its own story with its own test,
+ * `invitation.spec.ts`. Driving that as a prologue here would make this test
+ * fail for reasons that have nothing to do with the four clinical screens it
+ * exists to watch.
  *
  * Everything else is tested where it is cheaper — the business rules as unit
  * tests, the policies as a real two-practitioner RLS test, the prompts as
@@ -50,21 +61,32 @@ test.afterAll(async () => {
   await deleteAuthUserByEmail(email)
 })
 
-test('sign up, load a patient, register a session, get a report', async ({ page }) => {
-  await test.step('creates the account and lands signed in', async () => {
-    await page.goto('/crear-cuenta')
+test('sign in, load a patient, register a session, get a report', async ({ page }) => {
+  await test.step('signs in and lands on the dashboard', async () => {
+    await createConfirmedUser({
+      email,
+      password: PASSWORD,
+      fullName: PRACTITIONER,
+      discipline: 'speech_therapy',
+    })
 
-    await page.getByLabel('Nombre y apellido').fill(PRACTITIONER)
+    await page.goto('/entrar')
     await page.getByLabel('Email').fill(email)
     await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD)
-    await page.getByLabel('Tu profesión').selectOption('speech_therapy')
-    await page.getByRole('checkbox').check()
-
-    await page.getByRole('button', { name: 'Crear cuenta' }).click()
+    await page.getByRole('button', { name: 'Entrar' }).click()
 
     // The greeting uses the first name, which only exists if the M1 trigger ran
     // and wrote the `practitioners` row from the auth metadata.
-    await expect(page.getByRole('heading', { name: /Valentina/ })).toBeVisible()
+    //
+    // Longer than the default five seconds, and only here. This is the first
+    // Server Action the freshly started server runs, so it pays for opening the
+    // connection to Supabase on top of the sign-in itself — measured between
+    // four and six seconds, which straddles the default and makes this line fail
+    // perhaps one run in three for a reason that has nothing to do with the
+    // product. Every later step keeps the default, where a slow answer is news.
+    await expect(page.getByRole('heading', { name: /Valentina/ })).toBeVisible({
+      timeout: 20_000,
+    })
     await expect(page).toHaveURL(/\/inicio$/)
   })
 

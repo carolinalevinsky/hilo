@@ -25,7 +25,7 @@ export default function LandingPage() {
 
       <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
         <Button asChild size="lg" className="w-full bg-white text-violet hover:bg-white/90">
-          <Link href="/crear-cuenta">Crear mi cuenta</Link>
+          <Link href="/entrar">Entrar</Link>
         </Button>
         <Button
           asChild
@@ -33,7 +33,7 @@ export default function LandingPage() {
           variant="outline"
           className="w-full border-white/40 bg-transparent text-white hover:bg-white/12 hover:text-white"
         >
-          <Link href="/entrar">Ya tengo cuenta</Link>
+          <Link href="/crear-cuenta">Quiero una cuenta</Link>
         </Button>
       </div>
 

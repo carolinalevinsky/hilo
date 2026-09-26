@@ -27,6 +27,11 @@ const BASE_URL = `http://127.0.0.1:${PORT}`
 export default defineConfig({
   testDir: './e2e',
 
+  // Un `.only` olvidado en un archivo de test deja pasar el build saltándose
+  // todo lo demás, y el estado de CI se ve idéntico a una corrida completa.
+  // Vitest ya lo rechaza solo cuando `CI` está puesto; esto es la otra mitad.
+  forbidOnly: !!process.env.CI,
+
   // The flow is one story told in order — sign up, then a patient, then a
   // session on that patient, then a report about it. Running the steps in
   // parallel would mean four unrelated accounts and no story.

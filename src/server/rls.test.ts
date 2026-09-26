@@ -162,6 +162,19 @@ beforeAll(async () => {
     detail: 'Uno para presentar en el juzgado, con el motivo de derivación.',
   })
   expect(formatError, 'the format_requests fixture itself failed').toBeNull()
+
+  // Una invitación que mandó Bruno. No es dato clínico, y es la tabla con la
+  // que se abren cuentas: quién más fue invitado a Ombúa no es asunto de Ana, y
+  // el hash del token menos todavía.
+  const { error: invitationError } = await service.from('invitations').insert({
+    practitioner_id: idB,
+    email: 'invitada-de-bruno@ombua.test',
+    full_name: 'Invitada de Bruno',
+    discipline: 'psychology',
+    token_hash: 'a'.repeat(64),
+    expires_at: new Date(Date.now() + 86_400_000).toISOString(),
+  })
+  expect(invitationError, 'the invitations fixture itself failed').toBeNull()
 }, 60_000)
 
 afterAll(async () => {
@@ -234,16 +247,23 @@ describe('row level security on practitioners', () => {
     expect(await refusedUpdate({ slug: 'ana-elegida-a-mano' }), 'slug').not.toBeNull()
     expect(await refusedUpdate({ email: 'otra@ejemplo.test' }), 'email').not.toBeNull()
     expect(await refusedUpdate({ digest_sent_at: null }), 'digest_sent_at').not.toBeNull()
+    // La que decide quién puede abrir cuentas nuevas. Se apoya en que la
+    // migración de column grants revocó el UPDATE **de tabla**, así que una
+    // columna agregada después nace sin permiso para nadie — un razonamiento
+    // correcto y a dos migraciones de distancia, que es exactamente la clase de
+    // cosa que hay que mirar funcionar en vez de deducir.
+    expect(await refusedUpdate({ is_admin: true }), 'is_admin').not.toBeNull()
 
     const { data } = await service
       .from('practitioners')
-      .select('plan, slug, email')
+      .select('plan, slug, email, is_admin')
       .eq('id', idA)
       .single()
 
     expect(data?.plan).toBe('free')
     expect(data?.slug).toMatch(/^ana-prueba(-\d+)?$/)
     expect(data?.email).toBe(emailA)
+    expect(data?.is_admin).toBe(false)
   })
 
   it('still lets her write every column the app writes', async () => {
@@ -323,6 +343,9 @@ describe('the clinical tables', () => {
       // its own test file only checks the Zod schema, so until this line the
       // policy had never been watched from the outside.
       'format_requests',
+      // A quién invitó otra profesional, y el hash del token con el que se abre
+      // esa cuenta. Ninguna de las dos cosas es clínica y ninguna es de Ana.
+      'invitations',
     ] as const) {
       const { data, error } = await asA.from(table).select('practitioner_id')
       expect(error, `${table} should read cleanly`).toBeNull()
@@ -893,6 +916,43 @@ describe('the AI usage ledger', () => {
       .select('id', { count: 'exact', head: true })
       .eq('id', mine!.id)
     expect(count).toBe(1)
+  })
+})
+
+describe('invitations', () => {
+  it('can be read by whoever sent them, and by nobody else', async () => {
+    const { data, error } = await asA.from('invitations').select('email')
+
+    expect(error).toBeNull()
+    expect(data).toEqual([])
+  })
+
+  it('cannot be written by a practitioner, not even her own', async () => {
+    // Una lista de invitaciones que la usuaria puede escribir no cuenta a quién
+    // invitó: cuenta lo que ella quiera que diga. Las filas las escribe
+    // `src/server/invitations.ts` con clave de servicio, así que no hay política
+    // de INSERT y además se revocó el grant.
+    const { error } = await asA.from('invitations').insert({
+      practitioner_id: idA,
+      email: 'colada@ombua.test',
+      full_name: 'Colada',
+      discipline: 'psychology',
+      token_hash: 'b'.repeat(64),
+      expires_at: new Date(Date.now() + 86_400_000).toISOString(),
+    })
+
+    expect(error).not.toBeNull()
+  })
+
+  it('cannot be given a token of the practitioner\u2019s choosing', async () => {
+    // El UPDATE es el camino largo al mismo lugar: escribir el hash de un token
+    // que uno ya tiene es fabricarse una invitación válida sin insertar nada.
+    const { error } = await asA
+      .from('invitations')
+      .update({ token_hash: 'c'.repeat(64) })
+      .eq('practitioner_id', idA)
+
+    expect(error).not.toBeNull()
   })
 })
 

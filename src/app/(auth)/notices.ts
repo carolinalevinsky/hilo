@@ -8,6 +8,11 @@
 const NOTICES = {
   'enlace-vencido':
     'Ese enlace no funcionó: puede que haya vencido o que ya lo hayas usado. Pedí uno nuevo.',
+  // Aceptar una invitación crea la cuenta y después inicia sesión. Si lo
+  // segundo falla, lo primero ya pasó — y decir sólo "entrá" dejaría a alguien
+  // que acaba de elegir una contraseña sin saber si la cuenta llegó a existir.
+  'cuenta-creada':
+    'Creamos tu cuenta. Entrá con el correo de la invitación y la contraseña que elegiste.',
 } as const
 
 export type AuthNotice = keyof typeof NOTICES

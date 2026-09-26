@@ -67,17 +67,17 @@ export async function getDb() {
  * query made with it can read and write every practitioner's data, so a missing
  * `practitioner_id` filter here silently leaks clinical records.
  *
- * It exists for the four cases where there is genuinely no user session to act
- * on behalf of:
+ * It exists for the handful of cases where there is genuinely no user session to
+ * act on behalf of — a webhook, a cron, a public form, somebody who does not
+ * have an account yet.
  *
- *   1. `mercadopago.ts`  — reading a practitioner's Mercado Pago access token,
- *                          which has no SELECT policy for anyone.
- *   2. `mercadopago.ts`  — the payment webhook, called by Mercado Pago.
- *   3. `booking.ts`      — a public booking request from an anonymous visitor.
- *   4. `audit.ts`        — writing the audit log.
- *
- * The allowlist in `eslint.config.mjs` is what keeps that list honest. Importing
- * this anywhere else fails the build.
+ * **Which files those are is not listed here.** It was, and it went stale
+ * twice: this comment said "the four cases" while the allowlist had grown to
+ * seven, which is worse than no list at all — somebody checking whether their
+ * case is already covered gets a confident wrong answer. It lives in exactly
+ * two places now, and both are checked: `SERVICE_DB_ALLOWED` in
+ * `eslint.config.mjs`, which fails the build, and the "Security invariants"
+ * section of `CLAUDE.md`, which is the one a person reads.
  */
 export function getServiceDb() {
   return createClient<Database>(

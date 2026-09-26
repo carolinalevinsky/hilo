@@ -27,7 +27,9 @@ vi.mock('resend', () => ({
   },
 }))
 
-const { sendBookingNotification, sendDigest } = await import('./notifications')
+const { sendBookingNotification, sendDigest, sendInvitation } = await import(
+  './notifications',
+)
 
 beforeEach(() => {
   sent.length = 0
@@ -154,5 +156,52 @@ describe('sendDigest', () => {
 
     expect(sent[0]?.html).not.toContain('Reservas sin confirmar')
     expect(sent[0]?.html).not.toContain('Pacientes con saldo')
+  })
+})
+
+describe('sendInvitation', () => {
+  const invitation = {
+    to: 'renata@ejemplo.test',
+    fullName: 'Renata Silva',
+    inviterName: 'Carolina Levinsky',
+    link: 'https://app.ombua.com/invitacion/un-token-de-cuarenta-y-tres-caracteres',
+  }
+
+  it('carries the link, and says who is inviting', async () => {
+    await sendInvitation(invitation)
+
+    const mail = sent[0]!
+    expect(mail.to).toEqual(['renata@ejemplo.test'])
+    // Quién invita va en el asunto: es lo único que distingue esto de un
+    // phishing, y el asunto es lo único que se lee antes de decidir abrirlo.
+    expect(mail.subject).toContain('Carolina Levinsky')
+    expect(mail.html).toContain('Carolina Levinsky')
+    expect(mail.html).toContain(invitation.link)
+    expect(mail.html).toContain('Renata')
+  })
+
+  it('escapes the names, which somebody typed into a form', async () => {
+    await sendInvitation({
+      ...invitation,
+      fullName: '<script>alert(1)</script>',
+      inviterName: 'Ana "La Jefa" <b>Pérez</b>',
+    })
+
+    const mail = sent[0]!
+    expect(mail.html).not.toContain('<script>')
+    expect(mail.html).not.toContain('<b>Pérez</b>')
+  })
+
+  it('tells somebody who was not expecting it that they can ignore it', async () => {
+    await sendInvitation(invitation)
+
+    // La frase que se borra primero cuando alguien decide que el correo es
+    // largo, y la única que hay para quien recibe esto sin esperarlo. Un mail
+    // que le dice a un desconocido "entrá y elegí una contraseña" sin decirle
+    // qué pasa si no lo pidió es, desde afuera, indistinguible de un phishing.
+    //
+    // Y es verdad además de tranquilizadora: la cuenta no existe hasta que
+    // alguien elige la contraseña. Ver `acceptInvitation`.
+    expect(sent[0]!.html).toContain('no se crea ninguna cuenta')
   })
 })

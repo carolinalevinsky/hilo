@@ -4,8 +4,8 @@ import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import {
-  NAV_ITEMS,
   isNavItemActive,
+  navItemsFor,
   type NavItem,
 } from '@/components/app-shell/nav-items'
 import { Wordmark } from '@/components/brand/wordmark'
@@ -20,11 +20,14 @@ import { cn } from '@/lib/utils'
 export function Sidebar({
   fullName,
   disciplineLabel,
+  isAdmin,
 }: {
   fullName: string
   disciplineLabel: string
+  isAdmin: boolean
 }) {
   const pathname = usePathname()
+  const items = navItemsFor(isAdmin)
 
   return (
     <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 bg-[linear-gradient(180deg,var(--brand-violet-dark),var(--brand-violet)_60%,var(--brand-violet-light))] px-4 py-5.5 text-sidebar-foreground lg:flex">
@@ -36,7 +39,7 @@ export function Sidebar({
       </Link>
 
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = isNavItemActive(item, pathname)
           return (
             <Link

@@ -185,7 +185,12 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
-enable_signup = true
+#
+# The project-wide switch, off for the same reason as the one under
+# [auth.email] below — which is where the long version of why lives. Both are
+# set because this one closes every provider at once, including any that gets
+# turned on later without anybody remembering this decision.
+enable_signup = false
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
@@ -230,6 +235,18 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
+#
+# **Stays `true`, and do not "fix" this to match the switch above.**
+#
+# It reads like the narrower version of the project-wide `enable_signup`, and it
+# is not: GoTrue treats it as the email *provider* switch, so turning it off
+# disables signing **in** with a password as well. The symptom is
+# `email_provider_disabled` on `/auth/v1/token`, which the sign-in screen shows
+# as "El correo o la contraseña no coinciden" — a correct message for what the
+# server said and a completely misleading one about why.
+#
+# What closes sign-up is `enable_signup = false` up in [auth]. This one only
+# decides whether email is a way in at all, and it has to be.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.

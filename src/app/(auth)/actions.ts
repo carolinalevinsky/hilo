@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE } from '@/lib/auth-cookie'
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { internalPath } from '@/lib/safe-path'
 import {
   requestPasswordReset,
@@ -12,8 +12,8 @@ import {
   setNewPassword,
   signIn,
   signOut,
-  signUp,
 } from '@/server/auth'
+import { acceptInvitation, InvitationError } from '@/server/invitations'
 import { createProfile } from '@/server/practitioners'
 
 import { RECOVERY_COOKIE, RECOVERY_PATH } from './recovery-cookie'
@@ -28,44 +28,6 @@ import { RECOVERY_COOKIE, RECOVERY_PATH } from './recovery-cookie'
  * A `'use server'` file may only export async functions, which is why the
  * `FormState` shape and its initial value live in `src/lib/form-state.ts`.
  */
-
-export async function signUpAction(
-  _previous: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const result = await signUp({
-    fullName: formData.get('fullName'),
-    email: formData.get('email'),
-    password: formData.get('password'),
-    discipline: formData.get('discipline'),
-    acceptedTerms: formData.get('acceptedTerms') === 'on',
-  })
-
-  // Handed back so the form can refill itself. Forgetting to tick the terms is
-  // the most likely way to fail this form, and retyping your name and email
-  // because of a checkbox is the kind of small insult that makes someone give
-  // up on signing up at all.
-  //
-  // The password is deliberately absent — see `FormState`.
-  if (!result.ok) {
-    return formError(result.message, {
-      fullName: String(formData.get('fullName') ?? ''),
-      email: String(formData.get('email') ?? ''),
-      discipline: String(formData.get('discipline') ?? ''),
-      acceptedTerms: formData.get('acceptedTerms') === 'on' ? 'on' : '',
-    })
-  }
-
-  // With confirmation on there is no session yet, so there is nowhere to send
-  // them — the form shows "revisá tu correo" instead. With it off, which is how
-  // Ombúa runs today, they are already signed in.
-  if (result.needsConfirmation) {
-    return formOk('Te mandamos un correo para confirmar la cuenta.')
-  }
-
-  // `redirect` works by throwing, so it stays outside any try/catch.
-  redirect('/inicio')
-}
 
 export async function signInAction(
   _previous: FormState,
@@ -168,6 +130,43 @@ export async function setNewPasswordAction(
 
   // One use per link.
   store.delete({ name: RECOVERY_COOKIE, path: RECOVERY_PATH })
+
+  redirect('/inicio')
+}
+
+/**
+ * Turns an invitation link into an account, and signs them in with it.
+ *
+ * The sign-in is not a convenience: with no session, the redirect to `/inicio`
+ * bounces straight back to `/entrar` and somebody who just chose a password is
+ * asked for it again by a screen that looks like the account was not created.
+ *
+ * `acceptInvitation` already created the user with `email_confirm: true`, so
+ * this is a plain password sign-in and cannot fail for a reason the practitioner
+ * could act on — if it somehow does, sending them to `/entrar` is the honest
+ * outcome: the account exists and the password they just chose works there.
+ */
+export async function acceptInvitationAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const password = String(formData.get('password') ?? '')
+
+  let email: string
+  try {
+    const accepted = await acceptInvitation({
+      token: formData.get('token'),
+      password,
+      acceptedTerms: formData.get('acceptedTerms') === 'on',
+    })
+    email = accepted.email
+  } catch (error) {
+    if (error instanceof InvitationError) return formError(error.message)
+    return formErrorFor(error, 'No pudimos crear tu cuenta. Probá de nuevo en un momento.')
+  }
+
+  const signedIn = await signIn({ email, password })
+  if (!signedIn.ok) redirect('/entrar?aviso=cuenta-creada')
 
   redirect('/inicio')
 }

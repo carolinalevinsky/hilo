@@ -69,6 +69,7 @@ const SERVICE_DB_ALLOWED = [
   'src/server/digest.ts',      // a cron run acts for every practitioner, as none
   'src/server/google.ts',      // google_accounts is using(false): no session reaches it
   'src/server/ai-usage.ts',    // a counter the counted party can delete is not a counter
+  'src/server/invitations.ts', // somebody accepting an invitation is not a user yet
 ]
 
 const restrict = (options) => ({
@@ -94,7 +95,7 @@ const eslintConfig = defineConfig([
     rules: restrict({ patterns: [NEXT_IMPORTS], paths: [SERVICE_DB_IMPORT] }),
   },
 
-  // The three service-role files: still no next/*, but getServiceDb is theirs.
+  // The service-role files: still no next/*, but getServiceDb is theirs.
   {
     files: SERVICE_DB_ALLOWED.filter((f) => f !== 'src/server/db.ts'),
     rules: restrict({ patterns: [NEXT_IMPORTS] }),

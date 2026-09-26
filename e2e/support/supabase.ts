@@ -40,10 +40,11 @@ export function uniqueEmail(prefix: string) {
  * An account that already exists and is already confirmed, created without the
  * browser.
  *
- * Only for tests whose subject is *not* the sign-up screen — the session test
- * needs somebody to sign in as, and driving four fields and a checkbox to get
- * there would make it fail for reasons that have nothing to do with sessions.
- * `critical-path.spec.ts` is the one that signs up through the UI, on purpose.
+ * Every test that needs *somebody to be* uses this. There is no sign-up screen
+ * to drive any more — Ombúa is by invitation — and the one test whose subject is
+ * how an account comes into existence is `invitation.spec.ts`, which drives the
+ * real flow end to end: an admin invites through the panel and the invitee opens
+ * the link.
  *
  * The metadata keys are the ones the sign-up trigger reads, so the practitioner
  * row appears exactly as it would have.
@@ -65,6 +66,27 @@ export async function createConfirmedUser(input: {
     email_confirm: true,
     user_metadata: { full_name: input.fullName, discipline: input.discipline },
   })
+  if (error) throw error
+}
+
+/**
+ * Makes that account one that can invite.
+ *
+ * `is_admin` is deliberately not writable through a session — the column grants
+ * in `20260906120000` see to that, and `src/server/rls.test.ts` watches it — so
+ * there is no screen anywhere that could do this. The service role is the only
+ * way, here as in production, where it is a one-line UPDATE run by hand.
+ */
+export async function grantAdmin(email: string) {
+  const { url, serviceKey } = localConfig()
+  const admin = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  const { error } = await admin
+    .from('practitioners')
+    .update({ is_admin: true })
+    .eq('email', email)
   if (error) throw error
 }
 

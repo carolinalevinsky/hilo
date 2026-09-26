@@ -1,7 +1,11 @@
 import { expect, test } from '@playwright/test'
 
 import { waitForEmail } from './support/mailpit'
-import { deleteAuthUserByEmail, uniqueEmail } from './support/supabase'
+import {
+  createConfirmedUser,
+  deleteAuthUserByEmail,
+  uniqueEmail,
+} from './support/supabase'
 
 /**
  * Forgetting the password, and getting back in.
@@ -42,16 +46,20 @@ test.afterAll(async () => {
 test('forgets the password, gets the email, sets a new one, and signs in with it', async ({
   page,
 }) => {
-  await test.step('creates the account that will forget its password', async () => {
-    await page.goto('/crear-cuenta')
+  await test.step('has an account, with a password it is about to forget', async () => {
+    // Made without the browser: the subject here is the recovery link, and
+    // there is no sign-up screen to drive any more.
+    await createConfirmedUser({
+      email,
+      password: OLD_PASSWORD,
+      fullName: PRACTITIONER,
+      discipline: 'psychology',
+    })
 
-    await page.getByLabel('Nombre y apellido').fill(PRACTITIONER)
+    await page.goto('/entrar')
     await page.getByLabel('Email').fill(email)
     await page.getByLabel('Contraseña', { exact: true }).fill(OLD_PASSWORD)
-    await page.getByLabel('Tu profesión').selectOption('psychology')
-    await page.getByRole('checkbox').check()
-
-    await page.getByRole('button', { name: 'Crear cuenta' }).click()
+    await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/inicio$/)
   })
 

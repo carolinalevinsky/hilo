@@ -1,12 +1,14 @@
 import { z } from 'zod'
 
-import { DISCIPLINE_IDS } from '@/lib/disciplines'
 import { publicConfig } from '@/lib/env'
 
 import { getDb } from './db'
 
 /**
- * Sign-up, sign-in, and resolving who is asking.
+ * Signing in, signing out, emailed links, and resolving who is asking.
+ *
+ * Creating an account is **not** here — Ombúa is by invitation, and that lives
+ * in `src/server/invitations.ts`. See the note where sign-up used to be.
  *
  * Supabase Auth is reached only from here. Everything else in `src/server/`
  * takes a `practitionerId` as an argument — it is never read from a cookie, a
@@ -45,17 +47,19 @@ export async function getUser() {
   return data.user ? { id: data.user.id, email: data.user.email ?? '' } : null
 }
 
-// ─── Sign-up ────────────────────────────────────────────────────────────────
-
-export const SignUpInput = z.object({
-  fullName: z.string().trim().min(2, 'Escribí tu nombre y apellido.'),
-  email: z.email('Revisá el correo, parece que falta algo.'),
-  password: z.string().min(6, 'La contraseña necesita al menos 6 caracteres.'),
-  discipline: z.enum(DISCIPLINE_IDS, { message: 'Elegí tu profesión.' }),
-  acceptedTerms: z.literal(true, {
-    message: 'Necesitamos que aceptes los términos para crear la cuenta.',
-  }),
-})
+// ─── Sign-up: there isn't one ───────────────────────────────────────────────
+//
+// Ombúa is by invitation. Sign-up lived here until accounts stopped being
+// self-service; it is gone rather than left unreachable, because a function
+// that creates accounts, sitting next to the ones that do not, is read as
+// "accounts can be created here".
+//
+// What actually refuses one is `enable_signup = false` in Supabase — in
+// `supabase/config.toml` for the local stack and in the dashboard for
+// production — because the anon key is public and a POST at `/auth/v1/signup`
+// never reaches any code of ours. Accounts are created by
+// `src/server/invitations.ts` with the admin API, which that switch does not
+// apply to.
 
 /**
  * Si el error es que no llegamos a Supabase, y no algo que Supabase contestó.
@@ -110,60 +114,6 @@ const NO_CONNECTION = 'No pudimos conectarnos. Probá de nuevo en un minuto.'
  * already in Spanish because it is shown verbatim under the form.
  */
 export type AuthResult = { ok: true } | { ok: false; message: string }
-
-/**
- * Sign-up says one more thing than the rest: whether a session exists yet.
- *
- * With email confirmation off — how Ombúa runs today — `signUp` returns a session
- * and the practitioner is working seconds later. With it on, it returns none,
- * and sending them to `/inicio` would bounce straight back to the sign-in
- * screen. The caller needs to know which happened, so it is a value here rather
- * than a guess up in the action.
- */
-export type SignUpResult =
-  | { ok: true; needsConfirmation: boolean }
-  | { ok: false; message: string }
-
-/**
- * Creates the account. The `practitioners` row is NOT created here — a trigger
- * on `auth.users` does it (see the M1 migration), which is why `full_name` and
- * `discipline` travel as sign-up metadata.
- *
- * Doing it in a trigger rather than here matters the day email confirmation is
- * switched on in production: `signUp` returns no session then, so there would be
- * no authenticated request in which this function could insert the profile.
- */
-export async function signUp(input: unknown): Promise<SignUpResult> {
-  const parsed = SignUpInput.safeParse(input)
-  if (!parsed.success) {
-    return { ok: false, message: firstMessage(parsed.error) }
-  }
-
-  const { fullName, email, password, discipline } = parsed.data
-  const db = await getDb()
-
-  const { data, error } = await db.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: fullName, discipline } },
-  })
-
-  if (error) {
-    if (unreachable(error)) return { ok: false, message: NO_CONNECTION }
-
-    if (error.code === 'user_already_exists' || error.status === 422) {
-      return {
-        ok: false,
-        message: 'Ya hay una cuenta con ese correo. Probá entrar en vez de crearla.',
-      }
-    }
-
-    return { ok: false, message: 'No pudimos crear la cuenta. Probá de nuevo en un momento.' }
-  }
-
-  // No session means Supabase is waiting for the emailed link to be clicked.
-  return { ok: true, needsConfirmation: data.session === null }
-}
 
 // ─── Sign-in ────────────────────────────────────────────────────────────────
 

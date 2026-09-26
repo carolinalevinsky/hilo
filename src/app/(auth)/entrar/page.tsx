@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { AuthTabs } from '@/components/auth/auth-tabs'
 import { FormMessage } from '@/components/auth/form-message'
 import { SignInForm } from '@/components/auth/sign-in-form'
 
@@ -21,8 +20,6 @@ export default async function SignInPage({ searchParams }: PageProps<'/entrar'>)
       <p className="mt-1 mb-5 text-body text-muted-foreground">
         Qué bueno tenerte de vuelta.
       </p>
-
-      <AuthTabs />
 
       {notice ? <FormMessage message={notice} className="mb-4" /> : null}
 

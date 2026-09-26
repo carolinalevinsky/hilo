@@ -55,6 +55,10 @@ type Entity =
   // The "Antes de empezar" link. Creating one hands a stranger a way to write
   // into this practitioner's records, so it is worth being able to say when.
   | 'patient_form'
+  // Una invitación es la única acción de este sistema que crea una cuenta nueva
+  // con acceso a datos clínicos. Quién la mandó y cuándo es exactamente la
+  // pregunta que la Ley N.º 18.331 obliga a poder contestar.
+  | 'invitation'
 
 export async function logAction(
   practitionerId: string,
