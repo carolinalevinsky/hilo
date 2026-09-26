@@ -86,8 +86,26 @@ jobs:
       - name: Install the browser
         run: npx playwright install --with-deps chromium
 
+      # Las claves reales del stack que levantó "Start Supabase", y no los
+      # placeholders del bloque `env` de arriba.
+      #
+      # Hasta acá alcanzaba con los placeholders por un accidente: PostgREST
+      # valida el `Authorization` del pedido, que en una sesión de usuario es un
+      # access token de verdad, y no mira el `apikey`. El cliente de service role
+      # no tiene sesión — manda la clave como token — así que con un placeholder
+      # contesta `PGRST301: Expected 3 parts in JWT; got 1`. Ninguna prueba lo
+      # tocaba hasta que las invitaciones, que crean cuentas y por eso no pueden
+      # tener sesión, lo tocaron.
+      #
+      # `NEXT_PUBLIC_*` se incrusta al compilar, y el `next build` que importa es
+      # el que corre `playwright.config.ts` dentro de este mismo comando.
       - name: End-to-end (the critical path)
-        run: npx playwright test
+        run: |
+          eval "$(npx supabase status -o env)"
+          NEXT_PUBLIC_SUPABASE_URL="$API_URL" \
+          NEXT_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" \
+          SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" \
+          npx playwright test
 
       - name: Keep the trace when it fails
         if: failure()

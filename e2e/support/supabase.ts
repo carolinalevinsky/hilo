@@ -16,7 +16,20 @@ import { createClient } from '@supabase/supabase-js'
  * asking the running stack is both accurate and impossible to get out of sync.
  */
 
+/**
+ * Cacheado, como en `src/test/supabase.ts`.
+ *
+ * Cada llamada lanza `npx supabase status`, que arranca un Node y una CLI
+ * entera: segundos, no milisegundos. Sin esto, un test que crea una cuenta y
+ * después la borra paga ese arranque dos veces por algo que no cambia mientras
+ * el stack esté arriba, y el tiempo se le cuenta al paso que lo rodea — que es
+ * donde después se busca una lentitud que no está ahí.
+ */
+let cached: { url: string; serviceKey: string } | null = null
+
 function localConfig() {
+  if (cached) return cached
+
   const output = execFileSync('npx', ['supabase', 'status', '-o', 'env'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -28,7 +41,8 @@ function localConfig() {
     return match[1]
   }
 
-  return { url: read('API_URL'), serviceKey: read('SERVICE_ROLE_KEY') }
+  cached = { url: read('API_URL'), serviceKey: read('SERVICE_ROLE_KEY') }
+  return cached
 }
 
 /** Unique per run, so a crashed run cannot collide with the next one. */
