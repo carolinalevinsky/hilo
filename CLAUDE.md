@@ -214,10 +214,16 @@ test it will eventually author the wrong thing, which is how `booking.ts` lost
 **Ombúa is by invitation. There is no sign-up.** What closes the door is
 `enable_signup = false` in Supabase — `supabase/config.toml` for the local stack
 and *Authentication → Sign In / Providers* in the dashboard for production — and
-nothing else can. The anon key ships in the JavaScript bundle every visitor
-downloads, by design, so a `POST` at `/auth/v1/signup` never passes through a
-screen or a Server Action of ours. Removing a form is decoration; that switch is
-the lock.
+nothing else can. The anon key is a public credential — the dashboard hands it
+out and it sits in Vercel's environment — so anyone who has ever held it can
+`POST` at `/auth/v1/signup` without passing through a screen or a Server Action
+of ours. Removing a form is decoration; that switch is the lock.
+
+Nothing ships it to the browser today: `NEXT_PUBLIC_SUPABASE_ANON_KEY` is read in
+`src/server/db.ts` and `src/proxy.ts` and nowhere else, and there is no browser
+client anywhere in `src/`. That is not a second lock. `NEXT_PUBLIC_` means the
+value is meant to travel, and the first client component that reads it puts it in
+the bundle; the switch is what refuses the request either way.
 
 Accounts are created by `src/server/invitations.ts` with the admin API, which
 that switch does not apply to. Who may invite is `practitioners.is_admin`, a
