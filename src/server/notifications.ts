@@ -8,7 +8,7 @@ import {
   BRAND_VIOLET_LIGHT,
 } from '@/lib/brand'
 import { formatLongDate } from '@/lib/dates'
-import { env } from '@/lib/env'
+import { env, publicConfig } from '@/lib/env'
 import { weekdayName } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
 
@@ -58,7 +58,20 @@ function escapeHtml(value: string | null | undefined): string {
     .replace(/"/g, '&quot;')
 }
 
-/** The shared frame: violet header, white card. Ported from `legacy/api/aviso-reserva.js:50`. */
+/**
+ * The shared frame: violet header, white card. Ported from `legacy/api/aviso-reserva.js:50`.
+ *
+ * The wordmark is a PNG and not the SVG every other surface uses, because Gmail
+ * and Outlook drop `<img src="…svg">` without rendering anything — the reader
+ * would see an empty violet band. It is drawn from `wordmark-for-dark.svg` at
+ * twice its display size, for retina screens, with a transparent background so
+ * the gradient shows through.
+ *
+ * `alt` is the brand name and is styled, which matters more here than usual:
+ * Gmail blocks images from senders the reader has never written to, and an
+ * invitation is by definition the first message. When that happens the header
+ * still reads "Ombúa", in white and bold, where the logo would have been.
+ */
 function layout({
   subtitle,
   body,
@@ -72,8 +85,14 @@ function layout({
   <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:${BRAND_BACKGROUND};padding:24px">
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(30,36,54,.08)">
       <div style="background:linear-gradient(120deg,${BRAND_VIOLET_DARK},${BRAND_VIOLET_LIGHT});padding:20px 24px;color:#fff">
-        <div style="font-weight:800;font-size:18px">${BRAND_NAME}</div>
-        <div style="opacity:.9;font-size:13px;margin-top:2px">${escapeHtml(subtitle)}</div>
+        <img
+          src="${publicConfig.NEXT_PUBLIC_APP_URL}/brand/wordmark-email.png"
+          width="132"
+          height="33"
+          alt="${BRAND_NAME}"
+          style="display:block;border:0;font-weight:800;font-size:18px;color:#fff"
+        />
+        <div style="opacity:.9;font-size:13px;margin-top:7px">${escapeHtml(subtitle)}</div>
       </div>
       <div style="padding:22px 24px;color:#20293a">${body}</div>
     </div>
