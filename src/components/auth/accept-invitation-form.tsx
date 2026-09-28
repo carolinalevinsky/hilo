@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState, useState } from 'react'
 
 import { acceptInvitationAction } from '@/app/(auth)/actions'
+import { AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
 import { PasswordField } from '@/components/auth/password-field'
 import { Button } from '@/components/ui/button'
@@ -78,7 +79,7 @@ export function AcceptInvitationForm({ token }: { token: string }) {
         </span>
       </Label>
 
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className={AUTH_SUBMIT} disabled={pending}>
         {pending ? 'Creando tu cuenta…' : 'Entrar a Ombúa'}
       </Button>
     </form>

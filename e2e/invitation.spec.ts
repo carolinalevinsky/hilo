@@ -66,7 +66,7 @@ test('an admin invites somebody, and they let themselves in with the link', asyn
     await grantAdmin(adminEmail)
 
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(adminEmail)
+    await page.getByLabel('Correo electrónico').fill(adminEmail)
     await page.getByLabel('Contraseña', { exact: true }).fill(ADMIN_PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/inicio$/)
@@ -160,7 +160,7 @@ test('an admin invites somebody, and they let themselves in with the link', asyn
     // false and is not writable through a session at all, so the panel is not
     // hidden from her — it does not exist.
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(inviteeEmail)
+    await page.getByLabel('Correo electrónico').fill(inviteeEmail)
     await page.getByLabel('Contraseña', { exact: true }).fill(INVITEE_PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/inicio$/)
@@ -178,7 +178,7 @@ test('an admin invites somebody, and they let themselves in with the link', asyn
   await test.step('and the admin sees that she came in', async () => {
     await page.context().clearCookies()
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(adminEmail)
+    await page.getByLabel('Correo electrónico').fill(adminEmail)
     await page.getByLabel('Contraseña', { exact: true }).fill(ADMIN_PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
     // Esperar el destino antes de navegar: un `goto` disparado mientras el

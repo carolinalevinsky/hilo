@@ -57,7 +57,7 @@ test('forgets the password, gets the email, sets a new one, and signs in with it
     })
 
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(email)
+    await page.getByLabel('Correo electrónico').fill(email)
     await page.getByLabel('Contraseña', { exact: true }).fill(OLD_PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/inicio$/)
@@ -70,10 +70,10 @@ test('forgets the password, gets the email, sets a new one, and signs in with it
     await page.context().clearCookies()
 
     await page.goto('/entrar')
-    await page.getByRole('link', { name: 'Olvidé mi contraseña' }).click()
+    await page.getByRole('link', { name: '¿Olvidaste tu contraseña?' }).click()
 
     await expect(page).toHaveURL(/\/recuperar$/)
-    await page.getByLabel('Email').fill(email)
+    await page.getByLabel('Correo electrónico').fill(email)
     await page.getByRole('button', { name: 'Enviame el enlace' }).click()
 
     // The wording is careful on purpose — it says "si hay una cuenta", because
@@ -140,7 +140,7 @@ test('forgets the password, gets the email, sets a new one, and signs in with it
     await page.context().clearCookies()
 
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(email)
+    await page.getByLabel('Correo electrónico').fill(email)
     await page.getByLabel('Contraseña', { exact: true }).fill(NEW_PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
 

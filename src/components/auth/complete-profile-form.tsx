@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react'
 
 import { completeProfileAction } from '@/app/(auth)/actions'
+import { AUTH_FIELD, AUTH_LABEL, AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,26 +42,31 @@ export function CompleteProfileForm() {
       <FormMessage message={state.message} />
 
       <div className="space-y-1.5">
-        <Label htmlFor="fullName">Nombre y apellido</Label>
+        <Label htmlFor="fullName" className={AUTH_LABEL}>
+          Nombre y apellido
+        </Label>
         <Input
           id="fullName"
           name="fullName"
           autoComplete="name"
           defaultValue={typed.fullName ?? ''}
           placeholder="Lucía Fernández"
+          className={AUTH_FIELD}
           required
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="discipline">Profesión</Label>
+        <Label htmlFor="discipline" className={AUTH_LABEL}>
+          Profesión
+        </Label>
         <NativeSelect
           key={`discipline-${attempt}`}
           id="discipline"
           name="discipline"
           defaultValue={typed.discipline ?? ''}
           required
-          className="bg-transparent text-body shadow-xs"
+          className="h-11 rounded-[14px] bg-transparent text-sm shadow-xs"
         >
           <option value="" disabled>
             Elegí tu profesión
@@ -73,7 +79,7 @@ export function CompleteProfileForm() {
         </NativeSelect>
       </div>
 
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className={AUTH_SUBMIT} disabled={pending}>
         {pending ? 'Guardando…' : 'Entrar a Ombúa'}
       </Button>
     </form>

@@ -71,7 +71,7 @@ test('sign in, load a patient, register a session, get a report', async ({ page 
     })
 
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(email)
+    await page.getByLabel('Correo electrónico').fill(email)
     await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
 

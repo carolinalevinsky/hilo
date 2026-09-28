@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { Button } from '@/components/ui/button'
 import { pageTitle } from '@/lib/brand'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: pageTitle('Ombúa es por invitación') }
 
@@ -21,16 +23,16 @@ export const metadata: Metadata = { title: pageTitle('Ombúa es por invitación'
 export default function SignUpPage() {
   return (
     <>
-      <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">
+      <h1 className="text-[28px] leading-tight font-extrabold tracking-[-0.8px]">
         Ombúa es por invitación
       </h1>
-      <p className="mt-2 text-body leading-relaxed text-muted-foreground">
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         Por ahora las cuentas se abren de a una. Si alguien te invitó, buscá el correo de
         Ombúa —fijate también en spam— y entrá desde el enlace que te mandó: ahí elegís tu
         contraseña.
       </p>
 
-      <Button asChild size="lg" className="mt-5 w-full">
+      <Button asChild size="lg" className={cn('mt-5', AUTH_SUBMIT)}>
         <Link href="/entrar">Ya tengo cuenta</Link>
       </Button>
 

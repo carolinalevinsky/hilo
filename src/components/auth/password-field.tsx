@@ -3,8 +3,10 @@
 import { Eye, EyeOff } from '@/components/icons'
 import { useState } from 'react'
 
+import { AUTH_FIELD, AUTH_LABEL } from '@/components/auth/field-styles'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 /**
  * A password input with the show/hide eye v1 had.
@@ -33,7 +35,9 @@ export function PasswordField({
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id} className={AUTH_LABEL}>
+        {label}
+      </Label>
       <div className="relative">
         <Input
           id={id}
@@ -41,7 +45,7 @@ export function PasswordField({
           type={visible ? 'text' : 'password'}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="pr-11"
+          className={cn(AUTH_FIELD, 'pr-11')}
           required
         />
         <button
@@ -53,7 +57,9 @@ export function PasswordField({
           {visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
         </button>
       </div>
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {hint ? (
+        <p className="text-meta leading-relaxed text-muted-foreground">{hint}</p>
+      ) : null}
     </div>
   )
 }
