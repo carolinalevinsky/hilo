@@ -9,13 +9,13 @@ import type { DisciplineId } from './disciplines'
  * kinesiólogo on rango articular and reeducación de la marcha. Getting it wrong
  * makes the library feel like it was built for somebody else.
  *
- * Four entries are wider than v1's list, and the reason is the same for all
- * four: v1 had materials filed under them. Its own dropdown did not offer
- * `Cálculo escrito`, `Geometría` or `Memoria de trabajo`, and it had nowhere at
- * all for vocabulary, morphosyntax or narrative, so eight speech therapy
- * materials ended up inside `Articulación`, which is a different thing. A
- * fonoaudióloga notices that at a glance. The area they belong to is
- * `Lenguaje`, and now it exists.
+ * A few entries are wider than v1's list, and the reason is the same for all of
+ * them: there were materials filed under them already. v1's own dropdown did
+ * not offer `Cálculo escrito`, `Geometría`, `Memoria de trabajo` or the velar
+ * sounds, and it had nowhere at all for vocabulary, morphosyntax or narrative,
+ * so eight speech therapy materials ended up inside `Articulación`, which is a
+ * different thing. A fonoaudióloga notices that at a glance. The area they
+ * belong to is `Lenguaje`, and now it exists.
  *
  * `src/lib/material-seeds.test.ts` fails if a seeded material is filed outside
  * this list, or if any focus here has no material at all: an empty filter is as
@@ -45,6 +45,7 @@ export const AREAS_BY_DISCIPLINE: Record<DisciplineId, Record<string, string[]>>
       'Praxias orofaciales',
       'Fonema /r/',
       'Fonemas /s/ y /l/',
+      'Fonemas /k/ y /g/',
       'Grupos consonánticos',
     ],
     'Habla y voz': ['Soplo y respiración', 'Fluidez del habla', 'Voz'],
