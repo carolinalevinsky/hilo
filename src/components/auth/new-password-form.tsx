@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 
 import { setNewPasswordAction } from '@/app/(auth)/actions'
+import { AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
 import { PasswordField } from '@/components/auth/password-field'
 import { Button } from '@/components/ui/button'
@@ -31,7 +32,7 @@ export function NewPasswordForm() {
         hint="Pedimos que la escribas dos veces porque no vas a poder ver si te equivocaste hasta el próximo intento de entrar."
       />
 
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className={AUTH_SUBMIT} disabled={pending}>
         {pending ? 'Guardando…' : 'Guardar contraseña'}
       </Button>
     </form>

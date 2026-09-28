@@ -242,6 +242,32 @@
     );
 }
 
+/* El degradé del panel de las pantallas de entrada.
+ *
+ * Es el del rediseño y no el de arriba: arranca en el violeta oscuro de la
+ * marca y termina en índigo, bastante más profundo que `.app-auth-bg` — que
+ * queda como está porque también lo usa la portada, y ahí el degradé claro es
+ * el que corresponde.
+ *
+ * El índigo del final es el único color de acá que no sale de la paleta: no hay
+ * ninguno en `brand.ts` lo bastante oscuro para cerrar el degradé, y el diseño
+ * lo pide. Si algún día la paleta tiene uno, se reemplaza por su variable. */
+.app-auth-panel {
+  background: linear-gradient(
+    135deg,
+    var(--brand-violet-dark) 0%,
+    var(--brand-violet) 45%,
+    #312e81 100%
+  );
+}
+
+/* La trama de puntos del panel de marca, arriba de ese degradé. Es la textura
+   del diseño: a 24px se lee como papel y no como cuadrícula. */
+.app-auth-grid {
+  background-image: radial-gradient(rgb(255 255 255 / 13%) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 /* The progress slider on a goal.
    `accent-color` would be shorter, but browsers derive the *unfilled* track from
    the accent's luminance, so a row of goals in six different colours came out

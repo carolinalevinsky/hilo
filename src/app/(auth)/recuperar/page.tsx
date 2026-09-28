@@ -9,8 +9,8 @@ export const metadata: Metadata = { title: pageTitle('Recuperar tu cuenta') }
 export default function PasswordResetPage() {
   return (
     <>
-      <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">¿Olvidaste la contraseña?</h1>
-      <p className="mt-1 mb-5 text-body text-muted-foreground">
+      <h1 className="text-[28px] leading-tight font-extrabold tracking-[-0.8px]">¿Olvidaste la contraseña?</h1>
+      <p className="mt-2 mb-7 text-sm leading-relaxed text-muted-foreground">
         Poné tu correo y te mandamos un enlace para poner una nueva.
       </p>
 

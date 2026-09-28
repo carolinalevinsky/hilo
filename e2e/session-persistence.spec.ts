@@ -102,7 +102,7 @@ test('entrar una vez alcanza: la sesión sobrevive al cierre del navegador y al 
 }) => {
   await test.step('entra con su correo y su contraseña', async () => {
     await page.goto('/entrar')
-    await page.getByLabel('Email').fill(email)
+    await page.getByLabel('Correo electrónico').fill(email)
     await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/(inicio|completar-perfil)/)

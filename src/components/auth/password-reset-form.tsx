@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 
 import { requestPasswordResetAction } from '@/app/(auth)/actions'
 import { EmailSent } from '@/components/auth/email-sent'
+import { AUTH_FIELD, AUTH_LABEL, AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,18 +35,21 @@ export function PasswordResetForm() {
       <FormMessage message={state.message} />
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className={AUTH_LABEL}>
+          Correo electrónico
+        </Label>
         <Input
           id="email"
           name="email"
           type="email"
           placeholder="tu@email.com"
           autoComplete="email"
+          className={AUTH_FIELD}
           required
         />
       </div>
 
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className={AUTH_SUBMIT} disabled={pending}>
         {pending ? 'Enviando…' : 'Enviame el enlace'}
       </Button>
     </form>

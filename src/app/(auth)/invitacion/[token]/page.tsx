@@ -28,10 +28,10 @@ export default async function InvitationPage({ params }: PageProps<'/invitacion/
   if (!invitation) {
     return (
       <>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">
+        <h1 className="text-[28px] leading-tight font-extrabold tracking-[-0.8px]">
           Esa invitación no funciona
         </h1>
-        <p className="mt-2 text-body leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Puede que haya vencido, que ya la hayas usado o que el enlace se haya cortado al
           copiarlo. Pedile una nueva a quien te invitó.
         </p>
@@ -47,10 +47,10 @@ export default async function InvitationPage({ params }: PageProps<'/invitacion/
 
   return (
     <>
-      <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">
+      <h1 className="text-[28px] leading-tight font-extrabold tracking-[-0.8px]">
         Hola, {invitation.fullName}
       </h1>
-      <p className="mt-1 mb-5 text-body text-muted-foreground">
+      <p className="mt-2 mb-7 text-sm leading-relaxed text-muted-foreground">
         Te invitaron a Ombúa. Elegí una contraseña y ya entrás a tu espacio de trabajo.
       </p>
 
