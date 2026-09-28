@@ -282,6 +282,9 @@ Quince a veinte minutos, tres veces por semana. Corto y frecuente.
 Para la familia:
 Diez minutos de juego de movimiento por día. Parque, plaza, patio: lo que sirve es el rato, no el ejercicio.');
 
+insert into materials
+  (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
+values
   (null, 'physiotherapy', 'Movilidad', 'Elongación', 'Elongación de la cadena posterior', 'guide', 'Elongar isquiotibiales, gemelos y espalda baja con técnica segura y tiempos suficientes', '15+ años', 'Para qué sirve:
 La cadena posterior acortada tira de la pelvis y carga la espalda baja, y es el acortamiento más común en quien está sentado muchas horas. Se elonga toda junta o no sirve: isquiotibiales, gemelos y espalda se tiran entre sí.
 Qué necesitás:
@@ -794,6 +797,9 @@ Tres veces por semana, con un día de descanso entre sesiones.
 Para la familia:
 El día de descanso semanal no es negociable, y si duele, se para. Un mes de menos deporte ahora vale mucho menos que una lesión que lo saca una temporada.');
 
+insert into materials
+  (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
+values
   (null, 'physiotherapy', 'Fuerza', 'Miembro superior', 'Fuerza de brazos con banda elástica', 'guide', 'Fortalecer hombro y brazo con banda elástica, con dosis y en todas las direcciones', '15+ años', 'Para qué sirve:
 La banda elástica permite trabajar el hombro en todas sus direcciones, con carga graduable y sin equipamiento. Es lo mejor que hay para rehabilitación de hombro en casa, y también lo más fácil de hacer mal.
 Qué necesitás:

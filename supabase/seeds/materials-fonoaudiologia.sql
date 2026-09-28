@@ -257,6 +257,9 @@ Una sesión para la conversación, y una revisión cada tres meses con grabació
 Para la familia:
 La frase que conviene llevarse: que la r múltiple no salga no le impide hablar bien, y en muchos adultos tampoco está. Y que no se corrija en la mesa, porque corregir la r en la mesa enseña a hablar menos.');
 
+insert into materials
+  (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
+values
   (null, 'speech_therapy', 'Articulación', 'Fonemas /s/ y /l/', 'La l bien apoyada', 'activity', 'Instalar la l con apoyo de la punta de la lengua y salida del aire por los costados', '3-5 años', 'Para qué sirve:
 La l necesita la punta de la lengua arriba y el aire saliendo por los costados. Cuando falta el apoyo, la l sale como una d o como una vocal, y además arrastra a la r, que usa el mismo punto.
 Qué necesitás:

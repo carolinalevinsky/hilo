@@ -502,6 +502,9 @@ Veinte minutos por sesión, una vez por semana, más un ensayo antes de cada per
 Para casa:
 Practicar la respiración todos los días, dos minutos, cuando no hay ansiedad. Una técnica que se estrena el día del examen no funciona.');
 
+insert into materials
+  (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
+values
   (null, 'psychology', 'Emociones', 'Tolerancia a la frustración', 'La torre que se cae', 'game', 'Tolerar que algo salga mal y volver a intentarlo, en un juego donde caerse es parte del juego', '3-5 años', 'Para qué sirve:
 A los tres o cuatro años la frustración se trabaja en el cuerpo y en el juego, no hablando. Una torre que se cae da diez oportunidades por sesión de que algo salga mal y se pueda seguir, con vos al lado modelando cómo se hace.
 Qué necesitás:

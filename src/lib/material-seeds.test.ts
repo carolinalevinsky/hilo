@@ -247,6 +247,31 @@ describe('la biblioteca compartida', () => {
     expect(wrong).toEqual([])
   })
 
+  it('tiene todas sus filas adentro de un insert', () => {
+    // Los archivos se escribieron por partes, y una parte que arranca con una
+    // tupla después del punto y coma de la anterior es SQL que no corre:
+    // Postgres devuelve "syntax error at or near null" y el seeding entero se
+    // cae. El lector de arriba no lo notaba porque lee de `values` hasta el
+    // final del archivo, así que esas filas contaban igual. Pasó: CI lo agarró
+    // con 41 filas huérfanas repartidas en cinco archivos.
+    const orphans: string[] = []
+
+    for (const name of files) {
+      let inside = false
+      const lines = readFileSync(`${DIR}/${name}`, 'utf8').split('\n')
+
+      lines.forEach((line, index) => {
+        if (/^insert\s+into\s+materials/i.test(line)) inside = true
+        else if (line.startsWith('  (null,') && !inside) {
+          orphans.push(`${name}:${index + 1}`)
+        }
+        if (line.trimEnd().endsWith("');")) inside = false
+      })
+    }
+
+    expect(orphans).toEqual([])
+  })
+
   it('no repite títulos', () => {
     const seen = new Map<string, string>()
     const repeated: string[] = []

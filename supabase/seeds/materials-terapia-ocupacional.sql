@@ -325,6 +325,9 @@ Diez a quince minutos, dos veces por semana.
 Para casa:
 Recortar las figuras de los trabajos de la escuela él mismo, sin que nadie lo haga por él para que quede prolijo.');
 
+insert into materials
+  (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
+values
   (null, 'occupational_therapy', 'Motricidad fina', 'Grafomotricidad', 'Antes de escribir: el trazo grande', 'activity', 'Trabajar el trazo desde el hombro y el brazo, en vertical y en grande, antes de pasar al papel', '3-5 años', 'Para qué sirve:
 La escritura se apoya en el hombro: si el hombro no sostiene, la mano tiembla y el chico compensa apretando el lápiz. Por eso el trazo empieza grande, en vertical y con todo el brazo, y recién después se hace chico.
 Qué necesitás:

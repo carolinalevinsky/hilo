@@ -827,6 +827,9 @@ Diez minutos, dos veces por semana, con pausas.
 Para casa:
 En el pasto o en la cama, rodar y pararse cinco veces. Como juego.');
 
+insert into materials
+  (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
+values
   (null, 'psychomotricity', 'Equilibrio', 'Dinámico', 'La superficie que se mueve', 'activity', 'Sostener el equilibrio sobre bases inestables y en desplazamientos exigentes, en la preadolescencia', '10-11 años', 'Para qué sirve:
 A los diez u once años el equilibrio ya no se entrena caminando por una línea: hace falta base inestable, velocidad y cambios de dirección, que es lo que pide cualquier deporte. Y es la edad en que muchos chicos deciden si el deporte es para ellos.
 Qué necesitás:
