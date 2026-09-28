@@ -56,7 +56,12 @@ const COLUMNS = [
  * the whole grammar.
  */
 function parse(file: string, sql: string): Material[] {
+  // Whole-line comments go first: the section headers between statements sit at
+  // the end of the previous statement's text, and one of them is "Vida diaria
+  // (AVD)" — a parenthesis outside any tuple, which the reader below would
+  // happily take for the start of a row.
   return sql
+    .replace(/^[ \t]*--.*$/gm, '')
     .split(/insert\s+into\s+materials/i)
     .slice(1)
     .flatMap((statement) => tuples(file, statement.slice(statement.indexOf('values') + 'values'.length)))
