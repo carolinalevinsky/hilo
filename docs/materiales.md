@@ -114,6 +114,23 @@ aérea, alimentación o material en la boca.
 - **Diagnósticos ni conclusiones cerradas.** Un material describe lo que se
   observa, no lo que eso significa. La misma regla que el prompt clínico.
 
+### Cómo llega a un ambiente
+
+`supabase/seeds/` es la fuente de la verdad, y la carga es repetible. Cada
+`insert` termina en `on conflict (title) where practitioner_id is null do
+update`, apoyado en el índice único de
+`20260928140000_materials_shared_title_unique`: una fila que ya está se
+actualiza en su lugar y conserva su id, así que las planificaciones que apuntan
+a ella siguen apuntando a ella. Un material compartido que ya no está en ningún
+archivo se borra al final de la misma transacción.
+
+Eso hace que el título de un material compartido sea su identidad entre
+ambientes: cambiarlo no es una corrección de texto, es crear otro material y
+dejar morir el anterior. Si hay que cambiarlo igual, se cambia sabiendo eso.
+
+En local entra con `npm run db:reset`; en una base remota, con
+`./dx npm run db:seed:remote`.
+
 ### Cómo se ve el texto
 
 Lo dibuja el mismo `DocumentBody` que un informe

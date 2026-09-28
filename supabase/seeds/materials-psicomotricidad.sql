@@ -429,7 +429,11 @@ Si sus predicciones se acercan, si se golpea, si la coordinación cruzada está 
 Cuánto y cada cuánto:
 Veinte minutos por sesión, una vez por semana, y la actividad física en la semana.
 Para casa:
-La actividad elegida, dos veces por semana. Y en casa, ningún comentario sobre el cuerpo: ni bueno ni malo.');
+La actividad elegida, dos veces por semana. Y en casa, ningún comentario sobre el cuerpo: ni bueno ni malo.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Equilibrio ─────────────────────────────────────────────────────────────
 
@@ -825,7 +829,11 @@ Cuánto tarda en recuperar la vertical, si se marea, si puede pararse sin manos,
 Cuánto y cada cuánto:
 Diez minutos, dos veces por semana, con pausas.
 Para casa:
-En el pasto o en la cama, rodar y pararse cinco veces. Como juego.');
+En el pasto o en la cama, rodar y pararse cinco veces. Como juego.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
@@ -862,7 +870,11 @@ Cuánto baja el equilibrio en base inestable, si controla el aterrizaje de los s
 Cuánto y cada cuánto:
 Quince minutos, dos o tres veces por semana.
 Para casa:
-Un pie sobre un almohadón mientras se lava los dientes, y diez saltos laterales por día.');
+Un pie sobre un almohadón mientras se lava los dientes, y diez saltos laterales por día.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Coordinación ───────────────────────────────────────────────────────────
 
@@ -1460,7 +1472,11 @@ Si los números suben en cuatro semanas, si la habilidad aparece en el juego, si
 Cuánto y cada cuánto:
 Veinte minutos por sesión, y dos prácticas propias en la semana.
 Para casa:
-La habilidad elegida, diez minutos por día. Solo, y con el número anotado.');
+La habilidad elegida, diez minutos por día. Solo, y con el número anotado.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Lateralidad ────────────────────────────────────────────────────────────
 
@@ -1824,4 +1840,8 @@ Si su dibujo de memoria coincide con el mapa, si usa referencias, si puede orien
 Cuánto y cada cuánto:
 Veinte minutos por sesión, y un recorrido por semana.
 Para casa:
-Un mandado en el barrio por semana, con el recorrido dicho antes de salir. Y el aviso de llegada acordado.');
+Un mandado en el barrio por semana, con el recorrido dicho antes de salir. Y el aviso de llegada acordado.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;

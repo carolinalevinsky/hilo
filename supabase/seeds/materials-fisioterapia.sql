@@ -280,7 +280,11 @@ Rango en cada articulación comparado entre lados, si evita alguna posición, si
 Cuánto y cada cuánto:
 Quince a veinte minutos, tres veces por semana. Corto y frecuente.
 Para la familia:
-Diez minutos de juego de movimiento por día. Parque, plaza, patio: lo que sirve es el rato, no el ejercicio.');
+Diez minutos de juego de movimiento por día. Parque, plaza, patio: lo que sirve es el rato, no el ejercicio.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
@@ -517,7 +521,11 @@ Si hace la entrada en calor solo, si aparecen dolores de crecimiento localizados
 Cuánto y cada cuánto:
 Ocho minutos antes de cada entrenamiento y diez después. Todos los días que entrena.
 Para la familia:
-Un día de descanso por semana, sin deporte. Y si hay dolor que se repite, se consulta antes de seguir entrenando.');
+Un día de descanso por semana, sin deporte. Y si hay dolor que se repite, se consulta antes de seguir entrenando.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Fuerza ─────────────────────────────────────────────────────────────────
 
@@ -795,7 +803,11 @@ Dónde duele exactamente, si mejora con el descanso, cuántas horas de deporte h
 Cuánto y cada cuánto:
 Tres veces por semana, con un día de descanso entre sesiones.
 Para la familia:
-El día de descanso semanal no es negociable, y si duele, se para. Un mes de menos deporte ahora vale mucho menos que una lesión que lo saca una temporada.');
+El día de descanso semanal no es negociable, y si duele, se para. Un mes de menos deporte ahora vale mucho menos que una lesión que lo saca una temporada.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
@@ -1138,7 +1150,11 @@ Cuándo aparece el dolor, cuántas horas sentado y cuántas de actividad física
 Cuánto y cada cuánto:
 Cinco minutos, todos los días. Y las pausas mientras estudia.
 Para la familia:
-La alarma de las pausas y la hora de actividad física por día. Y mirar la mochila: cuánto pesa y cómo la lleva.');
+La alarma de las pausas y la hora de actividad física por día. Y mirar la mochila: cuánto pesa y cómo la lleva.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Equilibrio y marcha ────────────────────────────────────────────────────
 
@@ -1497,7 +1513,11 @@ Porcentaje del tiempo que camina en puntas, rango pasivo de tobillo medido, sime
 Cuánto y cada cuánto:
 Diez a quince minutos, tres veces por semana, con juego.
 Para la familia:
-Los juegos en cuclillas y de trepar, la rampa, y no corregir hablando. Y la consulta médica si aparece cualquiera de las señales de arriba.');
+Los juegos en cuclillas y de trepar, la rampa, y no corregir hablando. Y la consulta médica si aparece cualquiera de las señales de arriba.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Pautas para casa ───────────────────────────────────────────────────────
 
@@ -1891,4 +1911,8 @@ Color, altura y ancho de la cicatriz, si se mueve sobre los planos profundos, si
 Cuánto y cada cuánto:
 Cinco minutos, dos veces por día, durante los primeros meses.
 Para casa:
-La crema y el masaje después de la ducha, dos veces por día, y el protector solar todos los días. Es de las tareas más simples y más efectivas.');
+La crema y el masaje después de la ducha, dos veces por día, y el protector solar todos los días. Es de las tareas más simples y más efectivas.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;

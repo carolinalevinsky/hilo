@@ -255,7 +255,11 @@ La inteligibilidad medida en la grabación, la evitación de palabras, el cansan
 Cuánto y cada cuánto:
 Una sesión para la conversación, y una revisión cada tres meses con grabación.
 Para la familia:
-La frase que conviene llevarse: que la r múltiple no salga no le impide hablar bien, y en muchos adultos tampoco está. Y que no se corrija en la mesa, porque corregir la r en la mesa enseña a hablar menos.');
+La frase que conviene llevarse: que la r múltiple no salga no le impide hablar bien, y en muchos adultos tampoco está. Y que no se corrija en la mesa, porque corregir la r en la mesa enseña a hablar menos.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
@@ -563,7 +567,11 @@ Cuántas caídas por minuto, si se autocorrige, si el sonido sale con vos y no c
 Cuánto y cada cuánto:
 Diez minutos de conversación grabada por sesión, todas las sesiones, hasta el alta.
 Para casa:
-Un minuto por día de contar algo, con el sonido en la cabeza. Y en el resto del día nadie corrige: corregir fuera de la práctica hace que hable menos, y es lo contrario de lo que se busca.');
+Un minuto por día de contar algo, con el sonido en la cabeza. Y en el resto del día nadie corrige: corregir fuera de la práctica hace que hable menos, y es lo contrario de lo que se busca.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Habla y voz ────────────────────────────────────────────────────────────
 
@@ -961,7 +969,11 @@ A qué hora aparece el cansancio, si las pausas lo corren más tarde, cómo est�
 Cuánto y cada cuánto:
 Cinco minutos de calentamiento antes de cada jornada y dos de enfriamiento al final. Todos los días de trabajo.
 Para casa:
-La alarma de las tres pausas puesta en el celular, y la botella de agua a la vista. Las dos cosas juntas hacen más que cualquier ejercicio.');
+La alarma de las tres pausas puesta en el celular, y la botella de agua a la vista. Las dos cosas juntas hacen más que cualquier ejercicio.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Conciencia fonológica ──────────────────────────────────────────────────
 
@@ -1263,7 +1275,11 @@ Si ubica el sonido del medio (es el que más se pierde), si necesita que estires
 Cuánto y cada cuánto:
 Diez minutos, dos o tres veces por semana.
 Para casa:
-Buscar un sonido en cinco palabras por día, oral. Se puede hacer con lo que hay en la heladera.');
+Buscar un sonido en cinco palabras por día, oral. Se puede hacer con lo que hay en la heladera.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Lenguaje ───────────────────────────────────────────────────────────────
 --
@@ -1684,4 +1700,8 @@ Si anota palabras o intenta copiar todo, si puede reconstruir con su hoja, si re
 Cuánto y cada cuánto:
 Veinte minutos, una o dos veces por semana, con material de sus materias.
 Para casa:
-Tomar nota de una clase por semana con este formato, y completarla el mismo día. Completarla el mismo día es la mitad del método.');
+Tomar nota de una clase por semana con este formato, y completarla el mismo día. Completarla el mismo día es la mitad del método.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;

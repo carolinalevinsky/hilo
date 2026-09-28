@@ -500,7 +500,11 @@ Si la técnica baja la activación, cuánto se bloquea, si evita presentarse, c�
 Cuánto y cada cuánto:
 Veinte minutos por sesión, una vez por semana, más un ensayo antes de cada período de pruebas.
 Para casa:
-Practicar la respiración todos los días, dos minutos, cuando no hay ansiedad. Una técnica que se estrena el día del examen no funciona.');
+Practicar la respiración todos los días, dos minutos, cuando no hay ansiedad. Una técnica que se estrena el día del examen no funciona.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
@@ -692,7 +696,11 @@ Qué tipo de frase aparece (sobre él, sobre los demás, sobre el futuro), si pu
 Cuánto y cada cuánto:
 Veinte minutos, una vez por semana.
 Para casa:
-Anotar una frase automática por día, sin revisarla. Una línea, en el celular o en un papel.');
+Anotar una frase automática por día, sin revisarla. Una línea, en el celular o en un papel.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Habilidades sociales ───────────────────────────────────────────────────
 
@@ -1196,7 +1204,11 @@ Si puede nombrar lo que le molesta, si el límite está formulado sobre lo que �
 Cuánto y cada cuánto:
 Veinte minutos por sesión, una vez por semana mientras dure.
 Para casa:
-Nada escrito, y nada que se pueda leer. Si vive en la misma casa que la persona del límite, eso se tiene en cuenta al planificar dónde y cuándo.');
+Nada escrito, y nada que se pueda leer. Si vive en la misma casa que la persona del límite, eso se tiene en cuenta al planificar dónde y cuándo.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Técnicas ───────────────────────────────────────────────────────────────
 
@@ -1674,4 +1686,8 @@ Si puede escribir la columna derecha completa, cuánta diferencia hay entre las 
 Cuánto y cada cuánto:
 Veinte minutos, una vez por semana.
 Para casa:
-La frase elegida, a mano, y usarla una vez por día. Y nada más, porque alcanza.');
+La frase elegida, a mano, y usarla una vez por día. Y nada más, porque alcanza.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;

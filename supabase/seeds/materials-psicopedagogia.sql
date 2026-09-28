@@ -341,7 +341,11 @@ Si respeta las palabras completas cuando acelera, si el segundo intento baja el 
 Cuánto y cada cuánto:
 Cinco minutos al final de la sesión, dos o tres veces por semana. Funciona bien como cierre.
 Para casa:
-Uno solo, el que eligió, para decirlo en la mesa el fin de semana. Sin cronómetro en casa: en casa es show, no entrenamiento.');
+Uno solo, el que eligió, para decirlo en la mesa el fin de semana. Sin cronómetro en casa: en casa es show, no entrenamiento.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Escritura ──────────────────────────────────────────────────────────────
 
@@ -659,7 +663,11 @@ Si la tesis es discutible, si los argumentos la sostienen o repiten la tesis con
 Cuánto y cada cuánto:
 Cuarenta minutos, una vez por semana, con un tema nuevo cada dos semanas para poder reescribir.
 Para casa:
-Buscar en un diario una columna de opinión y marcarle la tesis, los argumentos y la objeción. Leer argumentación ajena es la práctica más corta que hay.');
+Buscar en un diario una columna de opinión y marcarle la tesis, los argumentos y la objeción. Leer argumentación ajena es la práctica más corta que hay.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Matemática ─────────────────────────────────────────────────────────────
 
@@ -1203,7 +1211,11 @@ Si suma los lados cuando le piden área, si llega solo a la multiplicación, si 
 Cuánto y cada cuánto:
 Veinte minutos, dos veces por semana. La cuadriculada se usa siempre, incluso cuando ya sabe la fórmula.
 Para casa:
-Contar las baldosas del piso de la cocina para saber su área. Y después medirla con la cinta, y comparar.');
+Contar las baldosas del piso de la cocina para saber su área. Y después medirla con la cinta, y comparar.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Atención ───────────────────────────────────────────────────────────────
 
@@ -1624,4 +1636,8 @@ Si repite antes de hacer, si se le cae la del medio (es la que más se pierde), 
 Cuánto y cada cuánto:
 Diez minutos, dos veces por semana. Y en el resto de la sesión, dar las consignas de a tres a propósito.
 Para casa:
-Los mandados de la casa de a tres, dichos una sola vez, y que los repita antes de ir. Sin lista escrita.');
+Los mandados de la casa de a tres, dichos una sola vez, y que los repita antes de ir. Sin lista escrita.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;

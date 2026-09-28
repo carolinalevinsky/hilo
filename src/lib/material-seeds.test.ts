@@ -48,30 +48,77 @@ const COLUMNS = [
 ] as const
 
 /**
- * Splits the tuples of `insert into materials … values (…), (…);`.
+ * Splits a file into its `insert into materials … values … ;` statements, and
+ * into the text that sits between them.
  *
  * Hand-rolled because the alternative is a regex, and a regex cannot tell a
- * closing parenthesis inside a material from the one that ends the tuple. The
- * only escape SQL has inside a quoted string is `''`, so a two-state reader is
- * the whole grammar.
+ * semicolon inside a material from the one that ends the statement. The only
+ * escape SQL has inside a quoted string is `''`, so a two-state reader is the
+ * whole grammar.
+ *
+ * What is between statements matters as much as what is inside: a block of rows
+ * that starts after the semicolon of the previous statement is not SQL, and
+ * Postgres answers with "syntax error at or near null" and drops the whole
+ * seeding. That happened, with 41 rows across five files, and this file did not
+ * notice because it used to read from `values` to the end of the file.
  */
+function statements(sql: string) {
+  const clean = sql.replace(/^[ \t]*--.*$/gm, '')
+  const lower = clean.toLowerCase()
+  const bodies: string[] = []
+  const between: string[] = []
+
+  let cursor = 0
+  for (;;) {
+    const start = lower.indexOf('insert into materials', cursor)
+    if (start === -1) {
+      between.push(clean.slice(cursor))
+      break
+    }
+    between.push(clean.slice(cursor, start))
+
+    let i = lower.indexOf('values', start) + 'values'.length
+    const from = i
+    let quoted = false
+
+    while (i < clean.length) {
+      const char = clean[i]
+      if (quoted) {
+        if (char === "'") {
+          if (clean[i + 1] === "'") {
+            i += 2
+            continue
+          }
+          quoted = false
+        }
+        i += 1
+        continue
+      }
+      if (char === "'") {
+        quoted = true
+        i += 1
+        continue
+      }
+      // The terminating semicolon of the statement, outside any string.
+      if (char === ';') break
+      i += 1
+    }
+
+    // Everything after `on conflict` is the upsert clause, and its `(title)`
+    // would read as one more row.
+    bodies.push(clean.slice(from, i).split(/\non conflict\b/i)[0] ?? '')
+    cursor = i + 1
+  }
+
+  return { bodies, between }
+}
+
 function parse(file: string, sql: string): Material[] {
-  // Whole-line comments go first: the section headers between statements sit at
-  // the end of the previous statement's text, and one of them is "Vida diaria
-  // (AVD)" — a parenthesis outside any tuple, which the reader below would
-  // happily take for the start of a row.
-  return sql
-    .replace(/^[ \t]*--.*$/gm, '')
-    .split(/insert\s+into\s+materials/i)
-    .slice(1)
-    .flatMap((statement) => tuples(file, statement.slice(statement.indexOf('values') + 'values'.length)))
+  return statements(sql).bodies.flatMap((body) => tuples(file, body))
 }
 
 /**
- * A file holds one `insert` per area, so that the areas can be read, moved and
- * reviewed as the units they are. Everything before each `values` is the column
- * list, which is also a line that starts with a parenthesis: it is sliced off
- * above rather than parsed and discarded here.
+ * The rows of one statement.
  */
 function tuples(file: string, body: string): Material[] {
   const rows: Material[] = []
@@ -249,24 +296,16 @@ describe('la biblioteca compartida', () => {
 
   it('tiene todas sus filas adentro de un insert', () => {
     // Los archivos se escribieron por partes, y una parte que arranca con una
-    // tupla después del punto y coma de la anterior es SQL que no corre:
-    // Postgres devuelve "syntax error at or near null" y el seeding entero se
-    // cae. El lector de arriba no lo notaba porque lee de `values` hasta el
-    // final del archivo, así que esas filas contaban igual. Pasó: CI lo agarró
-    // con 41 filas huérfanas repartidas en cinco archivos.
+    // fila después del punto y coma de la anterior es SQL que no corre: Postgres
+    // devuelve "syntax error at or near null" y el seeding entero se cae. CI lo
+    // agarró con 41 filas huérfanas repartidas en cinco archivos.
     const orphans: string[] = []
 
     for (const name of files) {
-      let inside = false
-      const lines = readFileSync(`${DIR}/${name}`, 'utf8').split('\n')
-
-      lines.forEach((line, index) => {
-        if (/^insert\s+into\s+materials/i.test(line)) inside = true
-        else if (line.startsWith('  (null,') && !inside) {
-          orphans.push(`${name}:${index + 1}`)
-        }
-        if (line.trimEnd().endsWith("');")) inside = false
-      })
+      const { between } = statements(readFileSync(`${DIR}/${name}`, 'utf8'))
+      for (const gap of between) {
+        if (/^\s*\(null,/m.test(gap)) orphans.push(name)
+      }
     }
 
     expect(orphans).toEqual([])

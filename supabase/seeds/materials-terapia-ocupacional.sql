@@ -323,7 +323,11 @@ Si gira el papel o la tijera, si se le va la línea en las curvas, cómo resuelv
 Cuánto y cada cuánto:
 Diez a quince minutos, dos veces por semana.
 Para casa:
-Recortar las figuras de los trabajos de la escuela él mismo, sin que nadie lo haga por él para que quede prolijo.');
+Recortar las figuras de los trabajos de la escuela él mismo, sin que nadie lo haga por él para que quede prolijo.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 insert into materials
   (practitioner_id, discipline, area, focus, title, kind, objective, age_range, content)
@@ -533,7 +537,11 @@ Palabras por minuto copiando y produciendo, si la letra se desarma con el cansan
 Cuánto y cada cuánto:
 Veinte minutos por sesión, una vez por semana, con su material real.
 Para casa:
-Diez minutos de mecanografía por día si se eligió el teclado. Y la foto del pizarrón desde ya, que no requiere entrenar nada.');
+Diez minutos de mecanografía por día si se eligió el teclado. Y la foto del pizarrón desde ya, que no requiere entrenar nada.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Integración sensorial ──────────────────────────────────────────────────
 
@@ -943,7 +951,11 @@ Si baja la activación, si disminuye el morder ropa o lápices, cuál recurso le
 Cuánto y cada cuánto:
 Dos a cinco minutos, en los tres momentos elegidos, todos los días.
 Para la familia y la escuela:
-La botella con sorbete arriba del banco, si el liceo o la escuela lo permite. Y si muerde la ropa, no se reta: se ofrece el reemplazo.');
+La botella con sorbete arriba del banco, si el liceo o la escuela lo permite. Y si muerde la ropa, no se reta: se ofrece el reemplazo.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Coordinación ───────────────────────────────────────────────────────────
 
@@ -1305,7 +1317,11 @@ Cuántas palabras por minuto, qué tipo de error predomina, si copia letra por l
 Cuánto y cada cuánto:
 Quince minutos, dos veces por semana, y medir cada quince días.
 Para la escuela:
-Lo que se puede pedir: un banco más cerca del pizarrón, la fotocopia de lo que hay que copiar, o más tiempo. Copiar rápido y bien no es lo que la clase está enseñando.');
+Lo que se puede pedir: un banco más cerca del pizarrón, la fotocopia de lo que hay que copiar, o más tiempo. Copiar rápido y bien no es lo que la clase está enseñando.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
 
 -- ─── Vida diaria (AVD) ──────────────────────────────────────────────────────
 
@@ -1811,4 +1827,8 @@ Si reconoce la parada, si maneja el tiempo, si puede pedir información a un des
 Cuánto y cada cuánto:
 Un recorrido por semana, con las etapas que haga falta. Y veinte minutos por sesión de ensayo de imprevistos.
 Para la familia:
-Acordar el aviso de llegada por mensaje, y no llamar cada diez minutos. La confianza se construye con los recorridos que salieron bien, y hay que dejarlos salir bien.');
+Acordar el aviso de llegada por mensaje, y no llamar cada diez minutos. La confianza se construye con los recorridos que salieron bien, y hay que dejarlos salir bien.')
+on conflict (title) where practitioner_id is null do update set
+  discipline = excluded.discipline, area = excluded.area, focus = excluded.focus,
+  kind = excluded.kind, objective = excluded.objective,
+  age_range = excluded.age_range, content = excluded.content;
