@@ -40,16 +40,17 @@ export default async function ReportPage({
   const back = backLink(query.volver, '/informes', 'Volver a informes')
   const user = await currentUser()
 
-  const [report, practitioner] = await Promise.all([
-    getReport(user.id, id),
+  // The patient waits for the report, whose row names them; the rest keys on
+  // the id in the URL and does not.
+  const reportRow = getReport(user.id, id)
+
+  const [report, patient, practitioner, versions] = await Promise.all([
+    reportRow,
+    reportRow.then((row) => (row ? getPatient(user.id, row.patient_id) : null)),
     currentPractitioner(user.id),
+    listVersions(user.id, 'report', id),
   ])
   if (!report) notFound()
-
-  const [patient, versions] = await Promise.all([
-    getPatient(user.id, report.patient_id),
-    listVersions(user.id, 'report', report.id),
-  ])
 
   const meta = [
     { label: 'Paciente', value: report.patients?.full_name ?? 'Sin datos' },

@@ -75,7 +75,16 @@ function whenLabel(session: { scheduled_on: string; start_time: string }) {
 export default async function PlanningPage({ searchParams }: PageProps<'/planificacion'>) {
   const params = await searchParams
   const { user, practitioner } = await currentSession()
-  const patients = await listPatients(user.id)
+
+  // The picker's four weeks are read alongside the patients rather than after
+  // them. With nobody loaded yet they go unused, which costs less than making
+  // every practitioner who does have patients wait for one list before the other.
+  const until = todayDate()
+  until.setDate(until.getDate() + PICKER_DAYS)
+  const [patients, scheduled] = await Promise.all([
+    listPatients(user.id),
+    listAppointments(user.id, today(), toDateInput(until)),
+  ])
 
   const [firstPatient] = patients
   if (!firstPatient) {
@@ -101,9 +110,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
   // Only the active list: an archived patient's sessions were cleared when they
   // were archived, and a deleted one is not in `patients` at all.
   const known = new Set(patients.map((row) => row.id))
-  const until = todayDate()
-  until.setDate(until.getDate() + PICKER_DAYS)
-  const upcoming = (await listAppointments(user.id, today(), toDateInput(until))).filter(
+  const upcoming = scheduled.filter(
     (row) => row.status === 'scheduled' && known.has(row.patient_id),
   )
 

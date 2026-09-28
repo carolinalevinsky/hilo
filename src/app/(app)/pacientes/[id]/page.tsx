@@ -43,10 +43,12 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
   const { id } = await params
   const user = await currentUser()
 
-  const patient = await getPatient(user.id, id)
-  if (!patient) notFound()
+  // The patient and everything hanging off it are read at once, keyed on the id
+  // in the URL — only the photo has to wait, because its path is on the row.
+  const patientRow = getPatient(user.id, id)
 
   const [
+    patient,
     photoUrl,
     practitioner,
     goals,
@@ -60,21 +62,23 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     intake,
     scales,
   ] = await Promise.all([
-    getPhotoUrl(patient.photo_path),
+    patientRow,
+    patientRow.then((row) => (row ? getPhotoUrl(row.photo_path) : null)),
     currentPractitioner(user.id),
-    listGoals(user.id, patient.id),
-    listGoalProgress(user.id, patient.id),
-    listSessions(user.id, patient.id),
-    listPlanItems(user.id, patient.id),
-    listAssessments(user.id, patient.id),
-    listReports(user.id, patient.id),
+    listGoals(user.id, id),
+    listGoalProgress(user.id, id),
+    listSessions(user.id, id),
+    listPlanItems(user.id, id),
+    listAssessments(user.id, id),
+    listReports(user.id, id),
     // Para saber si al archivar hay que preguntar algo. Sin horario fijo no hay
     // nada que decidir y la pregunta sería ruido.
-    listSchedules(user.id, patient.id),
-    nextAppointmentFor(user.id, patient.id),
-    intakeStatus(user.id, patient.id),
-    scaleHistory(user.id, patient.id),
+    listSchedules(user.id, id),
+    nextAppointmentFor(user.id, id),
+    intakeStatus(user.id, id),
+    scaleHistory(user.id, id),
   ])
+  if (!patient) notFound()
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
   // that the practitioner is there. The content stays behind the login.

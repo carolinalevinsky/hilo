@@ -105,6 +105,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     tomorrowAppointments,
     practitioner,
     googleAccount,
+    { blocks: busyBlocks, unavailable: googleUnavailable },
   ] = await Promise.all([
     listAppointments(user.id, first, last),
     listSchedules(user.id),
@@ -115,21 +116,18 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
     currentPractitioner(user.id),
     // Sólo para saber si hay que ofrecer conectar. No se usa nada de adentro.
     findGoogleAccount(user.id),
+    // Lo que ya está ocupado en Google y no lo puso Ombúa: la reunión de trabajo,
+    // la cena, el cumpleaños. No se guarda en ningún lado — se lee, se dibuja y se
+    // olvida. Ver `listBusyBlocks`.
+    //
+    // Adentro del `Promise.all` y no después: es un viaje a Google, el más lento
+    // de la pantalla, y sólo necesita la semana, que `first`/`last` ya delimitan.
+    // Esperarlo aparte sumaba ese viaje entero a cada carga de la Agenda. Si la
+    // cuenta no está conectada no hay nada que traer. Si está conectada y Google
+    // falla, la Agenda se sigue viendo pero lo dice: ver `googleUnavailable` más
+    // abajo.
+    listBusyBlocks(user.id, first, last),
   ])
-
-  // Lo que ya está ocupado en Google y no lo puso Ombúa: la reunión de trabajo, la
-  // cena, el cumpleaños. No se guarda en ningún lado — se lee, se dibuja y se
-  // olvida. Ver `listBusyBlocks`.
-  //
-  // Va después del `Promise.all` y no adentro porque sólo hace falta la semana
-  // que está en pantalla, y `first`/`last` ya la delimitan. Si la cuenta no está
-  // conectada no hay nada que traer. Si está conectada y Google falla, la Agenda
-  // se sigue viendo pero lo dice: ver `googleUnavailable` más abajo.
-  const { blocks: busyBlocks, unavailable: googleUnavailable } = await listBusyBlocks(
-    user.id,
-    first,
-    last,
-  )
 
   // The week read as work rather than as a calendar. It needs the goals and the
   // matched material, which the grid does not — but it needs the same
