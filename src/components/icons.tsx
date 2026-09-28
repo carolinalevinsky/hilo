@@ -9,6 +9,7 @@ import {
   Menu,
   Square,
   Star,
+  Sun,
   Trash2,
   X,
 } from 'lucide-react'
@@ -294,6 +295,7 @@ export {
   Menu,
   Square,
   Star,
+  Sun,
   Trash2,
   X,
 }

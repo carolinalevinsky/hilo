@@ -1,4 +1,4 @@
-import { CalendarDays, UserPlus, Users } from '@/components/icons'
+import { ArrowRight, CalendarDays, Sun, UserPlus, Users } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -9,11 +9,11 @@ import { FirstSteps } from '@/components/onboarding/first-steps'
 import { PageHeader } from '@/components/page-header'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
-import { today } from '@/lib/dates'
+import { formatDayMonthShort, today, todayDate } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
-import { formatTime } from '@/lib/week'
+import { formatTime, weekdayName } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
 import { hasAnyAppointment, nextAppointmentFor } from '@/server/appointments'
 import { hasAnyGoal } from '@/server/goals'
@@ -135,17 +135,42 @@ export default async function HomePage() {
                 is right below. The same fact three times on one screen does not
                 inform better, it just makes the screen harder to read. */}
             <CardHeader>
-              <CardTitle>Hoy</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Hoy
+                <span className="rounded-md bg-muted px-2 py-0.5 text-meta font-medium text-muted-foreground">
+                  {weekdayName(todayDate().getDay())}, {formatDayMonthShort(today())}
+                </span>
+              </CardTitle>
+              {/* El estado del día, sólo cuando hay algo que decir. Con sesiones
+                  por delante la lista de abajo ya lo cuenta, y un renglón que
+                  repita cuántas son sería la misma cifra por tercera vez en la
+                  pantalla. */}
+              {todaySessions.length === 0 ? (
+                <CardAction className="flex items-center gap-1.5 text-meta text-muted-foreground">
+                  <span className="size-2 rounded-full bg-green" />
+                  Jornada despejada
+                </CardAction>
+              ) : null}
             </CardHeader>
             <CardContent>
               {todaySessions.length === 0 ? (
-                <p className="text-body text-muted-foreground">
-                  Hoy tenés el día libre.{' '}
-                  <Link href="/agenda" className="font-semibold text-violet underline">
+                <div className="flex flex-col items-center rounded-[16px] bg-gradient-to-b from-muted/60 to-transparent px-4 py-10 text-center">
+                  <span className="mb-4 flex size-20 items-center justify-center rounded-full bg-violet-soft text-violet">
+                    <Sun className="size-9" />
+                  </span>
+                  <p className="text-lead font-bold">Hoy tenés el día libre.</p>
+                  <p className="mt-1.5 max-w-sm text-body leading-relaxed text-muted-foreground">
+                    No tenés sesiones programadas para el resto de la jornada. Podés
+                    revisar el cronograma general o preparar evaluaciones.
+                  </p>
+                  <Link
+                    href="/agenda"
+                    className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-violet-soft px-5 py-2.5 text-item font-bold text-violet transition-colors hover:bg-violet/15"
+                  >
                     Ver la semana
+                    <ArrowRight className="size-[18px]" />
                   </Link>
-                  .
-                </p>
+                </div>
               ) : (
                 todaySessions.map((session) => (
                   <TodaySessionCard
