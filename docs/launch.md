@@ -41,16 +41,18 @@ patients for local demos and must never exist in production.
 
 ### Seed the shared materials
 
-The 45 curated materials are the one thing production *does* need from the seeds
-directory — the rows with a NULL `practitioner_id`. Load that file on its own,
-not through `db push`:
+The shared library is the one thing production *does* need from the seeds
+directory — the rows with a NULL `practitioner_id`, one file per discipline.
+Load them with the script, which refuses to run twice and never touches
+`seed.sql`:
 
 ```bash
-psql "<the connection string>" -f supabase/seeds/materials.generated.sql
+./dx npm run db:seed:remote
 ```
 
 Check it took: `select count(*) from materials where practitioner_id is null;`
-should return 45.
+should return the same number as
+`grep -c "^  (null," supabase/seeds/*.sql | awk -F: '{t+=$2} END {print t}'`.
 
 ### Auth settings
 

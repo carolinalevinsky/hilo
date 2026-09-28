@@ -31,13 +31,31 @@ ejercicio, la dosis sin decir, y la progresión apenas insinuada.
 El estándar de abajo se aplica a los dos orígenes. No hay materiales "heredados"
 en la biblioteca: los hay buenos o no están.
 
+Después de la reescritura la biblioteca tiene 333 materiales, de 1971 caracteres
+de mediana, repartidos así:
+
+| disciplina | materiales | 3-5 | 6-7 | 8-9 | 10-11 | 12-14 | 15+ |
+|---|---|---|---|---|---|---|---|
+| psicopedagogía | 60 | 3 | 13 | 26 | 12 | 4 | 2 |
+| terapia ocupacional | 58 | 16 | 26 | 8 | 3 | 3 | 2 |
+| psicomotricidad | 56 | 15 | 25 | 9 | 4 | 3 | 0 |
+| fonoaudiología | 55 | 9 | 22 | 16 | 4 | 2 | 2 |
+| fisioterapia | 54 | 2 | 2 | 1 | 2 | 2 | 45 |
+| psicología | 50 | 7 | 9 | 10 | 9 | 10 | 5 |
+
+Fisioterapia sigue concentrada en adultos porque su práctica lo está, pero ya no
+deja a un kinesiólogo de niños sin nada: tiene nueve materiales pediátricos.
+Psicomotricidad no tiene 15+ a propósito: arriba de esa edad es otra práctica, y
+el test la exime de esa franja.
+
 ---
 
 ## La anatomía
 
-Un material es una sesión de trabajo, no una consigna. Tiene entre 1200 y 2500
-caracteres y siempre estas partes, en este orden. Los nombres de los subtítulos
-se adaptan a la disciplina; el contenido de cada parte no es opcional.
+Un material es una sesión de trabajo, no una consigna. Mide entre 1300 y 2700
+caracteres (la mediana de la biblioteca es 1971) y siempre tiene estas partes, en
+este orden. Los nombres de los subtítulos se adaptan a la disciplina; el
+contenido de cada parte no es opcional.
 
 **1. Para qué sirve.** Una o dos frases: qué habilidad entrena y por qué esta
 actividad y no otra. Es lo que la profesional le dice a la familia cuando
