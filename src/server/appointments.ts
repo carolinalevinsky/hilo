@@ -570,6 +570,58 @@ export async function getAppointmentFor(
   return data
 }
 
+/**
+ * La nota previa de una sesión, y cómo se escribe desde el planificador.
+ *
+ * Es la misma nota que se escribe al agendar: `appointments.note`. No hay una
+ * "nota del plan" aparte a propósito — dos campos que quieren decir lo mismo
+ * terminan diciendo cosas distintas, y quien agendó el martes esperaría ver el
+ * viernes lo que escribió.
+ */
+export async function appointmentNote(
+  practitionerId: string,
+  appointmentId: string,
+): Promise<string | null> {
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('note')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.note ?? null
+}
+
+const AppointmentNote = z
+  .string()
+  .trim()
+  .max(2000)
+  .transform((value) => (value ? value : null))
+
+export async function setAppointmentNote(
+  practitionerId: string,
+  appointmentId: string,
+  note: unknown,
+) {
+  const value = AppointmentNote.parse(note ?? '')
+  const db = await getDb()
+
+  const { error } = await db
+    .from('appointments')
+    .update({ note: value })
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+
+  if (error) throw error
+  await logAction(practitionerId, 'update', 'appointment', appointmentId)
+
+  // Sin tocar Google: el evento que se crea allá lleva la hora y el paciente,
+  // y su descripción es fija (`google-calendar.ts:72`). La nota es clínica y no
+  // tiene por qué salir de Ombúa a un calendario que puede estar compartido.
+}
+
 export async function setAppointmentStatus(
   practitionerId: string,
   appointmentId: string,

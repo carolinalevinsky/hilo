@@ -1,7 +1,11 @@
 import Link from 'next/link'
 
-import { clearPlanAction, removePlanItemAction } from '@/app/(app)/planificacion/actions'
-import { CalendarDays, ClipboardList, Trash2 } from '@/components/icons'
+import {
+  clearPlanAction,
+  removePlanItemAction,
+  savePlanNoteAction,
+} from '@/app/(app)/planificacion/actions'
+import { CalendarDays, ClipboardList, FileText, Trash2 } from '@/components/icons'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
@@ -55,11 +59,14 @@ export function SessionPlanCard({
   patientName,
   /** When the session is, already written out, or `null` if there is none yet. */
   when,
+  note,
   items,
 }: {
   target: PlanTarget
   patientName: string
   when: string | null
+  /** La nota previa de la sesión: `appointments.note`, la misma de la Agenda. */
+  note: string | null
   items: PlanItem[]
 }) {
   const name = firstName(patientName)
@@ -94,13 +101,21 @@ export function SessionPlanCard({
         </p>
       </header>
 
+      {note ? (
+        <div className="hidden px-4 pt-3 print:block">
+          <p className="text-micro font-bold uppercase">Nota previa</p>
+          <p className="mt-0.5 text-meta leading-relaxed whitespace-pre-wrap">{note}</p>
+        </div>
+      ) : null}
+
       <CardContent className="py-4">
         {items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center">
-            <ClipboardList className="mx-auto mb-2 size-6 text-muted-foreground/70" />
-            <p className="text-meta text-muted-foreground">
-              Todavía no agregaste nada. Sumá un objetivo, un material o una actividad tuya
-              desde el paso 2.
+          <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
+            <ClipboardList className="mx-auto mb-2.5 size-6 text-muted-foreground/70" />
+            <p className="text-item font-bold">Tu plan está listo para armarse</p>
+            <p className="mx-auto mt-1 max-w-xs text-meta leading-relaxed text-muted-foreground">
+              Sumá un objetivo, un material o una actividad tuya desde el paso 2 y van
+              cayendo acá, en orden.
             </p>
           </div>
         ) : (
@@ -158,6 +173,46 @@ export function SessionPlanCard({
         )}
       </CardContent>
 
+      {/* La nota previa, entre el plan y los botones.
+          Vive en la cita, no en el plan: es la misma que se escribe al agendar
+          (`setAppointmentNote`), así que lo que se anota acá aparece allá y al
+          revés. Sin sesión agendada no hay dónde guardarla y no se ofrece.
+
+          Un `<details>` y no un botón con estado: abrir un renglón para
+          escribir no necesita JavaScript, y así la nota se ve escrita sin
+          abrir nada. */}
+      {target.appointmentId ? (
+        <CardContent className="no-print pb-4">
+          <details open={Boolean(note)} className="group/note rounded-xl bg-muted/60 p-3">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
+              <span className="flex items-center gap-2 text-meta font-bold">
+                <FileText className="size-4 text-muted-foreground" />
+                Nota previa para la sesión
+              </span>
+              <span className="text-meta font-semibold text-violet group-open/note:hidden">
+                + Añadir
+              </span>
+            </summary>
+
+            <form action={savePlanNoteAction} className="mt-2.5">
+              <PlanFields {...target} />
+              <textarea
+                name="note"
+                rows={3}
+                maxLength={2000}
+                defaultValue={note ?? ''}
+                placeholder="Lo que quieras tener presente al empezar: cómo venía de la vez pasada, qué traer, qué avisarle a la familia."
+                aria-label="Nota previa para la sesión"
+                className="w-full rounded-lg border border-input bg-card px-3 py-2 text-body leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              />
+              <Button type="submit" size="sm" variant="secondary" className="mt-2">
+                Guardar nota
+              </Button>
+            </form>
+          </details>
+        </CardContent>
+      ) : null}
+
       {/* Only with a plan that exists. Offering to register a session that has
           nothing in it, or to print a blank page, is offering nothing. */}
       {items.length > 0 ? (
@@ -167,25 +222,20 @@ export function SessionPlanCard({
               something you finish, and a screen with no way to finish it leaves
               you looking for the button that says you are done.
 
-              "Registrar ahora" stays beside it for the Tuesday when you are
-              planning with the child already in the room. It carries the
-              session, so the record is tied to it and uses this plan. */}
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button asChild>
-              <Link href="/planificacion/proximas">Guardar planificación</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link
-                href={
-                  target.appointmentId
-                    ? `/pacientes/${target.patientId}/sesiones/nueva?agenda=${target.appointmentId}`
-                    : `/pacientes/${target.patientId}/sesiones/nueva?plan=1`
-                }
-              >
-                Registrar ahora
-              </Link>
-            </Button>
-          </div>
+              Uno solo. Al lado hubo un segundo botón que llevaba al registro de
+              la sesión, y no se entendía: mientras planificás el miércoles,
+              "registrar" es una acción de otro día. Lo que hace falta —empezar
+              la sesión con este plan, cuando el chico ya está en la sala— está
+              del otro lado del guardado, que es donde alguien lo busca: el
+              `?guardado=` le dice a "Planes preparados" cuál acaba de guardar y
+              ahí se ofrece arrancarla. */}
+          <Button asChild className="w-full">
+            <Link
+              href={`/planificacion/proximas?guardado=${target.appointmentId ?? `p:${target.patientId}`}`}
+            >
+              Guardar planificación
+            </Link>
+          </Button>
 
           <div className="flex items-center justify-between gap-2">
             <PrintButton label="Imprimir" />
@@ -196,7 +246,7 @@ export function SessionPlanCard({
                 variant="ghost"
                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
-                Vaciar plan
+                Descartar borrador
               </Button>
             </form>
           </div>

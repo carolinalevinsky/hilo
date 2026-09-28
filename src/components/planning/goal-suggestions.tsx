@@ -1,7 +1,10 @@
 import Link from 'next/link'
 
-import { addGoalToPlanAction } from '@/app/(app)/planificacion/actions'
-import { Sparkles, Target, TriangleAlert } from '@/components/icons'
+import {
+  addGoalToPlanAction,
+  addSuggestedGoalAction,
+} from '@/app/(app)/planificacion/actions'
+import { Plus, Sparkles, Target, TriangleAlert } from '@/components/icons'
 import { InPlanChip } from '@/components/planning/in-plan-chip'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PlanningPanel } from '@/components/planning/planning-panel'
@@ -22,12 +25,15 @@ export function GoalSuggestions({
   target,
   firstName,
   suggestions,
+  quickGoals,
   itemOfGoal,
   itemOfMaterial,
 }: {
   target: PlanTarget
   firstName: string
   suggestions: PlanSuggestion[]
+  /** Títulos de arranque, sacados de la taxonomía de la profesión. */
+  quickGoals: string[]
   /** Goal id → the row of the plan it produced, which is what "Agregado" undoes. */
   itemOfGoal: Map<string, string>
   /** The materials already in the plan, so a second "Agregar" cannot duplicate one. */
@@ -38,27 +44,69 @@ export function GoalSuggestions({
   return (
     <PlanningPanel
       icon={Sparkles}
-      title={`Objetivos de ${firstName}`}
+      title={`Objetivos terapéuticos de ${firstName}`}
       hint="Ombúa los ordena: primero los que menos se movieron."
       aside={
-        active > 0 ? (
+        (
           <span className="text-meta text-muted-foreground">
-            {active === 1 ? '1 objetivo activo' : `${active} objetivos activos`}
+            {active === 1 ? '1 activo' : `${active} activos`}
           </span>
-        ) : null
+        )
       }
     >
       {active === 0 ? (
-        <p className="text-body text-muted-foreground">
-          {firstName} todavía no tiene objetivos activos.{' '}
-          <Link
-            href={`/pacientes/${target.patientId}`}
-            className="font-semibold text-violet underline"
-          >
-            Cargá el primero
-          </Link>{' '}
-          y Ombúa arma las sugerencias.
-        </p>
+        /* El vacío explicado adentro de su propia caja, y abajo la única cosa
+           que hay que hacer. Antes era una línea gris con un enlace en el
+           medio: se leía como una nota al pie y no como el paso que falta. */
+        <div className="space-y-3">
+          <div className="rounded-xl border border-border bg-muted/60 p-3.5">
+            <p className="text-item font-semibold">
+              {firstName} todavía no tiene objetivos activos
+            </p>
+            <p className="mt-1 text-body leading-relaxed text-muted-foreground">
+              Ombúa necesita al menos un objetivo para recomendarte materiales de la
+              biblioteca.
+            </p>
+          </div>
+
+          <Button asChild variant="secondary" className="h-11 w-full rounded-xl">
+            <Link href={`/pacientes/${target.patientId}`}>
+              <Plus className="size-[18px]" />
+              Crear primer objetivo terapéutico
+            </Link>
+          </Button>
+
+          {/* Los tres de arranque. Tocar uno crea el objetivo y la lista de
+              arriba lo muestra al instante; después se edita desde la ficha
+              como cualquier otro.
+
+              El diseño los anunciaba "según edad clínica". No es así y no
+              conviene decirlo: salen de las áreas de la profesión, que es la
+              misma taxonomía con la que está ordenada la biblioteca. La edad no
+              entra en la cuenta. */}
+          {quickGoals.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-micro font-bold tracking-wider text-muted-foreground uppercase">
+                O sumá uno de los de tu profesión:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {quickGoals.map((title) => (
+                  <form key={title} action={addSuggestedGoalAction}>
+                    <input type="hidden" name="patientId" value={target.patientId} />
+                    <input type="hidden" name="title" value={title} />
+                    <button
+                      type="submit"
+                      className="flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1.5 text-meta font-medium text-muted-foreground transition-colors hover:border-violet/40 hover:bg-violet-soft hover:text-violet"
+                    >
+                      <Plus className="size-3.5 text-teal" />
+                      {title}
+                    </button>
+                  </form>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
       ) : (
         <ul className="space-y-2.5">
           {suggestions.map((goal) => {

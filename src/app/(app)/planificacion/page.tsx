@@ -1,4 +1,4 @@
-import { ClipboardList } from '@/components/icons'
+import { ClipboardList, Lightbulb } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -14,15 +14,16 @@ import { StepHeading } from '@/components/planning/step-heading'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatLongDate, today, toDateInput, todayDate } from '@/lib/dates'
+import { areasFor } from '@/lib/material-areas'
 import { formatTime } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
 import {
+  appointmentNote,
   getAppointment,
   listAppointments,
   nextAppointmentFor,
   type NextAppointment,
 } from '@/server/appointments'
-import { averageProgress } from '@/server/goals'
 import { listMaterials } from '@/server/materials'
 import { getPhotoUrl, listPatients } from '@/server/patients'
 import { listPlanItems, planSuggestions } from '@/server/session-plans'
@@ -141,14 +142,24 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
 
   const appointmentId = session?.id ?? null
   const search = readParam(params.q)?.trim() ?? ''
+  // El área elegida en los chips de la biblioteca. Vacío es "Todos".
+  const area = readParam(params.area)?.trim() || undefined
+  const byArea = areasFor(practitioner.discipline)
+  const areas = Object.keys(byArea)
+  // Tres títulos para arrancar, uno por área: el primer foco de cada una. Son
+  // los de la profesión, no una lista escrita a mano — si la taxonomía cambia,
+  // estos cambian con ella.
+  const quickGoals = areas.slice(0, 3).flatMap((name) => byArea[name]?.[0] ?? [])
 
-  const [suggestions, items, results, photoUrl] = await Promise.all([
+  const [suggestions, items, results, photoUrl, note] = await Promise.all([
     planSuggestions(user.id, patient.id, practitioner.discipline, appointmentId),
     listPlanItems(user.id, patient.id, appointmentId),
-    search
-      ? listMaterials(user.id, { discipline: practitioner.discipline, search })
-      : Promise.resolve([]),
+    // Siempre trae materiales, con o sin búsqueda: un panel que arranca vacío
+    // y con una instrucción —"escribí para buscar"— es trabajo antes de ver
+    // nada, y lo que hay para ver son cincuenta materiales de la profesión.
+    listMaterials(user.id, { discipline: practitioner.discipline, search, area }),
     getPhotoUrl(patient.photo_path),
+    appointmentId ? appointmentNote(user.id, appointmentId) : Promise.resolve(null),
   ])
 
   const sessionOptions = upcoming.map((row) => ({
@@ -190,11 +201,6 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
         sessions={sessionOptions}
         unscheduled={unscheduled}
         selected={session ? `s:${session.id}` : `p:${patient.id}`}
-        averageProgress={
-          suggestions.length > 0
-            ? averageProgress(suggestions.map((goal) => ({ progress: goal.progress })))
-            : null
-        }
       />
 
       {/* `items-start`: see the same note in `estadisticas/page.tsx`. The plan is
@@ -216,12 +222,14 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
               target={target}
               firstName={name}
               suggestions={suggestions}
+              quickGoals={quickGoals}
               itemOfGoal={itemOfGoal}
               itemOfMaterial={itemOfMaterial}
             />
             <LibraryPicker
               target={target}
               search={search}
+              areas={areas}
               results={results}
               inPlan={itemOfMaterial}
             />
@@ -253,8 +261,20 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
             target={target}
             patientName={patient.full_name}
             when={session ? whenLabel(session) : null}
+            note={note}
             items={items}
           />
+
+          {/* El consejo del diseño, al pie de la columna del plan. Dice lo que
+              el plan permite hacer hoy: imprimirlo y tenerlo a mano. */}
+          <p className="no-print mt-4 flex items-start gap-2.5 rounded-xl bg-violet-whisper p-4">
+            <Lightbulb className="mt-0.5 size-[18px] shrink-0 text-violet" />
+            <span className="text-meta leading-relaxed text-muted-foreground">
+              <b className="font-semibold text-foreground">Tip de Ombúa.</b> Podés imprimir
+              el plan y las fichas de trabajo antes de recibir al paciente, y lo tenés a
+              mano en la Agenda mientras lo atendés.
+            </span>
+          </p>
         </div>
       </div>
     </>
