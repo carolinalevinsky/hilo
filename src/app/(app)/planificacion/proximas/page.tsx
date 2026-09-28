@@ -86,7 +86,7 @@ export default async function UpcomingPlansPage({
                     : `/pacientes/${justSaved.patientId}/sesiones/nueva?plan=1`
                 }
               >
-                Arrancar sesión ahora
+                Arrancar sesión
               </Link>
             </Button>
           </CardContent>
@@ -154,7 +154,12 @@ export default async function UpcomingPlansPage({
                   <div className="mt-3.5 flex flex-wrap gap-2">
                     {/* Both carry the session the plan is for (P14). Without
                         it they meant "the patient's next", which for the plan
-                        of the session after that opened the wrong list. */}
+                        of the session after that opened the wrong list.
+
+                        "Arrancar sesión" y no "Registrar esta sesión": es el
+                        mismo botón que ofrece la tira de arriba al guardar, y
+                        dos nombres para la misma acción a dos centímetros uno
+                        del otro se leen como dos acciones distintas. */}
                     <Button asChild size="sm">
                       <Link
                         href={
@@ -164,7 +169,7 @@ export default async function UpcomingPlansPage({
                         }
                       >
                         <ClipboardList className="size-4" />
-                        Registrar esta sesión
+                        Arrancar sesión
                       </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">
