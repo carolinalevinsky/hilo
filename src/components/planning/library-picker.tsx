@@ -8,6 +8,7 @@ import { LibraryAreas } from '@/components/planning/library-areas'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PlanningPanel } from '@/components/planning/planning-panel'
 import { Button } from '@/components/ui/button'
+import { materialKindLabel } from '@/lib/material-areas'
 import type { MaterialSummary } from '@/server/materials'
 
 /**
@@ -79,19 +80,31 @@ export function LibraryPicker({
                   key={material.id}
                   className="flex w-[min(13rem,70vw)] shrink-0 snap-start flex-col rounded-xl border border-border p-3.5 transition-colors hover:border-violet/40"
                 >
-                  <Link href={`/materiales/${material.id}`} className="hover:underline">
+                  {/* El mismo orden que una ficha de `/materiales`: el tipo y la
+                      edad arriba, después el título, y abajo el área con su
+                      foco. Es la misma biblioteca vista desde otra pantalla, y
+                      dos maneras de dibujar el mismo material obligan a
+                      leerlas dos veces. */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet">
+                      {materialKindLabel(material.kind)}
+                    </span>
+                    {material.age_range ? (
+                      <span className="text-micro text-muted-foreground">
+                        {material.age_range}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <Link href={`/materiales/${material.id}`} className="mt-1.5 hover:underline">
                     <p className="text-item leading-snug font-bold">{material.title}</p>
                   </Link>
-                  {material.focus ? (
-                    <p className="mt-1 line-clamp-2 text-meta leading-relaxed text-muted-foreground">
-                      {material.focus}
-                    </p>
-                  ) : null}
+                  <p className="mt-0.5 line-clamp-2 text-meta leading-relaxed text-muted-foreground">
+                    {material.area}
+                    {material.focus ? ` › ${material.focus}` : ''}
+                  </p>
 
-                  <div className="mt-auto flex items-end justify-between gap-2 pt-3">
-                    <span className="min-w-0 text-micro font-bold text-muted-foreground uppercase">
-                      {[material.area, material.age_range].filter(Boolean).join(' / ')}
-                    </span>
+                  <div className="mt-auto flex items-end justify-end gap-2 pt-3">
 
                     {/* Same rule as a goal that is already in: the state is
                         shown, and pressing it is how you take it out. */}

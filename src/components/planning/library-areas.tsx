@@ -48,10 +48,12 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'shrink-0 rounded-full px-3 py-1.5 text-meta font-semibold transition-colors',
+        // Los mismos que los de `/materiales`: es la misma biblioteca, y dos
+        // juegos de chips distintos para lo mismo se leen como dos cosas.
+        'shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors',
         active
           ? 'bg-violet text-white'
-          : 'bg-muted text-muted-foreground hover:text-foreground',
+          : 'border border-border bg-card text-muted-foreground hover:bg-muted',
       )}
     >
       {label}

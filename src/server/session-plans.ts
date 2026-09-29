@@ -1,17 +1,10 @@
 import { z } from 'zod'
 
-import { suggestedActivity } from '@/lib/activity-bank'
 import { planDuration } from '@/lib/plan-durations'
 
 import { nextAppointmentFor, nextAppointments } from './appointments'
 import { getDb } from './db'
-import {
-  bestMaterialFor,
-  listMaterials,
-  topMaterialsFor,
-  type Material,
-  type MaterialSummary,
-} from './materials'
+import { type Material } from './materials'
 
 /**
  * What is prepared for a session.
@@ -265,38 +258,37 @@ export async function upcomingPlans(practitionerId: string): Promise<PreparedPla
 export type PlanSuggestion = {
   goalId: string
   title: string
-  progress: number
-  /** What to actually do about it, from v1's activity bank. */
-  activity: string
-  /**
-   * The materials that fit this goal, best first — up to three.
-   *
-   * It used to be one. One is an answer, and an answer you did not ask for is
-   * either right or useless; three is a choice, which is what a practitioner is
-   * actually making at this point. Empty when nothing in the library scores.
-   */
-  materials: MaterialSummary[]
   /** True when this goal is already in the plan, so the button says "Agregado". */
   added: boolean
 }
 
 /**
- * The goals to work on next, worst first, each with a suggestion.
+ * The goals to work on next, worst first. Titles only.
  *
  * v1 sorted every active goal by progress ascending and showed all of them —
  * not a top three. A practitioner scanning their own patient's goals wants the
  * whole list in a useful order, and truncating it would hide exactly the goal
  * that has not moved since April.
+ *
+ * Each goal also carried a suggested activity and the three materials that
+ * scored best against its title. They are gone: the same library was then
+ * offered twice on one screen under two different rules — three picked here by
+ * matching words, and the whole thing in the search below — and the row joined
+ * a goal, a generic phrase and a real material with the same `·`, so what you
+ * were about to add was not readable. The goal goes in alone; the material is
+ * the next decision, made in the one place that holds materials.
  */
 export async function planSuggestions(
   practitionerId: string,
   patientId: string,
-  discipline: string,
   appointmentId?: string | null,
 ): Promise<PlanSuggestion[]> {
   const db = await getDb()
 
-  const [{ data: goals, error }, materials, items] = await Promise.all([
+  // `progress` is selected to order by it and is never returned: the number
+  // stopped being shown — a practitioner knows where her own patient is — but
+  // it is still what "worst first" means, and that order IS the suggestion.
+  const [{ data: goals, error }, items] = await Promise.all([
     db
       .from('goals')
       .select('id, title, progress')
@@ -304,7 +296,6 @@ export async function planSuggestions(
       .eq('patient_id', patientId)
       .eq('is_active', true)
       .order('progress'),
-    listMaterials(practitionerId, { discipline }),
     listPlanItems(practitionerId, patientId, appointmentId),
   ])
 
@@ -315,9 +306,6 @@ export async function planSuggestions(
   return (goals ?? []).map((goal) => ({
     goalId: goal.id,
     title: goal.title,
-    progress: goal.progress,
-    activity: suggestedActivity(goal.title),
-    materials: topMaterialsFor(goal.title, materials, 3),
     added: already.has(goal.id),
   }))
 }
@@ -339,26 +327,25 @@ async function nextPosition(practitionerId: string, patientId: string): Promise<
 }
 
 /**
- * Add a goal to a session's plan, with a material attached to it.
+ * Add a goal to a session's plan. The goal, and nothing else.
  *
- * `materialId` is the one the practitioner picked from the three offered. When
- * it is absent — the goal was added without choosing, or from a screen that does
- * not offer the choice — Ombúa falls back to its own best match, which is what
- * this function always used to do.
+ * It used to take a material too: the one picked from the three the goals panel
+ * offered, and, when none came, whatever `bestMaterialFor` matched against the
+ * goal's title. Both are gone with that panel — the second one put a card in
+ * the plan that nobody had chosen and that no screen ever named. A material
+ * reaches the plan through `addMaterialToPlan`, from the library, as its own
+ * row.
  *
  * The title is copied rather than read through `goal_id` — see the migration.
  * The goal is re-read here rather than trusted from the form because a form
  * field is whatever the browser sent, and `.eq('practitioner_id', …)` is what
- * makes "add goal X" mean "add a goal that is mine". The chosen material gets
- * the same treatment for the same reason. The session needs no such read: the
- * composite foreign key refuses one that is not this patient's.
+ * makes "add goal X" mean "add a goal that is mine". The session needs no such
+ * read: the composite foreign key refuses one that is not this patient's.
  */
 export async function addGoalToPlan(
   practitionerId: string,
   patientId: string,
   goalId: string,
-  discipline: string,
-  materialId?: string | null,
   appointmentId?: string | null,
 ) {
   const db = await getDb()
@@ -374,22 +361,6 @@ export async function addGoalToPlan(
   if (goalError) throw goalError
   if (!goal) throw new Error('Ese objetivo no existe.')
 
-  let chosenId: string | null = null
-
-  if (materialId) {
-    // Through RLS, so an id from somebody else's library resolves to nothing
-    // and the item is simply saved without a material.
-    const { data: material } = await db
-      .from('materials')
-      .select('id')
-      .eq('id', materialId)
-      .maybeSingle()
-    chosenId = material?.id ?? null
-  } else {
-    const materials = await listMaterials(practitionerId, { discipline })
-    chosenId = bestMaterialFor(goal.title, materials)?.id ?? null
-  }
-
   const scope = await scopeFor(practitionerId, patientId, appointmentId)
 
   const { error } = await db.from('session_plan_items').insert({
@@ -397,7 +368,6 @@ export async function addGoalToPlan(
     patient_id: patientId,
     appointment_id: scope.appointmentId,
     goal_id: goal.id,
-    material_id: chosenId,
     title: goal.title,
     position: await nextPosition(practitionerId, patientId),
   })

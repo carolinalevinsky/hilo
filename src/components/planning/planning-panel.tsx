@@ -40,17 +40,17 @@ export function PlanningPanel({
     <Card>
       <CardContent>
         <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex min-w-0 items-start gap-2.5">
             <span
               className={cn(
-                'flex size-12 shrink-0 items-center justify-center rounded-[14px]',
+                'flex size-8 shrink-0 items-center justify-center rounded-[10px]',
                 TONE_CLASSES[tone],
               )}
             >
-              <Icon className="size-6" />
+              <Icon className="size-[18px]" />
             </span>
             <div className="min-w-0">
-              <h3 className="text-lead font-bold">{title}</h3>
+              <h3 className="text-item font-extrabold">{title}</h3>
               {hint ? <p className="mt-0.5 text-meta text-muted-foreground">{hint}</p> : null}
             </div>
           </div>

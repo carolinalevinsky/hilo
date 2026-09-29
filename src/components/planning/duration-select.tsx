@@ -38,7 +38,7 @@ export function DurationSelect({
           : undefined
       }
       wrapperClassName="w-fit"
-      className={cn('h-11 rounded-xl pl-3 text-sm', className)}
+      className={cn('h-9 rounded-lg pl-3 text-sm', className)}
     >
       {PLAN_DURATIONS.map((minutes) => (
         <option key={minutes} value={minutes}>

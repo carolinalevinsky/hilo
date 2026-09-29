@@ -152,7 +152,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
   const quickGoals = areas.slice(0, 3).flatMap((name) => byArea[name]?.[0] ?? [])
 
   const [suggestions, items, results, photoUrl, sessionContext] = await Promise.all([
-    planSuggestions(user.id, patient.id, practitioner.discipline, appointmentId),
+    planSuggestions(user.id, patient.id, appointmentId),
     listPlanItems(user.id, patient.id, appointmentId),
     // Siempre trae materiales, con o sin búsqueda: un panel que arranca vacío
     // y con una instrucción —"escribí para buscar"— es trabajo antes de ver
@@ -226,7 +226,6 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
               suggestions={suggestions}
               quickGoals={quickGoals}
               itemOfGoal={itemOfGoal}
-              itemOfMaterial={itemOfMaterial}
             />
             <LibraryPicker
               target={target}

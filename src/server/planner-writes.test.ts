@@ -36,9 +36,8 @@ vi.mock('./google-calendar', () => ({
 
 const { planSessionContext, setAppointmentNote } = await import('./appointments')
 const { createOwnActivity, listMaterials } = await import('./materials')
-const { addActivityToPlan, listPlanItems, setPlanItemDuration } = await import(
-  './session-plans'
-)
+const { addActivityToPlan, addGoalToPlan, listPlanItems, setPlanItemDuration } =
+  await import('./session-plans')
 
 const service = serviceClient()
 const email = testEmail('planificador-escribe')
@@ -167,5 +166,33 @@ describe('una actividad propia', () => {
 
   it('no guarda nada cuando el texto viene vacío', async () => {
     expect(await createOwnActivity(me, 'psychology', '   ')).toBeNull()
+  })
+})
+
+describe('un objetivo que entra al plan', () => {
+  it('entra solo, aunque haya en la biblioteca un material que le calce', async () => {
+    const title = 'Reconocer emociones en fotos'
+
+    // El material que el viejo `bestMaterialFor` habría elegido: mismo título
+    // que el objetivo, así que la coincidencia es la máxima posible.
+    await createOwnActivity(me, 'psychology', title)
+
+    const { data: goal, error } = await service
+      .from('goals')
+      .insert({ practitioner_id: me, patient_id: patientId, title })
+      .select()
+      .single()
+    if (error) throw error
+
+    await addGoalToPlan(me, patientId, goal.id, appointmentId)
+
+    const item = (await listPlanItems(me, patientId, appointmentId)).find(
+      (row) => row.goalId === goal.id,
+    )
+
+    expect(item).toBeDefined()
+    // Sin material. Antes se guardaba el que mejor puntuara contra el título, y
+    // el plan mostraba una ficha que nadie había elegido.
+    expect(item?.material).toBeNull()
   })
 })
