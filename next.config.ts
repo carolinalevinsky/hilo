@@ -13,10 +13,16 @@ const nextConfig: NextConfig = {
    * error in the browser beyond a row of 403s, which is a genuinely awful hour
    * to spend.
    *
+   * `host.docker.internal` está por la misma razón, un contenedor más allá: las
+   * capturas de pantalla corren Playwright en otro contenedor y llegan al
+   * servidor por ese nombre, así que sin él la foto sale de una página que
+   * nunca hidrató — se ve igual y no responde a nada. Una tarde perdida
+   * "verificando" pantallas muertas.
+   *
    * Development only — Next ignores this in a production build, and it is not a
    * relaxation of anything that protects real data.
    */
-  allowedDevOrigins: ['127.0.0.1', 'localhost'],
+  allowedDevOrigins: ['127.0.0.1', 'localhost', 'host.docker.internal'],
 
   /**
    * Where this server writes its build, so a second Next can run beside the one

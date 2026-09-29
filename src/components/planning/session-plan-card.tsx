@@ -3,11 +3,11 @@ import Link from 'next/link'
 import {
   clearPlanAction,
   removePlanItemAction,
-  savePlanNoteAction,
   setPlanItemDurationAction,
 } from '@/app/(app)/planificacion/actions'
-import { CalendarDays, ClipboardList, Clock, FileText, Trash2 } from '@/components/icons'
+import { CalendarDays, ClipboardList, Clock, Trash2 } from '@/components/icons'
 import { DurationSelect } from '@/components/planning/duration-select'
+import { SessionNote } from '@/components/planning/session-note'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
@@ -216,39 +216,10 @@ export function SessionPlanCard({
           Vive en la cita, no en el plan: es la misma que se escribe al agendar
           (`setAppointmentNote`), así que lo que se anota acá aparece allá y al
           revés. Sin sesión agendada no hay dónde guardarla y no se ofrece.
-
-          Un `<details>` y no un botón con estado: abrir un renglón para
-          escribir no necesita JavaScript, y así la nota se ve escrita sin
-          abrir nada. */}
+          Se guarda sola; el porqué está en `session-note.tsx`. */}
       {target.appointmentId ? (
         <CardContent className="no-print pb-4">
-          <details open={Boolean(note)} className="group/note rounded-xl bg-muted/60 p-3">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-              <span className="flex items-center gap-2 text-meta font-bold">
-                <FileText className="size-4 text-muted-foreground" />
-                Nota previa para la sesión
-              </span>
-              <span className="text-meta font-semibold text-violet group-open/note:hidden">
-                + Añadir
-              </span>
-            </summary>
-
-            <form action={savePlanNoteAction} className="mt-2.5">
-              <PlanFields {...target} />
-              <textarea
-                name="note"
-                rows={3}
-                maxLength={2000}
-                defaultValue={note ?? ''}
-                placeholder="Lo que quieras tener presente al empezar: cómo venía de la vez pasada, qué traer, qué avisarle a la familia."
-                aria-label="Nota previa para la sesión"
-                className="w-full rounded-lg border border-input bg-card px-3 py-2 text-body leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              />
-              <Button type="submit" size="sm" variant="secondary" className="mt-2">
-                Guardar nota
-              </Button>
-            </form>
-          </details>
+          <SessionNote target={target} note={note} />
         </CardContent>
       ) : null}
 
