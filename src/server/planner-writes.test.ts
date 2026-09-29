@@ -107,8 +107,10 @@ describe('la duración de lo planificado', () => {
   it('son quince minutos cuando no se elige nada', async () => {
     await addActivityToPlan(me, patientId, 'Caldeamiento inicial', appointmentId)
 
-    const [item] = await listPlanItems(me, patientId, appointmentId)
-    expect(item.durationMinutes).toBe(15)
+    const item = (await listPlanItems(me, patientId, appointmentId)).find(
+      (row) => row.title === 'Caldeamiento inicial',
+    )
+    expect(item?.durationMinutes).toBe(15)
   })
 
   it('se puede elegir al sumar y cambiar después', async () => {
