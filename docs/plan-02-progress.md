@@ -141,7 +141,7 @@ assistant).
 | `supabase/migrations/20260812023627_create_materials.sql` | `materials`. **The only non-standard policies in the schema**: read is shared-or-own, write is own-only. |
 | `supabase/migrations/20260816190000_add_digest_sent_at.sql` | `practitioners.digest_sent_at`, so the digest batch rotates. |
 | `supabase/migrations/20260816193000_create_assistant_questions.sql` | A row per question, so the assistant has a monthly quota to count. No question text — see the migration. |
-| `scripts/extract-materials.mjs`, `supabase/seeds/materials.generated.sql` | v1's 45 curated materials, transcribed. Re-runnable, wired into `config.toml`. |
+| `supabase/seeds/materials-*.sql` | The shared library, one file per discipline, written against `docs/materiales.md` and checked by `src/lib/material-seeds.test.ts`. It started as v1's 45 materials transcribed by a script; both the script and the transcription are gone, because the content is no longer generated from `legacy/`. |
 | `src/lib/material-areas.ts` | Areas and focuses per discipline (`legacy/index.html:2099`). |
 | `src/lib/sse-client.ts` | The SSE reader, used by the report editor and the assistant. |
 | `src/server/materials.ts` | CRUD + `bestMaterialFor`, v1's word-overlap matcher. |

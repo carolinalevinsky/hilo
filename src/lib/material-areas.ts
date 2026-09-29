@@ -8,24 +8,49 @@ import type { DisciplineId } from './disciplines'
  * fonoaudióloga works on praxias orofaciales and grupos consonánticos, a
  * kinesiólogo on rango articular and reeducación de la marcha. Getting it wrong
  * makes the library feel like it was built for somebody else.
+ *
+ * A few entries are wider than v1's list, and the reason is the same for all of
+ * them: there were materials filed under them already. v1's own dropdown did
+ * not offer `Cálculo escrito`, `Geometría`, `Memoria de trabajo` or the velar
+ * sounds, and it had nowhere at all for vocabulary, morphosyntax or narrative,
+ * so eight speech therapy materials ended up inside `Articulación`, which is a
+ * different thing. A fonoaudióloga notices that at a glance. The area they
+ * belong to is `Lenguaje`, and now it exists.
+ *
+ * `src/lib/material-seeds.test.ts` fails if a seeded material is filed outside
+ * this list, or if any focus here has no material at all: an empty filter is as
+ * bad as a wrong one.
  */
 
 export const AREAS_BY_DISCIPLINE: Record<DisciplineId, Record<string, string[]>> = {
   psychopedagogy: {
     Lectura: ['Conciencia fonológica', 'Fluidez lectora', 'Comprensión lectora'],
     Escritura: ['Grafismo', 'Ortografía', 'Producción de textos'],
-    Matemática: ['Cálculo mental', 'Resolución de problemas', 'Numeración'],
-    Atención: ['Atención sostenida', 'Atención selectiva', 'Funciones ejecutivas'],
+    Matemática: [
+      'Cálculo mental',
+      'Cálculo escrito',
+      'Resolución de problemas',
+      'Numeración',
+      'Geometría',
+    ],
+    Atención: [
+      'Atención sostenida',
+      'Atención selectiva',
+      'Funciones ejecutivas',
+      'Memoria de trabajo',
+    ],
   },
   speech_therapy: {
     Articulación: [
       'Praxias orofaciales',
       'Fonema /r/',
       'Fonemas /s/ y /l/',
+      'Fonemas /k/ y /g/',
       'Grupos consonánticos',
     ],
     'Habla y voz': ['Soplo y respiración', 'Fluidez del habla', 'Voz'],
     'Conciencia fonológica': ['Sílabas', 'Rimas', 'Sonidos iniciales y finales'],
+    Lenguaje: ['Vocabulario', 'Morfosintaxis', 'Narrativa', 'Comprensión oral'],
   },
   occupational_therapy: {
     'Motricidad fina': ['Agarre y pinza', 'Destreza manual', 'Grafomotricidad'],
