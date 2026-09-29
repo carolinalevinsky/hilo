@@ -213,13 +213,29 @@ console.log(`Cargando ${files.length} archivos en la base remota…\n`)
 // `materials_touch_updated_at` se encarga de los UPDATE): lo que quedó con una
 // marca anterior es lo que ya no está en los archivos. La poda no toca los
 // materiales de ninguna profesional, que tienen `practitioner_id`.
+//
+// Antes de podar hay que rescatar los ítems de planificación que se quedarían
+// vacíos. `session_plan_items` es un objetivo, un material, o las dos cosas, y
+// el check pide que sea al menos una: borrar el material de un ítem que no tiene
+// título propio lo deja sin nada y Postgres lo rechaza, que es exactamente lo
+// que tiene que hacer. Así que el título del material que se va pasa a ser el
+// título del ítem, y la línea de esa sesión sigue diciendo qué se iba a
+// trabajar.
+const RESCATE =
+  'update session_plan_items i set title = m.title from materials m\n' +
+  ' where i.material_id = m.id and i.title is null\n' +
+  '   and m.practitioner_id is null and m.updated_at < now();\n'
+
 const PODA =
   'with podados as (\n' +
   '  delete from materials where practitioner_id is null and updated_at < now() returning 1\n' +
   ") select 'PODADOS:' || count(*) from podados;\n"
 
 const lista = join(mkdtempSync(join(tmpdir(), 'ombua-seed-')), 'todos.sql')
-writeFileSync(lista, files.map((name) => `\\i ${join(DIR, name)}`).join('\n') + '\n' + PODA)
+writeFileSync(
+  lista,
+  files.map((name) => `\\i ${join(DIR, name)}`).join('\n') + '\n' + RESCATE + PODA,
+)
 
 let podados = 0
 try {
