@@ -83,7 +83,7 @@ export function SessionContextCard({
             tus pacientes, ya sabés en qué anda cada uno. Lo que sí hace falta a
             mano es la ficha, que es donde está todo eso y el resto. */}
         <div className="flex flex-wrap items-end gap-2">
-          <Button asChild variant="secondary" className="h-11 rounded-full px-4">
+          <Button asChild variant="secondary" className="h-11 rounded-xl px-4">
             <Link href={`/pacientes/${patient.id}`}>
               <User className="size-[15px]" />
               Ver ficha de {name}

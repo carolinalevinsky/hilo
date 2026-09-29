@@ -69,9 +69,9 @@ export function GoalSuggestions({
             </p>
           </div>
 
-          <Button asChild variant="secondary" className="h-11 w-full rounded-xl">
+          <Button asChild variant="secondary" size="lg" className="w-full">
             <Link href={`/pacientes/${target.patientId}`}>
-              <Plus className="size-[18px]" />
+              <Plus className="size-4" />
               Crear primer objetivo terapéutico
             </Link>
           </Button>
@@ -96,9 +96,9 @@ export function GoalSuggestions({
                     <input type="hidden" name="title" value={title} />
                     <button
                       type="submit"
-                      className="flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1.5 text-meta font-medium text-muted-foreground transition-colors hover:border-violet/40 hover:bg-violet-soft hover:text-violet"
+                      className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-violet"
                     >
-                      <Plus className="size-3.5 text-teal" />
+                      <Plus className="size-3 text-violet" />
                       {title}
                     </button>
                   </form>
