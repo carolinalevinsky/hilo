@@ -174,18 +174,27 @@ if (!PORT) {
 // que falle: es que funcione contra la base equivocada.
 console.log(`Base: ${process.env.PGUSER}@${process.env.PGHOST}:${PORT}\n`)
 
-// Si ya hay materiales, cargar otra vez los duplica: estos INSERT no tienen
-// clave natural sobre la que chocar. Ya pasó una vez, con catorce duplicados
-// que aparecieron porque alguien sospechó, no porque algo avisara.
-const before = Number(psql(['-t', '-A', '-c', 'select count(*) from materials']).trim())
-if (before > 0) {
-  console.error(`✗ Esa base ya tiene ${before} materiales.`)
-  console.error('  Cargar de nuevo los duplicaría, porque estos INSERT no chocan con nada.')
-  console.error('  Si querés reemplazarlos, borralos primero a propósito:\n')
-  console.error("    delete from materials where practitioner_id is null;\n")
-  process.exit(1)
-}
+// Correr esto dos veces era el problema, y ahora es el uso normal.
+//
+// Antes estos INSERT no tenían ninguna clave natural contra la cual chocar, así
+// que una segunda carga duplicaba todo: pasó una vez, con catorce duplicados que
+// aparecieron porque alguien sospechó y no porque algo avisara, y desde entonces
+// el script se negaba a correr si había un solo material. La única forma de
+// actualizar producción era borrar antes las filas compartidas, y eso desengancha
+// en silencio cada planificación que apuntaba a una.
+//
+// El índice único de `20260928140000_materials_shared_title_unique` le dio al
+// INSERT contra qué chocar, y los seeds terminan en `on conflict … do update`.
+// Las filas se actualizan en su lugar y conservan su id.
+const before = Number(
+  psql(['-t', '-A', '-c', 'select count(*) from materials where practitioner_id is null']).trim(),
+)
 
+console.log(
+  before > 0
+    ? `La base tiene ${before} materiales compartidos. Se actualizan en su lugar.\n`
+    : 'La base no tiene materiales compartidos todavía.\n',
+)
 console.log(`Cargando ${files.length} archivos en la base remota…\n`)
 
 // Todo en una transacción. Si el sexto archivo falla, los cinco anteriores se
@@ -196,11 +205,42 @@ console.log(`Cargando ${files.length} archivos en la base remota…\n`)
 // comando con barra invertida: con ocho `\i` corría el primero y descartaba los
 // otros siete **sin decir nada**, y el script informaba éxito. Cargó 49 de 301 y
 // dio el visto bueno.
-const lista = join(mkdtempSync(join(tmpdir(), 'ombua-seed-')), 'todos.sql')
-writeFileSync(lista, files.map((name) => `\\i ${join(DIR, name)}`).join('\n') + '\n')
+//
+// Y al final, la poda. Los archivos son la fuente de la verdad: un material
+// compartido que ya no está en ninguno de ellos no tiene que seguir en la base.
+// Se reconocen por `updated_at`, que dentro de una transacción es el mismo
+// instante para todo lo que esta corrida insertó o actualizó (el trigger
+// `materials_touch_updated_at` se encarga de los UPDATE): lo que quedó con una
+// marca anterior es lo que ya no está en los archivos. La poda no toca los
+// materiales de ninguna profesional, que tienen `practitioner_id`.
+//
+// Antes de podar hay que rescatar los ítems de planificación que se quedarían
+// vacíos. `session_plan_items` es un objetivo, un material, o las dos cosas, y
+// el check pide que sea al menos una: borrar el material de un ítem que no tiene
+// título propio lo deja sin nada y Postgres lo rechaza, que es exactamente lo
+// que tiene que hacer. Así que el título del material que se va pasa a ser el
+// título del ítem, y la línea de esa sesión sigue diciendo qué se iba a
+// trabajar.
+const RESCATE =
+  'update session_plan_items i set title = m.title from materials m\n' +
+  ' where i.material_id = m.id and i.title is null\n' +
+  '   and m.practitioner_id is null and m.updated_at < now();\n'
 
+const PODA =
+  'with podados as (\n' +
+  '  delete from materials where practitioner_id is null and updated_at < now() returning 1\n' +
+  ") select 'PODADOS:' || count(*) from podados;\n"
+
+const lista = join(mkdtempSync(join(tmpdir(), 'ombua-seed-')), 'todos.sql')
+writeFileSync(
+  lista,
+  files.map((name) => `\\i ${join(DIR, name)}`).join('\n') + '\n' + RESCATE + PODA,
+)
+
+let podados = 0
 try {
-  psql(['--single-transaction', '-f', lista])
+  const salida = psql(['--single-transaction', '-f', lista])
+  podados = Number(/PODADOS:(\d+)/.exec(salida)?.[1] ?? 0)
 } catch (error) {
   console.error('✗ Se cortó cargando los materiales.\n')
   console.error(String(error.stderr ?? error.message).trim())
@@ -221,7 +261,8 @@ const filas = psql([
   '-F',
   '\t',
   '-c',
-  'select discipline, count(*) from materials group by discipline order by discipline',
+  'select discipline, count(*) from materials where practitioner_id is null' +
+    ' group by discipline order by discipline',
 ])
   .trim()
   .split('\n')
@@ -246,9 +287,12 @@ if (filas.length < DISCIPLINAS || flojas.length > 0) {
   for (const fila of flojas) {
     console.error(`  ${fila.discipline} tiene ${fila.count} y el mínimo es ${MINIMO}.`)
   }
-  console.error('\n  Vaciá y volvé a intentar:\n')
-  console.error('    delete from materials where practitioner_id is null;\n')
+  console.error('\n  Volvé a correr esto: la carga es repetible y no duplica nada.\n')
   process.exit(1)
 }
 
-console.log(`\n✓ ${filas.reduce((total, fila) => total + fila.count, 0)} materiales cargados.`)
+const total = filas.reduce((suma, fila) => suma + fila.count, 0)
+console.log(`\n✓ ${total} materiales compartidos en la base.`)
+if (podados > 0) {
+  console.log(`  ${podados} que ya no están en los archivos se borraron.`)
+}

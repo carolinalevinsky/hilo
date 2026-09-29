@@ -1,7 +1,9 @@
 import { addActivityToPlanAction } from '@/app/(app)/planificacion/actions'
-import { Pencil, Plus } from '@/components/icons'
+import { CircleCheck, Pencil, Plus } from '@/components/icons'
+import { DurationSelect } from '@/components/planning/duration-select'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PlanningPanel } from '@/components/planning/planning-panel'
+import { DEFAULT_PLAN_DURATION } from '@/lib/plan-durations'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -21,8 +23,13 @@ export function CustomActivity({ target }: { target: PlanTarget }) {
     <PlanningPanel
       icon={Pencil}
       tone="teal"
-      title="Sumá una actividad tuya"
+      title="Sumá una actividad propia o dinámica libre"
       hint="Lo que vas a hacer y no está en la biblioteca."
+      aside={
+        <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-[#1a8f57]">
+          Reutilizable
+        </span>
+      }
     >
       <form action={addActivityToPlanAction} className="flex flex-wrap gap-2">
         <PlanFields {...target} />
@@ -34,11 +41,20 @@ export function CustomActivity({ target }: { target: PlanTarget }) {
           aria-label="Agregar una actividad tuya"
           className="h-9 min-w-[180px] flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
-        <Button type="submit">
+        <DurationSelect defaultValue={DEFAULT_PLAN_DURATION} className="h-9 rounded-lg" />
+        <Button type="submit" size="lg">
           <Plus className="size-4" />
-          Sumar
+          Sumar al plan
         </Button>
       </form>
+
+      {/* Dice lo que pasa, porque pasa: `addActivityToPlanAction` la guarda
+          también como material privado tuyo. */}
+      <p className="mt-2.5 flex items-start gap-2 text-meta leading-relaxed text-muted-foreground">
+        <CircleCheck className="mt-0.5 size-4 shrink-0 text-green" />
+        Queda guardada en tu biblioteca personal para reutilizarla con otros
+        pacientes.
+      </p>
     </PlanningPanel>
   )
 }

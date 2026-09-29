@@ -41,16 +41,24 @@ patients for local demos and must never exist in production.
 
 ### Seed the shared materials
 
-The 45 curated materials are the one thing production *does* need from the seeds
-directory — the rows with a NULL `practitioner_id`. Load that file on its own,
-not through `db push`:
+The shared library is the one thing production *does* need from the seeds
+directory — the rows with a NULL `practitioner_id`, one file per discipline.
+Load them with the script, which never touches `seed.sql`:
 
 ```bash
-psql "<the connection string>" -f supabase/seeds/materials.generated.sql
+./dx npm run db:seed:remote
 ```
 
-Check it took: `select count(*) from materials where practitioner_id is null;`
-should return 45.
+Run it as often as the library changes. The seeds end in `on conflict … do
+update`, so a row that is already there is updated in place and keeps its id —
+which is what keeps the session plans that point at it pointing at it. A shared
+row that is no longer in any file is removed at the end of the same
+transaction; nobody's own materials are touched.
+
+The script counts what it loaded and fails if a discipline came up short. To
+check by hand: `select count(*) from materials where practitioner_id is null;`
+should return the same number as
+`grep -c "^  (null," supabase/seeds/*.sql | awk -F: '{t+=$2} END {print t}'`.
 
 ### Auth settings
 

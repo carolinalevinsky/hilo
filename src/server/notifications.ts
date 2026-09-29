@@ -8,7 +8,7 @@ import {
   BRAND_VIOLET_LIGHT,
 } from '@/lib/brand'
 import { formatLongDate } from '@/lib/dates'
-import { env } from '@/lib/env'
+import { env, publicConfig } from '@/lib/env'
 import { weekdayName } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
 
@@ -58,13 +58,31 @@ function escapeHtml(value: string | null | undefined): string {
     .replace(/"/g, '&quot;')
 }
 
-/** The shared frame: violet header, white card. Ported from `legacy/api/aviso-reserva.js:50`. */
+/**
+ * The shared frame: violet header, white card. Ported from `legacy/api/aviso-reserva.js:50`.
+ *
+ * The wordmark is a PNG and not the SVG every other surface uses, because Gmail
+ * and Outlook drop `<img src="…svg">` without rendering anything — the reader
+ * would see an empty violet band. It is drawn from `wordmark-for-dark.svg`,
+ * recoloured white and cropped to the ink rather than the viewBox — the file
+ * carries air around the letters — at twice its display size, for retina
+ * screens, on a transparent background so the gradient shows through.
+ *
+ * `alt` is the brand name and is styled, which matters more here than usual:
+ * Gmail blocks images from senders the reader has never written to, and an
+ * invitation is by definition the first message. When that happens the header
+ * still reads "Ombúa", in white and bold, where the logo would have been.
+ *
+ * `subtitle` is optional because not every email has something to add beside the
+ * mark. The invitation's said "Te invitaron a Ombúa" directly above a first line
+ * that already said who invited you and to what.
+ */
 function layout({
   subtitle,
   body,
   footer,
 }: {
-  subtitle: string
+  subtitle?: string
   body: string
   footer: string
 }) {
@@ -72,8 +90,14 @@ function layout({
   <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:${BRAND_BACKGROUND};padding:24px">
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(30,36,54,.08)">
       <div style="background:linear-gradient(120deg,${BRAND_VIOLET_DARK},${BRAND_VIOLET_LIGHT});padding:20px 24px;color:#fff">
-        <div style="font-weight:800;font-size:18px">${BRAND_NAME}</div>
-        <div style="opacity:.9;font-size:13px;margin-top:2px">${escapeHtml(subtitle)}</div>
+        <img
+          src="${publicConfig.NEXT_PUBLIC_APP_URL}/brand/wordmark-email.png"
+          width="104"
+          height="26"
+          alt="${BRAND_NAME}"
+          style="display:block;border:0;font-weight:800;font-size:18px;color:#fff"
+        />
+        ${subtitle ? `<div style="opacity:.9;font-size:13px;margin-top:7px">${escapeHtml(subtitle)}</div>` : ''}
       </div>
       <div style="padding:22px 24px;color:#20293a">${body}</div>
     </div>
@@ -307,7 +331,6 @@ export async function sendInvitation({
   link: string
 }) {
   const html = layout({
-    subtitle: 'Te invitaron a Ombúa',
     body: `
         <p style="margin:0 0 12px">Hola ${escapeHtml(firstName(fullName))},</p>
         <p style="margin:0 0 14px"><b>${escapeHtml(inviterName)}</b> te invitó a usar Ombúa: tus pacientes, tus sesiones y tus informes en un solo lugar.</p>

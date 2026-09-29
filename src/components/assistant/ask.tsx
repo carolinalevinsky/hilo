@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle, RotateCw, Send, TriangleAlert } from '@/components/icons'
+import { MessageCircle, RotateCw, Send, Sparkles, TriangleAlert } from '@/components/icons'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -144,9 +144,25 @@ export function Ask({ fill = false }: { fill?: boolean }) {
           fill && 'rounded-t-none border-b bg-muted pt-(--card-spacing) pr-10',
         )}
       >
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="size-[18px] text-violet" />
-          Preguntale a Ombúa
+        <CardTitle className="flex items-center gap-3">
+          {/* En la tarjeta de Inicio el ícono es el cuadrado con degradé del
+              diseño; en el panel sigue siendo el de siempre, que ahí convive
+              con el ✕ y con "Empezar de nuevo" en un renglón angosto. */}
+          {fill ? (
+            <MessageCircle className="size-[18px] text-violet" />
+          ) : (
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-violet to-[#5f50d7] text-white">
+              <Sparkles className="size-6" />
+            </span>
+          )}
+          <span className="flex items-center gap-2">
+            Preguntale a Ombúa
+            {fill ? null : (
+              <span className="rounded bg-violet-soft px-1.5 py-0.5 text-nano font-bold tracking-[0.08em] text-violet uppercase">
+                IA
+              </span>
+            )}
+          </span>
           {turns.length ? (
             /* Icon only. The arrow says "start over" on its own, and the
                words were the widest thing in a header that also has to hold the
@@ -171,7 +187,7 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             is being seen for the first time, and it is where the promise that
             nothing is written down still gets made. */}
         {fill ? null : (
-          <p className="text-meta text-muted-foreground">
+          <p className="pl-15 text-meta text-muted-foreground">
             {turns.length
               ? 'Se acuerda de esta charla. Cuando la cerrás, no queda guardada.'
               : 'Sobre cualquier paciente o sobre tu práctica.'}
@@ -246,18 +262,39 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             ) : null}
 
             {/* Not decoration: tapping one asks it. */}
-            <div className="flex flex-wrap gap-1.5">
+            {fill ? null : (
+              <p className="text-nano font-bold tracking-[0.08em] text-muted-foreground uppercase">
+                Sugerencias rápidas
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
               {QUICK.map((text) => (
                 <button
                   key={text}
                   type="button"
                   onClick={() => void ask(text)}
-                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-full text-xs font-semibold transition-colors',
+                    fill
+                      ? 'border border-border bg-card px-3 py-1.5 text-muted-foreground hover:bg-muted'
+                      : 'bg-muted px-3.5 py-2 text-foreground hover:bg-violet-soft',
+                  )}
                 >
+                  {fill ? null : <span className="size-1.5 rounded-full bg-violet" />}
                   {text}
                 </button>
               ))}
             </div>
+
+            {/* Qué se le puede preguntar, dicho con un ejemplo en vez de con una
+                promesa. Es texto fijo: no es una respuesta del modelo. */}
+            {fill ? null : (
+              <p className="flex items-start gap-2 rounded-[16px] bg-muted/70 px-4 py-3.5 text-body leading-relaxed text-muted-foreground">
+                <MessageCircle className="mt-0.5 size-5 shrink-0 text-violet" />
+                Podés consultarme dudas sobre el progreso terapéutico, informes clínicos
+                pendientes o recursos didácticos recomendados.
+              </p>
+            )}
           </div>
         )}
 
@@ -270,7 +307,12 @@ export function Ask({ fill = false }: { fill?: boolean }) {
           // people already use is built, so it needs no learning. The border and
           // the focus ring move from the field to the box; the field keeps the
           // caret and gives up everything else.
-          className="rounded-xl border border-input bg-card px-3 py-2.5 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50"
+          className={cn(
+            'transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
+            fill
+              ? 'rounded-xl border border-input bg-card px-3 py-2.5'
+              : 'rounded-[16px] border border-transparent bg-muted p-1.5 sm:flex sm:items-center sm:gap-1',
+          )}
         >
           <Input
             ref={inputRef}
@@ -291,21 +333,34 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             maxLength={500}
             disabled={asking}
             aria-label="Tu pregunta"
-            className="h-auto w-full border-0 bg-transparent px-0 py-0 focus-visible:border-transparent focus-visible:ring-0"
+            className={cn(
+              'h-auto w-full border-0 bg-transparent py-0 shadow-none focus-visible:border-transparent focus-visible:ring-0',
+              fill ? 'px-0' : 'px-2 py-1.5 text-sm sm:py-0',
+            )}
           />
-          {/* The controls go under the field, not beside it.
+          {/* En el panel los controles van debajo del campo; en la tarjeta,
+              en el mismo renglón.
 
-              Sharing one row with the button left the field about half the panel
-              wide — narrow enough that its own placeholder was cut off mid-word,
-              which is the one line telling a first-time user what to write here.
-              The panel is narrow everywhere: a dialog on a desktop, the whole
-              screen on a phone. The question is the long part, so it gets the
-              full width.
+              No es una inconsistencia: compartir renglón dejaba el campo a la
+              mitad del ancho del panel —tan angosto que se cortaba su propio
+              placeholder a mitad de palabra, que es la única línea que le dice a
+              alguien qué escribir ahí—. El panel es angosto en todos lados: un
+              diálogo en el escritorio, la pantalla entera en un teléfono. La
+              tarjeta de Inicio no tiene ese problema y el diseño la pide así.
 
-              `ml-auto` rather than `justify-between`: the microphone renders
-              nothing where the browser cannot listen, and the button still
-              belongs on the right when it is the only one left. */}
-          <div className="mt-2 flex items-center gap-2">
+              `ml-auto` en vez de `justify-between`: el micrófono no dibuja nada
+              donde el navegador no puede escuchar, y el botón sigue yendo a la
+              derecha cuando queda solo. En la tarjeta eso lo resuelve el
+              `contents` — los dos controles son hijos directos del renglón. */}
+          <div
+            className={cn(
+              'mt-2 flex items-center gap-2',
+              // En la tarjeta, un solo renglón — pero recién cuando entra. En un
+              // teléfono el campo quedaría tan angosto que se corta su propio
+              // placeholder, que es la única línea que dice qué escribir ahí.
+              !fill && 'sm:mt-0 sm:contents',
+            )}
+          >
             {/* The same dictation as every note field. The audio goes to the
                 browser's dictation service, not to Ombúa — see
                 `src/lib/speech.ts`. Icon only: this box is often used with a
@@ -314,10 +369,10 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             <Button
               type="submit"
               disabled={asking || !question.trim()}
-              className="ml-auto shrink-0"
+              className={cn('ml-auto shrink-0', fill || 'rounded-xl sm:ml-0')}
             >
-              <Send className="size-4" />
               {asking ? 'Pensando…' : 'Preguntar'}
+              <Send className="size-4" />
             </Button>
           </div>
         </form>
