@@ -14,6 +14,7 @@ import {
   addMaterialToPlan,
   clearPlan,
   removePlanItem,
+  setPlanItemDuration,
 } from '@/server/session-plans'
 
 /**
@@ -88,6 +89,7 @@ export async function addActivityToPlanAction(formData: FormData) {
     String(formData.get('patientId')),
     activity,
     sessionOf(formData),
+    formData.get('durationMinutes'),
   )
 
   // Después del plan, que es lo que la persona pidió. Que la biblioteca falle no
@@ -115,6 +117,18 @@ export async function addSuggestedGoalAction(formData: FormData) {
 
   refresh()
   revalidatePath(`/pacientes/${String(formData.get('patientId'))}`)
+}
+
+/** Cuánto dura una fila del plan. Se elige en la lista, mirando el total. */
+export async function setPlanItemDurationAction(formData: FormData) {
+  const user = await requireUser()
+
+  await setPlanItemDuration(
+    user.id,
+    String(formData.get('itemId')),
+    formData.get('durationMinutes'),
+  )
+  refresh()
 }
 
 /**

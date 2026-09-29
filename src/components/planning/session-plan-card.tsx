@@ -4,12 +4,15 @@ import {
   clearPlanAction,
   removePlanItemAction,
   savePlanNoteAction,
+  setPlanItemDurationAction,
 } from '@/app/(app)/planificacion/actions'
-import { CalendarDays, ClipboardList, FileText, Trash2 } from '@/components/icons'
+import { CalendarDays, ClipboardList, Clock, FileText, Trash2 } from '@/components/icons'
+import { DurationSelect } from '@/components/planning/duration-select'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { totalDuration } from '@/lib/plan-durations'
 import { cn } from '@/lib/utils'
 import { firstName } from '@/lib/whatsapp'
 import type { PlanItem } from '@/server/session-plans'
@@ -60,6 +63,7 @@ export function SessionPlanCard({
   /** When the session is, already written out, or `null` if there is none yet. */
   when,
   note,
+  sessionMinutes,
   items,
 }: {
   target: PlanTarget
@@ -67,8 +71,11 @@ export function SessionPlanCard({
   when: string | null
   /** La nota previa de la sesión: `appointments.note`, la misma de la Agenda. */
   note: string | null
+  /** Lo que dura la sesión agendada, o `null` si no hay ninguna. */
+  sessionMinutes: number | null
   items: PlanItem[]
 }) {
+  const planned = totalDuration(items)
   const name = firstName(patientName)
 
   return (
@@ -99,6 +106,24 @@ export function SessionPlanCard({
           <CalendarDays className="size-3.5 shrink-0" />
           {when ?? 'Sin sesión agendada: queda para la próxima que agendes'}
         </p>
+
+        {/* Lo preparado contra lo que dura la sesión.
+            Sólo con algo adentro: "0 / 45 min" arriba de un plan vacío es un
+            reproche antes de empezar. Pasado el largo de la sesión se marca,
+            que es la única razón por la que el número está acá — no para
+            cuadrar exacto, sino para avisar cuando no entra. */}
+        {sessionMinutes && items.length > 0 ? (
+          <p
+            className={cn(
+              'mt-2 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-micro font-bold w-fit print:bg-transparent print:px-0 print:text-muted-foreground',
+              planned > sessionMinutes ? 'bg-amber text-[#3d2a00]' : 'bg-white/20',
+            )}
+          >
+            <Clock className="size-3.5 shrink-0" />
+            {planned} / {sessionMinutes} min
+            {planned > sessionMinutes ? ' · te pasás' : null}
+          </p>
+        ) : null}
       </header>
 
       {note ? (
@@ -146,6 +171,20 @@ export function SessionPlanCard({
                       {kind.detail ? (
                         <p className="text-meta text-muted-foreground">{kind.detail}</p>
                       ) : null}
+
+                      {/* El largo se elige acá y no donde se agregó: se decide
+                          mirando el total, que está arriba de esta lista. */}
+                      <form action={setPlanItemDurationAction} className="no-print mt-1.5">
+                        <input type="hidden" name="itemId" value={item.id} />
+                        <DurationSelect
+                          defaultValue={item.durationMinutes}
+                          submitOnChange
+                          className="h-7 rounded-lg bg-card pr-7 pl-2.5 text-meta"
+                        />
+                      </form>
+                      <p className="hidden text-meta text-muted-foreground print:block">
+                        {item.durationMinutes} min
+                      </p>
                     </div>
 
                     <form action={removePlanItemAction} className="no-print shrink-0">

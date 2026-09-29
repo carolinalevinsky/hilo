@@ -34,8 +34,11 @@ vi.mock('./google-calendar', () => ({
   removeAppointment: async () => {},
 }))
 
-const { appointmentNote, setAppointmentNote } = await import('./appointments')
+const { planSessionContext, setAppointmentNote } = await import('./appointments')
 const { createOwnActivity, listMaterials } = await import('./materials')
+const { addActivityToPlan, listPlanItems, setPlanItemDuration } = await import(
+  './session-plans'
+)
 
 const service = serviceClient()
 const email = testEmail('planificador-escribe')
@@ -80,7 +83,7 @@ describe('la nota previa', () => {
   it('se guarda en la cita, que es de donde la lee la Agenda', async () => {
     await setAppointmentNote(me, appointmentId, 'Traer las tarjetas de la vez pasada.')
 
-    expect(await appointmentNote(me, appointmentId)).toBe(
+    expect((await planSessionContext(me, appointmentId)).note).toBe(
       'Traer las tarjetas de la vez pasada.',
     )
 
@@ -96,7 +99,41 @@ describe('la nota previa', () => {
 
   it('vaciarla la borra en vez de dejar una cadena vacía', async () => {
     await setAppointmentNote(me, appointmentId, '   ')
-    expect(await appointmentNote(me, appointmentId)).toBeNull()
+    expect((await planSessionContext(me, appointmentId)).note).toBeNull()
+  })
+})
+
+describe('la duración de lo planificado', () => {
+  it('son quince minutos cuando no se elige nada', async () => {
+    await addActivityToPlan(me, patientId, 'Caldeamiento inicial', appointmentId)
+
+    const [item] = await listPlanItems(me, patientId, appointmentId)
+    expect(item.durationMinutes).toBe(15)
+  })
+
+  it('se puede elegir al sumar y cambiar después', async () => {
+    await addActivityToPlan(me, patientId, 'Juego de la oca', appointmentId, 30)
+
+    const added = (await listPlanItems(me, patientId, appointmentId)).find(
+      (row) => row.title === 'Juego de la oca',
+    )
+    expect(added?.durationMinutes).toBe(30)
+
+    await setPlanItemDuration(me, added!.id, 45)
+    const changed = (await listPlanItems(me, patientId, appointmentId)).find(
+      (row) => row.id === added!.id,
+    )
+    expect(changed?.durationMinutes).toBe(45)
+  })
+
+  it('un largo que no está en la lista cae en el de siempre', async () => {
+    // Lo que llega de un formulario es una cadena y puede ser cualquier cosa.
+    await addActivityToPlan(me, patientId, 'Cierre', appointmentId, '37')
+
+    const cierre = (await listPlanItems(me, patientId, appointmentId)).find(
+      (row) => row.title === 'Cierre',
+    )
+    expect(cierre?.durationMinutes).toBe(15)
   })
 })
 

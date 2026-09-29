@@ -1,7 +1,9 @@
 import { addActivityToPlanAction } from '@/app/(app)/planificacion/actions'
 import { CircleCheck, Pencil, Plus } from '@/components/icons'
+import { DurationSelect } from '@/components/planning/duration-select'
 import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
 import { PlanningPanel } from '@/components/planning/planning-panel'
+import { DEFAULT_PLAN_DURATION } from '@/lib/plan-durations'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -39,6 +41,7 @@ export function CustomActivity({ target }: { target: PlanTarget }) {
           aria-label="Agregar una actividad tuya"
           className="h-11 min-w-[180px] flex-1 rounded-xl border border-input bg-background px-3.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
+        <DurationSelect defaultValue={DEFAULT_PLAN_DURATION} />
         <Button type="submit" className="h-11 rounded-xl px-5">
           <Plus className="size-4" />
           Sumar al plan

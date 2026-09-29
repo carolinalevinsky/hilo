@@ -571,27 +571,32 @@ export async function getAppointmentFor(
 }
 
 /**
- * La nota previa de una sesión, y cómo se escribe desde el planificador.
+ * Lo que el planificador necesita saber de la sesión que está preparando: la
+ * nota previa y cuánto dura.
+ *
+ * Las dos juntas en una lectura porque se piden juntas, en la misma pantalla y
+ * en el mismo momento. La nota es la misma que se escribe al agendar
+ * (`appointments.note`); el largo es contra lo que se suma el plan.
  *
  * Es la misma nota que se escribe al agendar: `appointments.note`. No hay una
  * "nota del plan" aparte a propósito — dos campos que quieren decir lo mismo
  * terminan diciendo cosas distintas, y quien agendó el martes esperaría ver el
  * viernes lo que escribió.
  */
-export async function appointmentNote(
+export async function planSessionContext(
   practitionerId: string,
   appointmentId: string,
-): Promise<string | null> {
+): Promise<{ note: string | null; durationMinutes: number | null }> {
   const db = await getDb()
   const { data, error } = await db
     .from('appointments')
-    .select('note')
+    .select('note, duration_minutes')
     .eq('id', appointmentId)
     .eq('practitioner_id', practitionerId)
     .maybeSingle()
 
   if (error) throw error
-  return data?.note ?? null
+  return { note: data?.note ?? null, durationMinutes: data?.duration_minutes ?? null }
 }
 
 const AppointmentNote = z

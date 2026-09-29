@@ -18,7 +18,7 @@ import { areasFor } from '@/lib/material-areas'
 import { formatTime } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
 import {
-  appointmentNote,
+  planSessionContext,
   getAppointment,
   listAppointments,
   nextAppointmentFor,
@@ -151,7 +151,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
   // estos cambian con ella.
   const quickGoals = areas.slice(0, 3).flatMap((name) => byArea[name]?.[0] ?? [])
 
-  const [suggestions, items, results, photoUrl, note] = await Promise.all([
+  const [suggestions, items, results, photoUrl, sessionContext] = await Promise.all([
     planSuggestions(user.id, patient.id, practitioner.discipline, appointmentId),
     listPlanItems(user.id, patient.id, appointmentId),
     // Siempre trae materiales, con o sin búsqueda: un panel que arranca vacío
@@ -159,7 +159,9 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
     // nada, y lo que hay para ver son cincuenta materiales de la profesión.
     listMaterials(user.id, { discipline: practitioner.discipline, search, area }),
     getPhotoUrl(patient.photo_path),
-    appointmentId ? appointmentNote(user.id, appointmentId) : Promise.resolve(null),
+    appointmentId
+      ? planSessionContext(user.id, appointmentId)
+      : Promise.resolve({ note: null, durationMinutes: null }),
   ])
 
   const sessionOptions = upcoming.map((row) => ({
@@ -261,7 +263,8 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
             target={target}
             patientName={patient.full_name}
             when={session ? whenLabel(session) : null}
-            note={note}
+            note={sessionContext.note}
+            sessionMinutes={sessionContext.durationMinutes}
             items={items}
           />
 
