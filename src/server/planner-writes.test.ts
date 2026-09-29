@@ -184,7 +184,7 @@ describe('un objetivo que entra al plan', () => {
       .single()
     if (error) throw error
 
-    await addGoalToPlan(me, patientId, goal.id, null, appointmentId)
+    await addGoalToPlan(me, patientId, goal.id, appointmentId)
 
     const item = (await listPlanItems(me, patientId, appointmentId)).find(
       (row) => row.goalId === goal.id,

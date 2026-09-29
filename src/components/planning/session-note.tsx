@@ -24,8 +24,13 @@ import type { PlanTarget } from '@/components/planning/plan-fields'
  *   - **Al salir del campo**, por si te vas antes de ese segundo — con Tab, o
  *     tocando cualquier otra cosa.
  *
- * `guardado.current` es lo último que confirmó el servidor: sin eso, cada
- * revalidación dispara otro guardado igual al anterior.
+ * `saved.current` es lo último que confirmó el servidor: sin eso, cada
+ * revalidación dispara otro guardado igual al anterior. Se adelanta al `await`
+ * para que dos disparos del mismo texto —el del rato y el de salir del campo—
+ * no sean dos escrituras, y **se vuelve atrás si el guardado falla**: dejarlo
+ * adelantado haría que el próximo intento se cancelara solo por creer que ese
+ * texto ya está guardado, y la nota se perdería en silencio, que es justo el
+ * problema que este componente existe para no tener.
  */
 export function SessionNote({ target, note }: { target: PlanTarget; note: string | null }) {
   const [value, setValue] = useState(note ?? '')
@@ -35,6 +40,7 @@ export function SessionNote({ target, note }: { target: PlanTarget; note: string
 
   function save(text: string) {
     if (text === saved.current) return
+    const previous = saved.current
     saved.current = text
 
     const data = new FormData()
@@ -43,8 +49,13 @@ export function SessionNote({ target, note }: { target: PlanTarget; note: string
     data.set('note', text)
 
     startTransition(async () => {
-      await savePlanNoteAction(data)
-      setJustSaved(true)
+      try {
+        await savePlanNoteAction(data)
+        setJustSaved(true)
+      } catch (error) {
+        saved.current = previous
+        throw error
+      }
     })
   }
 
@@ -72,7 +83,12 @@ export function SessionNote({ target, note }: { target: PlanTarget; note: string
         rows={3}
         maxLength={2000}
         value={value}
-        onChange={(event) => setValue(event.target.value)}
+        onChange={(event) => {
+          setValue(event.target.value)
+          // Lo primero que hay que hacer al escribir es dejar de decir
+          // "Guardada": lo que está en pantalla ya no es lo que está guardado.
+          setJustSaved(false)
+        }}
         onBlur={() => save(value)}
         placeholder="Lo que quieras tener presente al empezar: cómo venía de la vez pasada, qué traer, qué avisarle a la familia."
         aria-label="Nota previa para la sesión"

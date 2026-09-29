@@ -327,25 +327,25 @@ async function nextPosition(practitionerId: string, patientId: string): Promise<
 }
 
 /**
- * Add a goal to a session's plan, with a material attached to it.
+ * Add a goal to a session's plan. The goal, and nothing else.
  *
- * `materialId` is the one the practitioner picked from the three offered. When
- * it is absent — the goal was added without choosing, or from a screen that does
- * not offer the choice — Ombúa falls back to its own best match, which is what
- * this function always used to do.
+ * It used to take a material too: the one picked from the three the goals panel
+ * offered, and, when none came, whatever `bestMaterialFor` matched against the
+ * goal's title. Both are gone with that panel — the second one put a card in
+ * the plan that nobody had chosen and that no screen ever named. A material
+ * reaches the plan through `addMaterialToPlan`, from the library, as its own
+ * row.
  *
  * The title is copied rather than read through `goal_id` — see the migration.
  * The goal is re-read here rather than trusted from the form because a form
  * field is whatever the browser sent, and `.eq('practitioner_id', …)` is what
- * makes "add goal X" mean "add a goal that is mine". The chosen material gets
- * the same treatment for the same reason. The session needs no such read: the
- * composite foreign key refuses one that is not this patient's.
+ * makes "add goal X" mean "add a goal that is mine". The session needs no such
+ * read: the composite foreign key refuses one that is not this patient's.
  */
 export async function addGoalToPlan(
   practitionerId: string,
   patientId: string,
   goalId: string,
-  materialId?: string | null,
   appointmentId?: string | null,
 ) {
   const db = await getDb()
@@ -361,22 +361,6 @@ export async function addGoalToPlan(
   if (goalError) throw goalError
   if (!goal) throw new Error('Ese objetivo no existe.')
 
-  // No material means no material. This used to fall back to whatever
-  // `bestMaterialFor` matched on the goal's title, which put something in the
-  // plan that nobody had chosen and that the screen never named.
-  let chosenId: string | null = null
-
-  if (materialId) {
-    // Through RLS, so an id from somebody else's library resolves to nothing
-    // and the item is simply saved without a material.
-    const { data: material } = await db
-      .from('materials')
-      .select('id')
-      .eq('id', materialId)
-      .maybeSingle()
-    chosenId = material?.id ?? null
-  }
-
   const scope = await scopeFor(practitionerId, patientId, appointmentId)
 
   const { error } = await db.from('session_plan_items').insert({
@@ -384,7 +368,6 @@ export async function addGoalToPlan(
     patient_id: patientId,
     appointment_id: scope.appointmentId,
     goal_id: goal.id,
-    material_id: chosenId,
     title: goal.title,
     position: await nextPosition(practitionerId, patientId),
   })
