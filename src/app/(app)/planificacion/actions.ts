@@ -50,18 +50,14 @@ function refresh() {
 
 export async function addGoalToPlanAction(formData: FormData) {
   const user = await requireUser()
-  const practitioner = await getPractitioner(user.id)
 
-  // Absent when the goal has no material to offer; `addGoalToPlan` falls back to
-  // its own match in that case.
-  const materialId = formData.get('materialId')
-
+  // The goal goes in on its own now — nothing on this screen offers a material
+  // alongside it, and `addGoalToPlan` no longer picks one when none is sent.
   await addGoalToPlan(
     user.id,
     String(formData.get('patientId')),
     String(formData.get('goalId')),
-    practitioner.discipline,
-    typeof materialId === 'string' && materialId ? materialId : null,
+    null,
     sessionOf(formData),
   )
   refresh()

@@ -1,17 +1,10 @@
 import { z } from 'zod'
 
-import { suggestedActivity } from '@/lib/activity-bank'
 import { planDuration } from '@/lib/plan-durations'
 
 import { nextAppointmentFor, nextAppointments } from './appointments'
 import { getDb } from './db'
-import {
-  bestMaterialFor,
-  listMaterials,
-  topMaterialsFor,
-  type Material,
-  type MaterialSummary,
-} from './materials'
+import { type Material } from './materials'
 
 /**
  * What is prepared for a session.
@@ -265,38 +258,37 @@ export async function upcomingPlans(practitionerId: string): Promise<PreparedPla
 export type PlanSuggestion = {
   goalId: string
   title: string
-  progress: number
-  /** What to actually do about it, from v1's activity bank. */
-  activity: string
-  /**
-   * The materials that fit this goal, best first — up to three.
-   *
-   * It used to be one. One is an answer, and an answer you did not ask for is
-   * either right or useless; three is a choice, which is what a practitioner is
-   * actually making at this point. Empty when nothing in the library scores.
-   */
-  materials: MaterialSummary[]
   /** True when this goal is already in the plan, so the button says "Agregado". */
   added: boolean
 }
 
 /**
- * The goals to work on next, worst first, each with a suggestion.
+ * The goals to work on next, worst first. Titles only.
  *
  * v1 sorted every active goal by progress ascending and showed all of them —
  * not a top three. A practitioner scanning their own patient's goals wants the
  * whole list in a useful order, and truncating it would hide exactly the goal
  * that has not moved since April.
+ *
+ * Each goal also carried a suggested activity and the three materials that
+ * scored best against its title. They are gone: the same library was then
+ * offered twice on one screen under two different rules — three picked here by
+ * matching words, and the whole thing in the search below — and the row joined
+ * a goal, a generic phrase and a real material with the same `·`, so what you
+ * were about to add was not readable. The goal goes in alone; the material is
+ * the next decision, made in the one place that holds materials.
  */
 export async function planSuggestions(
   practitionerId: string,
   patientId: string,
-  discipline: string,
   appointmentId?: string | null,
 ): Promise<PlanSuggestion[]> {
   const db = await getDb()
 
-  const [{ data: goals, error }, materials, items] = await Promise.all([
+  // `progress` is selected to order by it and is never returned: the number
+  // stopped being shown — a practitioner knows where her own patient is — but
+  // it is still what "worst first" means, and that order IS the suggestion.
+  const [{ data: goals, error }, items] = await Promise.all([
     db
       .from('goals')
       .select('id, title, progress')
@@ -304,7 +296,6 @@ export async function planSuggestions(
       .eq('patient_id', patientId)
       .eq('is_active', true)
       .order('progress'),
-    listMaterials(practitionerId, { discipline }),
     listPlanItems(practitionerId, patientId, appointmentId),
   ])
 
@@ -315,9 +306,6 @@ export async function planSuggestions(
   return (goals ?? []).map((goal) => ({
     goalId: goal.id,
     title: goal.title,
-    progress: goal.progress,
-    activity: suggestedActivity(goal.title),
-    materials: topMaterialsFor(goal.title, materials, 3),
     added: already.has(goal.id),
   }))
 }
@@ -357,7 +345,6 @@ export async function addGoalToPlan(
   practitionerId: string,
   patientId: string,
   goalId: string,
-  discipline: string,
   materialId?: string | null,
   appointmentId?: string | null,
 ) {
@@ -374,6 +361,9 @@ export async function addGoalToPlan(
   if (goalError) throw goalError
   if (!goal) throw new Error('Ese objetivo no existe.')
 
+  // No material means no material. This used to fall back to whatever
+  // `bestMaterialFor` matched on the goal's title, which put something in the
+  // plan that nobody had chosen and that the screen never named.
   let chosenId: string | null = null
 
   if (materialId) {
@@ -385,9 +375,6 @@ export async function addGoalToPlan(
       .eq('id', materialId)
       .maybeSingle()
     chosenId = material?.id ?? null
-  } else {
-    const materials = await listMaterials(practitionerId, { discipline })
-    chosenId = bestMaterialFor(goal.title, materials)?.id ?? null
   }
 
   const scope = await scopeFor(practitionerId, patientId, appointmentId)
