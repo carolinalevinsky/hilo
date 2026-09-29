@@ -27,26 +27,24 @@ export default async function NewSessionPage({
   const { plan, agenda } = await searchParams
   const user = await currentUser()
 
-  const patient = await getPatient(user.id, id)
-  if (!patient) notFound()
-
+  // Everything below keys on the id in the URL, so it is asked for at once
+  // rather than one query after another. RLS and the practitioner filter already
+  // scope each read; an id that is not this practitioner's patient comes back
+  // empty everywhere and the page 404s on `patient` below.
+  //
   // Arriving from the agenda: the record is tied to that slot, which is what
-  // lets the agenda and the record stop disagreeing. A slot that already has its
-  // record opens that record instead of offering a second one the database would
-  // refuse on save. An id that is not one of this patient's slots is dropped and
-  // the form opens unlinked — the missing line under the date says so.
-  const appointment =
-    typeof agenda === 'string' ? await getAppointmentFor(user.id, patient.id, agenda) : null
-  if (appointment) {
-    const existing = await sessionForAppointment(user.id, appointment.id)
-    if (existing) redirect(`/pacientes/${patient.id}/sesiones/${existing}`)
-  }
-
-  const goals = await listGoals(user.id, patient.id)
-
-  // Just the previous one, for the column beside the form. `listSessions`
-  // already returns newest first, so the limit is the whole query.
-  const [previous] = await listSessions(user.id, patient.id, 1)
+  // lets the agenda and the record stop disagreeing. An id that is not one of
+  // this patient's slots is dropped and the form opens unlinked — the missing
+  // line under the date says so.
+  const [patient, appointment, goals, [previous]] = await Promise.all([
+    getPatient(user.id, id),
+    typeof agenda === 'string' ? getAppointmentFor(user.id, id, agenda) : null,
+    listGoals(user.id, id),
+    // Just the previous one, for the column beside the form. `listSessions`
+    // already returns newest first, so the limit is the whole query.
+    listSessions(user.id, id, 1),
+  ])
+  if (!patient) notFound()
 
   // What was prepared fills the form in. The sentence and the ticked goals are a
   // starting point in an editable field — what gets saved is whatever the
@@ -57,11 +55,20 @@ export default async function NewSessionPage({
   // came from — the Agenda, the planner, the ficha all carry it now. `?plan=1`
   // without a session is a patient with nothing scheduled, and means the plan
   // prepared for them. Saving retires exactly the rows read here, by id.
-  const items = appointment
-    ? await listPlanItems(user.id, patient.id, appointment.id)
-    : plan === '1'
-      ? await listPlanItems(user.id, patient.id)
-      : []
+  //
+  // A slot that already has its record opens that record instead of offering a
+  // second one the database would refuse on save. That check and the plan are
+  // read together; if it redirects, the plan was read for nothing, which is
+  // cheaper than waiting for one before starting the other.
+  const [existing, items] = await Promise.all([
+    appointment ? sessionForAppointment(user.id, appointment.id) : null,
+    appointment
+      ? listPlanItems(user.id, patient.id, appointment.id)
+      : plan === '1'
+        ? listPlanItems(user.id, patient.id)
+        : [],
+  ])
+  if (existing) redirect(`/pacientes/${patient.id}/sesiones/${existing}`)
 
   const age = ageLabel(patient.date_of_birth)
 

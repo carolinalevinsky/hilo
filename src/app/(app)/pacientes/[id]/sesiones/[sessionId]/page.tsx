@@ -22,15 +22,14 @@ export default async function EditSessionPage({
   const { id, sessionId } = await params
   const user = await currentUser()
 
-  const [patient, session] = await Promise.all([
+  const [patient, session, goals] = await Promise.all([
     getPatient(user.id, id),
     getSession(user.id, sessionId),
+    // Inactive goals are included: a session may have worked a goal that has
+    // since been closed, and unticking it silently on save would rewrite history.
+    listGoals(user.id, id, { includeInactive: true }),
   ])
   if (!patient || !session) notFound()
-
-  // Inactive goals are included: a session may have worked a goal that has since
-  // been closed, and unticking it silently on save would rewrite history.
-  const goals = await listGoals(user.id, patient.id, { includeInactive: true })
 
   return (
     <>

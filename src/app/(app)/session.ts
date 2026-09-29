@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
 import { requireUser } from '@/server/auth'
-import { getPractitioner } from '@/server/practitioners'
+import { findPractitioner } from '@/server/practitioners'
 
 /**
  * Quién está mirando la pantalla, preguntado una sola vez por carga.
@@ -33,10 +33,23 @@ import { getPractitioner } from '@/server/practitioners'
 /** El usuario de la sesión. Tira si no hay, igual que `requireUser`. */
 export const currentUser = cache(requireUser)
 
-/** El perfil profesional. La clave del memo es el id, como corresponde. */
-export const currentPractitioner = cache(async (practitionerId: string) =>
-  getPractitioner(practitionerId),
-)
+/**
+ * El perfil profesional, o null si todavía no hay fila. Es la lectura que hace
+ * el layout.
+ *
+ * Existe aparte para que el layout y la página compartan la misma consulta. El
+ * layout y la página se dibujan a la vez; si uno usa `findPractitioner` y el
+ * otro `getPractitioner`, son dos funciones distintas para `cache` y la misma
+ * fila viaja dos veces en cada pantalla.
+ */
+export const findCurrentPractitioner = cache(findPractitioner)
+
+/** El perfil profesional. Tira si no hay, igual que `getPractitioner`. */
+export const currentPractitioner = cache(async (practitionerId: string) => {
+  const practitioner = await findCurrentPractitioner(practitionerId)
+  if (!practitioner) throw new Error('practitioner_not_found')
+  return practitioner
+})
 
 /** Los dos de una, que es como los pide casi toda pantalla. */
 export const currentSession = cache(async () => {

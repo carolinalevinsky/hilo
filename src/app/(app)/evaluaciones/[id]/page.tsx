@@ -34,13 +34,12 @@ export default async function AssessmentPage({
   const back = backLink(query.volver, '/informes', 'Volver a informes')
   const user = await currentUser()
 
-  const [assessment, practitioner] = await Promise.all([
+  const [assessment, practitioner, versions] = await Promise.all([
     getAssessment(user.id, id),
     currentPractitioner(user.id),
+    listVersions(user.id, 'assessment', id),
   ])
   if (!assessment) notFound()
-
-  const versions = await listVersions(user.id, 'assessment', assessment.id)
 
   const results = AssessmentResults.parse(assessment.results)
   const proposals = suggestedGoals(results, assessment.instrument)
