@@ -1,10 +1,13 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState, useEffect, useRef } from 'react'
 
 import { signInAction } from '@/app/(auth)/actions'
+import { AUTH_FIELD, AUTH_LABEL, AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
 import { PasswordField } from '@/components/auth/password-field'
+import { ArrowRight } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -72,7 +75,9 @@ export function SignInForm({ back }: { back?: string }) {
       {back ? <input type="hidden" name="volver" value={back} /> : null}
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className={AUTH_LABEL}>
+          Correo electrónico
+        </Label>
         <Input
           ref={emailRef}
           id="email"
@@ -80,6 +85,7 @@ export function SignInForm({ back }: { back?: string }) {
           type="email"
           placeholder="tu@email.com"
           autoComplete="email"
+          className={AUTH_FIELD}
           required
         />
       </div>
@@ -87,42 +93,57 @@ export function SignInForm({ back }: { back?: string }) {
       <PasswordField
         id="password"
         label="Contraseña"
-        placeholder="Tu contraseña"
+        placeholder="Tu contraseña secreta"
         autoComplete="current-password"
       />
 
-      <label className="flex cursor-pointer items-center gap-2 text-body font-medium text-[#3a4256]">
-        <input
-          ref={rememberRef}
-          type="checkbox"
-          name="recordar"
-          /**
-           * Decide dos cosas, y las dos por el mismo motivo: si esta
-           * computadora es tuya.
-           *
-           * Tildada, la sesión queda abierta —los 400 días de siempre— y el
-           * correo queda escrito para la próxima. Destildada, la sesión se
-           * cierra cuando cerrás el navegador y el correo no se guarda: es la
-           * computadora del colegio o del consultorio compartido. Lo de la
-           * sesión lo hace `signInAction`; ver `@/lib/auth-cookie`.
-           *
-           * Antes decía "Recordar mi correo" y hacía sólo eso, mientras la
-           * sesión quedaba abierta igual. Quien la destildaba en una
-           * computadora ajena se iba creyendo que había dejado todo cerrado.
-           *
-           * Tildada de entrada: el caso de todos los días es la computadora
-           * propia. Lo que se guarda del correo es la dirección de quien la
-           * escribe, en su dispositivo. Nunca la contraseña, y nada de un
-           * paciente.
-           */
-          defaultChecked
-          className="size-4 accent-violet"
-        />
-        Mantener la sesión abierta en este dispositivo
-      </label>
+      {/* El tilde y el enlace comparten renglón, como en el diseño. Si no entran
+          —una tipografía más grande, un teléfono angosto—, el enlace baja solo;
+          por eso `flex-wrap` y no dos columnas fijas. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <label className="flex cursor-pointer items-center gap-2 text-meta font-medium">
+          <input
+            ref={rememberRef}
+            type="checkbox"
+            name="recordar"
+            /**
+             * Decide dos cosas, y las dos por el mismo motivo: si esta
+             * computadora es tuya.
+             *
+             * Tildada, la sesión queda abierta —los 400 días de siempre— y el
+             * correo queda escrito para la próxima. Destildada, la sesión se
+             * cierra cuando cerrás el navegador y el correo no se guarda: es la
+             * computadora del colegio o del consultorio compartido. Lo de la
+             * sesión lo hace `signInAction`; ver `@/lib/auth-cookie`.
+             *
+             * Antes decía "Recordar mi correo" y hacía sólo eso, mientras la
+             * sesión quedaba abierta igual. Quien la destildaba en una
+             * computadora ajena se iba creyendo que había dejado todo cerrado.
+             *
+             * Tildada de entrada: el caso de todos los días es la computadora
+             * propia. Lo que se guarda del correo es la dirección de quien la
+             * escribe, en su dispositivo. Nunca la contraseña, y nada de un
+             * paciente.
+             */
+            defaultChecked
+            className="size-4 accent-violet"
+          />
+          Mantener sesión abierta
+        </label>
 
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
-        {pending ? 'Entrando…' : 'Entrar'}
+        {/* Antes iba suelto debajo del botón, que es el último lugar donde lo
+            busca alguien que ya sabe que no se acuerda la contraseña. */}
+        <Link
+          href="/recuperar"
+          className="text-meta font-semibold text-violet hover:underline"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
+
+      <Button type="submit" size="lg" className={AUTH_SUBMIT} disabled={pending}>
+        {pending ? 'Entrando…' : 'Entrar a Ombúa'}
+        {pending ? null : <ArrowRight className="size-4" />}
       </Button>
     </form>
   )

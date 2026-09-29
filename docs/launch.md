@@ -104,10 +104,10 @@ that sends whoever is locked out to check a password that was never the problem.
 The same trap is in `supabase/config.toml`; there is a comment on the line.
 
 **This is the only thing that closes the door.** Ombúa has no sign-up form any
-more, but that is decoration: the `anon` key ships in the JavaScript bundle every
-visitor downloads — by design — so anybody can `POST` straight at
-`/auth/v1/signup` without touching a screen of ours. This switch is what refuses
-it.
+more, but that is decoration: the `anon` key is a public credential — the
+dashboard hands it out and it sits in Vercel's environment — so anybody who has
+it can `POST` straight at `/auth/v1/signup` without touching a screen of ours.
+This switch is what refuses it.
 
 `supabase/config.toml` sets the same thing for the local stack. Both have to be
 set; neither implies the other.

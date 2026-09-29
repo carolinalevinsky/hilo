@@ -25,8 +25,8 @@ export default async function CompleteProfilePage() {
 
   return (
     <>
-      <h1 className="text-[22px] font-extrabold tracking-[-0.5px]">Completá tu perfil</h1>
-      <p className="mt-1 mb-5 text-body leading-relaxed text-muted-foreground">
+      <h1 className="text-[28px] leading-tight font-extrabold tracking-[-0.8px]">Completá tu perfil</h1>
+      <p className="mt-2 mb-7 text-sm leading-relaxed text-muted-foreground">
         Tu cuenta existe, pero le falta la ficha profesional. Con estos dos datos
         queda lista y entrás.
       </p>

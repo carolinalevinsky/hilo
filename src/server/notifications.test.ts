@@ -205,3 +205,31 @@ describe('sendInvitation', () => {
     expect(sent[0]!.html).toContain('no se crea ninguna cuenta')
   })
 })
+
+describe('the header every email shares', () => {
+  const invitation = {
+    to: 'renata@ejemplo.test',
+    fullName: 'Renata Silva',
+    inviterName: 'Carolina Levinsky',
+    link: 'https://app.ombua.com/invitacion/un-token-de-cuarenta-y-tres-caracteres',
+  }
+
+  it('points at the wordmark with an absolute URL, and not at the SVG', async () => {
+    await sendInvitation(invitation)
+
+    const html = sent[0]!.html
+    // A mail client has no origin to resolve `/brand/…` against, so a relative
+    // src is a broken image in every inbox. And Gmail and Outlook drop an SVG
+    // without drawing anything.
+    expect(html).toMatch(/<img[^>]+src="https?:\/\/[^"]+\/brand\/wordmark-email\.png"/)
+  })
+
+  it('falls back to the name when the image is blocked', async () => {
+    await sendInvitation(invitation)
+
+    // Gmail blocks images from senders the reader has never written to, and an
+    // invitation is by definition the first message. The alt text is what the
+    // header says when that happens.
+    expect(sent[0]!.html).toMatch(/<img[^>]+alt="Ombúa"/)
+  })
+})

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { suggestedActivity } from '@/lib/activity-bank'
+import { planDuration } from '@/lib/plan-durations'
 
 import { nextAppointmentFor, nextAppointments } from './appointments'
 import { getDb } from './db'
@@ -36,6 +37,8 @@ export type PlanItem = {
   position: number
   goalId: string | null
   material: Pick<Material, 'id' | 'title' | 'area' | 'focus'> | null
+  /** Cuánto se le piensa dar en esta sesión. Ver la migración que la agregó. */
+  durationMinutes: number
 }
 
 // ─── Which session a plan is for ────────────────────────────────────────────
@@ -119,7 +122,9 @@ export async function listPlanItems(
 
   const { data, error } = await db
     .from('session_plan_items')
-    .select('id, title, position, goal_id, materials (id, title, area, focus)')
+    .select(
+      'id, title, position, goal_id, duration_minutes, materials (id, title, area, focus)',
+    )
     .eq('practitioner_id', practitionerId)
     .eq('patient_id', patientId)
     .or(scopeFilter(scope))
@@ -133,6 +138,7 @@ export async function listPlanItems(
     title: row.title,
     position: row.position,
     goalId: row.goal_id,
+    durationMinutes: row.duration_minutes,
     material: row.materials ?? null,
   }))
 }
@@ -417,6 +423,7 @@ export async function addActivityToPlan(
   patientId: string,
   title: string,
   appointmentId?: string | null,
+  durationMinutes?: unknown,
 ) {
   const clean = title.trim().slice(0, 200)
   if (!clean) throw new Error('Escribí qué vas a hacer.')
@@ -429,8 +436,31 @@ export async function addActivityToPlan(
     patient_id: patientId,
     appointment_id: scope.appointmentId,
     title: clean,
+    duration_minutes: planDuration(durationMinutes),
     position: await nextPosition(practitionerId, patientId),
   })
+
+  if (error) throw error
+}
+
+/**
+ * Cambiar cuánto dura una fila del plan.
+ *
+ * Se edita en la lista y no donde se agregó: el largo se decide mirando el
+ * total, que es lo único que está en la columna del plan.
+ */
+export async function setPlanItemDuration(
+  practitionerId: string,
+  itemId: string,
+  durationMinutes: unknown,
+) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('session_plan_items')
+    .update({ duration_minutes: planDuration(durationMinutes) })
+    .eq('id', itemId)
+    .eq('practitioner_id', practitionerId)
 
   if (error) throw error
 }

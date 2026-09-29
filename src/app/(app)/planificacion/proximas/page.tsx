@@ -1,4 +1,4 @@
-import { ClipboardList, Pencil } from '@/components/icons'
+import { CircleCheck, ClipboardList, Pencil } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { formatLongDate } from '@/lib/dates'
 import { formatTime } from '@/lib/week'
 import { upcomingPlans } from '@/server/session-plans'
+import { firstName } from '@/lib/whatsapp'
 import { currentUser } from '../../session'
 import { pageTitle } from '@/lib/brand'
 
@@ -29,9 +30,25 @@ export const metadata: Metadata = { title: pageTitle('Planes preparados') }
  * prepared session and having to go one screen further to write it up is the
  * step people skip.
  */
-export default async function UpcomingPlansPage() {
+export default async function UpcomingPlansPage({
+  searchParams,
+}: PageProps<'/planificacion/proximas'>) {
   const user = await currentUser()
   const plans = await upcomingPlans(user.id)
+
+  // Cuál se acaba de guardar, si se llegó desde el botón del planificador. Es
+  // el id de la sesión, o `p:<paciente>` cuando el plan no tiene ninguna
+  // agendada. Lo que no coincida con nada se ignora: la pantalla sigue siendo
+  // la lista, no un permalink.
+  const { guardado } = await searchParams
+  const saved = typeof guardado === 'string' ? guardado : null
+  const justSaved = saved
+    ? (plans.find((plan) =>
+        saved.startsWith('p:')
+          ? plan.patientId === saved.slice(2) && !plan.appointment
+          : plan.appointment?.id === saved,
+      ) ?? null)
+    : null
 
   return (
     <>
@@ -40,6 +57,41 @@ export default async function UpcomingPlansPage() {
         subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
       />
       <PlanningTabs />
+
+      {/* Lo que sigue después de guardar.
+          El plan ya estaba guardado —las filas entran a medida que se suman—,
+          así que esto no confirma una escritura: cierra la tarea y ofrece la
+          única cosa que se puede querer hacer a continuación, que es empezar la
+          sesión con el plan a la vista. Aparece sólo al llegar desde el botón,
+          y desaparece al recargar sin el parámetro. */}
+      {justSaved ? (
+        <Card className="mb-4 border-green/30 bg-green-soft/60">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <p className="flex items-start gap-2 text-item font-bold">
+              <CircleCheck className="mt-0.5 size-[18px] shrink-0 text-green" />
+              Guardaste el plan de {firstName(justSaved.fullName)}
+              {justSaved.appointment ? (
+                <span className="font-medium text-muted-foreground">
+                  · {formatLongDate(justSaved.appointment.scheduledOn)} ·{' '}
+                  {formatTime(justSaved.appointment.startTime)}
+                </span>
+              ) : null}
+            </p>
+
+            <Button asChild>
+              <Link
+                href={
+                  justSaved.appointment
+                    ? `/pacientes/${justSaved.patientId}/sesiones/nueva?agenda=${justSaved.appointment.id}`
+                    : `/pacientes/${justSaved.patientId}/sesiones/nueva?plan=1`
+                }
+              >
+                Arrancar sesión
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {plans.length === 0 ? (
         <Card>
@@ -102,7 +154,12 @@ export default async function UpcomingPlansPage() {
                   <div className="mt-3.5 flex flex-wrap gap-2">
                     {/* Both carry the session the plan is for (P14). Without
                         it they meant "the patient's next", which for the plan
-                        of the session after that opened the wrong list. */}
+                        of the session after that opened the wrong list.
+
+                        "Arrancar sesión" y no "Registrar esta sesión": es el
+                        mismo botón que ofrece la tira de arriba al guardar, y
+                        dos nombres para la misma acción a dos centímetros uno
+                        del otro se leen como dos acciones distintas. */}
                     <Button asChild size="sm">
                       <Link
                         href={
@@ -112,7 +169,7 @@ export default async function UpcomingPlansPage() {
                         }
                       >
                         <ClipboardList className="size-4" />
-                        Registrar esta sesión
+                        Arrancar sesión
                       </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">

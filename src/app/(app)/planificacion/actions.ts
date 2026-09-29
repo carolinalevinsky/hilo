@@ -3,7 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { setAppointmentNote } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
+import { createGoal } from '@/server/goals'
+import { createOwnActivity } from '@/server/materials'
 import { getPractitioner } from '@/server/practitioners'
 import {
   addActivityToPlan,
@@ -11,6 +14,7 @@ import {
   addMaterialToPlan,
   clearPlan,
   removePlanItem,
+  setPlanItemDuration,
 } from '@/server/session-plans'
 
 /**
@@ -63,16 +67,83 @@ export async function addGoalToPlanAction(formData: FormData) {
   refresh()
 }
 
-/** An activity the practitioner typed, that is neither a goal nor a material. */
+/**
+ * An activity the practitioner typed, that is neither a goal nor a material.
+ *
+ * Va a dos lugares: al plan de esta sesión, y a la biblioteca personal como
+ * material privado. Lo segundo es lo que la hace reutilizable — la misma
+ * dinámica sirve con otro paciente el mes que viene, y hasta ahora se perdía
+ * adentro del plan donde se escribió.
+ *
+ * El plan sigue guardando el texto y no el id del material: el ítem es "lo que
+ * voy a hacer en esta sesión", y si mañana borra el material de la biblioteca,
+ * el plan de esta sesión tiene que seguir diciendo lo mismo.
+ */
 export async function addActivityToPlanAction(formData: FormData) {
   const user = await requireUser()
+  const practitioner = await getPractitioner(user.id)
+  const activity = String(formData.get('activity') ?? '')
 
   await addActivityToPlan(
     user.id,
     String(formData.get('patientId')),
-    String(formData.get('activity') ?? ''),
+    activity,
     sessionOf(formData),
+    formData.get('durationMinutes'),
   )
+
+  // Después del plan, que es lo que la persona pidió. Que la biblioteca falle no
+  // puede hacer que la actividad no entre a la sesión.
+  if (practitioner) await createOwnActivity(user.id, practitioner.discipline, activity)
+
+  refresh()
+  revalidatePath('/materiales')
+}
+
+/**
+ * Un objetivo de los sugeridos, creado de una.
+ *
+ * Los títulos salen de la taxonomía de la profesión (`AREAS_BY_DISCIPLINE`), no
+ * de una lista inventada acá: son las mismas áreas con las que está organizada
+ * la biblioteca. Lo que se crea es un objetivo común y corriente, editable desde
+ * la ficha como cualquier otro — esto sólo ahorra el viaje de ida y vuelta.
+ */
+export async function addSuggestedGoalAction(formData: FormData) {
+  const user = await requireUser()
+
+  await createGoal(user.id, String(formData.get('patientId')), {
+    title: String(formData.get('title') ?? ''),
+  })
+
+  refresh()
+  revalidatePath(`/pacientes/${String(formData.get('patientId'))}`)
+}
+
+/** Cuánto dura una fila del plan. Se elige en la lista, mirando el total. */
+export async function setPlanItemDurationAction(formData: FormData) {
+  const user = await requireUser()
+
+  await setPlanItemDuration(
+    user.id,
+    String(formData.get('itemId')),
+    formData.get('durationMinutes'),
+  )
+  refresh()
+}
+
+/**
+ * La nota previa de la sesión.
+ *
+ * Escribe `appointments.note`, que es la nota que se pone al agendar: ver
+ * `setAppointmentNote`. Sin sesión agendada no hay dónde guardarla, y la
+ * pantalla no la ofrece.
+ */
+export async function savePlanNoteAction(formData: FormData) {
+  const user = await requireUser()
+  const appointmentId = sessionOf(formData)
+  if (!appointmentId) return
+
+  await setAppointmentNote(user.id, appointmentId, formData.get('note'))
   refresh()
 }
 
