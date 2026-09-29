@@ -1424,6 +1424,7 @@ export type Database = {
         Row: {
           appointment_id: string | null
           created_at: string
+          duration_minutes: number
           goal_id: string | null
           id: string
           material_id: string | null
@@ -1435,6 +1436,7 @@ export type Database = {
         Insert: {
           appointment_id?: string | null
           created_at?: string
+          duration_minutes?: number
           goal_id?: string | null
           id?: string
           material_id?: string | null
@@ -1446,6 +1448,7 @@ export type Database = {
         Update: {
           appointment_id?: string | null
           created_at?: string
+          duration_minutes?: number
           goal_id?: string | null
           id?: string
           material_id?: string | null

@@ -441,6 +441,69 @@ export async function createMaterial(
 }
 
 /**
+ * El área con la que entra a la biblioteca una actividad escrita a mano en el
+ * planificador.
+ *
+ * No es una de las de `AREAS_BY_DISCIPLINE` a propósito: no sabemos en cuál cae
+ * —quien la escribió puso una línea, no una taxonomía— y meterla en "Lectura"
+ * porque hay que poner algo es inventar el dato. Con la suya propia aparece en
+ * "Todos" y en la búsqueda, que es donde se la va a buscar.
+ */
+export const OWN_ACTIVITY_AREA = 'Actividad propia'
+
+/**
+ * Una actividad tuya, guardada para volver a usarla.
+ *
+ * Es el mismo insert que `createMaterial` con dos diferencias que justifican la
+ * función aparte: queda siempre privada —nunca se publica algo que alguien
+ * escribió en un renglón mientras armaba una sesión— y no exige los diez
+ * caracteres de `content` que pide el formulario de la biblioteca. Acá el
+ * contenido *es* el título: "juego de la oca con sílabas" es la actividad
+ * entera, y rechazarla por corta sería pedirle a alguien que escriba de más
+ * para poder seguir.
+ */
+export async function createOwnActivity(
+  practitionerId: string,
+  discipline: string,
+  title: string,
+) {
+  const clean = title.trim().slice(0, 160)
+  if (!clean) return null
+
+  const db = await getDb()
+
+  // Sin duplicar: sumar dos veces la misma actividad a dos sesiones es una
+  // actividad que se repite, no dos materiales.
+  const { data: existing } = await db
+    .from('materials')
+    .select('id')
+    .eq('practitioner_id', practitionerId)
+    .eq('title', clean)
+    .limit(1)
+    .maybeSingle()
+
+  if (existing) return existing.id
+
+  const { data: row, error } = await db
+    .from('materials')
+    .insert({
+      practitioner_id: practitionerId,
+      discipline,
+      title: clean,
+      area: OWN_ACTIVITY_AREA,
+      kind: 'activity',
+      content: clean,
+      visibility: 'private',
+      source: 'manual',
+    })
+    .select('id')
+    .single()
+
+  if (error) throw error
+  return row.id
+}
+
+/**
  * Marks a material as one the model wrote part of, which is what puts it in the
  * month's count.
  *

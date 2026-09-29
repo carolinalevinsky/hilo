@@ -1,13 +1,11 @@
 import Link from 'next/link'
 
-import { TrendingUp, User } from '@/components/icons'
+import { User } from '@/components/icons'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { PlanSessionPicker } from '@/components/planning/plan-controls'
 import { StepBadge } from '@/components/planning/step-heading'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ageLabel } from '@/lib/age'
-import { ageGroupLabel } from '@/lib/patient-labels'
 import { firstName } from '@/lib/whatsapp'
 
 /**
@@ -36,24 +34,18 @@ export function SessionContextCard({
   sessions,
   unscheduled,
   selected,
-  averageProgress,
 }: {
   patient: {
     id: string
     full_name: string
     color: string | null
-    date_of_birth: string | null
-    age_group: string
   }
   photoUrl: string | null
   sessions: { id: string; label: string }[]
   unscheduled: { id: string; label: string }[]
   selected: string
-  /** Across the active goals, or `null` when there are none to average. */
-  averageProgress: number | null
 }) {
   const name = firstName(patient.full_name)
-  const age = ageLabel(patient.date_of_birth)
 
   return (
     <Card className="no-print mb-4">
@@ -86,25 +78,12 @@ export function SessionContextCard({
           </div>
         </div>
 
-        {/* The facts you decide with, in the same height as the field they
-            belong to. On a phone they wrap underneath it. */}
+        {/* Sin la edad y sin el avance general.
+            Estaban acá como "los datos con los que decidís", y no lo son: son
+            tus pacientes, ya sabés en qué anda cada uno. Lo que sí hace falta a
+            mano es la ficha, que es donde está todo eso y el resto. */}
         <div className="flex flex-wrap items-end gap-2">
-          {age || patient.age_group ? (
-            <Fact label="Edad y grupo">
-              {[age, ageGroupLabel(patient.age_group)].filter(Boolean).join(' · ')}
-            </Fact>
-          ) : null}
-
-          {/* Only with goals to average. A patient with none would otherwise get
-              a green "0%", which reads as a result and is the absence of one. */}
-          {averageProgress !== null ? (
-            <Fact label="Avance general" tone="green">
-              <TrendingUp className="size-3.5" />
-              {averageProgress}% alcanzado
-            </Fact>
-          ) : null}
-
-          <Button asChild variant="secondary" className="h-11 rounded-xl px-4">
+          <Button asChild variant="secondary" className="h-11 rounded-full px-4">
             <Link href={`/pacientes/${patient.id}`}>
               <User className="size-[15px]" />
               Ver ficha de {name}
@@ -113,39 +92,5 @@ export function SessionContextCard({
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-/** One labelled fact: the quiet label above, the value under it. */
-function Fact({
-  label,
-  tone = 'muted',
-  children,
-}: {
-  label: string
-  tone?: 'muted' | 'green'
-  children: React.ReactNode
-}) {
-  const green = tone === 'green'
-
-  return (
-    <div
-      className={
-        green
-          ? 'flex h-11 flex-col justify-center rounded-xl bg-green-soft px-3.5 text-[#1a8f57]'
-          : 'flex h-11 flex-col justify-center rounded-xl bg-muted px-3.5 text-foreground'
-      }
-    >
-      <span
-        className={
-          green
-            ? 'text-micro font-bold uppercase text-[#1a8f57]/75'
-            : 'text-micro font-bold uppercase text-muted-foreground'
-        }
-      >
-        {label}
-      </span>
-      <span className="flex items-center gap-1 text-meta font-bold">{children}</span>
-    </div>
   )
 }

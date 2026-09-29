@@ -6,9 +6,11 @@ import {
   ChevronDown,
   Copy,
   Layers,
+  Lightbulb,
   Menu,
   Square,
   Star,
+  Sun,
   Trash2,
   X,
 } from 'lucide-react'
@@ -291,9 +293,11 @@ export {
   ChevronDown,
   Copy,
   Layers,
+  Lightbulb,
   Menu,
   Square,
   Star,
+  Sun,
   Trash2,
   X,
 }

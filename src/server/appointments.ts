@@ -570,6 +570,63 @@ export async function getAppointmentFor(
   return data
 }
 
+/**
+ * Lo que el planificador necesita saber de la sesión que está preparando: la
+ * nota previa y cuánto dura.
+ *
+ * Las dos juntas en una lectura porque se piden juntas, en la misma pantalla y
+ * en el mismo momento. La nota es la misma que se escribe al agendar
+ * (`appointments.note`); el largo es contra lo que se suma el plan.
+ *
+ * Es la misma nota que se escribe al agendar: `appointments.note`. No hay una
+ * "nota del plan" aparte a propósito — dos campos que quieren decir lo mismo
+ * terminan diciendo cosas distintas, y quien agendó el martes esperaría ver el
+ * viernes lo que escribió.
+ */
+export async function planSessionContext(
+  practitionerId: string,
+  appointmentId: string,
+): Promise<{ note: string | null; durationMinutes: number | null }> {
+  const db = await getDb()
+  const { data, error } = await db
+    .from('appointments')
+    .select('note, duration_minutes')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  if (error) throw error
+  return { note: data?.note ?? null, durationMinutes: data?.duration_minutes ?? null }
+}
+
+const AppointmentNote = z
+  .string()
+  .trim()
+  .max(2000)
+  .transform((value) => (value ? value : null))
+
+export async function setAppointmentNote(
+  practitionerId: string,
+  appointmentId: string,
+  note: unknown,
+) {
+  const value = AppointmentNote.parse(note ?? '')
+  const db = await getDb()
+
+  const { error } = await db
+    .from('appointments')
+    .update({ note: value })
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+
+  if (error) throw error
+  await logAction(practitionerId, 'update', 'appointment', appointmentId)
+
+  // Sin tocar Google: el evento que se crea allá lleva la hora y el paciente,
+  // y su descripción es fija (`google-calendar.ts:72`). La nota es clínica y no
+  // tiene por qué salir de Ombúa a un calendario que puede estar compartido.
+}
+
 export async function setAppointmentStatus(
   practitionerId: string,
   appointmentId: string,

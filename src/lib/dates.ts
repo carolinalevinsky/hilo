@@ -49,6 +49,19 @@ export function formatDayMonth(value: string | null | undefined): string | null 
 }
 
 /**
+ * "28 set." — el día y el mes, para el rótulo de una fecha que ya se sabe
+ * cercana.
+ *
+ * Con `day: 'numeric'` y no `'2-digit'` como el de arriba, que en es-UY sale
+ * "28-set." con guión: bien adentro de una lista, mal al lado de un día de la
+ * semana ("Lunes, 28-set.").
+ */
+export function formatDayMonthShort(value: string | null | undefined): string | null {
+  if (!value) return null
+  return toLocalDate(value).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' })
+}
+
+/**
  * "11 ago 2026, 21:30" — un instante, dicho en la hora de Uruguay.
  *
  * Con zona explícita y no con la del navegador, por lo mismo que el resto de

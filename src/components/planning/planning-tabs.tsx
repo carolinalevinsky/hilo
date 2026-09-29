@@ -49,7 +49,7 @@ export function PlanningTabs() {
     // The selected one keeps v1's violet.
     <div
       role="tablist"
-      className="no-print mb-4 inline-flex max-w-full flex-wrap gap-1 rounded-xl border border-border bg-muted p-1"
+      className="no-print mb-6 inline-flex max-w-full flex-wrap gap-1 rounded-full bg-muted p-1.5"
     >
       {TABS.map((tab) => {
         const active = tab.exact
@@ -62,9 +62,9 @@ export function PlanningTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'rounded-lg px-4 py-2 text-body font-bold transition-colors',
+              'rounded-full px-6 py-2.5 text-item font-semibold transition-colors',
               active
-                ? 'bg-card text-violet shadow-card'
+                ? 'bg-card text-violet shadow-xs'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
