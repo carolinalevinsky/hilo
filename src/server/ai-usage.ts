@@ -1,4 +1,5 @@
 import { getServiceDb } from './db'
+import { planLimits, QuotaExceededError, startOfMonth } from './plans'
 
 /**
  * El registro de consumo de IA.
@@ -27,40 +28,12 @@ import { getServiceDb } from './db'
  *
  * `plans.ts` lo explica y esta parte no cambia: contar después de la respuesta
  * es una factura por algo que nadie estaba autorizado a pedir, y deja pasar una
- * ráfaga de pedidos en paralelo. Se anota antes, y si la respuesta no llegó se
- * devuelve — ver `releaseUsage`.
+ * ráfaga de pedidos en paralelo. Se anota antes —y contar y anotar van juntos, ver
+ * `claimUsage`— y si la respuesta no llegó se devuelve: ver `releaseUsage`.
  */
 
 /** Los cuatro de `PLAN_LIMITS`, y el `check` de la tabla dice lo mismo. */
 export type UsageKind = 'reports' | 'assessments' | 'questions' | 'materials'
-
-/**
- * Anota una unidad y devuelve el id, para poder devolverla si hace falta.
- *
- * No tira: quedarse sin poder generar un informe porque falló la anotación
- * sería cambiar un problema de plata por uno de trabajo. Devuelve `null`, el
- * error va al log, y esa unidad no se cuenta — que es un error del lado
- * generoso, que es el lado correcto para equivocarse acá.
- */
-export async function recordUsage(
-  practitionerId: string,
-  kind: UsageKind,
-): Promise<string | null> {
-  try {
-    const db = getServiceDb()
-    const { data, error } = await db
-      .from('ai_usage')
-      .insert({ practitioner_id: practitionerId, kind })
-      .select('id')
-      .single()
-
-    if (error) throw error
-    return data?.id ?? null
-  } catch (error) {
-    console.error('[ai_usage] no se pudo anotar el consumo', { practitionerId, kind, error })
-    return null
-  }
-}
 
 /**
  * Devuelve una unidad que no se llegó a gastar.
@@ -88,4 +61,51 @@ export async function releaseUsage(usageId: string | null): Promise<void> {
   } catch (error) {
     console.error('[ai_usage] no se pudo devolver el consumo', { usageId, error })
   }
+}
+
+/**
+ * Reservar una unidad de la cuota, o saber que no queda.
+ *
+ * Reemplaza el par `assertQuota` + `recordUsage` en todo lo que crea algo
+ * nuevo con IA. Aquel par contaba y después anotaba, y entre las dos cosas
+ * diez pedidos en paralelo pasaban los diez con una sola unidad libre. Acá la
+ * base cuenta e inserta junta, con un candado por profesional (migración
+ * `20260930183724_claim_ai_usage.sql`).
+ *
+ * Devuelve el id de la unidad, para `releaseUsage` si el pedido después no
+ * llega a nada, y tira `QuotaExceededError` si no queda.
+ *
+ * Si la base no contesta, deja pasar sin contar y lo escribe en el log: es la
+ * misma decisión que tenía `recordUsage`, a quien reemplaza — quedarse sin
+ * poder generar un informe porque falló la anotación sería cambiar un problema
+ * de plata por uno de trabajo, y ése es el lado generoso para equivocarse. Lo
+ * que ya no pasa es la carrera: con la base andando, el techo es el techo.
+ */
+export async function claimUsage(
+  practitionerId: string,
+  plan: string,
+  kind: UsageKind,
+): Promise<string | null> {
+  const limit = planLimits(plan)[kind]
+
+  let claimed: string | null
+  try {
+    const db = getServiceDb()
+    const { data, error } = await db.rpc('claim_ai_usage', {
+      p_practitioner: practitionerId,
+      p_kind: kind,
+      p_limit: limit,
+      p_since: startOfMonth(),
+    })
+    if (error) throw error
+    claimed = data
+  } catch (error) {
+    console.error('[ai_usage] no se pudo reservar el consumo', { practitionerId, kind, error })
+    return null
+  }
+
+  if (!claimed) {
+    throw new QuotaExceededError({ kind, used: limit, limit, remaining: 0, exceeded: true })
+  }
+  return claimed
 }

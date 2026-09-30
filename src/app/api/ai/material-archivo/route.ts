@@ -6,7 +6,7 @@ import {
   parseFileDescription,
 } from '@/server/material-prompt'
 import { getMaterial, markMaterialAiWritten, readMaterialFile } from '@/server/materials'
-import { recordUsage } from '@/server/ai-usage'
+import { claimUsage } from '@/server/ai-usage'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
@@ -74,8 +74,15 @@ export async function POST(request: Request) {
   // PDF or photo to Anthropic — the one call nothing capped.
   const counted = material.source === 'ai'
 
+  // La primera descripción de un archivo reserva su unidad de una (ver
+  // `claimUsage`); volver a describir el mismo archivo sólo mira que no esté
+  // pasada la cuota, como regenerar un informe.
   try {
-    await assertQuota(user.id, practitioner.plan, 'materials', { alreadyCounted: counted })
+    if (counted) {
+      await assertQuota(user.id, practitioner.plan, 'materials', { alreadyCounted: true })
+    } else {
+      await claimUsage(user.id, practitioner.plan, 'materials')
+    }
   } catch (error) {
     if (error instanceof QuotaExceededError) {
       return Response.json({ error: quotaMessage(error.status) }, { status: 429 })
@@ -91,10 +98,7 @@ export async function POST(request: Request) {
   // pone: sigue siendo el mismo criterio, sólo que ahora la unidad se anota
   // aparte. Describir el mismo archivo dos veces es una corrección y no un
   // material nuevo, así que la segunda vez no cuesta nada.
-  if (!counted) {
-    await markMaterialAiWritten(user.id, material.id)
-    await recordUsage(user.id, 'materials')
-  }
+  if (!counted) await markMaterialAiWritten(user.id, material.id)
 
   const file = await readMaterialFile(material.file_path)
   if (!file) {

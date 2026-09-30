@@ -1,7 +1,7 @@
 import { today } from '@/lib/dates'
 import type { Alias } from '@/lib/pseudonyms'
 import { AiUnavailableError, AI_MODEL, streamChat, type ChatMessage } from '@/server/ai'
-import { recordUsage, releaseUsage } from '@/server/ai-usage'
+import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import {
   assistantAliases,
   assistantMessages,
@@ -11,7 +11,7 @@ import {
   parseHistory,
 } from '@/server/assistant'
 import { getUser } from '@/server/auth'
-import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
+import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
 import { sseResponse, type SseEvent } from '../sse'
@@ -64,8 +64,11 @@ export async function POST(request: Request) {
 
   const fallback = offlineAnswer(context, question)
 
+  // Reservada antes de llamar, de una (ver `claimUsage`). Si no llega nada se
+  // devuelve — ver por qué en `src/server/ai-usage.ts`.
+  let usageId: string | null
   try {
-    await assertQuota(user.id, practitioner.plan, 'questions')
+    usageId = await claimUsage(user.id, practitioner.plan, 'questions')
   } catch (error) {
     if (error instanceof QuotaExceededError) {
       // Still an answer, and still the truth about why it is this one.
@@ -73,10 +76,6 @@ export async function POST(request: Request) {
     }
     throw error
   }
-
-  // Se anota antes de llamar, como todas. Si no llega nada se devuelve — ver
-  // por qué en `src/server/ai-usage.ts`.
-  const usageId = await recordUsage(user.id, 'questions')
 
   return sseResponse(
     generate(

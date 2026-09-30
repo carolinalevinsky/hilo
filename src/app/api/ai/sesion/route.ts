@@ -1,10 +1,10 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
 import { agreementFor } from '@/lib/grammatical-gender'
 import { patientAliases, type Alias } from '@/lib/pseudonyms'
-import { recordUsage, releaseUsage } from '@/server/ai-usage'
+import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import { getUser } from '@/server/auth'
 import { getPatient } from '@/server/patients'
-import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
+import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import {
   MAX_TRANSCRIPT,
@@ -68,8 +68,11 @@ export async function POST(request: Request) {
 
   const fallback = offlineSessionNote(transcript)
 
+  // Reservada de una, antes de llamar (ver `claimUsage`), y devuelta si no
+  // llega nada — por qué, abajo.
+  let usageId: string | null
   try {
-    await assertQuota(user.id, practitioner.plan, 'questions')
+    usageId = await claimUsage(user.id, practitioner.plan, 'questions')
   } catch (error) {
     if (error instanceof QuotaExceededError) {
       return sseResponse(offline(fallback, quotaMessage(error.status)))
@@ -87,7 +90,6 @@ export async function POST(request: Request) {
   // eso, con Anthropic caído cada dictado caía en `offlineSessionNote` —texto
   // propio, que no cuesta un centavo— y gastaba una unidad igual: la cuota se
   // agotaba justo cuando la IA no estaba funcionando.
-  const usageId = await recordUsage(user.id, 'questions')
 
   return sseResponse(
     generate(
