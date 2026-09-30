@@ -114,7 +114,7 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
           aria-haspopup="dialog"
           aria-label="Preguntá a Ombúa"
           title="Preguntá a Ombúa"
-          className="mx-1 flex size-11 shrink-0 items-center justify-center self-center rounded-full bg-violet text-white shadow-[0_4px_12px_rgb(108_92_231_/_35%)] hover:brightness-107"
+          className="mx-1 flex size-11 shrink-0 items-center justify-center self-center rounded-full bg-violet text-white shadow-violet hover:brightness-107"
         >
           <MessageCircle className="size-5" />
         </button>

@@ -116,6 +116,8 @@
   --text-lead: 15.5px;
 
   --shadow-card: var(--brand-shadow);
+  --shadow-violet: var(--brand-shadow-violet);
+  --shadow-violet-lg: var(--brand-shadow-violet-lg);
 }
 
 :root {
@@ -144,6 +146,15 @@
   --brand-violet-light: #8273f3;
 
   --brand-shadow: 0 1px 2px rgb(30 36 54 / 4%), 0 5px 16px rgb(30 36 54 / 4.5%);
+
+  /* La sombra de los dos botones violeta: el de "Preguntá a Ombúa" en la barra
+     de abajo y el del asistente en escritorio. Sale de `--brand-violet` en vez
+     de repetir sus tres números, porque escritas a mano las dos se quedaron con
+     el violeta viejo durante el cambio de marca y nadie lo vio: una sombra al
+     35% de opacidad no se compara con nada al lado. Derivadas, no se pueden
+     volver a desincronizar. */
+  --brand-shadow-violet: 0 4px 12px color-mix(in srgb, var(--brand-violet), transparent 65%);
+  --brand-shadow-violet-lg: 0 8px 24px color-mix(in srgb, var(--brand-violet), transparent 55%);
 
   /* shadcn's semantic tokens, mapped onto the Ombúa palette. Components use
      these names, so overriding them here is what makes every shadcn component

@@ -31,6 +31,17 @@ import {
 const root = join(__dirname, '..', '..')
 const read = (...parts: string[]) => readFileSync(join(root, ...parts), 'utf8')
 
+const SRC = join(root, 'src')
+
+/** Todo el código y el CSS bajo `src/`, para los bloques que barren el árbol. */
+function walk(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) return walk(full)
+    return /\.(ts|tsx|css)$/.test(entry.name) ? [full] : []
+  })
+}
+
 /** Todos los hex de un texto, en minúscula y a seis dígitos. */
 function hexes(text: string): Set<string> {
   const found = text.match(/#[0-9a-fA-F]{6}\b/g) ?? []
@@ -122,22 +133,45 @@ describe('el nombre viejo no volvió', () => {
     join('lib', 'brand.test.ts'),
   ]
 
-  function walk(dir: string): string[] {
-    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) return walk(full)
-      return /\.(ts|tsx|css)$/.test(entry.name) ? [full] : []
-    })
-  }
-
-  const src = join(root, 'src')
-  const files = walk(src).filter((f) => !allowed.some((a) => f.endsWith(a)))
+  const files = walk(SRC).filter((f) => !allowed.some((a) => f.endsWith(a)))
 
   it('ninguna pantalla dice el nombre viejo', () => {
     const offenders = files
       .filter((f) => /\bhilo\b/i.test(readFileSync(f, 'utf8')))
-      .map((f) => f.slice(src.length + 1))
+      .map((f) => f.slice(SRC.length + 1))
     expect(offenders).toEqual([])
+  })
+})
+
+describe('el violeta viejo no volvió', () => {
+  /**
+   * El nombre viejo se ve; un violeta viejo, no. El cambio de marca movió cada
+   * hex que se nombra a sí mismo, y pasó por al lado de dos sombras que
+   * escribían `rgb(108 92 231 / 35%)` a mano —el `#6c5ce7` de Hilo— porque una
+   * sombra al 35% de opacidad no es un color que alguien compare. Se arreglaron
+   * por otro lado; lo que faltaba es lo que impide que vuelvan.
+   *
+   * Busca el violeta viejo en las tres notaciones en que se puede escribir: el
+   * hex, y el `rgb()` separado por comas o por espacios.
+   */
+  const viejo = /#6c5ce7\b|108[\s,_]+92[\s,_]+231/i
+
+  // Este archivo queda afuera: nombra el violeta viejo para poder buscarlo.
+  const files = walk(SRC).filter((f) => !f.endsWith(join('lib', 'brand.test.ts')))
+
+  it('ningún archivo escribe el violeta de Hilo', () => {
+    const offenders = files
+      .filter((f) => viejo.test(readFileSync(f, 'utf8')))
+      .map((f) => f.slice(SRC.length + 1))
+    expect(offenders).toEqual([])
+  })
+
+  // Un buscador que no encuentra nada pasa siempre, y no protege de nada.
+  it('el que busca de verdad encuentra', () => {
+    expect(viejo.test('shadow-[0_4px_12px_rgb(108_92_231_/_35%)]')).toBe(true)
+    expect(viejo.test('#6C5CE7')).toBe(true)
+    expect(viejo.test('rgb(108, 92, 231)')).toBe(true)
+    expect(viejo.test('#7161ea')).toBe(false)
   })
 })
 
