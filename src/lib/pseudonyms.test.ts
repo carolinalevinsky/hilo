@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  aliasInstructions,
   hideNames,
   manyPatientAliases,
   nameParts,
@@ -20,7 +21,7 @@ async function collect(stream: AsyncIterable<string>) {
 }
 
 describe('tapar el nombre', () => {
-  const aliases = patientAliases('Tomás Pérez')
+  const aliases = patientAliases('Tomás Pérez', 'masculine')
 
   it('tapa el nombre completo, el de pila y el apellido', () => {
     const hidden = hideNames(
@@ -50,7 +51,7 @@ describe('tapar el nombre', () => {
 })
 
 describe('devolver el nombre', () => {
-  const aliases = patientAliases('Tomás Pérez')
+  const aliases = patientAliases('Tomás Pérez', 'masculine')
 
   it('pone el nombre real donde la IA dejó el marcador', () => {
     expect(revealNames('[NOMBRE COMPLETO] asiste desde marzo. [NOMBRE] logra…', aliases)).toBe(
@@ -71,9 +72,9 @@ describe('devolver el nombre', () => {
 describe('varios pacientes', () => {
   it('uno por paciente, y el nombre de pila que comparten dos no se asigna a ninguno', () => {
     const aliases = manyPatientAliases([
-      { fullName: 'Tomás Pérez', label: 'Tomás P.' },
-      { fullName: 'Tomás García', label: 'Tomás G.' },
-      { fullName: 'Malena Rodríguez', label: 'Malena' },
+      { fullName: 'Tomás Pérez', label: 'Tomás P.', agreement: 'masculine' },
+      { fullName: 'Tomás García', label: 'Tomás G.', agreement: 'masculine' },
+      { fullName: 'Malena Rodríguez', label: 'Malena', agreement: 'feminine' },
     ])
 
     const hidden = hideNames('¿Cómo viene Malena? ¿Y Tomás Pérez? ¿Y García?', aliases)
@@ -81,5 +82,15 @@ describe('varios pacientes', () => {
     expect(revealNames('[P3] avanza; [P1] y [P2] también.', aliases)).toBe(
       'Malena avanza; Tomás P. y Tomás G. también.',
     )
+  })
+})
+
+describe('la concordancia', () => {
+  it('le dice al modelo con qué género escribir cada marcador', () => {
+    const text = aliasInstructions([
+      ...patientAliases('Malena Rodríguez', 'feminine'),
+    ])
+    expect(text).toContain('[NOMBRE COMPLETO], [NOMBRE] usá concordancia femenina')
+    expect(text).not.toContain('No sabés el género')
   })
 })

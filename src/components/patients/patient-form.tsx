@@ -11,6 +11,11 @@ import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import {
+  genderFromName,
+  GRAMMATICAL_GENDERS,
+  PATIENT_GENDER_LABELS,
+} from '@/lib/grammatical-gender'
 import { NEW_PATIENT_FREQUENCY_LABELS } from '@/lib/appointment-labels'
 import {
   AGE_GROUP_LABELS,
@@ -53,6 +58,16 @@ export function PatientForm({
   // Un adolescente puede venir solo. Arranca en "sí" para quien todavía no
   // existe, y en lo que diga la ficha para quien ya está cargado.
   const [hasGuardian, setHasGuardian] = useState(!patient || Boolean(patient.guardian_name))
+  // Cómo se escribe sobre el paciente. Sin elegir, se propone lo que dice el
+  // nombre apenas se escribe, y deja de proponerse en cuanto alguien lo toca.
+  // Ver `src/lib/grammatical-gender.ts`.
+  const [gender, setGender] = useState<string>(
+    state.values?.grammaticalGender ??
+      patient?.grammatical_gender ??
+      genderFromName(patient?.full_name) ??
+      '',
+  )
+  const [genderTouched, setGenderTouched] = useState(Boolean(patient?.grammatical_gender))
   const [frequency, setFrequency] = useState('weekly')
   const [weekday, setWeekday] = useState('1')
 
@@ -122,6 +137,9 @@ export function PatientForm({
             defaultValue={kept('fullName', patient?.full_name)}
             required
             autoFocus={!editing}
+            onBlur={(event) => {
+              if (!genderTouched) setGender(genderFromName(event.target.value) ?? '')
+            }}
           />
         </Field>
 
@@ -147,6 +165,29 @@ export function PatientForm({
               </option>
             ))}
           </NativeSelect>
+        </Field>
+
+        <Field label="Cómo referirse" htmlFor="grammaticalGender">
+          <NativeSelect
+            id="grammaticalGender"
+            name="grammaticalGender"
+            value={gender}
+            onChange={(event) => {
+              setGender(event.target.value)
+              setGenderTouched(true)
+            }}
+          >
+            <option value="">Sin indicar</option>
+            {GRAMMATICAL_GENDERS.map((value) => (
+              <option key={value} value={value}>
+                {PATIENT_GENDER_LABELS[value]}
+              </option>
+            ))}
+          </NativeSelect>
+          <p className="text-xs text-muted-foreground">
+            Para que los informes digan «atento» o «atenta». Lo sacamos del nombre; cambialo
+            si no es así.
+          </p>
         </Field>
 
         {/* El teléfono, cuando el paciente lo contesta él mismo. Cuando hay un

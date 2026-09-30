@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { SelfGenderField } from '@/components/profile/self-gender-field'
 import { useActionState, useState } from 'react'
 
 import { acceptInvitationAction } from '@/app/(auth)/actions'
@@ -21,7 +22,14 @@ import { EMPTY_FORM_STATE } from '@/lib/form-state'
  * a typo gets introduced at the last step. All three are editable afterwards
  * from `/perfil`.
  */
-export function AcceptInvitationForm({ token }: { token: string }) {
+export function AcceptInvitationForm({
+  token,
+  suggestedGender,
+}: {
+  token: string
+  /** Lo que se deduce del nombre de la invitación. Ver `grammatical-gender.ts`. */
+  suggestedGender: string | null
+}) {
   const [state, formAction, pending] = useActionState(
     acceptInvitationAction,
     EMPTY_FORM_STATE,
@@ -48,6 +56,8 @@ export function AcceptInvitationForm({ token }: { token: string }) {
       <FormMessage message={state.message} />
 
       <input type="hidden" name="token" value={token} />
+
+      <SelfGenderField defaultValue={suggestedGender} />
 
       <PasswordField
         id="password"

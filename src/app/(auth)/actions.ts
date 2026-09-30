@@ -158,6 +158,7 @@ export async function acceptInvitationAction(
       token: formData.get('token'),
       password,
       acceptedTerms: formData.get('acceptedTerms') === 'on',
+      grammaticalGender: formData.get('grammaticalGender'),
     })
     email = accepted.email
   } catch (error) {

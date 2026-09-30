@@ -1,4 +1,5 @@
 import { ageLabel } from '@/lib/age'
+import { agreementFor, type Agreement } from '@/lib/grammatical-gender'
 import { formatDate } from '@/lib/dates'
 
 import { customInstructionsBlock } from './prompt-templates'
@@ -24,6 +25,8 @@ import { getDb } from './db'
 export type ReportContext = {
   patientName: string
   patientFirstName: string
+  /** Con qué concordancia escribir: la IA ya no ve el nombre para deducirla. */
+  agreement: Agreement
   age: string
   referralReason: string
   startDate: string
@@ -42,7 +45,7 @@ export async function gatherReportContext(
     await Promise.all([
       db
         .from('patients')
-        .select('full_name, date_of_birth, referral_reason, start_date')
+        .select('full_name, date_of_birth, referral_reason, start_date, grammatical_gender')
         .eq('id', patientId)
         .eq('practitioner_id', practitionerId)
         // Un paciente borrado no vuelve a salir hacia la IA.
@@ -74,6 +77,7 @@ export async function gatherReportContext(
   return {
     patientName: patient.full_name,
     patientFirstName: firstName(patient.full_name),
+    agreement: agreementFor(patient.grammatical_gender, patient.full_name),
     age: ageLabel(patient.date_of_birth) ?? 'sin edad consignada',
     referralReason: patient.referral_reason ?? '',
     startDate: formatDate(patient.start_date) ?? '',

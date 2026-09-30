@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     adjustment: body.adjustment,
   })
 
-  return sseResponse(generate(instructions, prompt, patientAliases(context.patientName)))
+  return sseResponse(generate(instructions, prompt, patientAliases(context.patientName, context.agreement)))
 }
 
 async function* generate(

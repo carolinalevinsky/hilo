@@ -33,7 +33,9 @@ export const TOUR_STOPS: TourStop[] = [
     // dicho qué es esto ni por qué apareció, que es la forma más rápida de que
     // alguien lo cierre sin leer.
     target: null,
-    title: '¡Hola! Bienvenida a Ombúa',
+    // «Bienvenida» o «Bienvenido»: lo completa `AppTour` con la concordancia
+    // de quien lo ve. Estaba fijo en femenino.
+    title: '¡Hola! {bienvenida} a Ombúa',
     body: 'Te muestro en un minuto dónde está cada cosa. Son cinco pantallas y podés saltarlo cuando quieras.',
   },
   {

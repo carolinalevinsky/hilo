@@ -1,3 +1,5 @@
+import type { Agreement } from './grammatical-gender'
+
 /**
  * El nombre del paciente no sale de Ombúa.
  *
@@ -25,6 +27,12 @@ export type Alias = {
   restoreAs: string
   /** Las formas que se tapan: nombre completo, nombre, apellido. */
   names: string[]
+  /**
+   * Con qué concordancia escribir sobre esa persona. Antes el modelo la
+   * deducía del nombre; sin el nombre hay que decírsela. Ver
+   * `src/lib/grammatical-gender.ts`.
+   */
+  agreement: Agreement
 }
 
 /** Las variantes de cada vocal, para que "Tomas" y "TOMÁS" también se tapen. */
@@ -72,13 +80,18 @@ export function nameParts(fullName: string): string[] {
 }
 
 /** Los dos marcadores de un informe sobre una persona. */
-export function patientAliases(fullName: string): Alias[] {
+export function patientAliases(fullName: string, agreement: Agreement): Alias[] {
   const parts = nameParts(fullName)
   if (parts.length === 0) return []
   const first = fullName.trim().split(/\s+/)[0] ?? fullName
   return [
-    { token: '[NOMBRE COMPLETO]', restoreAs: fullName.trim(), names: parts.slice(0, 1) },
-    { token: '[NOMBRE]', restoreAs: first, names: parts.slice(1) },
+    {
+      token: '[NOMBRE COMPLETO]',
+      restoreAs: fullName.trim(),
+      names: parts.slice(0, 1),
+      agreement,
+    },
+    { token: '[NOMBRE]', restoreAs: first, names: parts.slice(1), agreement },
   ]
 }
 
@@ -142,16 +155,26 @@ export async function* revealStream(
 /**
  * Lo que se le explica al modelo, al final del pedido, cuando hay marcadores.
  *
- * Lo del género no es un detalle: antes el modelo lo deducía del nombre, y
- * ahora no lo tiene. Mejor que escriba sin marcarlo que que adivine.
+ * El género no es un detalle: antes el modelo lo deducía del nombre, y ahora no
+ * lo tiene. Se le dice cuál usar con cada marcador.
  */
 export function aliasInstructions(aliases: Alias[]): string {
   if (aliases.length === 0) return ''
   const tokens = aliases.map((alias) => alias.token).join(', ')
+  const feminine = aliases.filter((alias) => alias.agreement === 'feminine')
+  const masculine = aliases.filter((alias) => alias.agreement === 'masculine')
+  const agreement = [
+    feminine.length > 0
+      ? `Con ${feminine.map((alias) => alias.token).join(', ')} usá concordancia femenina (ella, atenta, la paciente).`
+      : '',
+    masculine.length > 0
+      ? `Con ${masculine.map((alias) => alias.token).join(', ')} usá concordancia masculina (él, atento, el paciente).`
+      : '',
+  ].filter(Boolean)
   return [
     `Por privacidad, los nombres de las personas vienen reemplazados por marcadores (${tokens}).`,
     'Escribilos exactamente así, con los corchetes, donde iría el nombre: Ombúa pone el nombre real después. No inventes nombres.',
-    'No sabés el género de la persona: redactá sin marcarlo cuando te refieras a ella (reformulá la frase en vez de usar "el/la", barras o "@").',
+    ...agreement,
   ].join(' ')
 }
 
@@ -164,7 +187,7 @@ export function aliasInstructions(aliases: Alias[]): string {
  * se tapa el nombre completo y el apellido de cada uno.
  */
 export function manyPatientAliases(
-  patients: { fullName: string; label: string }[],
+  patients: { fullName: string; label: string; agreement: Agreement }[],
 ): Alias[] {
   const owners = new Map<string, number>()
   for (const patient of patients) {
@@ -179,6 +202,7 @@ export function manyPatientAliases(
       token: `[P${index + 1}]`,
       restoreAs: patient.label,
       names: nameParts(patient.fullName).filter((part) => owners.get(strip(part)) === 1),
+      agreement: patient.agreement,
     }))
     .filter((alias) => alias.names.length > 0)
 }

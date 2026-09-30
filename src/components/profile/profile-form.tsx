@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { SelfGenderField } from '@/components/profile/self-gender-field'
+import { genderFromName } from '@/lib/grammatical-gender'
 
 import { updateProfileAction } from '@/app/(app)/perfil/actions'
 import { FormMessage } from '@/components/auth/form-message'
@@ -15,10 +17,12 @@ export function ProfileForm({
   fullName,
   discipline,
   phone,
+  grammaticalGender,
 }: {
   fullName: string
   discipline: string
   phone: string | null
+  grammaticalGender: string | null
 }) {
   const [state, formAction, pending] = useActionState(updateProfileAction, EMPTY_FORM_STATE)
 
@@ -45,6 +49,8 @@ export function ProfileForm({
           required
         />
       </div>
+
+      <SelfGenderField defaultValue={grammaticalGender ?? genderFromName(fullName)} />
 
       <div className="space-y-1.5">
         <Label htmlFor="discipline">Tu profesión</Label>

@@ -108,7 +108,7 @@ export async function getAssessment(practitionerId: string, assessmentId: string
 
   const { data, error } = await db
     .from('assessments')
-    .select('*, patients!inner(id, full_name, color, date_of_birth)')
+    .select('*, patients!inner(id, full_name, color, date_of_birth, grammatical_gender)')
     .is('patients.deleted_at', null)
     .eq('id', assessmentId)
     .eq('practitioner_id', practitionerId)
