@@ -109,7 +109,7 @@ function AskFab({ open, onOpen }: { open: boolean; onOpen: () => void }) {
       title="Preguntá a Ombúa"
       className={cn(
         'no-print fixed right-5 bottom-5 z-50 hidden size-14 items-center justify-center rounded-full',
-        'bg-violet text-white shadow-[0_8px_24px_rgb(108_92_231_/_45%)] transition hover:brightness-107',
+        'bg-violet text-white shadow-violet-lg transition hover:brightness-107',
         'focus-visible:ring-2 focus-visible:ring-violet focus-visible:ring-offset-2 focus-visible:outline-none',
         open ? 'lg:hidden' : 'lg:flex',
       )}
