@@ -35,6 +35,7 @@ export const NewReport = z.object({
   inputNotes: z
     .string()
     .trim()
+    .max(4000, 'Lo que querés que diga puede tener hasta 4000 caracteres.')
     .optional()
     .nullable()
     .transform((value) => (value ? value : null)),
@@ -126,7 +127,7 @@ export async function getReport(practitionerId: string, reportId: string) {
 
   const { data, error } = await db
     .from('reports')
-    .select('*, patients!inner(id, full_name, color, date_of_birth, school_level)')
+    .select('*, patients!inner(id, full_name, color, date_of_birth, school_level, age_group)')
     .is('patients.deleted_at', null)
     .eq('id', reportId)
     .eq('practitioner_id', practitionerId)

@@ -17,7 +17,7 @@ import { firstName, whatsappLink } from '@/lib/whatsapp'
 export function BookingLink({ url, practitionerName }: { url: string; practitionerName: string }) {
   const [copied, setCopied] = useState(false)
 
-  const message = `Hola! Te paso el link para pedir un turno conmigo: ${url}`
+  const message = `¡Hola! Te paso el link para pedir un turno conmigo: ${url}`
 
   return (
     <div className="space-y-2.5">

@@ -262,6 +262,46 @@ export async function dismissBookingRequest(practitionerId: string, requestId: s
   if (error) throw error
 }
 
+/**
+ * Reclama una solicitud pendiente para convertirla en paciente. Devuelve la
+ * fila si esta llamada fue la que la reclamó, y `null` si ya no estaba
+ * pendiente.
+ *
+ * Es un `update … where status = 'pending'`, y no leer y después escribir, a
+ * propósito: con dos clics seguidos o dos pestañas abiertas, las dos lecturas
+ * veían "pendiente" y las dos creaban el paciente y el turno. Así, la base deja
+ * pasar a una sola.
+ */
+export async function claimBookingRequest(practitionerId: string, requestId: string) {
+  const db = await getDb()
+
+  const { data, error } = await db
+    .from('booking_requests')
+    .update({ status: 'confirmed' })
+    .eq('id', requestId)
+    .eq('practitioner_id', practitionerId)
+    .eq('status', 'pending')
+    .select()
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+/** Si algo falló después de reclamarla, vuelve a pendiente para poder reintentar. */
+export async function releaseBookingRequest(practitionerId: string, requestId: string) {
+  const db = await getDb()
+
+  const { error } = await db
+    .from('booking_requests')
+    .update({ status: 'pending' })
+    .eq('id', requestId)
+    .eq('practitioner_id', practitionerId)
+    .is('patient_id', null)
+
+  if (error) throw error
+}
+
 export async function markBookingConfirmed(
   practitionerId: string,
   requestId: string,

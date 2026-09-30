@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation'
 import { requireUser } from '@/server/auth'
 import {
   dismissBookingRequest,
-  getBookingRequest,
+  claimBookingRequest,
+  releaseBookingRequest,
   markBookingConfirmed,
 } from '@/server/booking'
 import { today } from '@/lib/dates'
@@ -43,14 +44,22 @@ export async function confirmBookingAction(formData: FormData) {
   const user = await requireUser()
   const requestId = String(formData.get('requestId'))
 
-  const request = await getBookingRequest(user.id, requestId)
+  // Reclamada antes de crear nada: un doble clic creaba dos pacientes y dos
+  // turnos. Ver `claimBookingRequest`.
+  const request = await claimBookingRequest(user.id, requestId)
   if (!request) redirect('/reservas')
 
-  const patient = await createPatient(user.id, {
-    fullName: request.name,
-    phone: request.phone,
-    referralReason: request.note,
-  })
+  let patient: Awaited<ReturnType<typeof createPatient>>
+  try {
+    patient = await createPatient(user.id, {
+      fullName: request.name,
+      phone: request.phone,
+      referralReason: request.note,
+    })
+  } catch (error) {
+    await releaseBookingRequest(user.id, requestId)
+    throw error
+  }
 
   if (request.preferred_date && request.preferred_time) {
     if (request.preferred_date >= today()) {

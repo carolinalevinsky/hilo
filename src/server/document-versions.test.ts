@@ -30,6 +30,7 @@ vi.mock('./db', () => ({
 const { listVersions, restoreVersion } = await import('./document-versions')
 const { updateReportContent } = await import('./reports')
 const { updateAssessmentAnalysis } = await import('./assessments')
+const { AI_MODEL } = await import('./ai')
 
 const service = serviceClient()
 const email = testEmail('versiones')
@@ -228,5 +229,20 @@ describe('borrar el documento', () => {
       .select('id', { count: 'exact', head: true })
       .eq('report_id', reportId)
     expect(count).toBe(0)
+  })
+})
+
+describe('de dónde salió el texto', () => {
+  it('lo que aplica la IA queda marcado con el modelo, y una edición a mano no lo borra', async () => {
+    const reportId = await newReport('Borrador base.')
+
+    await updateReportContent(practitionerId, reportId, 'Lo que escribió la IA.', 'ai')
+    let row = (await service.from('reports').select('ai_generated, ai_model').eq('id', reportId).single()).data
+    expect(row?.ai_generated).toBe(true)
+    expect(row?.ai_model).toBe(AI_MODEL)
+
+    await updateReportContent(practitionerId, reportId, 'Retocado a mano.', 'edit')
+    row = (await service.from('reports').select('ai_generated, ai_model').eq('id', reportId).single()).data
+    expect(row?.ai_model).toBe(AI_MODEL)
   })
 })

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  formatDate,
   startOfDayInUruguay,
   toDateInput,
   today,
@@ -107,5 +108,12 @@ describe('la cuota mensual', () => {
     // Tres horas de diferencia: con `T00:00:00Z` los informes escritos entre las
     // 21:00 y la medianoche del día 1.º se contaban contra el mes anterior.
     expect(startOfDayInUruguay('2026-09-01').toISOString()).toBe('2026-09-01T03:00:00.000Z')
+  })
+})
+
+describe('formatDate con un instante', () => {
+  it('muestra el día que era en Uruguay, no en UTC', () => {
+    // 01:30 UTC del 12 son las 22:30 del 11 en Montevideo.
+    expect(formatDate('2026-08-12T01:30:00Z')).toBe(formatDate('2026-08-11'))
   })
 })

@@ -141,7 +141,7 @@ export function assistantInstructions(discipline: string): string {
     'No hacés diagnósticos cerrados y no afirmás resultados que no estén en los datos.',
     'Respuestas breves: dos o tres frases, salvo que te pidan más.',
     'Escribís en texto plano, sin markdown ni viñetas.',
-    'Es una conversación: si la consulta se apoya en lo que ya venían hablando, seguí el ombua sin repetir lo dicho.',
+    'Es una conversación: si la consulta se apoya en lo que ya venían hablando, continuá desde ahí sin repetir lo dicho.',
   ].join(' ')
 }
 

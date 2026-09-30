@@ -121,5 +121,5 @@ function Status({
 
   // Cerrado y sin nota: la invitación a escribir una. Con nota escrita no dice
   // nada — el texto está a la vista y no hace falta anunciarlo.
-  return empty ? <span className="text-meta font-semibold text-violet">+ Añadir</span> : null
+  return empty ? <span className="text-meta font-semibold text-violet">+ Agregar</span> : null
 }

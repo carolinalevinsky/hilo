@@ -28,8 +28,17 @@ const LOCALE = 'es-UY'
  */
 export const TIME_ZONE = 'America/Montevideo'
 
+/**
+ * Una fecha para mostrar, sea una fecha flotante ("2026-08-11") o un instante
+ * ("2026-08-12T01:30:00Z").
+ *
+ * Un instante se lleva primero al día que era en Uruguay. Antes se formateaba
+ * con el huso de quien lo formateaba, y en el servidor eso es UTC: una reserva
+ * que llegó el lunes a las 22:30 aparecía fechada el martes.
+ */
 function toLocalDate(value: string): Date {
-  return value.includes('T') ? new Date(value) : new Date(`${value}T00:00:00`)
+  const day = value.includes('T') ? zonedParts(new Date(value)).date : value
+  return new Date(`${day}T00:00:00`)
 }
 
 /** "11 ago 2026" */

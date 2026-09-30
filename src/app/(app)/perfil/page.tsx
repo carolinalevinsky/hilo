@@ -119,7 +119,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
               className={
                 result.ok
                   ? 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]'
-                  : 'rounded-[11px] bg-red-soft px-3.5 py-2.5 text-meta text-[#c0392b]'
+                  : 'rounded-[11px] bg-coral-soft px-3.5 py-2.5 text-meta text-[#c0392b]'
               }
             >
               {result.message}
