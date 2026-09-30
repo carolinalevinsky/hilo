@@ -3,7 +3,13 @@ import { TIME_ZONE, zonedParts } from '@/lib/dates'
 import { GOOGLE_EVENT_MARKER } from '@/lib/storage-keys'
 
 import { getDb } from './db'
-import { connectionFor, findGoogleAccount, pullStateFor, saveSyncPoint } from './google'
+import {
+  connectionFor,
+  findGoogleAccount,
+  GOOGLE_TIMEOUT_MS,
+  pullStateFor,
+  saveSyncPoint,
+} from './google'
 
 /**
  * Escribir en el calendario de Google lo que pasa en Ombúa.
@@ -70,6 +76,10 @@ export function eventBody(appointment: AppointmentForSync, title: string) {
   return {
     summary: title,
     description: 'Agendado desde Ombúa',
+    // Explícito porque una sesión cancelada desde Google conserva su evento
+    // (ver `applyEvent`). Si después se reagenda en Ombúa, el PATCH sobre ese
+    // evento lo tiene que devolver a la vida, no dejarlo borrado.
+    status: 'confirmed',
     start: {
       dateTime: `${appointment.scheduled_on}T${withSeconds(appointment.start_time)}`,
       timeZone: TIME_ZONE,
@@ -130,6 +140,8 @@ async function callGoogle(
       },
       body: init.body ? JSON.stringify(init.body) : undefined,
       cache: 'no-store',
+      // Un Google que no contesta es lo mismo que uno caído: se sigue sin él.
+      signal: AbortSignal.timeout(GOOGLE_TIMEOUT_MS),
     })
   } catch {
     // Ver la regla de arriba: agendar no se cae porque la red falle.
@@ -228,6 +240,54 @@ export async function pushAppointment(
   return true
 }
 
+/**
+ * Manda a Google las sesiones de una ventana que todavía no tienen evento.
+ *
+ * Es la reconciliación que los comentarios de este archivo daban por hecha y
+ * no existía. Las sesiones que arma un horario fijo (`materialiseAppointments`)
+ * nunca se mandaban —sólo las que se agendaban de a una—, así que un horario
+ * de todos los lunes no aparecía nunca en Google. Y un envío que fallaba una
+ * vez (Google caído) quedaba sin evento para siempre.
+ *
+ * Tope por vuelta, de a una y sin paralelo: son llamadas a Google, y la Agenda
+ * la llama después de responder (`after`), así que nadie espera. Lo que no
+ * entra en esta vuelta entra en la próxima.
+ */
+export async function pushPending(
+  practitionerId: string,
+  from: string,
+  to: string,
+  limit = 25,
+): Promise<number> {
+  try {
+    const connection = await connectionFor(practitionerId)
+    if (!connection) return 0
+
+    const db = await getDb()
+    const { data: pending, error } = await db
+      .from('appointments')
+      .select('id')
+      .eq('practitioner_id', practitionerId)
+      .eq('status', 'scheduled')
+      .is('gcal_event_id', null)
+      .gte('scheduled_on', from)
+      .lte('scheduled_on', to)
+      .order('scheduled_on')
+      .limit(limit)
+
+    if (error) throw error
+
+    let pushed = 0
+    for (const { id } of pending ?? []) {
+      if (await pushAppointment(practitionerId, id)) pushed += 1
+    }
+    return pushed
+  } catch (error) {
+    console.error('[google] no se pudieron mandar las sesiones pendientes', error)
+    return 0
+  }
+}
+
 export type GoogleEvent = {
   id?: string
   status?: string
@@ -268,17 +328,24 @@ export async function pullFromGoogle(practitionerId: string): Promise<number> {
   const state = await pullStateFor(practitionerId)
   if (!state || !state.dueForPull) return 0
 
-  const connection = await connectionFor(practitionerId)
-  if (!connection) return 0
+  // Nada de acá puede tirar la Agenda abajo: la sincronización es un extra
+  // sobre la semana, no una condición para verla. Una respuesta rara de Google,
+  // un JSON cortado, un error de la base al aplicar un evento: se anota y se
+  // sigue con lo que hay.
+  try {
+    const connection = await connectionFor(practitionerId)
+    if (!connection) return 0
 
-  const applied = await pullOnce(
-    practitionerId,
-    connection.accessToken,
-    connection.calendarId,
-    state.syncToken,
-  )
-
-  return applied
+    return await pullOnce(
+      practitionerId,
+      connection.accessToken,
+      connection.calendarId,
+      state.syncToken,
+    )
+  } catch (error) {
+    console.error('[google] no se pudo traer lo que cambió en Google', error)
+    return 0
+  }
 }
 
 async function pullOnce(
@@ -381,17 +448,42 @@ async function applyEvent(
   event: GoogleEvent,
 ): Promise<boolean> {
   const appointmentId = event.extendedProperties?.private?.[GOOGLE_EVENT_MARKER]
-  if (!appointmentId) return false
+  if (!appointmentId || !event.id) return false
 
   const db = await getDb()
 
+  const { data: row } = await db
+    .from('appointments')
+    .select('id, gcal_event_id, schedule_id, scheduled_on, status')
+    .eq('id', appointmentId)
+    .eq('practitioner_id', practitionerId)
+    .maybeSingle()
+
+  // ─── Sólo el evento que la sesión tiene atado ahora ───────────────────────
+  //
+  // La marca dice de qué sesión es un evento, pero una sesión puede haber
+  // tenido varios: Ombúa cancela (borra el evento E1 en Google), después se
+  // vuelve a agendar (crea E2). La próxima lectura trae los dos, porque Google
+  // también devuelve los borrados — y E1 "cancelado" volvía a cancelar la sesión
+  // que E2 acababa de reagendar, o la dejaba sin evento y con un duplicado en
+  // Google. Un evento que no es el que la fila tiene atado es historia vieja.
+  if (!row || row.gcal_event_id !== event.id) return false
+
   if (event.status === 'cancelled') {
     // Cancela el horario. NO borra la sesión. Ver la regla arriba.
+    //
+    // Sólo si seguía agendada: un "vino" o un "no vino" los puso una persona,
+    // y que alguien limpie su calendario después no los deshace. Y el id del
+    // evento se queda, a propósito: si lo restauran en Google, vuelve por el
+    // camino de abajo y la sesión se reagenda sola.
+    if (row.status !== 'scheduled') return false
+
     const { error } = await db
       .from('appointments')
-      .update({ status: 'cancelled', gcal_event_id: null })
+      .update({ status: 'cancelled' })
       .eq('id', appointmentId)
       .eq('practitioner_id', practitionerId)
+      .eq('status', 'scheduled')
 
     return !error
   }
@@ -406,6 +498,21 @@ async function applyEvent(
 
   const { date, time } = toLocalDateTime(startIso)
 
+  // Una sesión de un horario fijo que se mueve de día en Google deja su fecha
+  // original vacía. Sin anotarla como excepción, la próxima vez que se arma la
+  // semana el horario la volvía a crear: la sesión aparecía dos veces, la
+  // movida y un fantasma en el día de antes.
+  if (row.schedule_id && date !== row.scheduled_on) {
+    await db.from('schedule_skips').upsert(
+      {
+        practitioner_id: practitionerId,
+        schedule_id: row.schedule_id,
+        skipped_on: row.scheduled_on,
+      },
+      { onConflict: 'schedule_id,skipped_on', ignoreDuplicates: true },
+    )
+  }
+
   const { error } = await db
     .from('appointments')
     .update({
@@ -416,7 +523,10 @@ async function applyEvent(
     .eq('id', appointmentId)
     .eq('practitioner_id', practitionerId)
 
-  if (error) return false
+  if (error) {
+    console.error('[google] no se pudo mover la sesión según Google', { appointmentId, error })
+    return false
+  }
 
   // Y se levanta la cancelación, si la había.
   //
@@ -425,10 +535,8 @@ async function applyEvent(
   // existía, decía cuándo era, y seguía tachada en Ombúa para siempre.
   //
   // El `.eq('status', 'cancelled')` es lo que lo hace seguro: sólo levanta la
-  // cancelación que este mismo archivo escribió. Un "vino" o un "no vino" los
-  // puso una persona en Ombúa, Google no sabe nada de eso, y no se tocan. Un
-  // evento cancelado ya salió por el camino de arriba, así que llegar hasta acá
-  // significa que en Google existe.
+  // cancelación. Un "vino" o un "no vino" los puso una persona en Ombúa, Google
+  // no sabe nada de eso, y no se tocan.
   await db
     .from('appointments')
     .update({ status: 'scheduled' })

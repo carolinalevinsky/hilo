@@ -94,15 +94,34 @@ type TokenResponse = {
   error_description?: string
 }
 
-async function postToken(body: Record<string, string>): Promise<TokenResponse> {
-  const response = await fetch(TOKEN, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(body).toString(),
-    cache: 'no-store',
-  })
+/**
+ * Cuánto se espera a Google antes de seguir sin él. La Agenda espera la
+ * sincronización antes de dibujarse, así que un Google colgado colgaba la
+ * pantalla hasta que la función se moría por tiempo.
+ */
+export const GOOGLE_TIMEOUT_MS = 6000
 
-  return (await response.json()) as TokenResponse
+/**
+ * Nunca tira. Una caída de red, una respuesta que no es JSON o un Google que no
+ * contesta vuelven como `{ error }`, que es lo que quien llama ya sabe manejar.
+ * Antes tiraba, y eso subía hasta `createAppointment` —la sesión quedaba
+ * guardada, la pantalla decía "No pudimos guardar", y reintentar la duplicaba—
+ * y hasta la Agenda, que caía en la pantalla de error.
+ */
+async function postToken(body: Record<string, string>): Promise<TokenResponse> {
+  try {
+    const response = await fetch(TOKEN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(body).toString(),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(GOOGLE_TIMEOUT_MS),
+    })
+    return (await response.json()) as TokenResponse
+  } catch (error) {
+    console.error('[google] no se pudo hablar con el servidor de tokens', error)
+    return { error: 'unreachable' }
+  }
 }
 
 /** Cuándo vence un access token, con un minuto de margen. */
@@ -189,15 +208,18 @@ export async function completeConnection(
 }
 
 async function fetchEmail(accessToken: string): Promise<string | null> {
-  const response = await fetch(USERINFO, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    cache: 'no-store',
-  })
-
-  if (!response.ok) return null
-
-  const data = (await response.json()) as { email?: string }
-  return data.email ?? null
+  try {
+    const response = await fetch(USERINFO, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(GOOGLE_TIMEOUT_MS),
+    })
+    if (!response.ok) return null
+    const data = (await response.json()) as { email?: string }
+    return data.email ?? null
+  } catch {
+    return null
+  }
 }
 
 /** La cuenta conectada, sin ningún token: esto sí se puede mostrar. */

@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { cookies } from 'next/headers'
+import { after } from 'next/server'
 
 import { BookingChip } from '@/components/agenda/booking-chip'
 import { ConnectGoogle } from '@/components/agenda/connect-google'
@@ -34,7 +35,7 @@ import {
 } from '@/server/appointments'
 import { listBookingRequests } from '@/server/booking'
 import { findGoogleAccount } from '@/server/google'
-import { listBusyBlocks, pullFromGoogle } from '@/server/google-calendar'
+import { listBusyBlocks, pullFromGoogle, pushPending } from '@/server/google-calendar'
 import { listPatients } from '@/server/patients'
 import { planForRange } from '@/server/planning'
 
@@ -73,11 +74,14 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // of sessions nobody recorded. Weeks before Ombúa was in use are empty because
   // Ombúa genuinely does not know what happened in them.
   const horizon = weekDates(todayDate(), Math.max(offset, 0) + 3)
-  await materialiseAppointments(
-    user.id,
-    weekDates(todayDate(), 0)[0]!,
-    horizon[horizon.length - 1]!,
-  )
+  const windowStart = weekDates(todayDate(), 0)[0]!
+  const windowEnd = horizon[horizon.length - 1]!
+  await materialiseAppointments(user.id, windowStart, windowEnd)
+
+  // Lo que se acaba de armar (y lo que falló antes) sale hacia Google después
+  // de responder: la semana se dibuja sin esperar a Google, y las sesiones de
+  // los horarios fijos por fin llegan a su calendario. Ver `pushPending`.
+  after(() => pushPending(user.id, windowStart, windowEnd))
 
   // Traer de Google lo que se movió allá, antes de leer la semana.
   //
