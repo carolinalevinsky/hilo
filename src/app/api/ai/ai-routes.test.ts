@@ -28,6 +28,8 @@ const state = vi.hoisted(() => ({
   released: [] as (string | null)[],
   /** What the report route handed to the prompt builder, for P20. */
   promptArgs: null as { customInstructions?: string | null } | null,
+  /** Los nombres que la ruta pidió tapar, para ver que el paciente no viaja. */
+  aliases: [] as { restoreAs: string }[],
 }))
 
 vi.mock('@/server/auth', () => ({ getUser: async () => state.user }))
@@ -74,7 +76,13 @@ vi.mock('@/server/plans', async (importOriginal) => ({
 
 vi.mock('@/server/ai', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/server/ai')>()),
-  streamCompletion: async function* () {
+  streamCompletion: async function* (
+    _instructions: string,
+    _prompt: string,
+    _attachment?: unknown,
+    aliases: { restoreAs: string }[] = [],
+  ) {
+    state.aliases = aliases
     state.anthropicCalls++
     for (const chunk of state.chunks) yield chunk
     if (state.failAfterChunks) throw state.failAfterChunks
@@ -324,5 +332,13 @@ describe('/api/ai/informe', () => {
     )
 
     expect(state.promptArgs?.customInstructions).toBe('Tres párrafos, empezá por las fortalezas.')
+  })
+
+  it('pide que el nombre del paciente no llegue a Anthropic', async () => {
+    // Lo que se tapa y cómo se prueba en `src/lib/pseudonyms.test.ts`. Acá, que
+    // la ruta no se olvide de pedirlo.
+    await events(await informe(reportRequest({ reportId: 'informe-1' })))
+
+    expect(state.aliases.map((alias) => alias.restoreAs)).toEqual(['Martina Prueba', 'Martina'])
   })
 })

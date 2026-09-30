@@ -1,4 +1,5 @@
 import { ageLabel } from '@/lib/age'
+import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
 import {
   assessmentInstructions,
@@ -64,12 +65,18 @@ export async function POST(request: Request) {
     adjustment: body.adjustment,
   })
 
-  return sseResponse(generate(instructions, prompt))
+  return sseResponse(
+    generate(instructions, prompt, patientAliases(assessment.patients?.full_name ?? '')),
+  )
 }
 
-async function* generate(instructions: string, prompt: string): AsyncGenerator<SseEvent> {
+async function* generate(
+  instructions: string,
+  prompt: string,
+  aliases: Alias[],
+): AsyncGenerator<SseEvent> {
   try {
-    for await (const chunk of streamCompletion(instructions, prompt)) {
+    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases)) {
       yield { event: 'delta', data: chunk }
     }
     yield { event: 'done', data: AI_MODEL }

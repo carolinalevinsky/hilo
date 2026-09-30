@@ -45,7 +45,9 @@ export async function gatherReportContext(
         .select('full_name, date_of_birth, referral_reason, start_date')
         .eq('id', patientId)
         .eq('practitioner_id', practitionerId)
-        .single(),
+        // Un paciente borrado no vuelve a salir hacia la IA.
+        .is('deleted_at', null)
+        .maybeSingle(),
       db
         .from('goals')
         .select('title, progress')

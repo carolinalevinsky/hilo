@@ -1,7 +1,9 @@
 import { today } from '@/lib/dates'
+import type { Alias } from '@/lib/pseudonyms'
 import { AiUnavailableError, AI_MODEL, streamChat, type ChatMessage } from '@/server/ai'
 import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import {
+  assistantAliases,
   assistantMessages,
   assistantSystemPrompt,
   gatherAssistantContext,
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
       assistantMessages(history, question),
       fallback,
       () => releaseUsage(usageId),
+      assistantAliases(context),
     ),
   )
 }
@@ -91,11 +94,12 @@ async function* generate(
   messages: ChatMessage[],
   fallback: string,
   release: () => Promise<void>,
+  aliases: Alias[],
 ): AsyncGenerator<SseEvent> {
   let received = ''
 
   try {
-    for await (const chunk of streamChat(instructions, messages)) {
+    for await (const chunk of streamChat(instructions, messages, aliases)) {
       received += chunk
       yield { event: 'delta', data: chunk }
     }

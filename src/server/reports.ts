@@ -113,12 +113,21 @@ export async function updateReportContent(
   await replaceDocumentBody(practitionerId, 'report', reportId, content, reason)
 }
 
+/**
+ * Un informe, si su paciente no fue borrado.
+ *
+ * `!inner` + `deleted_at`: el documento de un paciente borrado no se ve ni se
+ * regenera. Borrar un paciente es el pedido de supresión de la Ley 18.331; que
+ * sus informes siguieran en la lista, y a un botón de mandarse a la IA, era no
+ * haberlo borrado.
+ */
 export async function getReport(practitionerId: string, reportId: string) {
   const db = await getDb()
 
   const { data, error } = await db
     .from('reports')
-    .select('*, patients(id, full_name, color, date_of_birth, school_level)')
+    .select('*, patients!inner(id, full_name, color, date_of_birth, school_level)')
+    .is('patients.deleted_at', null)
     .eq('id', reportId)
     .eq('practitioner_id', practitionerId)
     .maybeSingle()
@@ -136,7 +145,8 @@ export async function listReports(
 
   let query = db
     .from('reports')
-    .select('*, patients(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color)')
+    .is('patients.deleted_at', null)
     .eq('practitioner_id', practitionerId)
 
   if (patientId) query = query.eq('patient_id', patientId)

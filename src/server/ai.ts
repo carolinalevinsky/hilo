@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 
 import { env } from '@/lib/env'
+import { aliasInstructions, hideNames, revealStream, type Alias } from '@/lib/pseudonyms'
 
 /**
  * The Anthropic client, the clinical instruction block, and the two things that
@@ -179,15 +180,25 @@ export async function* streamCompletion(
   taskInstructions: string,
   userPrompt: string,
   attachment?: Attachment,
+  /**
+   * Los nombres a tapar antes de mandar, y a devolver en lo que vuelve. Ver
+   * `src/lib/pseudonyms.ts`. Todo pedido que lleva datos de un paciente pasa
+   * los suyos.
+   */
+  aliases: Alias[] = [],
 ): AsyncGenerator<string> {
-  yield* streamMessages(taskInstructions, [
-    {
-      role: 'user',
-      content: attachment
-        ? [attachmentBlock(attachment), { type: 'text', text: userPrompt }]
-        : userPrompt,
-    },
-  ])
+  const guidance = aliasInstructions(aliases)
+  const text = hideNames(guidance ? `${userPrompt}\n\n${guidance}` : userPrompt, aliases)
+
+  yield* revealStream(
+    streamMessages(taskInstructions, [
+      {
+        role: 'user',
+        content: attachment ? [attachmentBlock(attachment), { type: 'text', text }] : text,
+      },
+    ]),
+    aliases,
+  )
 }
 
 /** A turn of a conversation, as the caller keeps it. Oldest first. */
@@ -211,10 +222,24 @@ export type ChatMessage = {
 export async function* streamChat(
   taskInstructions: string,
   messages: ChatMessage[],
+  /** Como en `streamCompletion`: los nombres no viajan, ni en la historia. */
+  aliases: Alias[] = [],
 ): AsyncGenerator<string> {
-  yield* streamMessages(
-    taskInstructions,
-    messages.map((message) => ({ role: message.role, content: message.content })),
+  const guidance = aliasInstructions(aliases)
+  const task = hideNames(
+    guidance ? `${taskInstructions}\n\n${guidance}` : taskInstructions,
+    aliases,
+  )
+
+  yield* revealStream(
+    streamMessages(
+      task,
+      messages.map((message) => ({
+        role: message.role,
+        content: hideNames(message.content, aliases),
+      })),
+    ),
+    aliases,
   )
 }
 

@@ -1,4 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import { getUser } from '@/server/auth'
 import { getPatient } from '@/server/patients'
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
       sessionNotePrompt(patient.full_name, transcript),
       fallback,
       () => releaseUsage(usageId),
+      patientAliases(patient.full_name),
     ),
   )
 }
@@ -116,11 +118,12 @@ async function* generate(
   prompt: string,
   fallback: string,
   release: () => Promise<void>,
+  aliases: Alias[],
 ): AsyncGenerator<SseEvent> {
   let received = ''
 
   try {
-    for await (const chunk of streamCompletion(instructions, prompt)) {
+    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases)) {
       received += chunk
     }
   } catch (error) {
