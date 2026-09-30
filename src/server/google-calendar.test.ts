@@ -152,6 +152,7 @@ describe('lo que se cuenta del paciente', () => {
       'end',
       'extendedProperties',
       'start',
+      'status',
       'summary',
     ])
   })

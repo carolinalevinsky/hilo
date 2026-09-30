@@ -181,6 +181,22 @@ export async function listSchedules(
 export async function clearUpcomingFor(practitionerId: string, patientId: string) {
   const db = await getDb()
 
+  // Primero se sacan de Google. Se borraban sólo acá, y los eventos quedaban
+  // en el calendario de la profesional con el nombre o las iniciales de un
+  // paciente que acaba de pedir que lo borren.
+  const { data: synced } = await db
+    .from('appointments')
+    .select('id')
+    .eq('practitioner_id', practitionerId)
+    .eq('patient_id', patientId)
+    .eq('status', 'scheduled')
+    .gte('scheduled_on', today())
+    .not('gcal_event_id', 'is', null)
+
+  for (const { id } of synced ?? []) {
+    await removeAppointment(practitionerId, id)
+  }
+
   const { error } = await db
     .from('appointments')
     .delete()
