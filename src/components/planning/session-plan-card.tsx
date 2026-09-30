@@ -6,9 +6,10 @@ import {
   setPlanItemDurationAction,
 } from '@/app/(app)/planificacion/actions'
 import { CalendarDays, ClipboardList, Clock, Trash2 } from '@/components/icons'
+import { ConfirmAction } from '@/components/confirm-action'
 import { DurationSelect } from '@/components/planning/duration-select'
 import { SessionNote } from '@/components/planning/session-note'
-import { PlanFields, type PlanTarget } from '@/components/planning/plan-fields'
+import type { PlanTarget } from '@/components/planning/plan-fields'
 import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -249,16 +250,15 @@ export function SessionPlanCard({
 
           <div className="flex items-center justify-between gap-2">
             <PrintButton label="Imprimir" />
-            <form action={clearPlanAction}>
-              <PlanFields {...target} />
-              <Button
-                type="submit"
-                variant="ghost"
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              >
-                Descartar borrador
-              </Button>
-            </form>
+            <ConfirmAction
+              action={clearPlanAction}
+              fields={{ patientId: target.patientId, appointmentId: target.appointmentId ?? '' }}
+              trigger="Descartar borrador"
+              triggerVariant="destructive"
+              title="¿Descartar este plan?"
+              description="Se sacan del plan todos los objetivos, materiales y actividades que sumaste. Los objetivos y materiales en sí no se tocan."
+              confirmLabel="Descartar"
+            />
           </div>
 
           <p className="text-micro text-muted-foreground">

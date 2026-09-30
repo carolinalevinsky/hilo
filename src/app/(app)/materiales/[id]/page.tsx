@@ -1,4 +1,5 @@
 import { ArrowLeft, Copy, Pencil } from '@/components/icons'
+import { ConfirmAction } from '@/components/confirm-action'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -67,12 +68,14 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
                   Editar
                 </Link>
               </Button>
-              <form action={deleteMaterialAction}>
-                <input type="hidden" name="materialId" value={material.id} />
-                <Button type="submit" variant="ghost" size="sm">
-                  Borrar
-                </Button>
-              </form>
+              <ConfirmAction
+                action={deleteMaterialAction}
+                fields={{ materialId: material.id }}
+                trigger="Borrar"
+                title="¿Borrar este material?"
+                description="Deja de estar en tu biblioteca. En los planes donde lo usaste queda el renglón, pero sin el material. No se puede deshacer."
+                confirmLabel="Borrar"
+              />
             </>
           ) : (
             // Ombúa's own materials and other people's published ones: copying is
