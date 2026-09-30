@@ -7,7 +7,8 @@ import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
-import { formatDate, formatLongDate } from '@/lib/dates'
+import { APPOINTMENT_STATUS_LABELS } from '@/lib/appointment-labels'
+import { formatDate, formatDateTime, formatLongDate, zonedParts } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel, guardianSummary, paymentMethodLabel } from '@/lib/patient-labels'
 import { periodLabel } from '@/lib/periods'
@@ -71,7 +72,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
           </h1>
           <p className="mt-0.5 mb-6 text-meta text-muted-foreground">
             Todo lo que Ombúa guarda sobre {patient.full_name.split(' ')[0]}, al{' '}
-            {formatLongDate(data.generatedAt.slice(0, 10))} · {practitioner.full_name} ·{' '}
+            {formatLongDate(zonedParts(new Date(data.generatedAt)).date)} · {practitioner.full_name} ·{' '}
             {disciplineLabel(practitioner.discipline)}
           </p>
 
@@ -101,7 +102,7 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               label="Consentimiento de la familia"
               value={
                 patient.consent_signed_at
-                  ? `Registrado el ${formatDate(patient.consent_signed_at.slice(0, 10))}`
+                  ? `Registrado el ${formatDate(zonedParts(new Date(patient.consent_signed_at)).date)}`
                   : 'Sin registrar'
               }
             />
@@ -159,7 +160,8 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
                 {data.assessments.map((assessment) => (
                   <li key={assessment.id}>
                     <p className="text-meta font-bold text-muted-foreground">
-                      {formatDate(assessment.assessed_on)} · {assessment.instrument}
+                      {formatDate(assessment.assessed_on)} · {assessment.instrument} ·{' '}
+                      {documentStatus(assessment)}
                     </p>
                     <p className="text-body leading-relaxed whitespace-pre-line">
                       {assessment.analysis}
@@ -178,8 +180,9 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
                 {data.reports.map((report) => (
                   <li key={report.id}>
                     <p className="text-meta font-bold text-muted-foreground">
-                      {formatDate(report.created_at.slice(0, 10))} ·{' '}
-                      {RECIPIENT_LABELS[report.recipient as RecipientId] ?? report.recipient}
+                      {formatDate(report.issued_on)} ·{' '}
+                      {RECIPIENT_LABELS[report.recipient as RecipientId] ?? report.recipient} ·{' '}
+                      {documentStatus(report)}
                     </p>
                     <p className="text-body font-bold">{report.title}</p>
                     <p className="text-body leading-relaxed whitespace-pre-line">
@@ -206,6 +209,94 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               </ul>
             )}
           </Section>
+
+          <Section title={`Asistencia (${data.appointments.length})`}>
+            {data.appointments.length === 0 ? (
+              <Empty>Sin sesiones agendadas.</Empty>
+            ) : (
+              <ul className="space-y-1">
+                {data.appointments.map((appointment, index) => (
+                  <li key={`${appointment.date}-${index}`} className="text-body">
+                    <b>{formatDate(appointment.date)}</b> · {appointment.startTime.slice(0, 5)} ·{' '}
+                    {APPOINTMENT_STATUS_LABELS[
+                      appointment.status as keyof typeof APPOINTMENT_STATUS_LABELS
+                    ] ?? appointment.status}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+
+          <Section title={`Consentimientos (${data.consents.length})`}>
+            {data.consents.length === 0 ? (
+              <Empty>Sin consentimientos firmados en Ombúa.</Empty>
+            ) : (
+              <ul className="space-y-3">
+                {data.consents.map((consent) => (
+                  <li key={consent.id}>
+                    <p className="text-meta font-bold text-muted-foreground">
+                      Firmado el {formatDateTime(consent.signed_at)} por {consent.signer_name} (
+                      {consent.signer_relationship})
+                    </p>
+                    <p className="text-body leading-relaxed whitespace-pre-line">
+                      {consent.consent_text}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+
+          {data.intakeResponses.length > 0 ? (
+            <Section title="Lo que se contestó en «Antes de empezar»">
+              <ul className="space-y-3">
+                {data.intakeResponses.map((intake) => (
+                  <li key={intake.id} className="space-y-0.5">
+                    <p className="text-meta font-bold text-muted-foreground">
+                      {formatDateTime(intake.submitted_at)}
+                    </p>
+                    <Field label="Motivo" value={intake.reason} />
+                    <Field label="Antecedentes" value={intake.history} />
+                    <Field label="Medicación" value={intake.medication} />
+                    <Field label="Otros profesionales" value={intake.other_professionals} />
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
+
+          {data.scaleResponses.length > 0 ? (
+            <Section title={`Escalas (${data.scaleResponses.length})`}>
+              <ul className="space-y-1">
+                {data.scaleResponses.map((response, index) => (
+                  <li key={`${response.submittedAt}-${index}`} className="text-body">
+                    <b>{response.scale.toUpperCase()}</b> · {formatDateTime(response.submittedAt)} ·
+                    total {response.total}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
+
+          {data.inTrash.length > 0 ? (
+            <Section title={`En la papelera (${data.inTrash.length})`}>
+              <p className="mb-2 text-meta text-muted-foreground">
+                Apartado de la vista, pero todavía guardado.
+              </p>
+              <ul className="space-y-1">
+                {data.inTrash.map((item) => (
+                  <li key={`${item.kind}-${item.id}`} className="text-body">
+                    <b>{TRASH_KIND[item.kind]}</b> · {formatDate(item.happened_on)}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
+
+          <p className="mt-2 text-meta leading-relaxed text-muted-foreground">
+            El historial de versiones de cada informe y evaluación —incluidas las versiones
+            firmadas— va completo en el archivo descargable.
+          </p>
 
           {/* Said out loud rather than left out silently. See
               `src/server/patient-export.ts` for the reasoning. */}
@@ -245,4 +336,21 @@ function Field({ label, value }: { label: string; value: string | number | null 
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="text-body text-muted-foreground">{children}</p>
+}
+
+const TRASH_KIND = {
+  session: 'Registro de sesión',
+  report: 'Informe',
+  assessment: 'Evaluación',
+  payment: 'Pago',
+} as const
+
+function documentStatus(row: {
+  signed_at: string | null
+  voided_at: string | null
+  void_reason: string | null
+}) {
+  if (row.voided_at) return `anulado el ${formatDateTime(row.voided_at)} (${row.void_reason})`
+  if (row.signed_at) return `firmado el ${formatDateTime(row.signed_at)}`
+  return 'borrador sin firmar'
 }
