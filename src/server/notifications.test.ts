@@ -107,7 +107,7 @@ describe('sendBookingNotification', () => {
       appUrl: 'https://app.ombua.com',
     })
 
-    expect(sent[0]?.html).not.toContain('Turno pedido')
+    expect(sent[0]?.html).not.toContain('Día y hora que pidió')
     expect(sent[0]?.html).not.toContain('Nota:')
   })
 })

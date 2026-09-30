@@ -74,8 +74,8 @@ export function BillingDialog({
           <Button
             size="icon"
             variant="ghost"
-            title="Editar arancel o frecuencia"
-            aria-label={`Editar arancel o frecuencia de ${patientName}`}
+            title="Editar honorario o frecuencia"
+            aria-label={`Editar honorario o frecuencia de ${patientName}`}
             // 32px es cómodo con un mouse y chico para un pulgar. En teléfono pasa
             // a 44, que es el mínimo de Apple. No se nota: el botón es `ghost`, no
             // tiene fondo hasta que lo tocás, así que lo único que cambia es el
@@ -89,7 +89,7 @@ export function BillingDialog({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Arancel de {patientName}</DialogTitle>
+          <DialogTitle>Honorario de {patientName}</DialogTitle>
           <DialogDescription>
             Lo que Ombúa usa para calcular cuánto tendría que entrar cada mes.
           </DialogDescription>

@@ -107,11 +107,11 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
               }
             />
             <Field
-              label="Arancel por sesión"
+              label="Honorario"
               value={patient.session_fee === null ? null : money(Number(patient.session_fee))}
             />
             <Field
-              label="Frecuencia de cobro"
+              label="Frecuencia de pago"
               value={billingFrequencyLabel(patient.billing_frequency)}
             />
             <Field label="Foto" value={patient.photo_path ? 'Sí, una' : 'No'} />

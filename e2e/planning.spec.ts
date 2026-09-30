@@ -186,6 +186,6 @@ test('prepara una sesión, y la nota sobrevive irse a mirar un material', async 
     await expect(page.getByText(/Guardaste el plan de Malena/)).toBeVisible()
 
     // Un solo nombre para arrancar la sesión, acá y en la ficha de la paciente.
-    await expect(page.getByRole('link', { name: 'Arrancar sesión' }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Registrar esta sesión' }).first()).toBeVisible()
   })
 })

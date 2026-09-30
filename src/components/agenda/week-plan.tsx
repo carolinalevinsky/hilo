@@ -43,7 +43,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
         <p className="text-meta text-muted-foreground">
           {sessions.length === 0
             ? 'Sin sesiones esta semana.'
-            : `${done}/${sessions.length} dadas · prepará cada sesión y marcá cuando la des`}
+            : `${done}/${sessions.length} hechas · prepará cada sesión y marcá cuando vino`}
         </p>
       </CardHeader>
 

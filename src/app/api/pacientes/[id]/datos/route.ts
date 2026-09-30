@@ -18,7 +18,7 @@ import { getPractitioner } from '@/server/practitioners'
 export async function GET(_request: Request, { params }: RouteContext<'/api/pacientes/[id]/datos'>) {
   const user = await getUser()
   if (!user) {
-    return Response.json({ error: 'No pudimos verificar tu sesión.' }, { status: 401 })
+    return Response.json({ error: 'Tenés que volver a entrar a Ombúa.' }, { status: 401 })
   }
 
   const { id } = await params

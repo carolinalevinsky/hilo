@@ -105,14 +105,14 @@ export function NextSessionCard({
               ))}
             </ol>
 
-            {/* "Arrancar sesión" es el mismo nombre que usa Planificación
+            {/* "Registrar esta sesión" es el mismo nombre que usa Planificación
                 para este mismo link: la misma acción con dos nombres en dos
                 pantallas se lee como dos acciones distintas. */}
             <div className="mt-3.5 flex flex-wrap gap-2">
               <Button asChild size="sm">
                 <Link href={recordHref}>
                   <ClipboardList className="size-4" />
-                  Arrancar sesión
+                  Registrar esta sesión
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline">

@@ -54,7 +54,7 @@ export function TomorrowReminders({
   return (
     <Card className="mb-3.5">
       <CardHeader>
-        <CardTitle>Recordá los turnos de mañana</CardTitle>
+        <CardTitle>Recordá las sesiones de mañana</CardTitle>
         {/* "lunes, 17 de agosto" comes back lower-cased from `toLocaleDateString`,
             which is correct Spanish inside a sentence and wrong as a heading.
             `capitalize` would give "Lunes, 17 De Agosto". */}

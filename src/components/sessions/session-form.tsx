@@ -93,7 +93,7 @@ export function SessionForm({
 
             {session ? null : <RecordSession patientId={patientId} targetId="progressNote" />}
 
-          The "Dictar" button next to Comentarios below is a different feature
+          The "Dictar" button next to the note below is a different feature
           and stays. */}
 
       <div className="max-w-[200px] space-y-1.5">
@@ -152,7 +152,7 @@ export function SessionForm({
           imply it. */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="progressNote">Comentarios</Label>
+          <Label htmlFor="progressNote">Qué pasó en la sesión</Label>
           <DictateButton targetId="progressNote" />
         </div>
         {/* No `rows`: the component sets `field-sizing-content`, so the box grows

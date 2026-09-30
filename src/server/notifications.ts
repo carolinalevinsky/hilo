@@ -183,7 +183,7 @@ export async function sendBookingNotification({
 
   const rows = [
     `<div><b>${escapeHtml(request.name)}</b></div>`,
-    when ? `<div style="color:#586074">Turno pedido: <b>${escapeHtml(when)}</b></div>` : '',
+    when ? `<div style="color:#586074">Día y hora que pidió: <b>${escapeHtml(when)}</b></div>` : '',
     `<div style="color:#586074">Teléfono: ${escapeHtml(request.phone)}</div>`,
     request.note ? `<div style="color:#586074">Nota: ${escapeHtml(request.note)}</div>` : '',
   ].join('')
