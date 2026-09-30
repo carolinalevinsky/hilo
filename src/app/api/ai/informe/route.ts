@@ -1,4 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { ADJUSTMENT_TOO_LONG, MAX_ADJUSTMENT } from '@/lib/ai-limits'
 import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { getUser } from '@/server/auth'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
@@ -41,6 +42,9 @@ export async function POST(request: Request) {
 
   if (!body.reportId) {
     return Response.json({ error: 'Falta el informe.' }, { status: 400 })
+  }
+  if (typeof body.adjustment === 'string' && body.adjustment.length > MAX_ADJUSTMENT) {
+    return Response.json({ error: ADJUSTMENT_TOO_LONG }, { status: 400 })
   }
 
   const [practitioner, report] = await Promise.all([

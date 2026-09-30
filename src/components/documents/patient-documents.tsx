@@ -45,7 +45,7 @@ export function PatientDocuments({
       kind: 'report' as const,
       href: `/informes/${report.id}?volver=/pacientes/${report.patient_id}`,
       title: `Para ${RECIPIENT_LABELS[report.recipient as RecipientId] ?? report.recipient}`,
-      date: report.created_at.slice(0, 10),
+      date: report.issued_on,
       row: report,
     })),
   ].sort((a, b) => b.date.localeCompare(a.date))

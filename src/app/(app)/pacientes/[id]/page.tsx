@@ -18,7 +18,7 @@ import { SessionTimeline } from '@/components/sessions/session-timeline'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
-import { formatDate } from '@/lib/dates'
+import { formatDate, today } from '@/lib/dates'
 import { disciplineLabel } from '@/lib/disciplines'
 import { ageGroupLabel, billingFrequencyLabel, guardianSummary } from '@/lib/patient-labels'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
@@ -86,13 +86,20 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
   // that the practitioner is there. The content stays behind the login.
-  const shareText = `Hola! Te escribo por ${firstName(patient.full_name)}. Cualquier cosa quedo a las órdenes. Saludos, ${firstName(practitioner.full_name)}.`
+  const shareText = `¡Hola! Te escribo por ${firstName(patient.full_name)}. Cualquier cosa quedo a las órdenes. Saludos, ${firstName(practitioner.full_name)}.`
 
   const fichaRows = [
     { label: 'Edad', value: ageLabel(patient.date_of_birth) },
     { label: 'Población', value: ageGroupLabel(patient.age_group) },
-    { label: 'Escolaridad', value: patient.school_level },
-    { label: 'Colegio', value: patient.school },
+    // Escolaridad y colegio, sólo para menores — por lo mismo que "Responsable"
+    // abajo: el formulario los esconde para un adulto, y quedaban para siempre
+    // en "Sin cargar" con un "Completar" que llevaba a un campo que no está.
+    ...(patient.age_group === 'adults'
+      ? []
+      : [
+          { label: 'Escolaridad', value: patient.school_level },
+          { label: 'Colegio', value: patient.school },
+        ]),
     { label: 'Mutualista', value: patient.health_insurer },
     // v1 stored the abordaje on the patient; here it is the practitioner's own
     // discipline, because a practitioner has exactly one and every patient of
@@ -154,7 +161,17 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
                   variant="outline"
                   className="border-transparent bg-white/16 text-white hover:bg-white/26 hover:text-white max-sm:flex-1"
                 >
-                  <Link href={`/pacientes/${patient.id}/sesiones/nueva`}>
+                  {/* Si hoy tiene hora en la agenda, el registro se ata a esa
+                      hora. Sin esto, registrar desde acá dejaba la hora en
+                      "Agendada" con su propio "Registrar sesión" al lado: dos
+                      registros posibles de un mismo encuentro. */}
+                  <Link
+                    href={
+                      nextAppointment?.scheduled_on === today()
+                        ? `/pacientes/${patient.id}/sesiones/nueva?agenda=${nextAppointment.id}`
+                        : `/pacientes/${patient.id}/sesiones/nueva`
+                    }
+                  >
                     <Plus className="size-4" />
                     Sesión
                   </Link>

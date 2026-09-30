@@ -352,7 +352,10 @@ function DurationField({ idPrefix = 'one-off' }: { idPrefix?: string }) {
     <Field label="Duración" htmlFor={id}>
       <NativeSelect id={id} name="durationMinutes" defaultValue="45">
         <option value="30">30 minutos</option>
+        <option value="40">40 minutos</option>
         <option value="45">45 minutos</option>
+        {/* La sesión de psicología es de 50 minutos, y no estaba. */}
+        <option value="50">50 minutos</option>
         <option value="60">1 hora</option>
         <option value="90">1 hora y media</option>
       </NativeSelect>

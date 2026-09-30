@@ -1,5 +1,6 @@
 import type { Database } from '@/lib/database.types'
 
+import { AI_MODEL } from './ai'
 import { logAction } from './audit'
 import { getDb } from './db'
 
@@ -78,13 +79,20 @@ async function writeBody(
   kind: DocumentKind,
   documentId: string,
   body: string,
+  reason: VersionReason,
 ) {
   const db = await getDb()
 
+  // Lo que escribió la IA queda marcado con el modelo que lo escribió. La
+  // columna existía desde el primer día y nadie la llenaba: cuando el modelo
+  // fijado se reemplace, "¿cuáles de estos escribió el anterior?" no tenía
+  // respuesta. Una edición a mano no la borra: el texto sigue viniendo de ahí.
+  const provenance = reason === 'ai' ? { ai_generated: true, ai_model: AI_MODEL } : {}
+
   const query =
     kind === 'report'
-      ? db.from('reports').update({ content: body })
-      : db.from('assessments').update({ analysis: body })
+      ? db.from('reports').update({ content: body, ...provenance })
+      : db.from('assessments').update({ analysis: body, ...provenance })
 
   const { error } = await query.eq('id', documentId).eq('practitioner_id', practitionerId)
   if (error) throw error
@@ -116,7 +124,7 @@ export async function replaceDocumentBody(
     await recordVersion(practitionerId, kind, documentId, current, reason)
   }
 
-  await writeBody(practitionerId, kind, documentId, body)
+  await writeBody(practitionerId, kind, documentId, body, reason)
   await logAction(practitionerId, 'update', kind, documentId)
 }
 

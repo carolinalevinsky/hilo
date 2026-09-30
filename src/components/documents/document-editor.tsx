@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { MAX_ADJUSTMENT } from '@/lib/ai-limits'
 import { readSseStream } from '@/lib/sse-client'
 import { TO_COMPLETE } from '@/lib/to-complete'
 import type { DocumentState } from '@/server/document-lifecycle'
@@ -353,6 +354,7 @@ export function DocumentEditor({
           </label>
           <Input
             id="adjustment"
+            maxLength={MAX_ADJUSTMENT}
             value={adjustment}
             onChange={(event) => setAdjustment(event.target.value)}
             placeholder="Ej: más breve, y sumá una recomendación para el aula"

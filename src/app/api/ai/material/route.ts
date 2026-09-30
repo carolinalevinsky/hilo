@@ -1,4 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { ADJUSTMENT_TOO_LONG, MAX_ADJUSTMENT } from '@/lib/ai-limits'
 import { getUser } from '@/server/auth'
 import {
   materialAdjustmentPrompt,
@@ -52,6 +53,9 @@ export async function POST(request: Request) {
   }
   if (adjustment && adjustment.length < 3) {
     return Response.json({ error: 'Contame qué querés cambiar.' }, { status: 400 })
+  }
+  if (adjustment.length > MAX_ADJUSTMENT) {
+    return Response.json({ error: ADJUSTMENT_TOO_LONG }, { status: 400 })
   }
   if (asked.length > MAX_REQUEST * 2) {
     return Response.json({ error: 'El pedido es demasiado largo.' }, { status: 400 })

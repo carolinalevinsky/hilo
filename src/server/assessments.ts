@@ -34,7 +34,7 @@ export type AssessmentWithPatient = Assessment & {
 export const AssessmentResults = z.object({
   scale: z.enum(['standard', 'percentile', 'raw']).default('standard'),
   scores: z.record(z.string(), z.number()).default({}),
-  prose: z.string().default(''),
+  prose: z.string().max(8000, 'Los resultados pueden tener hasta 8000 caracteres.').default(''),
 })
 
 export type AssessmentResultsData = z.infer<typeof AssessmentResults>
@@ -47,6 +47,7 @@ export const NewAssessment = z.object({
   observations: z
     .string()
     .trim()
+    .max(4000, 'Las observaciones pueden tener hasta 4000 caracteres.')
     .optional()
     .nullable()
     .transform((value) => (value ? value : null)),

@@ -60,7 +60,10 @@ export default async function ReportPage({
   const meta = [
     { label: 'Paciente', value: report.patients?.full_name ?? 'Sin datos' },
     { label: 'Edad', value: ageLabel(report.patients?.date_of_birth ?? null) ?? 'Sin datos' },
-    { label: 'Escolaridad', value: report.patients?.school_level ?? 'Sin datos' },
+    // Un informe de un adulto no lleva "Escolaridad: Sin datos".
+    ...(report.patients?.age_group === 'adults'
+      ? []
+      : [{ label: 'Escolaridad', value: report.patients?.school_level ?? 'Sin datos' }]),
     { label: 'Destinatario', value: RECIPIENT_LABELS[report.recipient as RecipientId] },
   ]
 
@@ -68,7 +71,7 @@ export default async function ReportPage({
   // message carries no clinical content — an email or a WhatsApp is an
   // uncontrolled copy, so the report itself stays behind the login.
   const shareable = report.recipient === 'family' || report.recipient === 'patient'
-  const shareText = `Hola! Ya está listo el informe de ${firstName(report.patients?.full_name ?? '')}. Te lo alcanzo por acá o lo vemos juntos cuando prefieras. Saludos, ${firstName(practitioner.full_name)}.`
+  const shareText = `¡Hola! Ya está listo el informe de ${firstName(report.patients?.full_name ?? '')}. Te lo alcanzo por acá o lo vemos juntos cuando prefieras. Saludos, ${firstName(practitioner.full_name)}.`
 
   return (
     <>

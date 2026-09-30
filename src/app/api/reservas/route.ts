@@ -1,3 +1,5 @@
+import { after } from 'next/server'
+
 import { publicConfig } from '@/lib/env'
 import {
   BOOKINGS_PER_HOUR,
@@ -92,21 +94,24 @@ export async function POST(request: Request) {
   // their inbox — a family should not get an error because Resend is down.
   const email = await practitionerEmail(practitioner.id)
   if (email) {
-    // Sin `await`, que es lo que el comentario de arriba decía y el código no
-    // hacía: con Resend lento, la familia se quedaba mirando el spinner por un
-    // mail que no es para ella. El `catch` no es decorativo — una promesa
-    // rechazada sin manejar tumba el proceso en Node.
-    void sendBookingNotification({
-      to: email,
-      practitionerName: practitioner.full_name,
-      request: created,
-      appUrl: publicConfig.NEXT_PUBLIC_APP_URL,
-    }).catch((error) => {
-      console.error('[reservas] no se pudo avisar de la reserva', {
-        practitionerId: practitioner.id,
-        error,
-      })
-    })
+    // Sin esperar, para que la familia no se quede mirando el spinner por un
+    // mail que no es para ella — pero con `after`, no con un `void` suelto. En
+    // Vercel la función se congela apenas sale la respuesta, y una promesa que
+    // quedó colgando puede no terminar nunca: el mail no salía y nadie se
+    // enteraba. `after` le pide a la plataforma que espere a que termine.
+    after(() =>
+      sendBookingNotification({
+        to: email,
+        practitionerName: practitioner.full_name,
+        request: created,
+        appUrl: publicConfig.NEXT_PUBLIC_APP_URL,
+      }).catch((error) => {
+        console.error('[reservas] no se pudo avisar de la reserva', {
+          practitionerId: practitioner.id,
+          error,
+        })
+      }),
+    )
   }
 
   return Response.json({ ok: true })

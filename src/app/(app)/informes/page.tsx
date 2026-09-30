@@ -142,7 +142,7 @@ export default async function DocumentsPage() {
           {/* Sólo en los últimos tres. El resto del mes no hay contador: ver
               `quotaWarning` en src/server/plans.ts. */}
           {runningOut ? (
-            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-meta leading-relaxed text-amber">
+            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-meta leading-relaxed text-[#8a5a12]">
               {runningOut}
             </p>
           ) : null}

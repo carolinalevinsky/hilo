@@ -159,7 +159,10 @@
   --secondary: var(--brand-violet-soft);
   --secondary-foreground: var(--brand-violet);
   --muted: #f1f2f8;
-  --muted-foreground: #7a839a;
+  /* Era #7a839a: 3,8:1 sobre blanco y 3,4:1 sobre `--muted`, debajo del 4,5:1
+     que pide WCAG AA para texto chico — y casi todo el texto secundario de
+     Ombúa es chico. #5f6880 da 5,6:1 y 5:1, y se sigue leyendo como gris. */
+  --muted-foreground: #5f6880;
   --accent: var(--brand-violet-soft);
   --accent-foreground: var(--brand-violet);
   --destructive: var(--brand-coral);

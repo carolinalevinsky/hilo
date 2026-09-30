@@ -1,4 +1,5 @@
 import { ageLabel } from '@/lib/age'
+import { ADJUSTMENT_TOO_LONG, MAX_ADJUSTMENT } from '@/lib/ai-limits'
 import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
 import {
@@ -31,6 +32,9 @@ export async function POST(request: Request) {
 
   if (!body.assessmentId) {
     return Response.json({ error: 'Falta la evaluación.' }, { status: 400 })
+  }
+  if (typeof body.adjustment === 'string' && body.adjustment.length > MAX_ADJUSTMENT) {
+    return Response.json({ error: ADJUSTMENT_TOO_LONG }, { status: 400 })
   }
 
   const [practitioner, assessment] = await Promise.all([
