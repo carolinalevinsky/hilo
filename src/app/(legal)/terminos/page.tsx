@@ -102,7 +102,7 @@ export default function TermsPage() {
         Uruguay, ante sus tribunales competentes.
       </p>
       <p>
-        <b>16. Contacto.</b> [correo de contacto de Hepic].
+        <b>16. Contacto.</b> <a href="mailto:info@ombua.com">info@ombua.com</a>.
       </p>
     </>
   )

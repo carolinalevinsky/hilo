@@ -131,7 +131,7 @@ export default function PrivacyPage() {
         Reguladora y de Control de Datos Personales (URCDP).
       </p>
       <p>
-        <b>Contacto.</b> [correo de contacto de Hepic].
+        <b>Contacto.</b> <a href="mailto:info@ombua.com">info@ombua.com</a>.
       </p>
     </>
   )
