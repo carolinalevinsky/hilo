@@ -1,7 +1,7 @@
 # Poner Ombúa en producción
 
 Everything in this file happens **outside the repository**, in the Supabase,
-Vercel, Resend and Mercado Pago dashboards. The code is finished; this is the
+Vercel and Resend dashboards. The code is finished; this is the
 list of things that only exist once and that nobody remembers a year later.
 
 Work through it in order. Steps 1 to 4 can be done days ahead; step 8 is the one
@@ -219,19 +219,9 @@ and the streamed output has never been seen, it is out of date.
 
 ## 4. Mercado Pago
 
-Each practitioner connects their **own** Mercado Pago account; Ombúa never holds
-money. What the deployment needs is:
-
-- `MP_WEBHOOK_SECRET` — the signing secret from the Mercado Pago application,
-  used to verify every webhook (`src/server/mercadopago.ts`). A payment
-  notification that cannot be verified is discarded.
-- The webhook URL registered in the Mercado Pago application:
-  `https://<the real domain>/api/mercadopago/webhook`
-
-The access token of each practitioner lives in `mp_accounts`, a table with a
-`using (false)` policy and no grants — unreachable by any signed-in user,
-readable only by the service role. That is defect #1 from v1, where the token
-was read straight from the browser.
+Not in v1. It was built, kept switched off, and removed from the code on
+2026-09-29 (migration `20260930024451_remove_mercado_pago.sql`). There is
+nothing to configure. If it comes back, it comes back from the git history.
 
 ---
 
@@ -251,7 +241,6 @@ ANTHROPIC_API_KEY
 RESEND_API_KEY
 MAIL_FROM
 CRON_SECRET
-MP_WEBHOOK_SECRET
 ```
 
 `src/lib/env.ts` validates every one of them at startup, so a missing variable
@@ -276,9 +265,8 @@ Point it at the Vercel deployment, then go back and update:
 
 - `NEXT_PUBLIC_APP_URL` in Vercel
 - Site URL and Redirect URLs in Supabase
-- The webhook URL in Mercado Pago
 
-Three places, and forgetting the second one means sign-in redirects to the old
+Two places, and forgetting the second one means sign-in redirects to the old
 address without any error to explain it.
 
 ---

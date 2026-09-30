@@ -46,7 +46,6 @@ const serverEnv = z.object({
     }),
 
   CRON_SECRET: z.string().min(1),
-  MP_WEBHOOK_SECRET: z.string().min(1),
 
   /**
    * Google Calendar. Obligatorias y no opcionales, aunque la integración lo sea.
@@ -101,7 +100,6 @@ export const env = serverEnv.parse({
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   MAIL_FROM: process.env.MAIL_FROM,
   CRON_SECRET: process.env.CRON_SECRET,
-  MP_WEBHOOK_SECRET: process.env.MP_WEBHOOK_SECRET,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   OWNER_EMAIL: process.env.OWNER_EMAIL,

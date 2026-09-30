@@ -836,38 +836,6 @@ export type Database = {
           },
         ]
       }
-      mp_accounts: {
-        Row: {
-          access_token: string
-          connected_at: string
-          payment_link: string | null
-          practitioner_id: string
-          updated_at: string
-        }
-        Insert: {
-          access_token: string
-          connected_at?: string
-          payment_link?: string | null
-          practitioner_id: string
-          updated_at?: string
-        }
-        Update: {
-          access_token?: string
-          connected_at?: string
-          payment_link?: string | null
-          practitioner_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mp_accounts_practitioner_id_fkey"
-            columns: ["practitioner_id"]
-            isOneToOne: true
-            referencedRelation: "practitioners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       patient_forms: {
         Row: {
           consent_text: string | null
@@ -1027,7 +995,6 @@ export type Database = {
           deleted_at: string | null
           id: string
           method: string
-          mp_payment_id: string | null
           note: string | null
           paid_on: string
           patient_id: string
@@ -1042,7 +1009,6 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           method?: string
-          mp_payment_id?: string | null
           note?: string | null
           paid_on?: string
           patient_id: string
@@ -1057,7 +1023,6 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           method?: string
-          mp_payment_id?: string | null
           note?: string | null
           paid_on?: string
           patient_id?: string

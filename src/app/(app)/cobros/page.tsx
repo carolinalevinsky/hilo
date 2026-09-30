@@ -6,18 +6,14 @@ import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
 import { PeriodNav } from '@/components/period-nav'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
-import { MercadoPagoCard } from '@/components/payments/mercadopago-card'
-import { FEATURES } from '@/lib/features'
 import { BillingDialog } from '@/components/payments/billing-dialog'
 import { PaymentDialog } from '@/components/payments/payment-dialog'
-import { PaymentLinkButton } from '@/components/payments/payment-link-button'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
 import { ConfirmAction } from '@/components/confirm-action'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDayMonth } from '@/lib/dates'
 import { currentPeriod, periodLabel, shiftPeriod } from '@/lib/periods'
-import { isMercadoPagoConnected } from '@/server/mercadopago'
 import { listPatients } from '@/server/patients'
 import { monthlyLedger } from '@/server/payments'
 
@@ -40,10 +36,9 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
   // happened, and the arrows would otherwise walk forever into empty screens.
   const period = requested > now ? now : requested
 
-  const [ledger, patients, mpConnected] = await Promise.all([
+  const [ledger, patients] = await Promise.all([
     monthlyLedger(user.id, period),
     listPatients(user.id),
-    isMercadoPagoConnected(user.id),
   ])
 
   // "Pagaron 3/5" counts people, not money: how many patients have paid
@@ -55,7 +50,6 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
     id: patient.id,
     full_name: patient.full_name,
   }))
-  const phoneOf = new Map(patients.map((patient) => [patient.id, patient.phone]))
 
   return (
     <>
@@ -194,17 +188,6 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                         history, and there is nobody to charge or bill anymore. */}
                     {row.deleted ? null : (
                     <div className="flex flex-wrap gap-1.5">
-                      {mpConnected && row.outstanding !== null && row.outstanding > 0 ? (
-                        <PaymentLinkButton
-                          patientId={row.patientId}
-                          patientName={row.fullName}
-                          patientPhone={phoneOf.get(row.patientId) ?? null}
-                          period={period}
-                          periodName={periodLabel(period)}
-                          amount={row.outstanding}
-                        />
-                      ) : null}
-
                       {/* Sin honorario no hay pago que registrar acá: "Registrar
                           pago" abriría un diálogo que no sabe de cuánto, al lado
                           de una etiqueta que ya dice que falta el número. Se
@@ -247,16 +230,6 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
               </ul>
             </CardContent>
           </Card>
-
-          {/* Apagado para la v1 — ver `src/lib/features.ts`. El botón de generar
-              link ya desaparece solo, porque `isMercadoPagoConnected` devuelve
-              `false` con la bandera baja; esta tarjeta hay que esconderla
-              aparte, porque su versión "sin conectar" es justamente la que
-              invita a conectar.
-
-              Lo que sigue prendido es todo el registro: anotar un pago a mano,
-              subir el comprobante y este mismo libro. Eso no toca plata. */}
-          {FEATURES.mercadoPago ? <MercadoPagoCard connected={mpConnected} /> : null}
 
           {ledger.rows.some((row) => row.payments.length > 0) ? (
             <Card className="mt-4">

@@ -61,6 +61,6 @@ export const TOUR_STOPS: TourStop[] = [
   {
     target: '/cobros',
     title: 'Pagos',
-    body: 'Quién pagó y quién debe, mes a mes. Si conectás Mercado Pago, armás el link de pago desde acá y te avisa solo cuando entra la plata.',
+    body: 'Quién pagó y quién debe, mes a mes. Anotás cada pago cuando llega y el mes se cuenta solo.',
   },
 ]
