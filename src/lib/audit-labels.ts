@@ -28,6 +28,11 @@ const VERB: Record<string, string> = {
   view: 'Abriste',
   connect: 'Conectaste',
   disconnect: 'Desconectaste',
+  sign: 'Firmaste',
+  reopen: 'Abriste para corregir',
+  void: 'Anulaste',
+  trash: 'Mandaste a la papelera',
+  restore: 'Recuperaste de la papelera',
 }
 
 /** El sustantivo con su artículo, porque en castellano el género no se deduce. */
@@ -62,6 +67,8 @@ const PHRASE: Record<string, string> = {
   'create:appointment': 'Agendaste una hora',
   'delete:appointment': 'Sacaste una hora de la agenda',
   'update:practitioner': 'Cambiaste algo de tu perfil',
+  'trash:session': 'Mandaste a la papelera el registro de una sesión',
+  'restore:session': 'Recuperaste de la papelera el registro de una sesión',
 }
 
 /** "Cargaste un paciente". Nunca vacío: un registro ilegible no sirve de nada. */

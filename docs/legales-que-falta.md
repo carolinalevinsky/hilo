@@ -173,7 +173,7 @@ Redacción propuesta, para sumar después del párrafo actual:
 
 | | Qué | Depende de |
 |---|---|---|
-| 1 | Llenar los dos `[correo de contacto de Hepic]` | Vos. Dos líneas. |
+| 1 | ~~Llenar los dos `[correo de contacto de Hepic]`~~ — hecho: info@ombua.com (2026-09-30) | — |
 | 2 | Reemplazar "con nadie" por la lista real de encargados | **P10 primero** |
 | 3 | Sacar el ejemplo de Mercado Pago de la cláusula 12 | Nada |
 | 4 | Sumar el párrafo del formulario público de reservas | Nada |

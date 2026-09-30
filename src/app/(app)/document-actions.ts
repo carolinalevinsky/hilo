@@ -1,9 +1,17 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
+import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
-import { listVersions, restoreVersion } from '@/server/document-versions'
+import {
+  DocumentLifecycleError,
+  reopenDocument,
+  signDocument,
+  voidDocument,
+} from '@/server/document-lifecycle'
+import { listVersions, restoreVersion, type DocumentKind } from '@/server/document-versions'
 
 /**
  * Volver a una versión anterior de un documento clínico.
@@ -38,4 +46,68 @@ export async function restoreVersionAction(versionId: string) {
   )
 
   return { body: restored.body, versions }
+}
+
+// ─── Firmar, corregir, anular ───────────────────────────────────────────────
+//
+// Las reglas las hace cumplir la base (ver `document-lifecycle.ts`); estas
+// acciones sólo traducen la respuesta a algo que se pueda mostrar. El tipo de
+// documento viene del navegador, así que se valida: un valor que no es ninguno
+// de los dos no llega a la base.
+
+const Kind = z.enum(['report', 'assessment'])
+
+function pathFor(kind: DocumentKind, documentId: string) {
+  return kind === 'report' ? `/informes/${documentId}` : `/evaluaciones/${documentId}`
+}
+
+function lifecycleFailure(error: unknown, fallback: string): FormState {
+  if (error instanceof DocumentLifecycleError) return formError(error.message)
+  return formErrorFor(error, fallback)
+}
+
+export async function signDocumentAction(kind: DocumentKind, documentId: string) {
+  const user = await requireUser()
+  const which = Kind.parse(kind)
+  try {
+    await signDocument(user.id, which, documentId)
+  } catch (error) {
+    return lifecycleFailure(error, 'No pudimos firmarlo. Probá de nuevo.')
+  }
+  revalidatePath(pathFor(which, documentId))
+  revalidatePath('/informes')
+  return formOk('Firmado.')
+}
+
+export async function reopenDocumentAction(kind: DocumentKind, documentId: string) {
+  const user = await requireUser()
+  const which = Kind.parse(kind)
+  try {
+    await reopenDocument(user.id, which, documentId)
+  } catch (error) {
+    return lifecycleFailure(error, 'No pudimos abrirlo para corregir. Probá de nuevo.')
+  }
+  revalidatePath(pathFor(which, documentId))
+  revalidatePath('/informes')
+  return formOk(null)
+}
+
+export async function voidDocumentAction(
+  kind: DocumentKind,
+  documentId: string,
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const which = Kind.parse(kind)
+  const reason = String(formData.get('reason') ?? '')
+  try {
+    await voidDocument(user.id, which, documentId, reason)
+  } catch (error) {
+    const failure = lifecycleFailure(error, 'No pudimos anularlo. Probá de nuevo.')
+    return { ...failure, values: { reason } }
+  }
+  revalidatePath(pathFor(which, documentId))
+  revalidatePath('/informes')
+  return formOk('Anulado.')
 }

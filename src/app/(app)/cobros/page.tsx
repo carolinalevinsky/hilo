@@ -12,6 +12,7 @@ import { BillingDialog } from '@/components/payments/billing-dialog'
 import { PaymentDialog } from '@/components/payments/payment-dialog'
 import { PaymentLinkButton } from '@/components/payments/payment-link-button'
 import { StatCard, StatCardGrid } from '@/components/stat-card'
+import { ConfirmAction } from '@/components/confirm-action'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDayMonth } from '@/lib/dates'
@@ -20,7 +21,7 @@ import { isMercadoPagoConnected } from '@/server/mercadopago'
 import { listPatients } from '@/server/patients'
 import { monthlyLedger } from '@/server/payments'
 
-import { deletePaymentAction } from './actions'
+import { trashPaymentAction } from './actions'
 import { currentUser } from '../session'
 import { pageTitle } from '@/lib/brand'
 
@@ -276,12 +277,14 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                           · {formatDayMonth(payment.paid_on)}
                           {payment.note ? ` · ${payment.note}` : ''}
                         </span>
-                        <form action={deletePaymentAction}>
-                          <input type="hidden" name="paymentId" value={payment.id} />
-                          <Button type="submit" variant="ghost" size="xs">
-                            Quitar
-                          </Button>
-                        </form>
+                        <ConfirmAction
+                          action={trashPaymentAction}
+                          fields={{ paymentId: payment.id }}
+                          trigger="Quitar"
+                          title="¿Quitar este pago?"
+                          description={`${money(Number(payment.amount))} de ${payment.patients?.full_name ?? 'este paciente'}. Va a la papelera: deja de contar en el mes, y lo podés recuperar desde la ficha del paciente.`}
+                          confirmLabel="Quitar el pago"
+                        />
                       </li>
                     ))}
                 </ul>

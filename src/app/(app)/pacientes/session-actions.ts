@@ -9,10 +9,10 @@ import { setGoalProgress } from '@/server/goals'
 import { removePlanItems } from '@/server/session-plans'
 import {
   createSession,
-  deleteSession,
   SessionLinkError,
   updateSession,
 } from '@/server/sessions'
+import { trashRecord } from '@/server/trash'
 
 export async function saveSessionAction(
   _previous: FormState,
@@ -109,11 +109,12 @@ function readGoalMoves(formData: FormData, goalIds: string[]) {
   return moves
 }
 
-export async function deleteSessionAction(formData: FormData) {
+/** A la papelera, no a la nada: se recupera desde la ficha del paciente. */
+export async function trashSessionAction(formData: FormData) {
   const user = await requireUser()
   const patientId = String(formData.get('patientId'))
 
-  await deleteSession(user.id, String(formData.get('sessionId')))
+  await trashRecord(user.id, 'session', String(formData.get('sessionId')))
   revalidatePath(`/pacientes/${patientId}`)
   redirect(`/pacientes/${patientId}`)
 }

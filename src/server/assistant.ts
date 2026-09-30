@@ -1,4 +1,5 @@
 import { ageLabel } from '@/lib/age'
+import { manyPatientAliases, type Alias } from '@/lib/pseudonyms'
 import { disciplineLabel } from '@/lib/disciplines'
 
 import type { ChatMessage } from './ai'
@@ -179,6 +180,22 @@ function rosterLabels(patients: AssistantPatient[]): Map<string, string> {
   }
 
   return labels
+}
+
+/**
+ * Los marcadores de cada paciente para esta conversación. Ver
+ * `src/lib/pseudonyms.ts`: ni el nombre de pila sale ya, sale "[P3]" y vuelve
+ * como lo llama la lista de arriba. Dos pacientes con el mismo nombre de pila
+ * se quedan con su etiqueta ("Tomás P."), porque no se sabría a cuál devolver.
+ */
+export function assistantAliases(context: AssistantContext): Alias[] {
+  const labels = rosterLabels(context.patients)
+  return manyPatientAliases(
+    context.patients.map((patient) => ({
+      fullName: patient.fullName,
+      label: labels.get(patient.id) ?? patient.firstName,
+    })),
+  )
 }
 
 /** "Tomás Pérez" → "P." Empty when there is only one name on the ficha. */

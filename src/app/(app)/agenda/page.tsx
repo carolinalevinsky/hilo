@@ -1,4 +1,5 @@
 import { CalendarDays } from '@/components/icons'
+import { ConfirmAction } from '@/components/confirm-action'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -504,12 +505,14 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
                           {schedule.duration_minutes} min
                         </p>
                       </div>
-                      <form action={deactivateScheduleAction}>
-                        <input type="hidden" name="scheduleId" value={schedule.id} />
-                        <Button type="submit" variant="ghost" size="sm">
-                          Dar de baja
-                        </Button>
-                      </form>
+                      <ConfirmAction
+                        action={deactivateScheduleAction}
+                        fields={{ scheduleId: schedule.id }}
+                        trigger="Dar de baja"
+                        title="¿Dar de baja este horario fijo?"
+                        description={`Se sacan de la agenda las próximas sesiones de ${schedule.patients?.full_name ?? 'este paciente'} de este horario. Las que ya pasaron quedan como están.`}
+                        confirmLabel="Dar de baja"
+                      />
                     </li>
                   ))}
                 </ul>

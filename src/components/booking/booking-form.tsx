@@ -137,7 +137,15 @@ export function BookingForm({ slug }: { slug: string }) {
       </Button>
 
       <p className="text-center text-micro leading-relaxed text-muted-foreground">
-        Tus datos se envían sólo a la profesional. No los compartimos con nadie más.
+        {/* Decía "No los compartimos con nadie más", y la nota viaja por
+            correo y, si se convierte en paciente, llega al contexto de la IA.
+            Esto dice lo que pasa y dónde leer el resto. */}
+        Tus datos le llegan a quien te va a atender, a través de Ombúa. Cómo se guardan y con
+        qué proveedores:{' '}
+        <a href="/privacidad" target="_blank" className="underline">
+          Política de Privacidad
+        </a>
+        .
       </p>
     </form>
   )

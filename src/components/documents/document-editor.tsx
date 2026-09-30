@@ -6,11 +6,18 @@ import { useEffect, useRef, useState } from 'react'
 import { DocumentBody } from '@/components/documents/clinical-document'
 import { DocumentDiff } from '@/components/documents/document-diff'
 import { DocumentHistory } from '@/components/documents/document-history'
+import {
+  ReopenButton,
+  SignButton,
+  VoidDialog,
+} from '@/components/documents/document-signature'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { readSseStream } from '@/lib/sse-client'
-import type { DocumentVersion } from '@/server/document-versions'
+import { TO_COMPLETE } from '@/lib/to-complete'
+import type { DocumentState } from '@/server/document-lifecycle'
+import type { DocumentKind, DocumentVersion } from '@/server/document-versions'
 
 /**
  * The body of a clinical document: streams in, gets edited, gets saved.
@@ -47,8 +54,18 @@ import type { DocumentVersion } from '@/server/document-versions'
  * el camino más común. Esa primera vez entra directo — y aun así queda copiada,
  * porque el historial lo lleva `replaceDocumentBody` del lado del servidor y no
  * depende de que esta pantalla se acuerde.
+ *
+ * ─── Firmado es de sólo lectura ────────────────────────────────────────────
+ *
+ * Un documento firmado no se edita ni se regenera: se imprime, se corrige
+ * (vuelve a borrador, lo firmado queda en el historial) o se anula. Esconder
+ * los botones es lo de menos — la base rechaza cualquier cambio al texto de un
+ * documento firmado (`document-lifecycle.ts`).
  */
 export function DocumentEditor({
+  kind,
+  state,
+  everSigned,
   documentId,
   initialText,
   initialVersions,
@@ -58,6 +75,11 @@ export function DocumentEditor({
   onSave,
   onRestore,
 }: {
+  kind: DocumentKind
+  /** Borrador, firmado o anulado. Viene del servidor en cada render. */
+  state: DocumentState
+  /** Si alguna vez se firmó: lo que se firmó se anula, no va a la papelera. */
+  everSigned: boolean
   documentId: string
   initialText: string
   /** Las versiones que ya tenía el documento al abrir la pantalla. */
@@ -93,6 +115,20 @@ export function DocumentEditor({
   const [aiError, setAiError] = useState<string | null>(null)
   const [adjustment, setAdjustment] = useState('')
   const started = useRef(false)
+
+  // Firmar, corregir y anular vuelven del servidor con la página re-renderizada:
+  // el historial nuevo (la copia firmada) llega por props, y el aviso de
+  // "Guardado… firmalo" ya no corresponde. Se ajusta durante el render, que es
+  // la forma que React recomienda para "cuando cambia esta prop".
+  const [seen, setSeen] = useState({ versions: initialVersions, state })
+  if (seen.versions !== initialVersions || seen.state !== state) {
+    setSeen({ versions: initialVersions, state })
+    if (seen.versions !== initialVersions) setVersions(initialVersions)
+    if (seen.state !== state) {
+      setAiNote(null)
+      setAiError(null)
+    }
+  }
 
   useEffect(() => {
     if (!autoStart || started.current) return
@@ -197,42 +233,90 @@ export function DocumentEditor({
   }
 
   const streaming = status === 'streaming'
+  const editing = status === 'editing'
+  const locked = state !== 'draft'
+  const unfinished = text.includes(TO_COMPLETE)
   const proposal = pending?.done ? pending.text : null
   const applicable = proposal !== null && proposal !== text
 
   return (
     <div className="space-y-4">
-      <div className="no-print flex flex-wrap items-center gap-2">
-        {status === 'editing' ? (
-          <Button onClick={() => void save(text, 'edit').then(() => setStatus('idle'))}>
-            <Check className="size-4" />
-            Guardar cambios
-          </Button>
-        ) : (
+      {state === 'draft' ? (
+        <div className="no-print flex flex-wrap items-center gap-2">
+          {editing ? (
+            <Button onClick={() => void save(text, 'edit').then(() => setStatus('idle'))}>
+              <Check className="size-4" />
+              Guardar cambios
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => setStatus('editing')}
+              disabled={streaming || pending !== null}
+            >
+              <Pencil className="size-4" />
+              Editar
+            </Button>
+          )}
+
+          {/* Deshabilitado mientras se edita: regenerar cambia de pantalla y
+              la edición sin guardar no llegaba a ninguna versión. */}
           <Button
             variant="outline"
-            onClick={() => setStatus('editing')}
-            disabled={streaming || pending !== null}
+            onClick={() => void generate()}
+            disabled={streaming || editing}
           >
-            <Pencil className="size-4" />
-            Editar
+            <RefreshCw className={`size-4 ${streaming ? 'animate-spin' : ''}`} />
+            {streaming ? 'Escribiendo…' : 'Regenerar con IA'}
           </Button>
-        )}
 
-        <Button variant="outline" onClick={() => void generate()} disabled={streaming}>
-          <RefreshCw className={`size-4 ${streaming ? 'animate-spin' : ''}`} />
-          {streaming ? 'Escribiendo…' : 'Regenerar con IA'}
-        </Button>
+          <Button variant="outline" onClick={() => window.print()} disabled={streaming}>
+            <Printer className="size-4" />
+            Imprimir borrador
+          </Button>
 
-        <Button variant="outline" onClick={() => window.print()} disabled={streaming}>
-          <Printer className="size-4" />
-          Imprimir o guardar en PDF
-        </Button>
-      </div>
+          <SignButton
+            kind={kind}
+            documentId={documentId}
+            disabled={
+              streaming ||
+              editing ||
+              status === 'saving' ||
+              pending !== null ||
+              !text.trim() ||
+              unfinished
+            }
+          />
+
+          {everSigned ? <VoidDialog kind={kind} documentId={documentId} /> : null}
+        </div>
+      ) : (
+        <div className="no-print flex flex-wrap items-center gap-2">
+          <Button onClick={() => window.print()}>
+            <Printer className="size-4" />
+            Imprimir o guardar en PDF
+          </Button>
+
+          {state === 'signed' ? (
+            <>
+              <ReopenButton kind={kind} documentId={documentId} />
+              <VoidDialog kind={kind} documentId={documentId} />
+            </>
+          ) : null}
+        </div>
+      )}
+
+      {state === 'draft' && unfinished && !streaming ? (
+        <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#6b4510]">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          Quedan partes marcadas {TO_COMPLETE}. Completalas o sacalas y después lo podés
+          firmar.
+        </p>
+      ) : null}
 
       {aiNote ? <AiNote state={aiNote} detail={aiError} /> : null}
 
-      {status === 'editing' ? (
+      {editing && !locked ? (
         <Textarea
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -261,6 +345,7 @@ export function DocumentEditor({
       {/* Iterating is how a draft becomes the report she meant. v1 had this and
           it is the difference between "regenerate and hope" and asking for the
           one change you actually want. */}
+      {locked ? null : (
       <div className="no-print flex flex-wrap items-end gap-2 border-t border-border pt-4">
         <div className="min-w-[240px] flex-1">
           <label htmlFor="adjustment" className="text-meta font-medium">
@@ -276,7 +361,7 @@ export function DocumentEditor({
         </div>
         <Button
           variant="secondary"
-          disabled={streaming || !adjustment.trim()}
+          disabled={streaming || editing || !adjustment.trim()}
           onClick={() => {
             void generate(adjustment)
             setAdjustment('')
@@ -286,11 +371,12 @@ export function DocumentEditor({
           Rehacer con el ajuste
         </Button>
       </div>
+      )}
 
       <DocumentHistory
         versions={versions}
         onRestore={restore}
-        disabled={streaming || status === 'saving'}
+        disabled={locked || streaming || editing || status === 'saving'}
       />
     </div>
   )
@@ -385,8 +471,8 @@ function AiNote({
       <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
         <span>
-          {detail ?? 'La IA no respondió esta vez.'} Te dejamos un borrador base: revisalo y
-          firmá.
+          {detail ?? 'La IA no respondió esta vez.'} Te dejamos un borrador base con lo que es
+          dato: completá lo marcado y después firmalo.
         </span>
       </p>
     )
@@ -396,7 +482,7 @@ function AiNote({
     return (
       <p className="no-print flex items-start gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#1a8f57]">
         <Check className="mt-0.5 size-4 shrink-0" />
-        Guardado. Podés seguir editándolo cuando quieras.
+        Guardado. Cuando lo hayas revisado, firmalo.
       </p>
     )
   }

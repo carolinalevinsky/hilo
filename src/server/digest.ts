@@ -94,6 +94,9 @@ export async function digestRecipients(
         .from('sessions')
         .select('practitioner_id')
         .gte('held_on', since)
+        // El digest corre con la llave de servicio, que no pasa por la
+        // política que esconde la papelera. Acá hay que decirlo a mano.
+        .is('deleted_at', null)
         .limit(MAX_DIGEST_ROWS),
       'sessions',
     ),
@@ -122,6 +125,7 @@ export async function digestRecipients(
         .from('payments')
         .select('practitioner_id, patient_id, amount')
         .eq('period', period)
+        .is('deleted_at', null)
         .limit(MAX_DIGEST_ROWS),
       'payments',
     ),

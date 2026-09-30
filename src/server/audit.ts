@@ -39,6 +39,14 @@ type Action =
   | 'view'
   | 'connect'
   | 'disconnect'
+  // El ciclo de vida de lo clínico. Firmar y anular son lo que un colegio o el
+  // BPS van a preguntar ("¿qué versión me mandaste, y cuándo?"); la papelera,
+  // lo que se preguntará el día que falte un registro.
+  | 'sign'
+  | 'reopen'
+  | 'void'
+  | 'trash'
+  | 'restore'
 
 type Entity =
   | 'practitioner'

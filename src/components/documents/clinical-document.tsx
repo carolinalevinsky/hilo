@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { formatDateTime } from '@/lib/dates'
+
 /**
  * The look of a signed clinical document: title, who and when, the body, and a
  * signature line. Ported from v1's `.doc` (`legacy/index.html:2757`).
@@ -8,22 +10,51 @@ import type { ReactNode } from 'react'
  * and a signature block with the practitioner's name under a rule — because the
  * thing being produced here is a piece of paper that goes to a school with
  * someone's professional name on it, and it should look like one on the way out.
+ *
+ * ─── Qué dice la hoja sobre sí misma ───────────────────────────────────────
+ *
+ * Una hoja sin firmar sale con "Borrador · sin firmar" arriba, también
+ * impresa. Antes un borrador de la IA recién generado se imprimía igual que un
+ * informe revisado —el aviso de "borrador asistido por IA" era `no-print`— y
+ * nada en el papel decía que nadie lo había leído. La firmada lleva la fecha y
+ * la hora de la firma bajo el nombre; la anulada, el motivo, arriba y en rojo.
  */
+export type DocumentSeal =
+  | { state: 'draft' }
+  | { state: 'signed'; signedAt: string }
+  | { state: 'voided'; voidedAt: string; reason: string }
+
 export function ClinicalDocument({
   title,
   subtitle,
   meta,
   children,
   footer,
+  seal,
 }: {
   title: string
   subtitle: string
   meta?: { label: string; value: string }[]
   children: ReactNode
   footer: { name: string; discipline: string }
+  seal: DocumentSeal
 }) {
   return (
     <article className="app-doc mx-auto max-w-[720px] rounded-lg bg-card px-6 py-8 shadow-card sm:px-10">
+      {seal.state === 'draft' ? (
+        <p className="mb-5 rounded-lg border border-dashed border-foreground/40 px-3 py-1.5 text-center text-meta font-bold tracking-[1px] uppercase">
+          Borrador · sin firmar
+        </p>
+      ) : null}
+      {seal.state === 'voided' ? (
+        <div className="mb-5 rounded-lg border-2 border-[#c0392b] px-3 py-2 text-center text-[#c0392b]">
+          <p className="text-meta font-extrabold tracking-[1px] uppercase">
+            Anulado el {formatDateTime(seal.voidedAt)}
+          </p>
+          <p className="mt-0.5 text-meta">Motivo: {seal.reason}</p>
+        </div>
+      ) : null}
+
       <h1 className="text-center text-[20px] font-extrabold tracking-[-0.4px]">{title}</h1>
       <p className="mt-1 text-center text-meta text-muted-foreground">{subtitle}</p>
 
@@ -44,6 +75,11 @@ export function ClinicalDocument({
         <div className="mx-auto mb-1.5 h-px w-52 bg-foreground/60" />
         <p className="text-body font-bold">{footer.name}</p>
         <p className="text-meta text-muted-foreground">{footer.discipline}</p>
+        {seal.state === 'signed' ? (
+          <p className="mt-1 text-meta text-muted-foreground">
+            Firmado el {formatDateTime(seal.signedAt)}
+          </p>
+        ) : null}
       </div>
     </article>
   )

@@ -8,6 +8,7 @@ import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
 import { PatientActions } from '@/components/patients/patient-actions'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
+import { TrashCard } from '@/components/patients/trash-card'
 import { OnlineConsultation } from '@/components/patients/online-consultation'
 import { IntakeCard } from '@/components/patient-forms/intake-card'
 import { ScalesCard } from '@/components/patient-forms/scales-card'
@@ -32,6 +33,7 @@ import { SCALE_IDS, scaleIsReady } from '@/lib/scales'
 import { getPatient, getPhotoUrl } from '@/server/patients'
 import { listReports } from '@/server/reports'
 import { listPlanItems } from '@/server/session-plans'
+import { listTrash } from '@/server/trash'
 import { listSessions } from '@/server/sessions'
 
 import { currentPractitioner, currentUser } from '../../session'
@@ -61,6 +63,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     nextAppointment,
     intake,
     scales,
+    trash,
   ] = await Promise.all([
     patientRow,
     patientRow.then((row) => (row ? getPhotoUrl(row.photo_path) : null)),
@@ -77,6 +80,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     nextAppointmentFor(user.id, id),
     intakeStatus(user.id, id),
     scaleHistory(user.id, id),
+    listTrash(user.id, id),
   ])
   if (!patient) notFound()
 
@@ -319,6 +323,8 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
               <SessionTimeline patientId={patient.id} sessions={sessions} />
             </CardContent>
           </Card>
+
+          <TrashCard patientId={patient.id} items={trash} />
         </div>
 
         <div className="flex flex-col gap-4 max-lg:order-1">

@@ -101,12 +101,14 @@ export async function updateAssessmentAnalysis(
   await replaceDocumentBody(practitionerId, 'assessment', assessmentId, analysis, reason)
 }
 
+/** Como `getReport`: nada de un paciente borrado. */
 export async function getAssessment(practitionerId: string, assessmentId: string) {
   const db = await getDb()
 
   const { data, error } = await db
     .from('assessments')
-    .select('*, patients(id, full_name, color, date_of_birth)')
+    .select('*, patients!inner(id, full_name, color, date_of_birth)')
+    .is('patients.deleted_at', null)
     .eq('id', assessmentId)
     .eq('practitioner_id', practitionerId)
     .maybeSingle()
@@ -124,7 +126,8 @@ export async function listAssessments(
 
   let query = db
     .from('assessments')
-    .select('*, patients(id, full_name, color)')
+    .select('*, patients!inner(id, full_name, color)')
+    .is('patients.deleted_at', null)
     .eq('practitioner_id', practitionerId)
 
   if (patientId) query = query.eq('patient_id', patientId)
@@ -137,18 +140,6 @@ export async function listAssessments(
   return data
 }
 
-export async function deleteAssessment(practitionerId: string, assessmentId: string) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('assessments')
-    .delete()
-    .eq('id', assessmentId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'delete', 'assessment', assessmentId)
-}
 
 // ─── Reading the numbers ────────────────────────────────────────────────────
 

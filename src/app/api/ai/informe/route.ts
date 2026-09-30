@@ -1,4 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { getUser } from '@/server/auth'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
@@ -77,12 +78,16 @@ export async function POST(request: Request) {
     adjustment: body.adjustment,
   })
 
-  return sseResponse(generate(instructions, prompt))
+  return sseResponse(generate(instructions, prompt, patientAliases(context.patientName)))
 }
 
-async function* generate(instructions: string, prompt: string): AsyncGenerator<SseEvent> {
+async function* generate(
+  instructions: string,
+  prompt: string,
+  aliases: Alias[],
+): AsyncGenerator<SseEvent> {
   try {
-    for await (const chunk of streamCompletion(instructions, prompt)) {
+    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases)) {
       yield { event: 'delta', data: chunk }
     }
     yield { event: 'done', data: AI_MODEL }

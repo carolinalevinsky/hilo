@@ -8,6 +8,7 @@ import { findGoogleAccount } from '@/server/google'
 import { PageHeader } from '@/components/page-header'
 import { CalendarPrivacyForm } from '@/components/profile/calendar-privacy-form'
 import { ConsentTemplateForm } from '@/components/profile/consent-template-form'
+import { PROVIDER_AND_AI_CLAUSES } from '@/lib/consent-template'
 import { ProfileForm } from '@/components/profile/profile-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -82,6 +83,18 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             Es un modelo escrito a partir de las leyes 19.529, 18.335 y 18.331, y no lo
             revisó un abogado. Leelo y ajustalo a tu práctica antes de mandarlo.
           </p>
+          {practitioner.consent_template ? (
+            <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+              Usás tu propio texto. El modelo de Ombúa ahora incluye dos puntos que conviene
+              que el tuyo también tenga, porque la ley pide el consentimiento expreso para
+              guardar datos de salud fuera del país. Podés copiarlos de acá:
+            </p>
+          ) : null}
+          {practitioner.consent_template ? (
+            <p className="rounded-[11px] border border-border px-3.5 py-2.5 text-meta leading-relaxed whitespace-pre-line select-all">
+              {PROVIDER_AND_AI_CLAUSES}
+            </p>
+          ) : null}
           <ConsentTemplateForm current={practitioner.consent_template} />
         </CardContent>
       </Card>
