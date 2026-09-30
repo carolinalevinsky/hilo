@@ -18,6 +18,7 @@ import type { ReportContext } from './report-prompt'
 const CONTEXT: ReportContext = {
   patientName: 'Tomás Pérez',
   patientFirstName: 'Tomás',
+  agreement: 'masculine',
   age: '5 años',
   referralReason: 'Dificultades en la articulación de varios fonemas.',
   startDate: '12 mar. 2026',

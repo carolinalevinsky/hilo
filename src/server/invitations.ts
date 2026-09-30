@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { GRAMMATICAL_GENDERS } from '@/lib/grammatical-gender'
 import { DISCIPLINE_IDS } from '@/lib/disciplines'
 import { publicConfig } from '@/lib/env'
 
@@ -430,6 +431,11 @@ export const AcceptInvitation = z.object({
   acceptedTerms: z.literal(true, {
     message: 'Necesitamos que aceptes los términos para crear la cuenta.',
   }),
+  grammaticalGender: z
+    .enum(GRAMMATICAL_GENDERS)
+    .or(z.literal(''))
+    .nullish()
+    .transform((value) => (value ? value : null)),
 })
 
 /**
@@ -587,6 +593,18 @@ export async function acceptInvitation(input: unknown): Promise<{ email: string 
       userId: created.user.id,
       error: linkError,
     })
+  }
+
+  // "Me identifico como". Tampoco puede tirar: sin esto Ombúa le habla en
+  // masculino, que es un defecto chico y se corrige en Mi perfil.
+  if (data.grammaticalGender) {
+    const { error: genderError } = await service
+      .from('practitioners')
+      .update({ grammatical_gender: data.grammaticalGender })
+      .eq('id', created.user.id)
+    if (genderError) {
+      console.error('[invitations] no se pudo guardar cómo se identifica', genderError)
+    }
   }
 
   await logAction(created.user.id, 'create', 'practitioner', created.user.id)

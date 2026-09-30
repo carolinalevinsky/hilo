@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { agree, type Agreement } from '@/lib/grammatical-gender'
 
 import { markTourSeenAction } from '@/app/(app)/inicio/actions'
 import { TOUR_STOPS } from '@/components/onboarding/tour-stops'
@@ -43,7 +44,7 @@ export const TOUR_EVENT = 'ombua:tour'
 
 type Box = { top: number; left: number; width: number; height: number }
 
-export function AppTour({ seen }: { seen: boolean }) {
+export function AppTour({ seen, agreement }: { seen: boolean; agreement: Agreement }) {
   const [step, setStep] = useState(0)
   const [restarted, setRestarted] = useState(false)
   const [dismissed, setDismissed] = useState(false)
@@ -220,7 +221,7 @@ export function AppTour({ seen }: { seen: boolean }) {
           </p>
         ) : null}
 
-        <h2 className="text-[17px] font-extrabold tracking-[-0.3px]">{stop.title}</h2>
+        <h2 className="text-[17px] font-extrabold tracking-[-0.3px]">{stop.title.replace('{bienvenida}', agree(agreement, 'Bienvenido', 'Bienvenida'))}</h2>
         <p className="mt-1.5 text-body leading-relaxed text-muted-foreground">
           {stop.body}
         </p>

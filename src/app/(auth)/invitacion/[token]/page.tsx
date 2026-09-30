@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { genderFromName } from '@/lib/grammatical-gender'
 import Link from 'next/link'
 
 import { AcceptInvitationForm } from '@/components/auth/accept-invitation-form'
@@ -65,7 +66,10 @@ export default async function InvitationPage({ params }: PageProps<'/invitacion/
         </div>
       </dl>
 
-      <AcceptInvitationForm token={token} />
+      <AcceptInvitationForm
+        token={token}
+        suggestedGender={genderFromName(invitation.fullName)}
+      />
 
       <p className="mt-5 text-center text-micro text-muted-foreground">
         Tus datos están protegidos y encriptados.

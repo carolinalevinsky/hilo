@@ -128,7 +128,7 @@ export function SignInForm({ back }: { back?: string }) {
             defaultChecked
             className="size-4 accent-violet"
           />
-          Mantener sesión abierta
+          Recordarme en este equipo
         </label>
 
         {/* Antes iba suelto debajo del botón, que es el último lugar donde lo

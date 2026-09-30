@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
+import { GRAMMATICAL_GENDERS } from '@/lib/grammatical-gender'
 import { FEATURES } from '@/lib/features'
 import { searchPattern } from '@/lib/search'
 
@@ -64,6 +65,11 @@ export const PatientInput = z.object({
   fullName: z.string().trim().min(1, 'Poné al menos el nombre.'),
   dateOfBirth: optionalDate,
   ageGroup: z.enum(AGE_GROUPS).default('children'),
+  // Cómo se escribe sobre el paciente ("atento" / "atenta"). Vacío es "no se
+  // dijo" y se deduce del nombre al usarlo. Ver `src/lib/grammatical-gender.ts`.
+  grammaticalGender: z
+    .preprocess(blankToNull, z.enum(GRAMMATICAL_GENDERS).nullable())
+    .default(null),
   school: optionalText,
   schoolLevel: optionalText,
   healthInsurer: optionalText,
@@ -94,6 +100,7 @@ function toRow(data: PatientInputData) {
     full_name: data.fullName,
     date_of_birth: data.dateOfBirth,
     age_group: data.ageGroup,
+    grammatical_gender: data.grammaticalGender,
     school: data.school,
     school_level: data.schoolLevel,
     health_insurer: data.healthInsurer,

@@ -42,6 +42,7 @@ const CONTEXT: AssistantContext = {
       id: 'p1',
       fullName: 'Tomás Pérez',
       firstName: 'Tomás',
+    agreement: 'masculine',
       age: '5 años',
       averageProgress: 67,
       goals: [
@@ -53,6 +54,7 @@ const CONTEXT: AssistantContext = {
       id: 'p2',
       fullName: 'Malena Rodríguez',
       firstName: 'Malena',
+    agreement: 'masculine',
       age: '7 años',
       averageProgress: 0,
       goals: [],
@@ -179,6 +181,9 @@ describe('assistantSystemPrompt', () => {
       'id',
       'fullName',
       'firstName',
+      // "masculine" o "feminine": la concordancia con que la IA escribe, ahora
+      // que no ve el nombre. No es contenido de una nota.
+      'agreement',
       'age',
       'averageProgress',
       'goals',

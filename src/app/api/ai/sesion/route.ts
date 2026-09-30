@@ -1,4 +1,5 @@
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
+import { agreementFor } from '@/lib/grammatical-gender'
 import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { recordUsage, releaseUsage } from '@/server/ai-usage'
 import { getUser } from '@/server/auth'
@@ -31,7 +32,7 @@ import { sseResponse, type SseEvent } from '../sse'
 export async function POST(request: Request) {
   const user = await getUser()
   if (!user) {
-    return Response.json({ error: 'No pudimos verificar tu sesión.' }, { status: 401 })
+    return Response.json({ error: 'Tenés que volver a entrar a Ombúa.' }, { status: 401 })
   }
 
   const body = (await request.json().catch(() => ({}))) as {
@@ -94,7 +95,10 @@ export async function POST(request: Request) {
       sessionNotePrompt(patient.full_name, transcript),
       fallback,
       () => releaseUsage(usageId),
-      patientAliases(patient.full_name),
+      patientAliases(
+        patient.full_name,
+        agreementFor(patient.grammatical_gender, patient.full_name),
+      ),
     ),
   )
 }

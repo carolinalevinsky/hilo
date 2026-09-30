@@ -1,4 +1,5 @@
 import { ArrowRight, CalendarDays, Sun, UserPlus, Users } from '@/components/icons'
+import { agreementFor } from '@/lib/grammatical-gender'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -71,7 +72,10 @@ export default async function HomePage() {
           decides, so it costs nothing on every other visit. */}
       {/* Una vez por cuenta, no por navegador: la marca vive en
           `practitioners.onboarded_at`. */}
-      <AppTour seen={practitioner.onboarded_at !== null} />
+      <AppTour
+        seen={practitioner.onboarded_at !== null}
+        agreement={agreementFor(practitioner.grammatical_gender, practitioner.full_name)}
+      />
 
       <PageHeader
         title={`¡Hola, ${firstName(practitioner.full_name)}! 👋`}

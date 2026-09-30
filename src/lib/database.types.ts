@@ -902,6 +902,7 @@ export type Database = {
           deleted_at: string | null
           expected_sessions_per_month: number | null
           full_name: string
+          grammatical_gender: string | null
           guardian_email: string | null
           guardian_name: string | null
           guardian_relationship: string | null
@@ -931,6 +932,7 @@ export type Database = {
           deleted_at?: string | null
           expected_sessions_per_month?: number | null
           full_name: string
+          grammatical_gender?: string | null
           guardian_email?: string | null
           guardian_name?: string | null
           guardian_relationship?: string | null
@@ -960,6 +962,7 @@ export type Database = {
           deleted_at?: string | null
           expected_sessions_per_month?: number | null
           full_name?: string
+          grammatical_gender?: string | null
           guardian_email?: string | null
           guardian_name?: string | null
           guardian_relationship?: string | null
@@ -1057,6 +1060,7 @@ export type Database = {
           discipline: string
           email: string
           full_name: string
+          grammatical_gender: string | null
           id: string
           is_admin: boolean
           onboarded_at: string | null
@@ -1073,6 +1077,7 @@ export type Database = {
           discipline: string
           email: string
           full_name: string
+          grammatical_gender?: string | null
           id: string
           is_admin?: boolean
           onboarded_at?: string | null
@@ -1089,6 +1094,7 @@ export type Database = {
           discipline?: string
           email?: string
           full_name?: string
+          grammatical_gender?: string | null
           id?: string
           is_admin?: boolean
           onboarded_at?: string | null

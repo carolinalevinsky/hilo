@@ -63,6 +63,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             fullName={practitioner.full_name}
             discipline={practitioner.discipline}
             phone={practitioner.phone}
+            grammaticalGender={practitioner.grammatical_gender}
           />
         </CardContent>
       </Card>
@@ -248,7 +249,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
 
           <form action={signOutAction}>
             <Button type="submit" variant="outline">
-              Cerrar sesión
+              Salir de Ombúa
             </Button>
           </form>
         </CardContent>

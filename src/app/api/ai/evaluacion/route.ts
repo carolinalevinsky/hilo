@@ -1,4 +1,5 @@
 import { ageLabel } from '@/lib/age'
+import { agreementFor } from '@/lib/grammatical-gender'
 import { ADJUSTMENT_TOO_LONG, MAX_ADJUSTMENT } from '@/lib/ai-limits'
 import { patientAliases, type Alias } from '@/lib/pseudonyms'
 import { AiUnavailableError, AI_MODEL, streamCompletion } from '@/server/ai'
@@ -22,7 +23,7 @@ import { sseResponse, type SseEvent } from '../sse'
 export async function POST(request: Request) {
   const user = await getUser()
   if (!user) {
-    return Response.json({ error: 'No pudimos verificar tu sesión.' }, { status: 401 })
+    return Response.json({ error: 'Tenés que volver a entrar a Ombúa.' }, { status: 401 })
   }
 
   const body = (await request.json().catch(() => ({}))) as {
@@ -70,7 +71,14 @@ export async function POST(request: Request) {
   })
 
   return sseResponse(
-    generate(instructions, prompt, patientAliases(assessment.patients?.full_name ?? '')),
+    generate(
+      instructions,
+      prompt,
+      patientAliases(
+        assessment.patients?.full_name ?? '',
+        agreementFor(assessment.patients?.grammatical_gender, assessment.patients?.full_name),
+      ),
+    ),
   )
 }
 

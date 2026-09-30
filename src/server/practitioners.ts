@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { CALENDAR_PRIVACY } from '@/lib/calendar-privacy'
+import { GRAMMATICAL_GENDERS } from '@/lib/grammatical-gender'
 import type { Tables } from '@/lib/database.types'
 import { DISCIPLINE_IDS } from '@/lib/disciplines'
 
@@ -88,6 +89,11 @@ export const ProfileUpdate = z.object({
     .max(30)
     .optional()
     .transform((value) => (value ? value : null)),
+  grammaticalGender: z
+    .enum(GRAMMATICAL_GENDERS)
+    .or(z.literal(''))
+    .nullish()
+    .transform((value) => (value ? value : null)),
 })
 
 export async function updatePractitioner(practitionerId: string, input: unknown) {
@@ -100,6 +106,7 @@ export async function updatePractitioner(practitionerId: string, input: unknown)
       full_name: data.fullName,
       discipline: data.discipline,
       phone: data.phone,
+      grammatical_gender: data.grammaticalGender,
     })
     .eq('id', practitionerId)
     .select()

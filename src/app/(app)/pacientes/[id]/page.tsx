@@ -339,7 +339,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
 
           <Card>
             <CardHeader>
-              <CardTitle>Historial de sesiones</CardTitle>
+              <CardTitle>Registros de sesiones</CardTitle>
               <p className="text-meta text-muted-foreground">
                 {sessions.length === 1 ? '1 sesión' : `${sessions.length} sesiones`}
               </p>

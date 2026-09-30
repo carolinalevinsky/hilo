@@ -85,7 +85,7 @@ export default function TermsPage() {
         contenido cargado por el/la profesional es de su titularidad.
       </p>
       <p>
-        <b>12. Pagos.</b> Los cobros a las familias se realizan directamente entre el/la
+        <b>12. Pagos.</b> Los pagos de las familias se hacen directamente entre el/la
         profesional y la familia. Ombúa sólo ayuda a llevar el registro de esos pagos: no
         cobra, no es parte de esa relación y no retiene fondos.
       </p>

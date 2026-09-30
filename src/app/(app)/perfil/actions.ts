@@ -20,6 +20,7 @@ export async function updateProfileAction(
       fullName: formData.get('fullName'),
       discipline: formData.get('discipline'),
       phone: formData.get('phone'),
+      grammaticalGender: formData.get('grammaticalGender'),
     })
   } catch (error) {
     return formErrorFor(error, 'No pudimos guardar los cambios. Probá de nuevo.')

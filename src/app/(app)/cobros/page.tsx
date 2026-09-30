@@ -59,7 +59,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
     <>
       <PageHeader
         title="Pagos"
-        subtitle="Lo cobrado y lo pendiente, mes a mes."
+        subtitle="Lo pagado y lo pendiente, mes a mes."
         action={
           patients.length > 0 ? (
             <PaymentDialog period={period} patients={patientOptions} />
@@ -105,7 +105,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
               icon={DollarSign}
               tone="green"
               value={money(ledger.totalPaid)}
-              label="Cobrado"
+              label="Pagado"
             />
             <StatCard
               icon={Clock}

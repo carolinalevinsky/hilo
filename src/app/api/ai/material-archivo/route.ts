@@ -28,7 +28,7 @@ import { getPractitioner } from '@/server/practitioners'
 export async function POST(request: Request) {
   const user = await getUser()
   if (!user) {
-    return Response.json({ error: 'No pudimos verificar tu sesión.' }, { status: 401 })
+    return Response.json({ error: 'Tenés que volver a entrar a Ombúa.' }, { status: 401 })
   }
 
   const body = (await request.json().catch(() => ({}))) as { materialId?: string }

@@ -275,8 +275,10 @@ describe('row level security on practitioners', () => {
     // with nothing anywhere to say why.
     //
     // So this list is not "some fields": it is every column any function in
-    // `src/server/practitioners.ts` writes through the user's session, and it
-    // has to stay that way.
+    // `src/server/` writes to this table through the user's session, and it
+    // has to stay that way. It said "practitioners.ts" and missed
+    // `consent_template`, which `patient-forms.ts` writes — and which had no
+    // grant, so saving a custom consent always failed. Now it is here.
     const { error } = await asA
       .from('practitioners')
       .update({
@@ -285,6 +287,8 @@ describe('row level security on practitioners', () => {
         phone: '099 111 222',
         calendar_privacy: 'initials',
         onboarded_at: new Date().toISOString(),
+        consent_template: 'Mi propio consentimiento.',
+        grammatical_gender: 'feminine',
       })
       .eq('id', idA)
 

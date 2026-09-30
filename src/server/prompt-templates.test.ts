@@ -33,6 +33,7 @@ const { assessmentUserPrompt } = await import('./assessment-prompt')
 const context = {
   patientName: 'Tomás Pérez',
   patientFirstName: 'Tomás',
+  agreement: 'masculine' as const,
   age: '7 años',
   referralReason: 'Dificultades en la lectura.',
   startDate: '01/03/2026',

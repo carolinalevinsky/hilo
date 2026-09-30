@@ -56,7 +56,7 @@ export async function createAppointmentAction(
   }
 
   revalidatePath('/agenda')
-  return formOk('Turno agendado.')
+  return formOk('Sesión agendada.')
 }
 
 export async function setAppointmentStatusAction(formData: FormData) {

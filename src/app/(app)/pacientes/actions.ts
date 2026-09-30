@@ -30,6 +30,7 @@ function readPatientForm(formData: FormData) {
     fullName: formData.get('fullName'),
     dateOfBirth: formData.get('dateOfBirth'),
     ageGroup: formData.get('ageGroup') ?? 'children',
+    grammaticalGender: formData.get('grammaticalGender'),
     school: formData.get('school'),
     schoolLevel: formData.get('schoolLevel'),
     healthInsurer: formData.get('healthInsurer'),

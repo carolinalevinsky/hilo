@@ -1,4 +1,5 @@
 import { ageLabel } from '@/lib/age'
+import { agreementFor, type Agreement } from '@/lib/grammatical-gender'
 import { manyPatientAliases, type Alias } from '@/lib/pseudonyms'
 import { disciplineLabel } from '@/lib/disciplines'
 
@@ -46,6 +47,7 @@ export type AssistantPatient = {
   id: string
   fullName: string
   firstName: string
+  agreement: Agreement
   age: string | null
   averageProgress: number
   goals: { title: string; progress: number }[]
@@ -70,7 +72,7 @@ export async function gatherAssistantContext(
     await Promise.all([
       db
         .from('patients')
-        .select('id, full_name, date_of_birth')
+        .select('id, full_name, date_of_birth, grammatical_gender')
         .eq('practitioner_id', practitionerId)
         .is('deleted_at', null)
         .is('archived_at', null)
@@ -111,6 +113,7 @@ export async function gatherAssistantContext(
         id: patient.id,
         fullName: patient.full_name,
         firstName: firstName(patient.full_name),
+        agreement: agreementFor(patient.grammatical_gender, patient.full_name),
         age: ageLabel(patient.date_of_birth),
         averageProgress: average(own.map((goal) => goal.progress)),
         goals: own,
@@ -194,6 +197,7 @@ export function assistantAliases(context: AssistantContext): Alias[] {
     context.patients.map((patient) => ({
       fullName: patient.fullName,
       label: labels.get(patient.id) ?? patient.firstName,
+      agreement: patient.agreement,
     })),
   )
 }

@@ -30,7 +30,7 @@ export const BRAND_DESCRIPTION =
 
 /** La descripción larga, la que se ve al instalar la app. */
 export const BRAND_LONG_DESCRIPTION =
-  'Historias clínicas, agenda, objetivos, informes y cobros — todo tu consultorio en un solo lugar.'
+  'Historias clínicas, agenda, objetivos, informes y pagos — todo tu consultorio en un solo lugar.'
 
 /** El cierre de los mails. Se lee como "Ombúa — tu trabajo clínico, ordenado". */
 export const BRAND_TAGLINE = 'tu trabajo clínico, ordenado'
