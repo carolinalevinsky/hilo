@@ -14,8 +14,8 @@ import {
   saveMaterialFile,
   updateMaterial,
 } from '@/server/materials'
-import { recordUsage } from '@/server/ai-usage'
-import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
+import { claimUsage, releaseUsage } from '@/server/ai-usage'
+import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 
 /**
@@ -131,17 +131,16 @@ export async function generateMaterialAction(
   const asked = String(formData.get('request') ?? '').trim()
   if (asked.length < 5) return formError('Contame qué querés trabajar.')
 
+  // Una unidad por material generado con IA, reservada de una (ver
+  // `claimUsage`). Escribir uno a mano sigue sin costar nada — esto está acá y
+  // no dentro de `createMaterial`, que es también el camino del formulario.
+  let usageId: string | null
   try {
-    await assertQuota(user.id, practitioner.plan, 'materials')
+    usageId = await claimUsage(user.id, practitioner.plan, 'materials')
   } catch (error) {
     if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status))
     throw error
   }
-
-  // Una unidad por material generado con IA. Escribir uno a mano sigue sin
-  // costar nada — esta línea está acá y no dentro de `createMaterial`, que es
-  // también el camino del formulario.
-  await recordUsage(user.id, 'materials')
 
   const ageRange = String(formData.get('ageRange') ?? '').trim()
   let material
@@ -164,6 +163,8 @@ export async function generateMaterialAction(
       { source: 'ai' },
     )
   } catch (error) {
+    // El material no se creó: la unidad vuelve.
+    await releaseUsage(usageId)
     return failed(error, 'No pudimos generar el material. Probá de nuevo.')
   }
 

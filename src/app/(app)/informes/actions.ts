@@ -11,9 +11,9 @@ import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
 import { sendFormatRequestNotification } from '@/server/notifications'
-import { recordUsage, releaseUsage } from '@/server/ai-usage'
+import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import { listVersions, type VersionReason } from '@/server/document-versions'
-import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
+import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
 import {
@@ -57,8 +57,12 @@ export async function createReportAction(
   const own = await readCustomInstructions(user.id, 'report', formData)
   if ('message' in own) return formError(own.message, values)
 
+  // Una unidad por informe creado, reservada de una: contar y anotar juntos,
+  // para que dos pedidos al mismo tiempo no pasen con la misma unidad. Ver
+  // `claimUsage`.
+  let usageId: string | null
   try {
-    await assertQuota(user.id, practitioner.plan, 'reports')
+    usageId = await claimUsage(user.id, practitioner.plan, 'reports')
   } catch (error) {
     if (error instanceof QuotaExceededError) {
       return formError(quotaMessage(error.status), values)
@@ -66,11 +70,13 @@ export async function createReportAction(
     throw error
   }
 
-  const context = await gatherReportContext(user.id, patientId)
-
-  // Una unidad por informe creado. Antes la contaba la fila de `reports`, que
-  // la profesional puede borrar; ahora la cuenta `ai_usage`, que no.
-  const usageId = await recordUsage(user.id, 'reports')
+  let context
+  try {
+    context = await gatherReportContext(user.id, patientId)
+  } catch (error) {
+    await releaseUsage(usageId)
+    throw error
+  }
 
   // Anotar antes y devolver si falla, y no anotar después. Al revés, un insert
   // que falla se llevaba la unidad puesta; pero anotar después dejaría que un

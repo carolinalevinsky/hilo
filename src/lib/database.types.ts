@@ -1562,6 +1562,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_ai_usage: {
+        Args: {
+          p_kind: string
+          p_limit: number
+          p_practitioner: string
+          p_since: string
+        }
+        Returns: string
+      }
       delete_goal_point: { Args: { point_id: string }; Returns: undefined }
       document_was_signed: {
         Args: { document_id: string; kind: string }

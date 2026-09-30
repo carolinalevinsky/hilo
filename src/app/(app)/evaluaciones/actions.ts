@@ -17,9 +17,9 @@ import {
 } from '@/server/assessments'
 import { createGoal } from '@/server/goals'
 import { getPatient } from '@/server/patients'
-import { recordUsage } from '@/server/ai-usage'
+import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import { listVersions, type VersionReason } from '@/server/document-versions'
-import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
+import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { trashRecord } from '@/server/trash'
 
@@ -74,36 +74,41 @@ export async function createAssessmentAction(
   const own = await readCustomInstructions(user.id, 'assessment', formData)
   if ('message' in own) return formError(own.message, values)
 
+  const patient = await getPatient(user.id, patientId)
+  if (!patient) return formError('No encontramos ese paciente.', values)
+
+  // Reservada de una, y devuelta si el documento no llega a crearse. Ver el
+  // equivalente en `informes/actions.ts` y `claimUsage`.
+  let usageId: string | null
   try {
-    await assertQuota(user.id, practitioner.plan, 'assessments')
+    usageId = await claimUsage(user.id, practitioner.plan, 'assessments')
   } catch (error) {
     if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status), values)
     throw error
   }
 
-  const patient = await getPatient(user.id, patientId)
-  if (!patient) return formError('No encontramos ese paciente.', values)
-
-  // Ver el equivalente en `informes/actions.ts`: la unidad se anota donde se
-  // crea el documento, no donde se guarda la fila que antes hacía de contador.
-  await recordUsage(user.id, 'assessments')
-
-  const assessment = await createAssessment(user.id, {
-    patientId,
-    instrumentName: chosen.name,
-    assessedOn,
-    results,
-    observations,
-    customInstructions: own.text,
-    analysis: assessmentFallback({
+  let assessment
+  try {
+    assessment = await createAssessment(user.id, {
+      patientId,
       instrumentName: chosen.name,
-      patientName: patient.full_name,
-      age: ageLabel(patient.date_of_birth) ?? 'sin edad consignada',
+      assessedOn,
       results,
       observations,
-    }),
-    aiGenerated: false,
-  })
+      customInstructions: own.text,
+      analysis: assessmentFallback({
+        instrumentName: chosen.name,
+        patientName: patient.full_name,
+        age: ageLabel(patient.date_of_birth) ?? 'sin edad consignada',
+        results,
+        observations,
+      }),
+      aiGenerated: false,
+    })
+  } catch (error) {
+    await releaseUsage(usageId)
+    throw error
+  }
 
   revalidatePath('/informes')
   redirect(`/evaluaciones/${assessment.id}?ia=1`)

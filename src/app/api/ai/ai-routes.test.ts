@@ -55,8 +55,11 @@ vi.mock('@/server/report-prompt', () => ({
   },
 }))
 
+// `claimUsage` cuenta y anota junto; acá, tira la cuota agotada si el test lo
+// pide y si no, anota. Es el mismo contrato que la función real.
 vi.mock('@/server/ai-usage', () => ({
-  recordUsage: async (_id: string, kind: string) => {
+  claimUsage: async (_id: string, _plan: string, kind: string) => {
+    if (state.quotaError) throw state.quotaError
     state.recorded.push(kind)
     return 'usage-1'
   },
