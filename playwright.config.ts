@@ -1,24 +1,32 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * The end-to-end test, and there is deliberately only one of it.
+ * The end-to-end tests: the few paths worth paying browser time for.
  *
  * Everything else in this project is tested where it is cheapest to test:
  * business rules as unit tests against `src/server/`, the policies as a real
  * two-practitioner RLS test, the prompts as snapshots. What none of those can
- * say is whether the *product* works — whether someone can sign up, load a
- * patient, write down a session and get a report out. That is one path, it is
- * the path Ombúa exists for, and it is the one thing worth paying browser time
- * for. See `docs/plan-02-migration.md` §8.
+ * say is whether the *product* works — and a screen can be broken in a way that
+ * leaves every one of them green, which is the failure these exist to catch.
+ * See `docs/plan-02-migration.md` §8.
  *
- * ─── Why the browser lives in the repo ─────────────────────────────────────
+ * There is one per story, and each one is a story a practitioner lives through:
+ * getting in (`invitation`, `password-recovery`, `session-persistence`),
+ * preparing a session (`planning`), and giving it and writing it up
+ * (`critical-path`).
  *
- * The `test:e2e` script sets `PLAYWRIGHT_BROWSERS_PATH=.playwright`
- * (git-ignored) instead of the default `~/.cache`. Node runs inside a `--rm`
- * container here, so a home directory does not survive the command that created
- * it and the 111 MB browser would be downloaded on every single run. It is set
- * in the script rather than here because `playwright install` reads it too, and
- * that runs before this file is ever loaded.
+ * ─── Where the browser lives ───────────────────────────────────────────────
+ *
+ * Node runs inside a `--rm` container here, so a home directory does not
+ * survive the command that created it and the 195 MB browser would be
+ * downloaded on every run. `./dx` keeps it in a named Docker volume mounted at
+ * the default path, `/root/.cache/ms-playwright`, which outlives the container.
+ *
+ * **Do not point `PLAYWRIGHT_BROWSERS_PATH` at a directory inside the repo.**
+ * The repo is a macOS bind mount and it does not give Playwright the directory
+ * lock it takes while installing: the download dies partway through with
+ * "Unable to update lock within the stale threshold". The reason is written out
+ * in `./dx`, next to the volume that avoids it.
  */
 
 const PORT = 3100
