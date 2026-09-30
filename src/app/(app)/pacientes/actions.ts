@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { formError, formOk, type FormState } from '@/lib/form-state'
+import { formError, formOk, typedValues, type FormState } from '@/lib/form-state'
 import { nextDateForWeekday } from '@/lib/week'
 import { createAppointment, createSchedule } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
@@ -155,7 +155,7 @@ export async function createPatientAction(
     const patient = await createPatient(user.id, readPatientForm(formData))
     patientId = patient.id
   } catch (error) {
-    return formError(messageFor(error))
+    return formError(messageFor(error), typedValues(formData))
   }
 
   await savePhotoIfPresent(user.id, patientId, formData)
@@ -177,7 +177,7 @@ export async function updatePatientAction(
   try {
     await updatePatient(user.id, patientId, readPatientForm(formData))
   } catch (error) {
-    return formError(messageFor(error))
+    return formError(messageFor(error), typedValues(formData))
   }
 
   await savePhotoIfPresent(user.id, patientId, formData)

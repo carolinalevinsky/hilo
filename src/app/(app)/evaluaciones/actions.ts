@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { readCustomInstructions } from '@/app/(app)/custom-instructions'
 import { ageLabel } from '@/lib/age'
-import { formError, type FormState } from '@/lib/form-state'
+import { formError, typedValues, type FormState } from '@/lib/form-state'
 import { instrument } from '@/lib/instruments'
 import { requireUser } from '@/server/auth'
 import { assessmentFallback } from '@/server/assessment-prompt'
@@ -37,14 +37,17 @@ export async function createAssessmentAction(
   const user = await requireUser()
   const practitioner = await getPractitioner(user.id)
 
+  // Con cualquier error vuelve lo cargado: los puntajes de un WISC entero no
+  // se vuelven a tipear porque se agotó la cuota.
+  const values = typedValues(formData)
   const patientId = String(formData.get('patientId') ?? '')
   const instrumentId = String(formData.get('instrumentId') ?? '')
   const assessedOn = String(formData.get('assessedOn') ?? '')
   const observations = String(formData.get('observations') ?? '').trim() || null
 
   const chosen = instrument(instrumentId)
-  if (!patientId) return formError('Elegí un paciente.')
-  if (!chosen) return formError('Elegí un instrumento.')
+  if (!patientId) return formError('Elegí un paciente.', values)
+  if (!chosen) return formError('Elegí un instrumento.', values)
 
   // Score boxes arrive as `score:<field name>`, so the field labels stay with
   // the instrument definition instead of being duplicated in the form contract.
@@ -64,22 +67,22 @@ export async function createAssessmentAction(
   })
 
   if (Object.keys(results.scores).length === 0 && !results.prose) {
-    return formError('Cargá al menos un resultado.')
+    return formError('Cargá al menos un resultado.', values)
   }
 
   // Her own instructions (P20), before the quota like every other field.
   const own = await readCustomInstructions(user.id, 'assessment', formData)
-  if ('message' in own) return formError(own.message)
+  if ('message' in own) return formError(own.message, values)
 
   try {
     await assertQuota(user.id, practitioner.plan, 'assessments')
   } catch (error) {
-    if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status))
+    if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status), values)
     throw error
   }
 
   const patient = await getPatient(user.id, patientId)
-  if (!patient) return formError('No encontramos ese paciente.')
+  if (!patient) return formError('No encontramos ese paciente.', values)
 
   // Ver el equivalente en `informes/actions.ts`: la unidad se anota donde se
   // crea el documento, no donde se guarda la fila que antes hacía de contador.

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { readCustomInstructions } from '@/app/(app)/custom-instructions'
 
 import { env } from '@/lib/env'
-import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, typedValues, type FormState } from '@/lib/form-state'
 import type { RecipientId } from '@/lib/recipients'
 import { requireUser } from '@/server/auth'
 import { createFormatRequest, TooManyFormatRequests } from '@/server/format-requests'
@@ -45,18 +45,24 @@ export async function createReportAction(
   const recipient = String(formData.get('recipient') ?? '') as RecipientId
   const inputNotes = String(formData.get('inputNotes') ?? '').trim() || null
 
-  if (!patientId) return formError('Elegí un paciente.')
-  if (!recipient) return formError('Elegí para quién es el informe.')
+  // Lo escrito vuelve con cualquier error: "cuota agotada" no puede costar el
+  // "¿Algo que quieras que diga?" que ya se había escrito.
+  const values = typedValues(formData)
+
+  if (!patientId) return formError('Elegí un paciente.', values)
+  if (!recipient) return formError('Elegí para quién es el informe.', values)
 
   // Her own instructions (P20). Checked before the quota, like any other field:
   // a form that fails on length should not spend a unit first.
   const own = await readCustomInstructions(user.id, 'report', formData)
-  if ('message' in own) return formError(own.message)
+  if ('message' in own) return formError(own.message, values)
 
   try {
     await assertQuota(user.id, practitioner.plan, 'reports')
   } catch (error) {
-    if (error instanceof QuotaExceededError) return formError(quotaMessage(error.status))
+    if (error instanceof QuotaExceededError) {
+      return formError(quotaMessage(error.status), values)
+    }
     throw error
   }
 
