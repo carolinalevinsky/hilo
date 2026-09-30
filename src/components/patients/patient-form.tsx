@@ -56,6 +56,12 @@ export function PatientForm({
   const [frequency, setFrequency] = useState('weekly')
   const [weekday, setWeekday] = useState('1')
 
+  // Lo que se había escrito, si el servidor devolvió un error. Sin esto, un
+  // dato mal cargado devolvía el formulario entero en blanco: la ficha, el
+  // motivo de consulta, el responsable, todo. Ver `FormState.values`.
+  const kept = (name: string, fallback?: string | number | null) =>
+    state.values?.[name] ?? (fallback === null || fallback === undefined ? '' : String(fallback))
+
   const showsGuardian = ageGroup !== 'adults' && (ageGroup !== 'adolescents' || hasGuardian)
 
   /**
@@ -113,7 +119,7 @@ export function PatientForm({
           <Input
             id="fullName"
             name="fullName"
-            defaultValue={patient?.full_name}
+            defaultValue={kept('fullName', patient?.full_name)}
             required
             autoFocus={!editing}
           />
@@ -124,7 +130,7 @@ export function PatientForm({
             id="dateOfBirth"
             name="dateOfBirth"
             type="date"
-            defaultValue={patient?.date_of_birth ?? ''}
+            defaultValue={kept('dateOfBirth', patient?.date_of_birth)}
           />
         </Field>
 
@@ -163,7 +169,7 @@ export function PatientForm({
           htmlFor="school"
           className={ageGroup === 'adults' ? 'hidden' : undefined}
         >
-          <Input id="school" name="school" defaultValue={patient?.school ?? ''} />
+          <Input id="school" name="school" defaultValue={kept('school', patient?.school)} />
         </Field>
 
         <Field
@@ -175,7 +181,7 @@ export function PatientForm({
             id="schoolLevel"
             name="schoolLevel"
             placeholder="Ej: 2º escolar"
-            defaultValue={patient?.school_level ?? ''}
+            defaultValue={kept('schoolLevel', patient?.school_level)}
           />
         </Field>
 
@@ -183,7 +189,7 @@ export function PatientForm({
           <Input
             id="healthInsurer"
             name="healthInsurer"
-            defaultValue={patient?.health_insurer ?? ''}
+            defaultValue={kept('healthInsurer', patient?.health_insurer)}
           />
         </Field>
 
@@ -197,7 +203,7 @@ export function PatientForm({
             name="referralReason"
             rows={3}
             placeholder="¿Por qué llega a la consulta?"
-            defaultValue={patient?.referral_reason ?? ''}
+            defaultValue={kept('referralReason', patient?.referral_reason)}
           />
         </Field>
 
@@ -217,6 +223,7 @@ export function PatientForm({
               id="firstGoal"
               name="firstGoal"
               maxLength={200}
+              defaultValue={kept('firstGoal')}
               placeholder="Ej: Producir /r/ en posición inicial"
             />
             <p className="text-xs text-muted-foreground">
@@ -238,7 +245,7 @@ export function PatientForm({
               id="startDate"
               name="startDate"
               type="date"
-              defaultValue={patient?.start_date ?? ''}
+              defaultValue={kept('startDate', patient?.start_date)}
             />
             <p className="text-xs text-muted-foreground">
               Se completa solo con la primera sesión que registres.
@@ -307,7 +314,7 @@ export function PatientForm({
               id="guardianName"
               name="guardianName"
               placeholder="Nombre y apellido"
-              defaultValue={patient?.guardian_name ?? ''}
+              defaultValue={kept('guardianName', patient?.guardian_name)}
             />
           </Field>
 
@@ -317,7 +324,7 @@ export function PatientForm({
             <NativeSelect
               id="guardianRelationship"
               name="guardianRelationship"
-              defaultValue={patient?.guardian_relationship ?? ''}
+              defaultValue={kept('guardianRelationship', patient?.guardian_relationship)}
             >
               <option value="">Elegí</option>
               {Object.entries(GUARDIAN_RELATIONSHIP_LABELS).map(([value, label]) => (
@@ -334,7 +341,7 @@ export function PatientForm({
               name="guardianEmail"
               type="email"
               placeholder="nombre@correo.com"
-              defaultValue={patient?.guardian_email ?? ''}
+              defaultValue={kept('guardianEmail', patient?.guardian_email)}
             />
           </Field>
         </div>
@@ -383,7 +390,7 @@ export function PatientForm({
                 uno. La opción vacía sigue siendo el interruptor: es el valor
                 por defecto, y sin hora no se agenda nada. */}
             <Field label="Hora" htmlFor="startTime">
-              <NativeSelect id="startTime" name="startTime" defaultValue="">
+              <NativeSelect id="startTime" name="startTime" defaultValue={kept('startTime')}>
                 <option value="">Todavía no sé</option>
                 {QUARTER_HOURS.map((time) => (
                   <option key={time} value={time}>
@@ -436,7 +443,7 @@ export function PatientForm({
               step="1"
               inputMode="numeric"
               placeholder="Monto"
-              defaultValue={patient?.session_fee ?? ''}
+              defaultValue={kept('sessionFee', patient?.session_fee)}
             />
           </Field>
 
@@ -444,7 +451,7 @@ export function PatientForm({
             <NativeSelect
               id="billingFrequency"
               name="billingFrequency"
-              defaultValue={patient?.billing_frequency ?? 'monthly'}
+              defaultValue={kept('billingFrequency', patient?.billing_frequency ?? 'monthly')}
             >
               {Object.entries(BILLING_FREQUENCY_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -467,7 +474,7 @@ export function PatientForm({
               max="62"
               inputMode="numeric"
               placeholder="Ej: 4"
-              defaultValue={patient?.expected_sessions_per_month ?? ''}
+              defaultValue={kept('expectedSessionsPerMonth', patient?.expected_sessions_per_month)}
             />
           </Field>
         </div>

@@ -105,7 +105,7 @@ export function SessionForm({
           id="heldOn"
           name="heldOn"
           type="date"
-          defaultValue={session?.held_on ?? appointment?.scheduledOn ?? today()}
+          defaultValue={state.values?.heldOn ?? session?.held_on ?? appointment?.scheduledOn ?? today()}
           required
         />
       </div>
@@ -164,7 +164,7 @@ export function SessionForm({
           name="progressNote"
           className="min-h-40"
           required
-          defaultValue={session?.progress_note ?? noteDraft}
+          defaultValue={state.values?.progressNote ?? session?.progress_note ?? noteDraft}
           placeholder="Logró la /r/ en posición inicial de forma consistente, muy conectado al juego."
         />
         <p className="text-xs text-muted-foreground">

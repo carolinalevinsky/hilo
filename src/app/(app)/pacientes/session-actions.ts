@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { formError, formErrorFor, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, typedValues, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { setGoalProgress } from '@/server/goals'
 import { removePlanItems } from '@/server/session-plans'
@@ -42,8 +42,11 @@ export async function saveSessionAction(
       await createSession(user.id, patientId, input)
     }
   } catch (error) {
-    if (error instanceof SessionLinkError) return formError(error.message)
-    return formErrorFor(error, 'No pudimos guardar el registro. Probá de nuevo.')
+    // Con lo escrito de vuelta: una nota dictada de diez minutos no se pierde
+    // porque la base dijo que no.
+    const values = typedValues(formData)
+    if (error instanceof SessionLinkError) return formError(error.message, values)
+    return formErrorFor(error, 'No pudimos guardar el registro. Probá de nuevo.', values)
   }
 
   // After the session, not before: the numbers describe how the session that was

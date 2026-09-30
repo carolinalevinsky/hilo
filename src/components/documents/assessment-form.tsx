@@ -54,7 +54,12 @@ export function AssessmentForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="patientId">Paciente</Label>
-          <NativeSelect id="patientId" name="patientId" required defaultValue={defaultPatientId ?? ''}>
+          <NativeSelect
+            id="patientId"
+            name="patientId"
+            required
+            defaultValue={state.values?.patientId ?? defaultPatientId ?? ''}
+          >
             <option value="" disabled>
               Elegí un paciente
             </option>
@@ -68,7 +73,13 @@ export function AssessmentForm({
 
         <div className="space-y-1.5">
           <Label htmlFor="assessedOn">Fecha de administración</Label>
-          <Input id="assessedOn" name="assessedOn" type="date" defaultValue={today()} required />
+          <Input
+            id="assessedOn"
+            name="assessedOn"
+            type="date"
+            defaultValue={state.values?.assessedOn ?? today()}
+            required
+          />
         </div>
       </div>
 
@@ -96,7 +107,7 @@ export function AssessmentForm({
         <>
           <div className="space-y-1.5">
             <Label htmlFor="scale">Tipo de puntaje</Label>
-            <NativeSelect id="scale" name="scale" defaultValue="standard">
+            <NativeSelect id="scale" name="scale" defaultValue={state.values?.scale ?? 'standard'}>
               {Object.entries(SCORE_SCALES).map(([value, scale]) => (
                 <option key={value} value={value}>
                   {scale.label}
@@ -123,6 +134,7 @@ export function AssessmentForm({
                   <span className="flex-1 text-meta">{field}</span>
                   <Input
                     name={`score:${field}`}
+                    defaultValue={state.values?.[`score:${field}`]}
                     inputMode="decimal"
                     placeholder="Sin dato"
                     aria-label={field}
@@ -140,6 +152,7 @@ export function AssessmentForm({
             id="prose"
             name="prose"
             rows={4}
+            defaultValue={state.values?.prose}
             placeholder={selected?.prose ?? 'Cargá los resultados que tengas.'}
           />
         </div>
@@ -160,6 +173,7 @@ export function AssessmentForm({
           id="observations"
           name="observations"
           rows={2}
+          defaultValue={state.values?.observations}
           placeholder="Cómo se mostró durante la administración: atención, fatiga, colaboración."
         />
       </div>

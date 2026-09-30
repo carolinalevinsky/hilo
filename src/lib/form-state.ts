@@ -31,6 +31,24 @@ export type FormState = {
 
 export const EMPTY_FORM_STATE: FormState = { ok: false, message: null }
 
+/**
+ * Lo que se escribió en un formulario, para devolverlo con el error.
+ *
+ * Sólo texto: un archivo no viaja de vuelta, y un campo `password` nunca (ver
+ * la advertencia en `values`) — por eso se descartan los nombres que la
+ * contienen.
+ */
+export function typedValues(formData: FormData): Record<string, string> {
+  const values: Record<string, string> = {}
+  for (const [name, value] of formData.entries()) {
+    if (typeof value !== 'string') continue
+    if (/password|contrasena/i.test(name)) continue
+    if (name.startsWith('$ACTION')) continue
+    values[name] = value
+  }
+  return values
+}
+
 export function formError(message: string, values?: Record<string, string>): FormState {
   return { ok: false, message, values }
 }

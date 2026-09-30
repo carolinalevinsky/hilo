@@ -140,8 +140,11 @@ export function SessionPlanCard({
             <ClipboardList className="mx-auto mb-2.5 size-6 text-muted-foreground/70" />
             <p className="text-item font-bold">Tu plan está listo para armarse</p>
             <p className="mx-auto mt-1 max-w-xs text-meta leading-relaxed text-muted-foreground">
-              Sumá un objetivo, un material o una actividad tuya desde el paso 2 y van
-              cayendo acá, en orden.
+              {/* "Desde el paso 2" no se entendía en el teléfono, donde los
+                  números de los pasos no se muestran y esta tarjeta sube
+                  primero. */}
+              Sumá un objetivo, un material o una actividad tuya desde las secciones de
+              esta pantalla y van cayendo acá, en orden.
             </p>
           </div>
         ) : (
@@ -207,7 +210,7 @@ export function SessionPlanCard({
             </ol>
 
             <p className="no-print mt-2.5 rounded-xl border border-dashed border-border px-3 py-2 text-center text-micro text-muted-foreground">
-              Seguí sumando desde el paso 2
+              Seguí sumando objetivos, materiales o actividades
             </p>
           </>
         )}

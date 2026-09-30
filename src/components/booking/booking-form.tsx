@@ -21,7 +21,7 @@ import { today } from '@/lib/dates'
  * form can show. The slug goes in the body; the practitioner it resolves to is
  * decided on the server.
  */
-export function BookingForm({ slug }: { slug: string }) {
+export function BookingForm({ slug, practitionerName }: { slug: string; practitionerName: string }) {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
   const [error, setError] = useState<string | null>(null)
 
@@ -65,7 +65,10 @@ export function BookingForm({ slug }: { slug: string }) {
       <div className="rounded-xl bg-green-soft px-4 py-5 text-center">
         <p className="text-lead font-bold text-[#1a8f57]">¡Listo, llegó tu solicitud!</p>
         <p className="mt-1.5 text-body leading-relaxed text-[#1a8f57]">
-          Te vamos a escribir al teléfono que dejaste para confirmar el día y la hora.
+          {/* "Te vamos a escribir" prometía algo en nombre de Ombúa, que no
+              escribe: escribe ella. */}
+          {practitionerName} te va a escribir al teléfono que dejaste para confirmar el día
+          y la hora.
         </p>
       </div>
     )

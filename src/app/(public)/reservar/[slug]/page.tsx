@@ -55,7 +55,7 @@ export default async function BookingPage({ params }: PageProps<'/reservar/[slug
             </div>
           </div>
 
-          <BookingForm slug={slug} />
+          <BookingForm slug={slug} practitionerName={practitioner.full_name} />
 
           <p className="mt-4 text-center text-meta text-muted-foreground">
             {practitioner.full_name} recibe tu pedido y te confirma el horario.

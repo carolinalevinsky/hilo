@@ -45,7 +45,7 @@ export function ReportForm({
           id="patientId"
           name="patientId"
           required
-          defaultValue={defaultPatientId ?? ''}
+          defaultValue={state.values?.patientId ?? defaultPatientId ?? ''}
         >
           <option value="" disabled>
             Elegí un paciente
@@ -73,7 +73,7 @@ export function ReportForm({
                 type="radio"
                 name="recipient"
                 value={recipient}
-                defaultChecked={recipient === checkedRecipient}
+                defaultChecked={recipient === (state.values?.recipient ?? checkedRecipient)}
                 className="sr-only"
                 required
               />
@@ -95,6 +95,7 @@ export function ReportForm({
           id="inputNotes"
           name="inputNotes"
           rows={3}
+          defaultValue={state.values?.inputNotes}
           placeholder="Ej: destacá el trabajo de la familia en casa y pedí más tiempo en las pruebas escritas."
         />
         <p className="text-xs text-muted-foreground">
