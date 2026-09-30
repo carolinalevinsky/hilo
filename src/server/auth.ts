@@ -184,7 +184,13 @@ function firstMessage(error: z.ZodError): string {
  */
 export const ConfirmationLink = z.object({
   tokenHash: z.string().min(1),
-  type: z.enum(['signup', 'recovery', 'invite', 'email_change', 'magiclink']),
+  // Sólo los que Ombúa manda de verdad. `magiclink`, `signup` e `invite` se
+  // aceptaban aunque nada los generara, y un link de entrada de otra cuenta es
+  // la forma de un cambio de sesión forzado: alguien pide un magic link para
+  // su propia cuenta, se lo manda a una profesional, y ella termina adentro de
+  // la cuenta ajena, cargando pacientes ahí. El alta está cerrada y las
+  // invitaciones usan su propio token (`invitations.ts`).
+  type: z.enum(['recovery', 'email_change']),
 })
 
 /**
@@ -278,7 +284,7 @@ export async function requestPasswordReset(input: unknown): Promise<AuthResult> 
 
 export const NewPassword = z
   .object({
-    password: z.string().min(6, 'La contraseña necesita al menos 6 caracteres.'),
+    password: z.string().min(10, 'La contraseña necesita al menos 10 caracteres.'),
     confirmation: z.string().min(1, 'Repetí la contraseña.'),
   })
   .refine((value) => value.password === value.confirmation, {

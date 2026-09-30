@@ -19,7 +19,7 @@ export function NewPasswordForm() {
       <PasswordField
         id="password"
         label="Contraseña nueva"
-        placeholder="Usá al menos 6 caracteres"
+        placeholder="Usá al menos 10 caracteres"
         autoComplete="new-password"
       />
 

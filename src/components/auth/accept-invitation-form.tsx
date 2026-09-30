@@ -52,7 +52,7 @@ export function AcceptInvitationForm({ token }: { token: string }) {
       <PasswordField
         id="password"
         label="Elegí tu contraseña"
-        placeholder="Usá al menos 6 caracteres"
+        placeholder="Usá al menos 10 caracteres"
         autoComplete="new-password"
       />
 

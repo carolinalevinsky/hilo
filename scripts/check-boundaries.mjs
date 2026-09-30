@@ -55,6 +55,19 @@ const MUST_FAIL = [
     realPath: 'src/app/__probe.ts',
     code: "import { getServiceDb } from '@/server/db'\nexport const probe = getServiceDb\n",
   },
+  // The relative forms. Every server file imports `./db`, and the rule used to
+  // match only the `@/` spelling, so a new server file could take the service
+  // role unnoticed.
+  {
+    name: 'rule 3 — a server file outside the allowlist may not import getServiceDb from ./db',
+    realPath: 'src/server/__probe_relative.ts',
+    code: "import { getServiceDb } from './db'\nexport const probe = getServiceDb\n",
+  },
+  {
+    name: 'rule 3 — app code may not import getServiceDb by a relative path',
+    realPath: 'src/app/__probe_relative.ts',
+    code: "import { getServiceDb } from '../server/db'\nexport const probe = getServiceDb\n",
+  },
 ]
 
 /**

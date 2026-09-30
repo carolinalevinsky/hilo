@@ -11,11 +11,22 @@ import { ConfirmationLink, NewPassword, PasswordResetRequest } from './auth'
  * the enum here is the only place that list of strings exists.
  */
 describe('ConfirmationLink', () => {
-  it('accepts the two links Ombúa actually sends', () => {
-    expect(ConfirmationLink.safeParse({ tokenHash: 'abc', type: 'signup' }).success).toBe(true)
+  it('accepts the links Ombúa actually sends', () => {
     expect(ConfirmationLink.safeParse({ tokenHash: 'abc', type: 'recovery' }).success).toBe(
       true,
     )
+    expect(
+      ConfirmationLink.safeParse({ tokenHash: 'abc', type: 'email_change' }).success,
+    ).toBe(true)
+  })
+
+  it('refuses the ones it never sends, which would sign someone into another account', () => {
+    // Sign-up is closed and invitations carry their own token. A magic link for
+    // somebody else's account, opened by a practitioner, would swap her session
+    // for theirs without a word.
+    for (const type of ['magiclink', 'signup', 'invite']) {
+      expect(ConfirmationLink.safeParse({ tokenHash: 'abc', type }).success).toBe(false)
+    }
   })
 
   it('rejects a type that is not a link type at all', () => {

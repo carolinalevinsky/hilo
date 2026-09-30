@@ -1,4 +1,6 @@
 import { ArrowLeft, Target } from '@/components/icons'
+import { logAction } from '@/server/audit'
+import { after } from 'next/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -43,6 +45,8 @@ export default async function AssessmentPage({
     wasEverSigned(user.id, 'assessment', id),
   ])
   if (!assessment) notFound()
+  // Ver `pacientes/[id]/page.tsx`: abrir también queda registrado.
+  after(() => logAction(user.id, 'view', 'assessment', assessment.id))
 
   const state = documentState(assessment)
 

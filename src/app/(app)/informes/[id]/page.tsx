@@ -1,4 +1,6 @@
 import { ArrowLeft, MessageCircle } from '@/components/icons'
+import { logAction } from '@/server/audit'
+import { after } from 'next/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -54,6 +56,8 @@ export default async function ReportPage({
     wasEverSigned(user.id, 'report', id),
   ])
   if (!report) notFound()
+  // Ver `pacientes/[id]/page.tsx`: abrir también queda registrado.
+  after(() => logAction(user.id, 'view', 'report', report.id))
 
   const state = documentState(report)
 
