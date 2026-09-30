@@ -1,7 +1,8 @@
 import { CalendarDays, Clock, Target, User, X } from '@/components/icons'
 import Link from 'next/link'
 
-import { AppointmentMenu, recordLink } from '@/components/agenda/appointment-menu'
+import { AppointmentMenu } from '@/components/agenda/appointment-menu'
+import { recordLink } from '@/lib/record-link'
 import { AttendanceToggle } from '@/components/agenda/attendance-toggle'
 import { Button } from '@/components/ui/button'
 import { appointmentStatusClasses, appointmentStatusLabel } from '@/lib/appointment-labels'

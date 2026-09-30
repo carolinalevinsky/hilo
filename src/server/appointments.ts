@@ -121,6 +121,22 @@ export async function createSchedule(practitionerId: string, input: unknown) {
 export async function deactivateSchedule(practitionerId: string, scheduleId: string) {
   const db = await getDb()
 
+  // Las de mañana en adelante que ya estaban en Google, se sacan de allá antes
+  // de borrarlas acá: después no queda de dónde sacar el id del evento, y
+  // quedaban en el calendario de la profesional para siempre.
+  const { data: synced } = await db
+    .from('appointments')
+    .select('id')
+    .eq('practitioner_id', practitionerId)
+    .eq('schedule_id', scheduleId)
+    .eq('status', 'scheduled')
+    .gt('scheduled_on', today())
+    .not('gcal_event_id', 'is', null)
+
+  for (const { id } of synced ?? []) {
+    await removeAppointment(practitionerId, id)
+  }
+
   const { error } = await db
     .from('schedules')
     .update({ is_active: false, ends_on: today() })

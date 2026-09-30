@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { formErrorFor, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, typedValues, type FormState } from '@/lib/form-state'
 import {
   APPOINTMENT_STATUSES,
   createAppointment,
@@ -13,6 +13,7 @@ import {
 } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
 import { setAppointmentFocus } from '@/server/planning'
+import { RescheduleError, rescheduleAppointment } from '@/server/reschedule'
 
 export async function createScheduleAction(
   _previous: FormState,
@@ -111,4 +112,36 @@ export async function deactivateScheduleAction(formData: FormData) {
 
   await deactivateSchedule(user.id, String(formData.get('scheduleId')))
   revalidatePath('/agenda')
+}
+
+/**
+ * "Cambiar día u hora". Ver `src/server/reschedule.ts`.
+ *
+ * Devuelve lo que se había elegido con el error, así el diálogo no vuelve en
+ * blanco cuando el día elegido choca con otra sesión del mismo horario.
+ */
+export async function rescheduleAppointmentAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser()
+  const values = typedValues(formData)
+
+  try {
+    await rescheduleAppointment(user.id, {
+      appointmentId: formData.get('appointmentId'),
+      scheduledOn: formData.get('scheduledOn'),
+      startTime: formData.get('startTime'),
+      durationMinutes: formData.get('durationMinutes'),
+      scope: formData.get('scope') ?? 'once',
+    })
+  } catch (error) {
+    if (error instanceof RescheduleError) return formError(error.message, values)
+    return formErrorFor(error, 'No pudimos mover la sesión. Probá de nuevo.', values)
+  }
+
+  revalidatePath('/agenda')
+  revalidatePath('/inicio')
+  revalidatePath('/planificacion')
+  return formOk('Sesión movida.')
 }
