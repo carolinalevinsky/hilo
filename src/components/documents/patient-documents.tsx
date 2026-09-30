@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { DocumentStateBadge } from '@/components/documents/document-state-badge'
+
 import { formatDate } from '@/lib/dates'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import type { AssessmentWithPatient } from '@/server/assessments'
@@ -36,6 +38,7 @@ export function PatientDocuments({
       href: `/evaluaciones/${assessment.id}?volver=/pacientes/${assessment.patient_id}`,
       title: assessment.instrument,
       date: assessment.assessed_on,
+      row: assessment,
     })),
     ...reports.map((report) => ({
       id: report.id,
@@ -43,6 +46,7 @@ export function PatientDocuments({
       href: `/informes/${report.id}?volver=/pacientes/${report.patient_id}`,
       title: `Para ${RECIPIENT_LABELS[report.recipient as RecipientId] ?? report.recipient}`,
       date: report.created_at.slice(0, 10),
+      row: report,
     })),
   ].sort((a, b) => b.date.localeCompare(a.date))
 
@@ -76,6 +80,8 @@ export function PatientDocuments({
             <span className="min-w-0 flex-1 truncate text-body font-bold">
               {document.title}
             </span>
+
+            <DocumentStateBadge row={document.row} />
 
             <span className="shrink-0 text-micro text-muted-foreground">
               abrir · {formatDate(document.date)}

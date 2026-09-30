@@ -10,6 +10,7 @@ import {
   User,
   Users,
 } from '@/components/icons'
+import { DocumentStateBadge } from '@/components/documents/document-state-badge'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -178,6 +179,7 @@ export default async function DocumentsPage() {
                               {formatDate(report.issued_on)}
                             </p>
                           </div>
+                          <DocumentStateBadge row={report} />
                         </Link>
                       </li>
                     ))}
@@ -219,6 +221,7 @@ export default async function DocumentsPage() {
                               {assessment.instrument} · {formatDate(assessment.assessed_on)}
                             </p>
                           </div>
+                          <DocumentStateBadge row={assessment} />
                         </Link>
                       </li>
                     ))}

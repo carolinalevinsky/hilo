@@ -101,7 +101,8 @@ function query(rows: Record<string, Cell>[]): FakeQuery {
     select: () => query(rows),
     eq: (column, value) => query(rows.filter((row) => row[column] === value)),
     gte: (column, value) => query(rows.filter((row) => String(row[column]) >= value)),
-    is: (column, value) => query(rows.filter((row) => row[column] === value)),
+    // Una columna que la fila de prueba no trae es un null, como en Postgres.
+    is: (column, value) => query(rows.filter((row) => (row[column] ?? null) === value)),
     // Implemented rather than ignored: the rotation of the batch is behaviour
     // under test, and a passthrough would let a dropped `order` still pass.
     order: (column, { ascending, nullsFirst }) =>

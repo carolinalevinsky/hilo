@@ -3,10 +3,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { deleteSessionAction } from '@/app/(app)/pacientes/session-actions'
+import { trashSessionAction } from '@/app/(app)/pacientes/session-actions'
+import { ConfirmAction } from '@/components/confirm-action'
 import { PageHeader } from '@/components/page-header'
 import { SessionForm } from '@/components/sessions/session-form'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { listGoals } from '@/server/goals'
 import { getPatient } from '@/server/patients'
@@ -54,17 +54,20 @@ export default async function EditSessionPage({
             selectedGoalIds={session.session_goals.map((link) => link.goal_id)}
           />
 
-          <form action={deleteSessionAction} className="border-t border-border pt-4">
-            <input type="hidden" name="patientId" value={patient.id} />
-            <input type="hidden" name="sessionId" value={session.id} />
-            <Button type="submit" variant="ghost" size="sm">
-              Borrar este registro
-            </Button>
+          <div className="border-t border-border pt-4">
+            <ConfirmAction
+              action={trashSessionAction}
+              fields={{ patientId: patient.id, sessionId: session.id }}
+              trigger="Mandar a la papelera"
+              title="¿Mandar este registro a la papelera?"
+              description="Deja de contar en las estadísticas y en los informes. Lo podés recuperar cuando quieras desde la papelera, en la ficha del paciente."
+              confirmLabel="Mandar a la papelera"
+            />
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Usalo solo si lo cargaste por error: el registro de una sesión que no pasó
+              Usalo si lo cargaste por error: el registro de una sesión que no pasó
               desvirtúa las estadísticas y los informes.
             </p>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </>

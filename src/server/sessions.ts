@@ -260,21 +260,3 @@ export async function countSessions(practitionerId: string, patientId?: string) 
   return count ?? 0
 }
 
-/**
- * Deletes a session. The one thing in Ombúa that is genuinely removed rather than
- * soft-deleted, because a session that did not happen is a typo, not history —
- * and leaving it in would corrupt both the count of sessions held and what a
- * report says about the treatment.
- */
-export async function deleteSession(practitionerId: string, sessionId: string) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('sessions')
-    .delete()
-    .eq('id', sessionId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'delete', 'session', sessionId)
-}

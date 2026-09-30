@@ -13,7 +13,8 @@ import {
   disconnectMercadoPago,
 } from '@/server/mercadopago'
 import { updatePatientBilling } from '@/server/patients'
-import { deletePayment, recordPayment } from '@/server/payments'
+import { recordPayment } from '@/server/payments'
+import { trashRecord } from '@/server/trash'
 
 /**
  * `MercadoPagoError` ya trae una frase escrita para quien la va a leer, así que
@@ -72,10 +73,10 @@ export async function recordPaymentAction(
   return formOk('Pago registrado.')
 }
 
-export async function deletePaymentAction(formData: FormData) {
+export async function trashPaymentAction(formData: FormData) {
   const user = await requireUser()
 
-  await deletePayment(user.id, String(formData.get('paymentId')))
+  await trashRecord(user.id, 'payment', String(formData.get('paymentId')))
   revalidatePath('/cobros')
 }
 

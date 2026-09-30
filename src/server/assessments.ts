@@ -137,18 +137,6 @@ export async function listAssessments(
   return data
 }
 
-export async function deleteAssessment(practitionerId: string, assessmentId: string) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('assessments')
-    .delete()
-    .eq('id', assessmentId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'delete', 'assessment', assessmentId)
-}
 
 // ─── Reading the numbers ────────────────────────────────────────────────────
 

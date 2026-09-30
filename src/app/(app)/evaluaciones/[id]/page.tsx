@@ -6,9 +6,10 @@ import { notFound } from 'next/navigation'
 import { restoreVersionAction } from '@/app/(app)/document-actions'
 import {
   adoptSuggestedGoalsAction,
-  deleteAssessmentAction,
   saveAssessmentAction,
+  trashAssessmentAction,
 } from '@/app/(app)/evaluaciones/actions'
+import { ConfirmAction } from '@/components/confirm-action'
 import { ClinicalDocument } from '@/components/documents/clinical-document'
 import { DocumentEditor } from '@/components/documents/document-editor'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ import { formatLongDate } from '@/lib/dates'
 import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { AssessmentResults, getAssessment, suggestedGoals } from '@/server/assessments'
+import { documentSeal, documentState, wasEverSigned } from '@/server/document-lifecycle'
 import { listVersions } from '@/server/document-versions'
 
 import { currentPractitioner, currentUser } from '../../session'
@@ -34,12 +36,15 @@ export default async function AssessmentPage({
   const back = backLink(query.volver, '/informes', 'Volver a informes')
   const user = await currentUser()
 
-  const [assessment, practitioner, versions] = await Promise.all([
+  const [assessment, practitioner, versions, everSigned] = await Promise.all([
     getAssessment(user.id, id),
     currentPractitioner(user.id),
     listVersions(user.id, 'assessment', id),
+    wasEverSigned(user.id, 'assessment', id),
   ])
   if (!assessment) notFound()
+
+  const state = documentState(assessment)
 
   const results = AssessmentResults.parse(assessment.results)
   const proposals = suggestedGoals(results, assessment.instrument)
@@ -55,12 +60,17 @@ export default async function AssessmentPage({
           {back.label}
         </Link>
 
-        <form action={deleteAssessmentAction}>
-          <input type="hidden" name="assessmentId" value={assessment.id} />
-          <Button type="submit" variant="ghost" size="sm">
-            Borrar
-          </Button>
-        </form>
+        {/* Sólo un borrador que nunca se entregó. Ver `informes/[id]/page.tsx`. */}
+        {state === 'draft' && !everSigned ? (
+          <ConfirmAction
+            action={trashAssessmentAction}
+            fields={{ assessmentId: assessment.id }}
+            trigger="Mandar a la papelera"
+            title="¿Mandar esta evaluación a la papelera?"
+            description="Deja de aparecer en los informes y evaluaciones. La podés recuperar cuando quieras desde la papelera, en la ficha del paciente."
+            confirmLabel="Mandar a la papelera"
+          />
+        ) : null}
       </div>
 
       <ClinicalDocument
@@ -78,14 +88,18 @@ export default async function AssessmentPage({
           name: practitioner.full_name,
           discipline: disciplineLabel(practitioner.discipline),
         }}
+        seal={documentSeal(assessment)}
       >
         <DocumentEditor
+          kind="assessment"
+          state={state}
+          everSigned={everSigned}
           documentId={assessment.id}
           initialText={assessment.analysis ?? ''}
           initialVersions={versions}
           endpoint="/api/ai/evaluacion"
           idField="assessmentId"
-          autoStart={query.ia === '1'}
+          autoStart={query.ia === '1' && state === 'draft'}
           onSave={saveAssessmentAction.bind(null, assessment.id)}
           onRestore={restoreVersionAction}
         />

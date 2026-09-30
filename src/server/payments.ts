@@ -64,19 +64,6 @@ export async function recordPayment(practitionerId: string, input: unknown) {
   return row
 }
 
-export async function deletePayment(practitionerId: string, paymentId: string) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('payments')
-    .delete()
-    .eq('id', paymentId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'delete', 'payment', paymentId)
-}
-
 export async function listPayments(
   practitionerId: string,
   period: string,

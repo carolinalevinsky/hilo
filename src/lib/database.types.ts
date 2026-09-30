@@ -151,13 +151,17 @@ export type Database = {
           assessed_on: string
           created_at: string
           custom_instructions: string | null
+          deleted_at: string | null
           id: string
           instrument: string
           observations: string | null
           patient_id: string
           practitioner_id: string
           results: Json
+          signed_at: string | null
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
         }
         Insert: {
           ai_generated?: boolean
@@ -166,13 +170,17 @@ export type Database = {
           assessed_on?: string
           created_at?: string
           custom_instructions?: string | null
+          deleted_at?: string | null
           id?: string
           instrument: string
           observations?: string | null
           patient_id: string
           practitioner_id: string
           results?: Json
+          signed_at?: string | null
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Update: {
           ai_generated?: boolean
@@ -181,13 +189,17 @@ export type Database = {
           assessed_on?: string
           created_at?: string
           custom_instructions?: string | null
+          deleted_at?: string | null
           id?: string
           instrument?: string
           observations?: string | null
           patient_id?: string
           practitioner_id?: string
           results?: Json
+          signed_at?: string | null
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Relationships: [
           {
@@ -371,6 +383,7 @@ export type Database = {
           practitioner_id: string
           replaced_by: string
           report_id: string | null
+          signed_at: string | null
         }
         Insert: {
           assessment_id?: string | null
@@ -380,6 +393,7 @@ export type Database = {
           practitioner_id: string
           replaced_by: string
           report_id?: string | null
+          signed_at?: string | null
         }
         Update: {
           assessment_id?: string | null
@@ -389,6 +403,7 @@ export type Database = {
           practitioner_id?: string
           replaced_by?: string
           report_id?: string | null
+          signed_at?: string | null
         }
         Relationships: [
           {
@@ -1009,6 +1024,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          deleted_at: string | null
           id: string
           method: string
           mp_payment_id: string | null
@@ -1023,6 +1039,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           method?: string
           mp_payment_id?: string | null
@@ -1037,6 +1054,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           method?: string
           mp_payment_id?: string | null
@@ -1161,14 +1179,18 @@ export type Database = {
           content: string | null
           created_at: string
           custom_instructions: string | null
+          deleted_at: string | null
           id: string
           input_notes: string | null
           issued_on: string
           patient_id: string
           practitioner_id: string
           recipient: string
+          signed_at: string | null
           title: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
         }
         Insert: {
           ai_generated?: boolean
@@ -1176,14 +1198,18 @@ export type Database = {
           content?: string | null
           created_at?: string
           custom_instructions?: string | null
+          deleted_at?: string | null
           id?: string
           input_notes?: string | null
           issued_on?: string
           patient_id: string
           practitioner_id: string
           recipient: string
+          signed_at?: string | null
           title: string
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Update: {
           ai_generated?: boolean
@@ -1191,14 +1217,18 @@ export type Database = {
           content?: string | null
           created_at?: string
           custom_instructions?: string | null
+          deleted_at?: string | null
           id?: string
           input_notes?: string | null
           issued_on?: string
           patient_id?: string
           practitioner_id?: string
           recipient?: string
+          signed_at?: string | null
           title?: string
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Relationships: [
           {
@@ -1499,6 +1529,7 @@ export type Database = {
         Row: {
           appointment_id: string | null
           created_at: string
+          deleted_at: string | null
           held_on: string
           id: string
           patient_id: string
@@ -1510,6 +1541,7 @@ export type Database = {
         Insert: {
           appointment_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           held_on?: string
           id?: string
           patient_id: string
@@ -1521,6 +1553,7 @@ export type Database = {
         Update: {
           appointment_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           held_on?: string
           id?: string
           patient_id?: string
@@ -1559,6 +1592,20 @@ export type Database = {
     }
     Functions: {
       delete_goal_point: { Args: { point_id: string }; Returns: undefined }
+      document_was_signed: {
+        Args: { document_id: string; kind: string }
+        Returns: boolean
+      }
+      list_trash: {
+        Args: { patient: string }
+        Returns: {
+          deleted_at: string
+          happened_on: string
+          id: string
+          kind: string
+          label: string
+        }[]
+      }
       patient_form_by_token: {
         Args: { raw_token: string }
         Returns: {
@@ -1578,6 +1625,10 @@ export type Database = {
           full_name: string
           id: string
         }[]
+      }
+      restore_record: {
+        Args: { kind: string; record_id: string }
+        Returns: boolean
       }
       slugify: { Args: { input: string }; Returns: string }
       submit_intake: {
@@ -1604,6 +1655,10 @@ export type Database = {
       submit_scale: {
         Args: { p_answers: number[]; p_difficulty?: number; raw_token: string }
         Returns: string
+      }
+      trash_record: {
+        Args: { kind: string; record_id: string }
+        Returns: boolean
       }
       unaccent_fallback: { Args: { input: string }; Returns: string }
     }

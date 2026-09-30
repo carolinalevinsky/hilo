@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { restoreVersionAction } from '@/app/(app)/document-actions'
-import { deleteReportAction, saveReportAction } from '@/app/(app)/informes/actions'
+import { saveReportAction, trashReportAction } from '@/app/(app)/informes/actions'
+import { ConfirmAction } from '@/components/confirm-action'
 import { ClinicalDocument } from '@/components/documents/clinical-document'
 import { DocumentEditor } from '@/components/documents/document-editor'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import { backLink } from '@/lib/safe-path'
 import { disciplineLabel } from '@/lib/disciplines'
 import { RECIPIENT_LABELS, type RecipientId } from '@/lib/recipients'
 import { firstName, whatsappLink } from '@/lib/whatsapp'
+import { documentSeal, documentState, wasEverSigned } from '@/server/document-lifecycle'
 import { listVersions } from '@/server/document-versions'
 import { getPatient } from '@/server/patients'
 import { getReport } from '@/server/reports'
@@ -44,13 +46,16 @@ export default async function ReportPage({
   // the id in the URL and does not.
   const reportRow = getReport(user.id, id)
 
-  const [report, patient, practitioner, versions] = await Promise.all([
+  const [report, patient, practitioner, versions, everSigned] = await Promise.all([
     reportRow,
     reportRow.then((row) => (row ? getPatient(user.id, row.patient_id) : null)),
     currentPractitioner(user.id),
     listVersions(user.id, 'report', id),
+    wasEverSigned(user.id, 'report', id),
   ])
   if (!report) notFound()
+
+  const state = documentState(report)
 
   const meta = [
     { label: 'Paciente', value: report.patients?.full_name ?? 'Sin datos' },
@@ -103,12 +108,18 @@ export default async function ReportPage({
             )
           ) : null}
 
-          <form action={deleteReportAction}>
-            <input type="hidden" name="reportId" value={report.id} />
-            <Button type="submit" variant="ghost" size="sm">
-              Borrar
-            </Button>
-          </form>
+          {/* Sólo un borrador que nunca se entregó. Lo firmado se anula desde
+              el documento: queda en la historia clínica con su motivo. */}
+          {state === 'draft' && !everSigned ? (
+            <ConfirmAction
+              action={trashReportAction}
+              fields={{ reportId: report.id }}
+              trigger="Mandar a la papelera"
+              title="¿Mandar este borrador a la papelera?"
+              description="Deja de aparecer en los informes. Lo podés recuperar cuando quieras desde la papelera, en la ficha del paciente."
+              confirmLabel="Mandar a la papelera"
+            />
+          ) : null}
         </div>
       </div>
 
@@ -120,14 +131,18 @@ export default async function ReportPage({
           name: practitioner.full_name,
           discipline: disciplineLabel(practitioner.discipline),
         }}
+        seal={documentSeal(report)}
       >
         <DocumentEditor
+          kind="report"
+          state={state}
+          everSigned={everSigned}
           documentId={report.id}
           initialText={report.content ?? ''}
           initialVersions={versions}
           endpoint="/api/ai/informe"
           idField="reportId"
-          autoStart={query.ia === '1'}
+          autoStart={query.ia === '1' && state === 'draft'}
           onSave={saveReportAction.bind(null, report.id)}
           onRestore={restoreVersionAction}
         />

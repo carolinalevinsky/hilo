@@ -12,7 +12,6 @@ import { assessmentFallback } from '@/server/assessment-prompt'
 import {
   AssessmentResults,
   createAssessment,
-  deleteAssessment,
   suggestedGoals,
   updateAssessmentAnalysis,
 } from '@/server/assessments'
@@ -22,6 +21,7 @@ import { recordUsage } from '@/server/ai-usage'
 import { listVersions, type VersionReason } from '@/server/document-versions'
 import { QuotaExceededError, assertQuota, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
+import { trashRecord } from '@/server/trash'
 
 /**
  * Creating an assessment.
@@ -118,10 +118,11 @@ export async function saveAssessmentAction(
   return listVersions(user.id, 'assessment', assessmentId)
 }
 
-export async function deleteAssessmentAction(formData: FormData) {
+/** Sólo un borrador: lo firmado se anula. Ver `document-lifecycle.ts`. */
+export async function trashAssessmentAction(formData: FormData) {
   const user = await requireUser()
 
-  await deleteAssessment(user.id, String(formData.get('assessmentId')))
+  await trashRecord(user.id, 'assessment', String(formData.get('assessmentId')))
   revalidatePath('/informes')
   redirect('/informes')
 }

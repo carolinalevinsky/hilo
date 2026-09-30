@@ -149,15 +149,3 @@ export async function listReports(
   return data
 }
 
-export async function deleteReport(practitionerId: string, reportId: string) {
-  const db = await getDb()
-
-  const { error } = await db
-    .from('reports')
-    .delete()
-    .eq('id', reportId)
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
-  await logAction(practitionerId, 'delete', 'report', reportId)
-}

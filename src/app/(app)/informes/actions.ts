@@ -18,10 +18,10 @@ import { getPractitioner } from '@/server/practitioners'
 import { gatherReportContext, reportFallback } from '@/server/report-prompt'
 import {
   createReport,
-  deleteReport,
   titleFor,
   updateReportContent,
 } from '@/server/reports'
+import { trashRecord } from '@/server/trash'
 
 /**
  * Creating a report.
@@ -113,10 +113,11 @@ export async function saveReportAction(
   return listVersions(user.id, 'report', reportId)
 }
 
-export async function deleteReportAction(formData: FormData) {
+/** Sólo un borrador: lo firmado se anula. Ver `document-lifecycle.ts`. */
+export async function trashReportAction(formData: FormData) {
   const user = await requireUser()
 
-  await deleteReport(user.id, String(formData.get('reportId')))
+  await trashRecord(user.id, 'report', String(formData.get('reportId')))
   revalidatePath('/informes')
   redirect('/informes')
 }

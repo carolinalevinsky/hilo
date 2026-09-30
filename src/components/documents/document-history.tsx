@@ -25,6 +25,7 @@ const REASONS: Record<string, string> = {
   ai: 'antes de aplicar una propuesta de la IA',
   edit: 'antes de una edición a mano',
   restore: 'antes de restaurar otra versión',
+  signed: 'versión firmada',
 }
 
 export function DocumentHistory({
@@ -60,7 +61,7 @@ export function DocumentHistory({
             >
               <div className="min-w-[200px] flex-1">
                 <p className="text-meta font-bold">
-                  {formatDateTime(version.created_at)}
+                  {formatDateTime(version.signed_at ?? version.created_at)}
                   <span className="font-normal text-muted-foreground">
                     {' · '}
                     {REASONS[version.replaced_by] ?? 'antes de un cambio'}
