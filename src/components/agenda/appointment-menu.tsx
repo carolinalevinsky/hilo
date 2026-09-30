@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Ban,
   CalendarPlus,
@@ -6,16 +8,18 @@ import {
   ClipboardList,
   Eye,
   MoreHorizontal,
+  CalendarClock,
   RotateCw,
   Trash2,
 } from '@/components/icons'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import {
   deleteAppointmentAction,
   setAppointmentStatusAction,
 } from '@/app/(app)/agenda/actions'
+import { RescheduleDialog } from '@/components/agenda/reschedule-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,24 +35,8 @@ import { appointmentStatusLabel } from '@/lib/appointment-labels'
 import { cn } from '@/lib/utils'
 import { calendarEventTitle } from '@/lib/calendar-privacy'
 import { googleCalendarLink } from '@/lib/week'
+import { recordLink } from '@/lib/record-link'
 import type { AppointmentWithPatient } from '@/server/appointments'
-
-/**
- * Where "Registrar sesión" goes from an appointment, shared with `SessionPanel`.
- *
- * The link carries the slot (`?agenda=`) so the record is tied to it and saving
- * marks it attended. A slot that already has its record offers that record
- * instead: the database allows one per slot, and a button that leads to a form
- * which fails on save is worse than no button.
- */
-export function recordLink(appointment: AppointmentWithPatient) {
-  const recorded = appointment.sessions[0]
-  const base = `/pacientes/${appointment.patient_id}/sesiones`
-
-  return recorded
-    ? { href: `${base}/${recorded.id}`, label: 'Ver registro' }
-    : { href: `${base}/nueva?agenda=${appointment.id}`, label: 'Registrar sesión' }
-}
 
 /**
  * One way of removing an appointment, as its own form — for the same reason every
@@ -148,9 +136,19 @@ export function AppointmentMenu({
   // misma hora. Ver `pushAppointment` en `src/server/google-calendar.ts`, que es
   // quien escribe `gcal_event_id`.
   const showGoogle = !appointment.gcal_event_id
-  const hasActionItems = showRecord || showGoogle
+  // Sólo lo agendado se mueve. Ver `src/server/reschedule.ts`.
+  const canMove = status === 'scheduled'
+  const hasActionItems = showRecord || showGoogle || canMove
+  const [moving, setMoving] = useState(false)
 
   return (
+    <>
+    <RescheduleDialog
+      open={moving}
+      onOpenChange={setMoving}
+      appointment={appointment}
+      patientName={name}
+    />
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Opciones de la sesión de ${name}`}
@@ -201,6 +199,13 @@ export function AppointmentMenu({
         ) : null}
 
         {hasStatusItems && hasActionItems ? <DropdownMenuSeparator /> : null}
+
+        {canMove ? (
+          <DropdownMenuItem className="whitespace-nowrap" onSelect={() => setMoving(true)}>
+            <CalendarClock className="size-4" />
+            Cambiar día u hora
+          </DropdownMenuItem>
+        ) : null}
 
         {showRecord ? (
           <DropdownMenuItem asChild>
@@ -273,6 +278,7 @@ export function AppointmentMenu({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </>
   )
 }
 

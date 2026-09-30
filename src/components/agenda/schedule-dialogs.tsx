@@ -332,7 +332,7 @@ function PatientSelect({ patients }: { patients: PatientOption[] }) {
  * La regla de verdad está en el servidor: `QuarterHour`, en
  * `src/server/appointments.ts`. Esto es nada más la puerta.
  */
-function TimeField({ id, defaultTime }: { id: string; defaultTime?: string }) {
+export function TimeField({ id, defaultTime }: { id: string; defaultTime?: string }) {
   return (
     <Field label="Hora" htmlFor={id}>
       <NativeSelect id={id} name="startTime" defaultValue={snapToQuarterHour(defaultTime)} required>
@@ -346,11 +346,24 @@ function TimeField({ id, defaultTime }: { id: string; defaultTime?: string }) {
   )
 }
 
-function DurationField({ idPrefix = 'one-off' }: { idPrefix?: string }) {
+const DURATIONS = [30, 40, 45, 50, 60, 90]
+
+export function DurationField({
+  idPrefix = 'one-off',
+  defaultMinutes = 45,
+}: {
+  idPrefix?: string
+  defaultMinutes?: number
+}) {
   const id = `${idPrefix}-duration`
   return (
     <Field label="Duración" htmlFor={id}>
-      <NativeSelect id={id} name="durationMinutes" defaultValue="45">
+      <NativeSelect id={id} name="durationMinutes" defaultValue={String(defaultMinutes)}>
+        {/* Una sesión movida en Google puede traer un largo que no está en la
+            lista (55 minutos). Se muestra el suyo en vez de pisarlo con otro. */}
+        {DURATIONS.includes(defaultMinutes) ? null : (
+          <option value={defaultMinutes}>{defaultMinutes} minutos</option>
+        )}
         <option value="30">30 minutos</option>
         <option value="40">40 minutos</option>
         <option value="45">45 minutos</option>
@@ -363,7 +376,7 @@ function DurationField({ idPrefix = 'one-off' }: { idPrefix?: string }) {
   )
 }
 
-function Field({
+export function Field({
   label,
   htmlFor,
   hint,
