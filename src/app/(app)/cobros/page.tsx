@@ -44,7 +44,11 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
   // "Pagaron 3/5" counts people, not money: how many patients have paid
   // something this month, which is the question you actually ask before chasing
   // anyone. v1 counted it the same way (`legacy/index.html:2380`).
-  const paidCount = ledger.rows.filter((row) => row.paid > 0).length
+  // Los dos números sobre la misma gente: los pacientes activos. El de arriba
+  // contaba también a archivados y borrados que habían pagado ese mes, y el de
+  // abajo sólo a los activos, así que podía decir "Pagaron 5/4".
+  const current = ledger.rows.filter((row) => !row.archived && !row.deleted)
+  const paidCount = current.filter((row) => row.paid > 0).length
 
   const patientOptions = patients.map((patient) => ({
     id: patient.id,
@@ -112,7 +116,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
             <StatCard
               icon={Users}
               tone="violet"
-              value={`${paidCount}/${patients.length}`}
+              value={`${paidCount}/${current.length}`}
               label="Pagaron"
             />
           </StatCardGrid>
