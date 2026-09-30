@@ -26,7 +26,7 @@ export default function LegalLayout({ children }: LayoutProps<'/'>) {
           revisión legal, sobre todo por tratarse de datos de salud de menores.
         </div>
 
-        <article className="space-y-3.5 text-item leading-[1.65] [&_h1]:mb-4 [&_h1]:text-[22px] [&_h1]:font-extrabold [&_h1]:tracking-[-0.5px]">
+        <article className="space-y-3.5 text-item leading-[1.65] [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-6 [&_h1]:mb-4 [&_h1]:text-[22px] [&_h1]:font-extrabold [&_h1]:tracking-[-0.5px]">
           {children}
         </article>
 

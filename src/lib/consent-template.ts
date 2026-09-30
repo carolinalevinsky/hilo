@@ -15,6 +15,12 @@
  * (Ley 19.529); the historia belongs to the patient and they can have a copy
  * (Ley 18.335); personal data rights (Ley 18.331).
  *
+ * The two bullets on providers abroad and on AI were added when the privacy page
+ * stopped saying "con nadie": a transfer out of the country of health data needs
+ * express consent or contractual guarantees (Ley 18.331, art. 23), and this is
+ * the document a family actually signs. A practitioner who wrote her own text
+ * does not get them automatically — Mi perfil should say so.
+ *
  * It is **not** reviewed by a lawyer, and it does not include what each
  * professional body adds on top — the Coordinadora de Psicólogos' code of
  * ethics could not be read when this was written. Mi perfil says so next to
@@ -29,6 +35,14 @@
 
 export const CONSENT_PLACEHOLDERS = ['{profesional}', '{disciplina}', '{paciente}'] as const
 
+/**
+ * Los dos puntos que el modelo sumó por la transferencia internacional. Aparte,
+ * para mostrárselos a quien escribió su propio texto y que los pueda copiar.
+ */
+export const PROVIDER_AND_AI_CLAUSES = `• Ombúa usa proveedores con servidores fuera de Uruguay (en Brasil y en Estados Unidos) para guardar los datos y hacer funcionar la aplicación. Autorizo que los datos se traten allí para ese fin (Ley N.º 18.331, art. 23).
+
+• {profesional} puede usar inteligencia artificial para preparar borradores de informes y notas. La IA recibe la información clínica necesaria pero no el nombre de {paciente}, y lo que escribe es siempre un borrador que {profesional} revisa y firma.`
+
 export const DEFAULT_CONSENT_TEMPLATE = `Autorizo a {profesional} ({disciplina}) a realizar la evaluación y el tratamiento de {paciente}.
 
 Entiendo que:
@@ -40,6 +54,8 @@ Entiendo que:
 • {profesional} lleva una historia clínica con los datos, las evaluaciones y el registro de cada sesión. La historia clínica es de {paciente} y puedo pedir una copia (Ley N.º 18.335).
 
 • Los datos se guardan en Ombúa, la herramienta que usa {profesional}, y se tratan según la Ley N.º 18.331 de protección de datos personales. Puedo pedir acceder a ellos o corregirlos.
+
+${PROVIDER_AND_AI_CLAUSES}
 
 • Puedo retirar este consentimiento cuando quiera, avisándole a {profesional}. Eso no cambia lo que ya se hizo hasta ese momento.
 
