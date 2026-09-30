@@ -1,4 +1,6 @@
 import { ArrowLeft, ChartPie, FileText, MessageCircle, Pencil, Plus } from '@/components/icons'
+import { logAction } from '@/server/audit'
+import { after } from 'next/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -83,6 +85,12 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
     listTrash(user.id, id),
   ])
   if (!patient) notFound()
+
+  // Quién abrió qué historia clínica, y cuándo. El registro guardaba sólo lo
+  // que se cambiaba; abrir una ficha no dejaba rastro, y "¿quién la vio?" es la
+  // primera pregunta de un reclamo ante la URCDP. Después de responder, para
+  // que la pantalla no espere por el registro.
+  after(() => logAction(user.id, 'view', 'patient', patient.id))
 
   // Nothing clinical travels in a WhatsApp message — it says who it is about and
   // that the practitioner is there. The content stays behind the login.

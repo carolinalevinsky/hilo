@@ -426,7 +426,7 @@ export async function invitationByToken(token: string): Promise<OpenInvitation |
 
 export const AcceptInvitation = z.object({
   token: z.string().min(1),
-  password: z.string().min(6, 'La contraseña necesita al menos 6 caracteres.'),
+  password: z.string().min(10, 'La contraseña necesita al menos 10 caracteres.'),
   acceptedTerms: z.literal(true, {
     message: 'Necesitamos que aceptes los términos para crear la cuenta.',
   }),

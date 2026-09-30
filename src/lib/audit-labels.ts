@@ -69,6 +69,7 @@ const PHRASE: Record<string, string> = {
   'update:practitioner': 'Cambiaste algo de tu perfil',
   'trash:session': 'Mandaste a la papelera el registro de una sesión',
   'restore:session': 'Recuperaste de la papelera el registro de una sesión',
+  'view:patient': 'Abriste la ficha de un paciente',
 }
 
 /** "Cargaste un paciente". Nunca vacío: un registro ilegible no sirve de nada. */

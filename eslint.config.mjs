@@ -71,6 +71,19 @@ const SERVICE_DB_ALLOWED = [
   'src/server/invitations.ts', // somebody accepting an invitation is not a user yet
 ]
 
+/**
+ * The same rule for a relative import. `paths` matches the literal specifier,
+ * so `'@/server/db'` was caught and `'./db'` — which is how every file in
+ * src/server imports it — was not: a new server file could take the service
+ * role without touching the allowlist, and check:boundaries only probed the
+ * `@/` form. This matches any specifier ending in `/db`.
+ */
+const SERVICE_DB_PATTERN = {
+  regex: '(^|/)db$',
+  importNames: ['getServiceDb'],
+  message: SERVICE_DB_IMPORT.message,
+}
+
 const restrict = (options) => ({
   'no-restricted-imports': ['error', options],
 })
@@ -82,7 +95,7 @@ const eslintConfig = defineConfig([
   // ── Baseline: nothing anywhere may bypass RLS. ──────────────────────────
   {
     files: ['src/**/*.{ts,tsx}'],
-    rules: restrict({ paths: [SERVICE_DB_IMPORT] }),
+    rules: restrict({ paths: [SERVICE_DB_IMPORT], patterns: [SERVICE_DB_PATTERN] }),
   },
 
   // ── Rule 1: the backend does not know it runs inside Next.js. ──────────
@@ -91,7 +104,7 @@ const eslintConfig = defineConfig([
   {
     files: ['src/server/**/*.ts'],
     ignores: SERVICE_DB_ALLOWED,
-    rules: restrict({ patterns: [NEXT_IMPORTS], paths: [SERVICE_DB_IMPORT] }),
+    rules: restrict({ patterns: [NEXT_IMPORTS, SERVICE_DB_PATTERN], paths: [SERVICE_DB_IMPORT] }),
   },
 
   // The service-role files: still no next/*, but getServiceDb is theirs.
@@ -117,7 +130,7 @@ const eslintConfig = defineConfig([
   // Next.js 16 calls the file convention that used to be `middleware`.)
   {
     files: ['src/app/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}'],
-    rules: restrict({ patterns: [SUPABASE_IMPORTS], paths: [SERVICE_DB_IMPORT] }),
+    rules: restrict({ patterns: [SUPABASE_IMPORTS, SERVICE_DB_PATTERN], paths: [SERVICE_DB_IMPORT] }),
   },
 
   globalIgnores([

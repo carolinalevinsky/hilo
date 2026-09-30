@@ -101,10 +101,14 @@ export async function logAction(
 export async function listAuditLog(practitionerId: string, limit = 50) {
   const db = await getDb()
 
+  // Sin las aperturas. Se registran todas (ver `pacientes/[id]/page.tsx`), pero
+  // una mañana de trabajo son decenas, y en la lista de Mi perfil taparían lo
+  // que alguien busca ahí: qué cambió. Quedan en la tabla para quien las pida.
   const { data, error } = await db
     .from('audit_log')
     .select('*')
     .eq('practitioner_id', practitionerId)
+    .neq('action', 'view')
     .order('created_at', { ascending: false })
     .limit(limit)
 
