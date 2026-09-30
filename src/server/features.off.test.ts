@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from 'vitest'
 /**
  * Que apagado signifique apagado.
  *
- * Mercado Pago y las videollamadas quedaron fuera del alcance de la v1, y la
- * instrucción fue desactivar y ocultar, no borrar. Lo que estos tests fijan es
- * la mitad que no se ve: que las funciones se cierren **en el servidor**.
+ * Las videollamadas quedaron fuera del alcance de la v1, y la instrucción fue
+ * desactivar y ocultar, no borrar. Lo que estos tests fijan es la mitad que no
+ * se ve: que la función se cierre **en el servidor**. (Mercado Pago también
+ * estaba acá; se decidió sacarlo del código entero, así que no hay nada que
+ * apagar.)
  *
  * Esconder el botón no cierra nada — cualquiera puede editar el código del
  * navegador, que es exactamente lo que `legacy/index.html:2775` hacía mal con
@@ -15,7 +17,7 @@ import { describe, expect, it, vi } from 'vitest'
  */
 
 const holder = vi.hoisted(() => ({
-  features: { mercadoPago: false, videoCalls: false },
+  features: { videoCalls: false },
   inserted: [] as unknown[],
 }))
 
@@ -53,39 +55,7 @@ vi.mock('./db', () => ({
   getServiceDb: () => loudDb(),
 }))
 
-const { connectMercadoPago, createPaymentLink, handlePaymentNotification, isMercadoPagoConnected } =
-  await import('./mercadopago')
 const { ensurePatientRoom, rotatePatientRoom } = await import('./patients')
-
-describe('Mercado Pago apagado', () => {
-  it('no deja conectar una cuenta', async () => {
-    await expect(
-      connectMercadoPago('practitioner-1', { accessToken: 'APP_USR-lo-que-sea' }),
-    ).rejects.toThrow()
-    expect(holder.inserted).toHaveLength(0)
-  })
-
-  it('no genera links de pago', async () => {
-    await expect(
-      createPaymentLink('practitioner-1', {
-        amount: 1500,
-        title: 'Agosto',
-        externalReference: 'a:b:2026-08',
-      }),
-    ).rejects.toThrow()
-  })
-
-  it('contesta que no hay cuenta conectada, sin ir a la base', async () => {
-    await expect(isMercadoPagoConnected('practitioner-1')).resolves.toBe(false)
-  })
-
-  it('ignora una notificación que llegue igual, sin escribir un pago', async () => {
-    // El caso real: una cuenta que quedó conectada antes de apagar esto y sigue
-    // recibiendo avisos. No puede seguir tocando el libro de nadie.
-    await expect(handlePaymentNotification('123456')).resolves.toBeUndefined()
-    expect(holder.inserted).toHaveLength(0)
-  })
-})
 
 describe('videollamadas apagadas', () => {
   it('no abre una sala, ni escribe room_id', async () => {

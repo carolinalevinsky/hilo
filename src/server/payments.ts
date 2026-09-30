@@ -14,8 +14,9 @@ import { getDb } from './db'
  * number. Here every payment is a row and every total is computed — which means
  * the total is always the sum of payments that actually exist.
  *
- * Mercado Pago lives in `mercadopago.ts`, apart from this file, because that one
- * needs the service-role client and this one must not.
+ * `mercadopago` as a method is a payment the family made through Mercado Pago
+ * and the practitioner wrote down by hand. The integration that created these
+ * rows by itself was removed on 2026-09-29.
  */
 
 export type Payment = Database['public']['Tables']['payments']['Row']

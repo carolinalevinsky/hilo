@@ -112,7 +112,6 @@ Después, las nueve variables. Seis salen de copiar y pegar del proyecto viejo
 | `RESEND_API_KEY` | igual | mismo nombre |
 | `CRON_SECRET` | igual | mismo nombre |
 | `MAIL_FROM` | `HILO_MAIL_FROM` del v1 | cambia el nombre |
-| `MP_WEBHOOK_SECRET` | `HILO_WEBHOOK_SECRET` del v1 | cambia el nombre |
 
 Las otras tres:
 
@@ -166,11 +165,10 @@ real, con HTTPS, y no vence. Que el dominio exista no cambia nada por sí solo:
 lo que decide a dónde apuntan los links de los mails y el link de reservas es
 `NEXT_PUBLIC_APP_URL`, no el registro del dominio.
 
-Apuntarlo son quince minutos y hay que tocar **tres** lugares, no uno:
+Apuntarlo son quince minutos y hay que tocar **dos** lugares, no uno:
 
 1. `NEXT_PUBLIC_APP_URL` en Vercel
 2. Site URL y Redirect URLs en Supabase
-3. La URL del webhook en Mercado Pago
 
 Olvidarse del segundo es el error clásico: el login redirige a la dirección
 vieja y no hay mensaje que lo explique.

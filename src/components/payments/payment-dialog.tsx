@@ -22,8 +22,8 @@ import { PAYMENT_METHOD_LABELS } from '@/lib/patient-labels'
 import { periodLabel } from '@/lib/periods'
 
 /**
- * Recording a payment that arrived outside Mercado Pago — cash after a session,
- * a bank transfer. Most payments in this practice are one of those two.
+ * Recording a payment by hand — cash after a session, a bank transfer, a
+ * Mercado Pago transfer. Ombúa does not collect money; it keeps the book.
  *
  * The month is fixed to the ledger being viewed and shown, not chosen. A payment
  * filed against the wrong month is the mistake this screen exists to prevent,

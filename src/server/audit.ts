@@ -11,7 +11,7 @@ import { getDb, getServiceDb } from './db'
  *
  * `audit_log` has a SELECT policy and no INSERT policy: a practitioner can read
  * their own trail and cannot write to it. That is the point — a log a user can
- * forge is not a log. So the write has to bypass RLS, which is one of the four
+ * forge is not a log. So the write has to bypass RLS, which is one of the few
  * allowed uses of `getServiceDb()` (see `eslint.config.mjs`).
  *
  * The safety cost is contained: this file writes to exactly one table and never

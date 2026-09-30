@@ -235,7 +235,7 @@ describe('row level security on practitioners', () => {
    * free account into a Pro one.
    *
    * Note the shape: a refused **privilege** is an error, where a refused row is
-   * an empty result. Same distinction the `mp_accounts` block below relies on.
+   * an empty result. Same distinction the `google_accounts` block below relies on.
    */
   const refusedUpdate = async (patch: TablesUpdate<'practitioners'>) => {
     const { error } = await asA.from('practitioners').update(patch).eq('id', idA)
@@ -746,48 +746,8 @@ describe('a material published to the community', () => {
   })
 })
 
-describe('the Mercado Pago access token', () => {
-  // Defect #1. v1 read this credential straight from the browser
-  // (legacy/index.html:2477) — a token that can move money, in a JavaScript
-  // variable on a page. These two tests are the proof that it is now
-  // structurally unreachable rather than carefully handled.
-
-  beforeAll(async () => {
-    await service
-      .from('mp_accounts')
-      .insert({ practitioner_id: idA, access_token: 'APP_USR-token-secretisimo' })
-  })
-
-  it('cannot be read by the practitioner it belongs to', async () => {
-    const { data, error } = await asA.from('mp_accounts').select('*')
-
-    // Either shape is a pass: `mp_accounts` has no grant and no permissive
-    // policy, so the request is refused rather than filtered. What must never
-    // happen is a row coming back.
-    expect(data ?? []).toEqual([])
-    if (!error) expect(data).toEqual([])
-  })
-
-  it('cannot be written by a practitioner either', async () => {
-    const { error } = await asA
-      .from('mp_accounts')
-      .update({ access_token: 'reemplazado' })
-      .eq('practitioner_id', idA)
-
-    const { data: stored } = await service
-      .from('mp_accounts')
-      .select('access_token')
-      .eq('practitioner_id', idA)
-      .single()
-
-    expect(stored?.access_token).toBe('APP_USR-token-secretisimo')
-    expect(error ?? true).toBeTruthy()
-  })
-})
-
 describe('el refresh token de Google', () => {
-  // Vale más que el token de Mercado Pago. Aquél mueve plata y se puede
-  // revocar rápido; éste no vence, y con él se lee y se escribe el calendario
+  // Es la credencial más valiosa que guarda Ombúa: no vence, y con él se lee y se escribe el calendario
   // entero de esa persona —el del consultorio y el de su vida— hasta que ella
   // se acuerde de sacarle el permiso a Ombúa desde Google.
   //

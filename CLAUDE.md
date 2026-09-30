@@ -183,27 +183,25 @@ subquery once per query and a bare `auth.uid()` once per row.
 ## Security invariants
 
 **The service-role key bypasses Row Level Security completely.** It is used in
-exactly eight places, and every one of them earns it the same way: **there is no
+exactly six places, and every one of them earns it the same way: **there is no
 user session for RLS to check against.** Not "it was easier", not "the policy was
 in the way".
 
-1. `src/server/mercadopago.ts` — reading a practitioner's MP access token
-2. `src/server/mercadopago.ts` — the payment webhook
-3. `src/server/booking.ts` — inserting a public booking request
-4. `src/server/audit.ts` — writing the audit log
-5. `src/server/digest.ts` — the cron acts for every practitioner, so as none
-6. `src/server/google.ts` — `google_accounts` is `using (false)`, so no session
-   reaches it; and Google's push webhook arrives with a channel id, not a user
-7. `src/server/ai-usage.ts` — the AI quota ledger. A counter the counted party
+1. `src/server/booking.ts` — inserting a public booking request
+2. `src/server/audit.ts` — writing the audit log
+3. `src/server/digest.ts` — the cron acts for every practitioner, so as none
+4. `src/server/google.ts` — `google_accounts` is `using (false)`, so no session
+   reaches it
+5. `src/server/ai-usage.ts` — the AI quota ledger. A counter the counted party
    can delete is not a counter, and every table the quota used to count had a
    `for all` policy, so deleting a report gave the allowance back
-8. `src/server/invitations.ts` — somebody accepting an invitation is not a user
+6. `src/server/invitations.ts` — somebody accepting an invitation is not a user
    yet; the account is created by `auth.admin.createUser` a line later. The
    `invitations` rows are written the same way and have a read-only policy, so a
    practitioner sees who she invited and cannot forge it
 
 Everywhere else uses `getDb()`, which carries the user's session. A lint rule
-enforces this; a ninth place requires editing `SERVICE_DB_ALLOWED` in
+enforces this; a seventh place requires editing `SERVICE_DB_ALLOWED` in
 `eslint.config.mjs` — and this list here, which is the one a person reads.
 
 `npm run check:boundaries` proves the rule still fires. It reads the allowlisted

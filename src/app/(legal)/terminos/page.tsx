@@ -86,8 +86,8 @@ export default function TermsPage() {
       </p>
       <p>
         <b>12. Pagos.</b> Los cobros a las familias se realizan directamente entre el/la
-        profesional y la familia; Ombúa solo facilita el medio (por ejemplo, Mercado Pago) y
-        no es parte de esa relación ni retiene los fondos.
+        profesional y la familia. Ombúa sólo ayuda a llevar el registro de esos pagos: no
+        cobra, no es parte de esa relación y no retiene fondos.
       </p>
       <p>
         <b>13. Baja y suspensión.</b> Podés darte de baja cuando quieras. Podemos suspender

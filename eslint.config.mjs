@@ -63,7 +63,6 @@ const SERVICE_DB_IMPORT = {
  */
 const SERVICE_DB_ALLOWED = [
   'src/server/db.ts',          // defines it
-  'src/server/mercadopago.ts', // MP token read (no policy) + webhook (no session)
   'src/server/booking.ts',     // a family filling in a public form has no session
   'src/server/audit.ts',       // a log the user can write is not a log
   'src/server/digest.ts',      // a cron run acts for every practitioner, as none

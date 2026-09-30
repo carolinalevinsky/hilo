@@ -62,10 +62,8 @@ export async function GET(request: Request) {
  * Era un `!==` sobre la cadena entera. En la práctica no era un ataque: medir
  * diferencias de nanosegundos a través de la red, contra una función serverless
  * que a veces arranca en frío, no es algo que nadie haga. Se cambia igual
- * porque cuesta cuatro líneas y porque el patrón ya está escrito tres archivos
- * más allá — `verifyWebhookSignature` en `mercadopago.ts` lo hace así desde el
- * primer día, y dos formas distintas de comparar un secreto en la misma base de
- * código es una invitación a copiar la peor.
+ * porque cuesta cuatro líneas, y dos formas distintas de comparar un secreto en
+ * la misma base de código es una invitación a copiar la peor.
  *
  * La comparación de largos va antes y por fuera: `timingSafeEqual` tira si los
  * buffers no miden lo mismo, y el largo de un secreto no es lo que se está
