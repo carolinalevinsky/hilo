@@ -1,5 +1,6 @@
 import { SCORE_SCALES, type ScoreScale } from '@/lib/instruments'
 import { joinEs } from '@/lib/text'
+import { TO_COMPLETE } from '@/lib/to-complete'
 import { disciplineAdjective } from '@/lib/recipients'
 
 import { bandScores, type AssessmentResultsData } from './assessments'
@@ -135,7 +136,7 @@ export function assessmentFallback({
   if (bands.low.length > 0) {
     lines.push(
       'Áreas descendidas:',
-      `Aparecen por debajo de lo esperado: ${list(bands.low)}. Estas áreas orientan los objetivos prioritarios.`,
+      `Aparecen por debajo de lo esperado: ${list(bands.low)}.`,
       '',
     )
   }
@@ -145,10 +146,10 @@ export function assessmentFallback({
   }
 
   lines.push(
+    // Una orientación es criterio clínico, y este borrador no tiene criterio:
+    // lo marca para que lo escriba quien firma. Ver `reportFallback`.
     'Orientaciones para la intervención:',
-    bands.low.length > 0
-      ? `Se sugiere priorizar la intervención en ${joinEs(bands.low.map((entry) => entry.area.toLowerCase()))}, con actividades graduadas y apoyándose en las fortalezas detectadas.`
-      : 'A completar según el criterio profesional.',
+    TO_COMPLETE,
   )
 
   return lines.join('\n')

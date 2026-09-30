@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
+import { TO_COMPLETE } from '@/lib/to-complete'
+
 import { assessmentFallback, assessmentUserPrompt } from './assessment-prompt'
 import { bandScores, suggestedGoals } from './assessments'
 
@@ -126,7 +128,10 @@ describe('assessmentFallback', () => {
 
     expect(draft).toContain('Áreas descendidas:')
     expect(draft).toContain('comprensión verbal (85)')
-    expect(draft).toContain('Se sugiere priorizar la intervención en comprensión verbal')
+    // Dónde caen los puntajes es dato; qué hacer con eso es criterio, y el
+    // borrador de emergencia no lo tiene.
+    expect(draft).not.toContain('Se sugiere priorizar')
+    expect(draft).toContain(`Orientaciones para la intervención:\n${TO_COMPLETE}`)
   })
 
   it('says "a completar" rather than inventing an orientation', () => {
@@ -137,6 +142,6 @@ describe('assessmentFallback', () => {
       results: { scale: 'raw', scores: { 'Cálculo mental': 14 }, prose: '' },
     })
 
-    expect(draft).toContain('A completar según el criterio profesional.')
+    expect(draft).toContain(TO_COMPLETE)
   })
 })

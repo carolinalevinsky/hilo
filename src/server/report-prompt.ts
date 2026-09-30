@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/dates'
 import { customInstructionsBlock } from './prompt-templates'
 import { disciplineAdjective, recipientTone, type RecipientId } from '@/lib/recipients'
 import { joinEs } from '@/lib/text'
+import { TO_COMPLETE } from '@/lib/to-complete'
 import { firstName } from '@/lib/whatsapp'
 
 import { getDb } from './db'
@@ -178,6 +179,18 @@ export function reportUserPrompt({
  * Plain text with the same section headings the model is asked for, so the two
  * paths produce the same shape and the editor does not need to know which one
  * ran.
+ *
+ * ─── Sin afirmaciones clínicas ─────────────────────────────────────────────
+ *
+ * Sólo lleva lo que es dato —el motivo de consulta, qué objetivos se
+ * trabajaron— y deja cada sección de criterio marcada "[A completar]". Antes
+ * escribía "Se observan avances en…" para todo objetivo con 60 % o más, y
+ * "Se recomienda la continuidad de la intervención" siempre: afirmaciones
+ * clínicas que nadie hizo, sacadas de un número de un deslizador, en un
+ * documento que se firma. Es exactamente lo que la regla 1 del prompt le
+ * prohíbe al modelo, y un borrador de emergencia no tiene por qué poder más.
+ * Un corchete que salta a la vista es la manera de que no se entregue sin leer:
+ * mientras quede uno, no se deja firmar (`document-lifecycle.ts`).
  */
 export function reportFallback({
   context,
@@ -197,36 +210,24 @@ export function reportFallback({
 
   const lines: string[] = [`${tone.greeting}:`, '', tone.opening, '']
 
-  if (context.referralReason) {
-    lines.push('Motivo de consulta:', context.referralReason, '')
-  }
+  lines.push('Motivo de consulta:', context.referralReason || TO_COMPLETE, '')
 
   if (context.goals.length > 0) {
     const titles = joinEs(context.goals.map((goal) => goal.title.toLowerCase()))
     lines.push('Objetivos del período:', `Se trabajó sobre: ${titles}.`, '')
-
-    const advancing = context.goals.filter((goal) => goal.progress >= 60)
-    if (advancing.length > 0) {
-      lines.push(
-        'Avances observados:',
-        `Se observan avances en ${joinEs(advancing.map((goal) => goal.title.toLowerCase()))}.`,
-        '',
-      )
-    }
-
-    const pending = context.goals.filter((goal) => goal.progress < 50)
-    if (pending.length > 0) {
-      lines.push(
-        'Aspectos a continuar:',
-        `Se continúa trabajando en ${joinEs(pending.map((goal) => goal.title.toLowerCase()))}.`,
-        '',
-      )
-    }
+  } else {
+    lines.push('Objetivos del período:', TO_COMPLETE, '')
   }
 
   lines.push(
+    'Avances observados:',
+    `${TO_COMPLETE} Qué cambió en el período, con ejemplos de las sesiones.`,
+    '',
+    'Aspectos a continuar:',
+    TO_COMPLETE,
+    '',
     'Recomendaciones:',
-    'Se recomienda la continuidad de la intervención con la frecuencia actual.',
+    TO_COMPLETE,
     '',
     tone.closing,
   )

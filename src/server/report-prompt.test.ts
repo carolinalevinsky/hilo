@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
+import { TO_COMPLETE } from '@/lib/to-complete'
+
 import { reportFallback, reportInstructions, reportUserPrompt } from './report-prompt'
 import type { ReportContext } from './report-prompt'
 
@@ -123,14 +125,42 @@ describe('reportFallback', () => {
     expect(draft).toContain('Recomendaciones:')
   })
 
-  it('does not claim progress on a goal that has none', () => {
+  it('makes no clinical claim of its own', () => {
+    // El borrador de emergencia escribía "Se observan avances en…" para todo
+    // objetivo con 60 % y recomendaba "la continuidad de la intervención"
+    // siempre. Nadie había dicho eso: salía de un deslizador.
     const draft = reportFallback({
-      context: { ...CONTEXT, goals: [{ title: 'Fluidez lectora', progress: 20 }] },
+      context: {
+        ...CONTEXT,
+        goals: [
+          { title: 'Fluidez lectora', progress: 90 },
+          { title: 'Comprensión', progress: 10 },
+        ],
+      },
       recipient: 'school',
       disciplineId: 'psychopedagogy',
     })
 
-    expect(draft).not.toContain('Avances observados')
-    expect(draft).toContain('Se continúa trabajando en fluidez lectora')
+    expect(draft).not.toContain('Se observan avances')
+    expect(draft).not.toContain('continuidad de la intervención')
+    expect(draft).toContain('Se trabajó sobre: fluidez lectora y comprensión.')
+  })
+
+  it('marks every section of clinical judgement for the practitioner to write', () => {
+    const draft = reportFallback({
+      context: { ...CONTEXT, referralReason: '', goals: [] },
+      recipient: 'family',
+      disciplineId: 'speech_therapy',
+    })
+
+    for (const heading of [
+      'Motivo de consulta:',
+      'Avances observados:',
+      'Aspectos a continuar:',
+      'Recomendaciones:',
+    ]) {
+      const after = draft.slice(draft.indexOf(heading) + heading.length).trim()
+      expect(after.startsWith(TO_COMPLETE)).toBe(true)
+    }
   })
 })
