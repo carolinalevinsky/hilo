@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { currentPeriod, periodLabel, shiftPeriod } from '@/lib/periods'
 
-import { PaymentInput } from './payments'
+import { dueSoFar, PaymentInput } from './payments'
 
 describe('PaymentInput', () => {
   const valid = {
@@ -50,5 +50,38 @@ describe('periodLabel', () => {
 describe('currentPeriod', () => {
   it('pads the month', () => {
     expect(currentPeriod(new Date('2026-03-05T12:00:00'))).toBe('2026-03')
+  })
+})
+
+/**
+ * "Debe" en el mes en curso es lo que ya pasó, no el mes entero. Antes el día 1
+ * cada paciente con honorario aparecía debiendo su mes completo.
+ */
+describe('dueSoFar', () => {
+  const weekly = { session_fee: 1000, billing_frequency: 'weekly', expected_sessions_per_month: null }
+  const monthly = { session_fee: 8000, billing_frequency: 'monthly', expected_sessions_per_month: null }
+
+  it('a closed month owes what it expected', () => {
+    expect(dueSoFar(weekly, 4000, '2026-08', '2026-09-01', null)).toBe(4000)
+  })
+
+  it('on the 1st, someone billed by the week owes nothing yet', () => {
+    expect(dueSoFar(weekly, 4000, '2026-09', '2026-09-01', null)).toBe(0)
+  })
+
+  it('on the last day, the whole month', () => {
+    expect(dueSoFar(weekly, 4000, '2026-09', '2026-09-30', null)).toBe(4000)
+  })
+
+  it('with an agenda, the sessions that already happened', () => {
+    expect(dueSoFar(weekly, 4000, '2026-09', '2026-09-02', 3)).toBe(3000)
+  })
+
+  it('a monthly fee is owed whole from the start', () => {
+    expect(dueSoFar(monthly, 8000, '2026-09', '2026-09-01', null)).toBe(8000)
+  })
+
+  it('no fee, no figure', () => {
+    expect(dueSoFar(weekly, null, '2026-09', '2026-09-15', 2)).toBeNull()
   })
 })

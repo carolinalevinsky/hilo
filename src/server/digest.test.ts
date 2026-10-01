@@ -52,6 +52,7 @@ type PatientRow = {
   deleted_at: string | null
   archived_at: string | null
 }
+type AppointmentRow = { patient_id: string; scheduled_on: string; status: string }
 type PaymentRow = {
   practitioner_id: string
   patient_id: string
@@ -65,6 +66,7 @@ type Tables = {
   booking_requests: BookingRow[]
   patients: PatientRow[]
   payments: PaymentRow[]
+  appointments: AppointmentRow[]
 }
 
 const tables: Tables = {
@@ -73,6 +75,7 @@ const tables: Tables = {
   booking_requests: [],
   patients: [],
   payments: [],
+  appointments: [],
 }
 
 /**
@@ -85,6 +88,7 @@ type FakeQuery = {
   select: () => FakeQuery
   eq: (column: string, value: Cell) => FakeQuery
   gte: (column: string, value: string) => FakeQuery
+  lt: (column: string, value: string) => FakeQuery
   is: (column: string, value: null) => FakeQuery
   order: (column: string, options?: { ascending?: boolean; nullsFirst?: boolean }) => FakeQuery
   range: (from: number, to: number) => FakeQuery
@@ -123,6 +127,7 @@ function query(rows: Record<string, Cell>[], orders: Order[] = []): FakeQuery {
     select: () => query(rows, orders),
     eq: (column, value) => query(rows.filter((row) => row[column] === value), orders),
     gte: (column, value) => query(rows.filter((row) => String(row[column]) >= value), orders),
+    lt: (column, value) => query(rows.filter((row) => String(row[column]) < value), orders),
     // Una columna que la fila de prueba no trae es un null, como en Postgres.
     is: (column, value) => query(rows.filter((row) => (row[column] ?? null) === value), orders),
     order: (column, { ascending = true, nullsFirst = false } = {}) =>
@@ -156,7 +161,13 @@ function daysAgo(days: number): string {
  * second copy of it — on the 1st of a month those two are different answers,
  * which is the whole reason `digestPeriod` exists.
  */
-const thisPeriod = digestPeriod(new Date())
+/**
+ * Los saldos se prueban con una corrida del 1º, que reporta un mes cerrado: un
+ * mes cerrado debe lo esperado entero, y así la aritmética no depende del día
+ * en que se corran los tests. El mes en curso tiene su propio bloque abajo.
+ */
+const CLOSED_MONTH_RUN = new Date('2026-08-01T14:00:00Z')
+const thisPeriod = digestPeriod(CLOSED_MONTH_RUN)
 
 function practitioner(id: string, fullName: string, digestSentAt: string | null = null) {
   return { id, email: `${id}@ombua.test`, full_name: fullName, digest_sent_at: digestSentAt }
@@ -184,6 +195,7 @@ beforeEach(() => {
   tables.booking_requests = []
   tables.patients = []
   tables.payments = []
+  tables.appointments = []
 })
 
 describe('digestRecipients', () => {
@@ -428,7 +440,7 @@ describe('the outstanding balance', () => {
     tables.patients = patients
     tables.payments = paid
 
-    const [recipient] = await digestRecipients()
+    const [recipient] = await digestRecipients(DIGEST_BATCH_SIZE, CLOSED_MONTH_RUN)
     return recipient?.summary ?? null
   }
 
@@ -558,8 +570,63 @@ describe('the outstanding balance', () => {
       patient({ practitioner_id: MARTIN.id, id: 'pat-2', session_fee: 3000, billing_frequency: 'monthly' }),
     ]
 
-    const recipients = await digestRecipients()
+    const recipients = await digestRecipients(DIGEST_BATCH_SIZE, CLOSED_MONTH_RUN)
 
     expect(recipients.map((recipient) => recipient.summary.outstandingTotal)).toEqual([1000, 3000])
+  })
+})
+
+/**
+ * El 15 el digest reporta el mes en curso, y antes cobraba el mes entero: a un
+ * paciente de cuatro sesiones por mes se le reclamaban las cuatro con dos
+ * todavía por delante. Ahora debe lo que ya pasó.
+ */
+describe('the balance of the month still running', () => {
+  const MID_MONTH_RUN = new Date('2026-08-15T14:00:00Z')
+
+  async function midMonth(fields: Partial<PatientRow>, agenda: AppointmentRow[] = []) {
+    tables.practitioners = [LUCIA]
+    tables.patients = [patient({ practitioner_id: LUCIA.id, id: 'pat-1', ...fields })]
+    tables.appointments = agenda
+
+    const [recipient] = await digestRecipients(DIGEST_BATCH_SIZE, MID_MONTH_RUN)
+    return recipient?.summary.outstandingTotal ?? 0
+  }
+
+  it('charges a monthly fee whole: it is agreed for the month', async () => {
+    expect(await midMonth({ session_fee: 8000, billing_frequency: 'monthly' })).toBe(8000)
+  })
+
+  it('charges only the sessions of the agenda that already happened', async () => {
+    const agenda = [
+      { patient_id: 'pat-1', scheduled_on: '2026-08-04', status: 'attended' },
+      { patient_id: 'pat-1', scheduled_on: '2026-08-11', status: 'scheduled' },
+      { patient_id: 'pat-1', scheduled_on: '2026-08-13', status: 'cancelled' },
+      { patient_id: 'pat-1', scheduled_on: '2026-08-14', status: 'no_show' },
+      { patient_id: 'pat-1', scheduled_on: '2026-08-18', status: 'scheduled' },
+    ]
+
+    expect(await midMonth({ session_fee: 1000, billing_frequency: 'per_session' }, agenda)).toBe(2000)
+  })
+
+  it('without an agenda, counts the weeks gone by', async () => {
+    // Cuatro por mes, día 15 de 31: floor(4 × 15 / 31) = 1.
+    expect(await midMonth({ session_fee: 1000, billing_frequency: 'weekly' })).toBe(1000)
+  })
+
+  it('a patient whose sessions are all ahead owes nothing yet', async () => {
+    const agenda = [{ patient_id: 'pat-1', scheduled_on: '2026-08-20', status: 'scheduled' }]
+
+    expect(await midMonth({ session_fee: 1000, billing_frequency: 'weekly' }, agenda)).toBe(0)
+  })
+
+  it('never charges more than the month expects', async () => {
+    const agenda = Array.from({ length: 6 }, (_, index) => ({
+      patient_id: 'pat-1',
+      scheduled_on: `2026-08-0${index + 1}`,
+      status: 'attended',
+    }))
+
+    expect(await midMonth({ session_fee: 1000, billing_frequency: 'weekly' }, agenda)).toBe(4000)
   })
 })

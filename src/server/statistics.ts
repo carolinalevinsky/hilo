@@ -16,6 +16,8 @@ export type PractitionerStats = {
   activePatients: number
   sessionsThisMonth: number
   sessionsLastMonth: number
+  /** El mes pasado hasta el mismo día: contra esto se compara "este mes". */
+  sessionsLastMonthSoFar: number
   averageProgress: number
   goalsAchieved: number
   activeGoals: number
@@ -28,6 +30,17 @@ function monthStart(offset = 0): string {
   date.setDate(1)
   date.setMonth(date.getMonth() + offset)
   return toDateInput(date)
+}
+
+/**
+ * El mismo día del mes en otro mes, sin pasarse de su último día: el 31 de
+ * marzo, en febrero, es el 28.
+ */
+export function sameDayIn(monthFirst: string, day: string): string {
+  const [year, month] = monthFirst.split('-').map(Number)
+  const last = new Date(year!, month!, 0).getDate()
+  const wanted = Math.min(Number(day.slice(8, 10)), last)
+  return `${monthFirst.slice(0, 8)}${String(wanted).padStart(2, '0')}`
 }
 
 /**
@@ -46,8 +59,10 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
 
   const thisMonth = monthStart()
   const lastMonth = monthStart(-1)
+  const todayIs = today()
+  const sameDayLastMonth = sameDayIn(lastMonth, todayIs)
 
-  const [patients, sessionsThis, sessionsLast, goals, reports, appointments] =
+  const [patients, sessionsThis, sessionsLast, sessionsLastSoFar, goals, reports, appointments] =
     await Promise.all([
       db
         .from('patients')
@@ -60,7 +75,8 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
         .select('id, patients!inner(id)', { count: 'exact', head: true })
         .eq('practitioner_id', practitionerId)
         .is('patients.deleted_at', null)
-        .gte('held_on', thisMonth),
+        .gte('held_on', thisMonth)
+        .lte('held_on', todayIs),
       db
         .from('sessions')
         .select('id, patients!inner(id)', { count: 'exact', head: true })
@@ -68,6 +84,16 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
         .is('patients.deleted_at', null)
         .gte('held_on', lastMonth)
         .lt('held_on', thisMonth),
+      // "Este mes" va por la mitad el 15; comparado contra el mes pasado entero
+      // daba siempre para abajo. Se compara contra el mes pasado hasta el mismo
+      // día.
+      db
+        .from('sessions')
+        .select('id, patients!inner(id)', { count: 'exact', head: true })
+        .eq('practitioner_id', practitionerId)
+        .is('patients.deleted_at', null)
+        .gte('held_on', lastMonth)
+        .lte('held_on', sameDayLastMonth),
       everyRow((from, to) =>
         db
           .from('goals')
@@ -117,6 +143,7 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
     activePatients: patients.count ?? 0,
     sessionsThisMonth: sessionsThis.count ?? 0,
     sessionsLastMonth: sessionsLast.count ?? 0,
+    sessionsLastMonthSoFar: sessionsLastSoFar.count ?? 0,
     averageProgress,
     goalsAchieved: goals.filter((goal) => goal.progress >= 100).length,
     activeGoals: activeGoals.length,

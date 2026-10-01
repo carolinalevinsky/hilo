@@ -48,7 +48,7 @@ export default async function StatisticsPage() {
     )
   }
 
-  const delta = stats.sessionsThisMonth - stats.sessionsLastMonth
+  const delta = stats.sessionsThisMonth - stats.sessionsLastMonthSoFar
 
   return (
     <>
@@ -71,9 +71,9 @@ export default async function StatisticsPage() {
           value={String(stats.sessionsThisMonth)}
           label="Sesiones este mes"
           hint={
-            stats.sessionsLastMonth === 0
+            stats.sessionsLastMonthSoFar === 0
               ? undefined
-              : `${delta >= 0 ? '+' : ''}${delta} vs. el mes pasado`
+              : `${delta >= 0 ? '+' : ''}${delta} vs. el mes pasado a esta altura`
           }
         />
         {/* v1's third card read "consolidados/total", counting a goal as

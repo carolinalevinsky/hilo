@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
-import { zonedParts } from '@/lib/dates'
+import { today, zonedParts } from '@/lib/dates'
+import { shiftPeriod } from '@/lib/periods'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -97,10 +98,15 @@ export type LedgerRow = {
    * que se lo borró — ver `monthlyLedger`.
    */
   deleted: boolean
-  /** What this patient is expected to pay for the month, if it can be worked out. */
+  /** What this patient is expected to pay for the whole month, if it can be worked out. */
   expected: number | null
+  /**
+   * Lo que corresponde hasta hoy. En un mes cerrado es `expected`; en el mes en
+   * curso, sólo lo que ya pasó — ver `dueSoFar`.
+   */
+  due: number | null
   paid: number
-  /** Negative means they have paid ahead. */
+  /** `due - paid`. Negative means they have paid ahead. */
   outstanding: number | null
   payments: PaymentWithPatient[]
   /**
@@ -120,6 +126,7 @@ export type Ledger = {
   rows: LedgerRow[]
   totalPaid: number
   totalExpected: number
+  totalDue: number
   totalOutstanding: number
 }
 
@@ -134,10 +141,11 @@ export type Ledger = {
 export async function monthlyLedger(
   practitionerId: string,
   period: string,
+  on: string = today(),
 ): Promise<Ledger> {
   const db = await getDb()
 
-  const [patients, payments] = await Promise.all([
+  const [patients, payments, held] = await Promise.all([
     // Los borrados también, a propósito — ver la regla más abajo. Con ellos
     // adentro la lista crece sin parar, así que se pide entera por páginas.
     everyRow((from, to) =>
@@ -152,6 +160,7 @@ export async function monthlyLedger(
         .range(from, to),
     ),
     listPayments(practitionerId, period),
+    sessionsHeldIn(practitionerId, period, on),
   ])
 
   const byPatient = new Map<string, PaymentWithPatient[]>()
@@ -194,6 +203,7 @@ export async function monthlyLedger(
       // De alguien archivado o borrado no se espera nada más, así que no
       // engrosa lo pendiente. Lo que pagó sí cuenta: eso ya entró.
       const expected = patient.archived_at || patient.deleted_at ? null : expectedForMonth(patient)
+      const due = dueSoFar(patient, expected, period, on, held.get(patient.id) ?? null)
 
       return {
         patientId: patient.id,
@@ -202,8 +212,9 @@ export async function monthlyLedger(
         archived: Boolean(patient.archived_at),
         deleted: Boolean(patient.deleted_at),
         expected,
+        due,
         paid,
-        outstanding: expected === null ? null : expected - paid,
+        outstanding: due === null ? null : due - paid,
         payments: own,
         billing: {
           sessionFee: patient.session_fee === null ? null : Number(patient.session_fee),
@@ -218,6 +229,7 @@ export async function monthlyLedger(
     rows,
     totalPaid: rows.reduce((sum, row) => sum + row.paid, 0),
     totalExpected: rows.reduce((sum, row) => sum + (row.expected ?? 0), 0),
+    totalDue: rows.reduce((sum, row) => sum + (row.due ?? 0), 0),
     totalOutstanding: rows.reduce((sum, row) => sum + Math.max(row.outstanding ?? 0, 0), 0),
   }
 }
@@ -250,4 +262,92 @@ export function expectedForMonth(patient: {
     (patient.billing_frequency === 'biweekly' ? 2 : 4)
 
   return fee * perMonth
+}
+
+/**
+ * Lo que un paciente debe del mes **hasta hoy**, no del mes entero.
+ *
+ * Antes el día 1 cada paciente con honorario aparecía debiendo su mes completo:
+ * "Debe $ 8.000" a la mañana del primer día, un "Pendiente" que sumaba la plata
+ * de sesiones que no habían pasado, y el mismo número en el resumen del 15.
+ *
+ * - **Un mes que ya cerró** debe lo esperado, como siempre.
+ * - **Por mes**: el mes entero desde el principio. Es un honorario acordado
+ *   por el mes; no hay una parte que todavía no haya pasado.
+ * - **Por sesión, semana o quincena**: el honorario por cada sesión de la
+ *   agenda que ya pasó este mes (hecha o todavía sin marcar; no las canceladas
+ *   ni las faltas), con el tope de lo esperado para el mes.
+ * - Si ese paciente no tiene nada en la agenda este mes —hay quien lleva los
+ *   pagos sin usar la agenda—, por los días que van: con cuatro por mes, el
+ *   día 1 no debe nada, el día 8 debe una y el último día las cuatro.
+ *
+ * `held` es la cuenta de la agenda: `null` cuando no tiene nada agendado en el
+ * mes.
+ */
+export function dueSoFar(
+  patient: {
+    session_fee: number | null
+    billing_frequency: string
+    expected_sessions_per_month: number | null
+  },
+  expected: number | null,
+  period: string,
+  on: string,
+  held: number | null,
+): number | null {
+  if (expected === null) return null
+  if (period < on.slice(0, 7)) return expected
+  if (period > on.slice(0, 7)) return 0
+  if (patient.billing_frequency === 'monthly') return expected
+
+  const fee = Number(patient.session_fee)
+  const perMonth = Math.round(expected / fee)
+
+  const [year, month, day] = on.split('-').map(Number)
+  const daysInMonth = new Date(year!, month!, 0).getDate()
+  // Las que ya terminaron: el día 1 todavía ninguna, el último día todas.
+  const units = held ?? Math.floor((perMonth * day!) / daysInMonth)
+
+  return fee * Math.min(units, perMonth)
+}
+
+/**
+ * Por paciente, cuántas sesiones de la agenda del mes ya pasaron (hasta `on`
+ * inclusive) sin cancelarse ni faltar. Sólo aparecen los que tienen algo
+ * agendado en el mes, pasado o futuro: el que no está usa la cuenta por días.
+ */
+async function sessionsHeldIn(
+  practitionerId: string,
+  period: string,
+  on: string,
+): Promise<Map<string, number>> {
+  // Un mes cerrado debe lo esperado y no mira la agenda.
+  if (period !== on.slice(0, 7)) return new Map()
+
+  const db = await getDb()
+  const rows = await everyRow((from, to) =>
+    db
+      .from('appointments')
+      .select('patient_id, scheduled_on, status')
+      .eq('practitioner_id', practitionerId)
+      .gte('scheduled_on', `${period}-01`)
+      .lt('scheduled_on', `${shiftPeriod(period, 1)}-01`)
+      .order('id')
+      .range(from, to),
+  )
+
+  return countHeld(rows, on)
+}
+
+/** La cuenta de `sessionsHeldIn`, aparte para que el digest haga la misma. */
+export function countHeld(
+  rows: { patient_id: string; scheduled_on: string; status: string }[],
+  on: string,
+): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    const past = row.scheduled_on <= on && (row.status === 'attended' || row.status === 'scheduled')
+    counts.set(row.patient_id, (counts.get(row.patient_id) ?? 0) + (past ? 1 : 0))
+  }
+  return counts
 }
