@@ -90,7 +90,7 @@ export default async function NewSessionPage({
       {/* Two columns, capped so the form keeps a readable line length instead of
           stretching to whatever the monitor is. The cap is the sum of its parts:
           the form's old `max-w-2xl` plus the column and the gap. */}
-      <div className="grid max-w-[1000px] items-start gap-4 lg:grid-cols-[minmax(0,1fr)_296px]">
+      <div className="grid max-w-[1000px] grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_296px]">
         <Card>
           <CardContent>
             <SessionForm
