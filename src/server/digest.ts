@@ -1,9 +1,10 @@
 import { toDateInput, zonedDate } from '@/lib/dates'
+import { shiftPeriod } from '@/lib/periods'
 
 import { getServiceDb } from './db'
 import { everyRow } from './every-row'
 import type { DigestSummary } from './notifications'
-import { expectedForMonth } from './payments'
+import { countHeld, dueSoFar, expectedForMonth } from './payments'
 
 /**
  * Building the fortnightly digest. **Defect #12.**
@@ -80,7 +81,11 @@ export async function digestRecipients(
   const since = fortnightAgo(now)
   const period = digestPeriod(now)
 
-  const [practitioners, sessions, bookings, patients, paid] = await Promise.all([
+  const on = toDateInput(zonedDate(now))
+  // La agenda sólo cuenta en el mes en curso: uno cerrado debe lo esperado.
+  const current = period === on.slice(0, 7)
+
+  const [practitioners, sessions, bookings, patients, paid, agenda] = await Promise.all([
     // Least recently written to first, so the cap rotates instead of dropping.
     rows('practitioners', (from, to) =>
       db
@@ -130,6 +135,19 @@ export async function digestRecipients(
         .order('id')
         .range(from, to),
     ),
+    current
+      ? rows('appointments', (from, to) =>
+          db
+            .from('appointments')
+            .select('patient_id, scheduled_on, status')
+            .gte('scheduled_on', `${period}-01`)
+            // El mes entero, como en Pagos: quien sólo tiene sesiones por
+            // delante tiene agenda, y no se le cuenta por días.
+            .lt('scheduled_on', `${shiftPeriod(period, 1)}-01`)
+            .order('id')
+            .range(from, to),
+        )
+      : Promise.resolve([]),
   ])
 
   const sessionCounts = tally(sessions, (row) => row.practitioner_id)
@@ -143,14 +161,22 @@ export async function digestRecipients(
     )
   }
 
+  const held = countHeld(agenda, on)
+
   const balances = new Map<string, { patients: number; total: number }>()
   for (const patient of patients) {
     // The same rule the Cobros screen applies, from the same function. Two
     // answers to "what does this patient owe" is worse than either answer.
-    const expected = expectedForMonth(patient)
-    if (expected === null) continue
+    const due = dueSoFar(
+      patient,
+      expectedForMonth(patient),
+      period,
+      on,
+      held.get(patient.id) ?? null,
+    )
+    if (due === null) continue
 
-    const outstanding = expected - (paidByPatient.get(patient.id) ?? 0)
+    const outstanding = due - (paidByPatient.get(patient.id) ?? 0)
     if (outstanding <= 0) continue
 
     const current = balances.get(patient.practitioner_id) ?? { patients: 0, total: 0 }
