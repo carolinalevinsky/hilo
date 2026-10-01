@@ -135,7 +135,7 @@ function GoalRow({
             type="button"
             onClick={onEdit}
             aria-label={`Editar ${goal.title}`}
-            className="text-muted-foreground hover:text-foreground"
+            className="hit-area relative text-muted-foreground hover:text-foreground"
           >
             <Pencil className="size-3.5" />
           </button>

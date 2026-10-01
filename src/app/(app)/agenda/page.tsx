@@ -359,7 +359,10 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
 
           {/* La semana entera —flechas, aviso de semana vacía, grilla y plan—
               en un solo bloque, para que en teléfono suba junta. */}
-          <div className="max-lg:order-2">
+          {/* `max-lg:mb-5`: en teléfono lo que viene abajo —los recordatorios de
+              mañana, el cartel de Google— quedaba pegado al plan de la semana,
+              borde contra borde. */}
+          <div className="max-lg:order-2 max-lg:mb-5">
             {/* En teléfono la navegación va suelta arriba de las tarjetas del día,
                 que es la vista que manda ahí. En escritorio entra adentro de la
                 tarjeta del calendario — ver el `header` de `WeekCalendar`. */}

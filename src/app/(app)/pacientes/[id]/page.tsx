@@ -274,7 +274,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
           consulta arrancaba en y 1788 y la ficha en y 1916, o sea 2,4 pantallas
           de scroll para llegar a quién es el chico. Es lo que no cambia nunca y
           lo que más se mira, así que en teléfono sube primero. */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4 max-lg:order-2">
           <Card>
             <CardHeader>
