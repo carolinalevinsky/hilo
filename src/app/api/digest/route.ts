@@ -33,7 +33,8 @@ export async function GET(request: Request) {
 
   const recipients = await digestRecipients(DIGEST_BATCH_SIZE)
 
-  let sent = 0
+  const delivered: string[] = []
+  const failed: string[] = []
   for (const recipient of recipients) {
     // `sendDigest` never throws — one bad address must not stop the batch.
     const ok = await sendDigest({
@@ -41,17 +42,25 @@ export async function GET(request: Request) {
       summary: recipient.summary,
       appUrl: publicConfig.NEXT_PUBLIC_APP_URL,
     })
-    if (ok) sent += 1
+    if (ok) delivered.push(recipient.practitionerId)
+    else failed.push(recipient.practitionerId)
   }
 
-  // The whole batch, not only the successful ones. A bad address that fails
-  // every time would otherwise sit at the head of the queue forever and starve
-  // everyone behind it.
-  await markDigestSent(recipients.map((recipient) => recipient.practitionerId))
+  // Only the ones that went out. A failed send keeps its old stamp, so it is
+  // first in line on the next run instead of being recorded as delivered. It
+  // used to stamp the whole batch so that a bad address could not sit at the
+  // head of the queue forever — but that also wrote "sent" over every email of
+  // a run where Resend was down. A bad address now takes one place per run out
+  // of forty, which is visible in the log and in `failed` below.
+  await markDigestSent(delivered)
+  if (failed.length > 0) {
+    console.error('[digest] no salieron', { practitionerIds: failed })
+  }
 
   return Response.json({
     considered: recipients.length,
-    sent,
+    sent: delivered.length,
+    failed: failed.length,
     capped: recipients.length >= DIGEST_BATCH_SIZE,
   })
 }

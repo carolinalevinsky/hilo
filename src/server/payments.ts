@@ -5,6 +5,7 @@ import { zonedParts } from '@/lib/dates'
 
 import { logAction } from './audit'
 import { getDb } from './db'
+import { everyRow } from './every-row'
 
 /**
  * The money ledger.
@@ -71,15 +72,16 @@ export async function listPayments(
 ): Promise<PaymentWithPatient[]> {
   const db = await getDb()
 
-  const { data, error } = await db
-    .from('payments')
-    .select('*, patients(id, full_name, color)')
-    .eq('practitioner_id', practitionerId)
-    .eq('period', period)
-    .order('paid_on', { ascending: false })
-
-  if (error) throw error
-  return data
+  return everyRow((from, to) =>
+    db
+      .from('payments')
+      .select('*, patients(id, full_name, color)')
+      .eq('practitioner_id', practitionerId)
+      .eq('period', period)
+      .order('paid_on', { ascending: false })
+      .order('id')
+      .range(from, to),
+  )
 }
 
 // ─── The monthly ledger ─────────────────────────────────────────────────────
@@ -135,19 +137,22 @@ export async function monthlyLedger(
 ): Promise<Ledger> {
   const db = await getDb()
 
-  const [{ data: patients, error: patientsError }, payments] = await Promise.all([
-    db
-      .from('patients')
-      // Los borrados también, a propósito — ver la regla más abajo.
-      .select(
-        'id, full_name, color, session_fee, billing_frequency, expected_sessions_per_month, archived_at, deleted_at',
-      )
-      .eq('practitioner_id', practitionerId)
-      .order('full_name'),
+  const [patients, payments] = await Promise.all([
+    // Los borrados también, a propósito — ver la regla más abajo. Con ellos
+    // adentro la lista crece sin parar, así que se pide entera por páginas.
+    everyRow((from, to) =>
+      db
+        .from('patients')
+        .select(
+          'id, full_name, color, session_fee, billing_frequency, expected_sessions_per_month, archived_at, deleted_at',
+        )
+        .eq('practitioner_id', practitionerId)
+        .order('full_name')
+        .order('id')
+        .range(from, to),
+    ),
     listPayments(practitionerId, period),
   ])
-
-  if (patientsError) throw patientsError
 
   const byPatient = new Map<string, PaymentWithPatient[]>()
   for (const payment of payments) {
@@ -181,7 +186,7 @@ export async function monthlyLedger(
     return !patient.archived_at || moved
   }
 
-  const rows: LedgerRow[] = (patients ?? [])
+  const rows: LedgerRow[] = patients
     .filter(includes)
     .map((patient) => {
       const own = byPatient.get(patient.id) ?? []

@@ -8,6 +8,7 @@ import { searchPattern } from '@/lib/search'
 import { clearUpcomingFor, deactivateSchedulesFor } from './appointments'
 import { logAction } from './audit'
 import { getDb } from './db'
+import { everyRow } from './every-row'
 
 /**
  * Patients.
@@ -408,30 +409,34 @@ export async function listPatients(
   const { search, ageGroup = 'all', scope = 'active', sort = 'name' } = options
   const db = await getDb()
 
-  let query = db
-    .from('patients')
-    .select('*')
-    .eq('practitioner_id', practitionerId)
-    .is('deleted_at', null)
+  // Una consulta nueva por página: el constructor de PostgREST se modifica al
+  // encadenar, y reusarlo acumularía un `order` por vuelta.
+  const page = (from: number, to: number) => {
+    let query = db
+      .from('patients')
+      .select('*')
+      .eq('practitioner_id', practitionerId)
+      .is('deleted_at', null)
 
-  query = scope === 'archived' ? query.not('archived_at', 'is', null) : query.is('archived_at', null)
+    query = scope === 'archived' ? query.not('archived_at', 'is', null) : query.is('archived_at', null)
 
-  if (ageGroup !== 'all') query = query.eq('age_group', ageGroup)
+    if (ageGroup !== 'all') query = query.eq('age_group', ageGroup)
 
-  // Contra `search_text`, que la base mantiene en minúsculas y sin acentos, para
-  // que "Lucia" encuentre a "Lucía". El comentario que estaba acá decía que
-  // arreglarlo no valía la pena todavía; con la migración de los trigramas pasó
-  // a costar una línea.
-  if (search?.trim()) query = query.ilike('search_text', searchPattern(search.trim()))
+    // Contra `search_text`, que la base mantiene en minúsculas y sin acentos,
+    // para que "Lucia" encuentre a "Lucía". El comentario que estaba acá decía
+    // que arreglarlo no valía la pena todavía; con la migración de los
+    // trigramas pasó a costar una línea.
+    if (search?.trim()) query = query.ilike('search_text', searchPattern(search.trim()))
 
-  query =
-    sort === 'recent'
-      ? query.order('created_at', { ascending: false })
-      : query.order('full_name', { ascending: true })
+    query =
+      sort === 'recent'
+        ? query.order('created_at', { ascending: false })
+        : query.order('full_name', { ascending: true })
 
-  const { data, error } = await query
-  if (error) throw error
-  return data
+    return query.order('id').range(from, to)
+  }
+
+  return everyRow(page)
 }
 
 export type PatientSummary = {
@@ -462,29 +467,39 @@ export async function patientSummaries(
   if (patientIds.length === 0) return summaries
 
   const db = await getDb()
-  const [{ data: goals }, { data: sessions }] = await Promise.all([
-    db
-      .from('goals')
-      .select('patient_id, progress')
-      .eq('practitioner_id', practitionerId)
-      .eq('is_active', true)
-      .in('patient_id', patientIds),
-    db
-      .from('sessions')
-      .select('patient_id')
-      .eq('practitioner_id', practitionerId)
-      .in('patient_id', patientIds),
+  // Paginadas: las sesiones se cuentan de toda la historia, y cortadas en mil
+  // filas la lista mostraba menos sesiones de las que hubo.
+  const [goals, sessions] = await Promise.all([
+    everyRow((from, to) =>
+      db
+        .from('goals')
+        .select('patient_id, progress')
+        .eq('practitioner_id', practitionerId)
+        .eq('is_active', true)
+        .in('patient_id', patientIds)
+        .order('id')
+        .range(from, to),
+    ),
+    everyRow((from, to) =>
+      db
+        .from('sessions')
+        .select('patient_id')
+        .eq('practitioner_id', practitionerId)
+        .in('patient_id', patientIds)
+        .order('id')
+        .range(from, to),
+    ),
   ])
 
   const progressOf = new Map<string, number[]>()
-  for (const goal of goals ?? []) {
+  for (const goal of goals) {
     const list = progressOf.get(goal.patient_id)
     if (list) list.push(goal.progress)
     else progressOf.set(goal.patient_id, [goal.progress])
   }
 
   const sessionCount = new Map<string, number>()
-  for (const session of sessions ?? []) {
+  for (const session of sessions) {
     sessionCount.set(session.patient_id, (sessionCount.get(session.patient_id) ?? 0) + 1)
   }
 

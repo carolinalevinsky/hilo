@@ -41,7 +41,7 @@ type PractitionerRow = {
   full_name: string
   digest_sent_at: string | null
 }
-type SessionRow = { practitioner_id: string; held_on: string }
+type SessionRow = { practitioner_id: string; held_on: string; id?: string }
 type BookingRow = { practitioner_id: string; status: string }
 type PatientRow = {
   practitioner_id: string
@@ -86,8 +86,8 @@ type FakeQuery = {
   eq: (column: string, value: Cell) => FakeQuery
   gte: (column: string, value: string) => FakeQuery
   is: (column: string, value: null) => FakeQuery
-  order: (column: string, options: { ascending: boolean; nullsFirst: boolean }) => FakeQuery
-  limit: (count: number) => FakeQuery
+  order: (column: string, options?: { ascending?: boolean; nullsFirst?: boolean }) => FakeQuery
+  range: (from: number, to: number) => FakeQuery
   then: <T>(
     onfulfilled: (value: {
       data: Record<string, Cell>[]
@@ -96,32 +96,43 @@ type FakeQuery = {
   ) => PromiseLike<T>
 }
 
-function query(rows: Record<string, Cell>[]): FakeQuery {
+type Order = { column: string; ascending: boolean; nullsFirst: boolean }
+
+/** El `max_rows` de PostgREST: ninguna respuesta trae más, se pida lo que se pida. */
+const MAX_ROWS = 1000
+
+function query(rows: Record<string, Cell>[], orders: Order[] = []): FakeQuery {
+  // Implemented rather than ignored: the rotation of the batch is behaviour
+  // under test, and a passthrough would let a dropped `order` still pass. The
+  // first `order` decides and each later one only breaks ties, as in SQL.
+  const sorted = () =>
+    [...rows].sort((a, b) => {
+      for (const { column, ascending, nullsFirst } of orders) {
+        const left = a[column] ?? null
+        const right = b[column] ?? null
+        if (left === right) continue
+        if (left === null) return nullsFirst ? -1 : 1
+        if (right === null) return nullsFirst ? 1 : -1
+        const order = String(left) < String(right) ? -1 : 1
+        return ascending ? order : -order
+      }
+      return 0
+    })
+
   return {
-    select: () => query(rows),
-    eq: (column, value) => query(rows.filter((row) => row[column] === value)),
-    gte: (column, value) => query(rows.filter((row) => String(row[column]) >= value)),
+    select: () => query(rows, orders),
+    eq: (column, value) => query(rows.filter((row) => row[column] === value), orders),
+    gte: (column, value) => query(rows.filter((row) => String(row[column]) >= value), orders),
     // Una columna que la fila de prueba no trae es un null, como en Postgres.
-    is: (column, value) => query(rows.filter((row) => (row[column] ?? null) === value)),
-    // Implemented rather than ignored: the rotation of the batch is behaviour
-    // under test, and a passthrough would let a dropped `order` still pass.
-    order: (column, { ascending, nullsFirst }) =>
-      query(
-        [...rows].sort((a, b) => {
-          const left = a[column]
-          const right = b[column]
-          if (left === right) return 0
-          if (left === null) return nullsFirst ? -1 : 1
-          if (right === null) return nullsFirst ? 1 : -1
-          const order = String(left) < String(right) ? -1 : 1
-          return ascending ? order : -order
-        }),
-      ),
-    // Implementado y no ignorado, por lo mismo que `order`: el tope de filas es
-    // comportamiento bajo prueba. Un passthrough dejaría pasar un `.limit()` que
-    // se cayó del código, que es justamente el defecto que esto vino a cerrar.
-    limit: (count: number) => query(rows.slice(0, count)),
-    then: (onfulfilled) => Promise.resolve({ data: rows, error: null }).then(onfulfilled),
+    is: (column, value) => query(rows.filter((row) => (row[column] ?? null) === value), orders),
+    order: (column, { ascending = true, nullsFirst = false } = {}) =>
+      query(rows, [...orders, { column, ascending, nullsFirst }]),
+    // Con el tope del servidor, para que un código que deje de paginar falle
+    // acá como falla en producción: con 1000 filas y sin ningún error.
+    range: (from, to) =>
+      query(sorted().slice(from, Math.min(to + 1, from + MAX_ROWS)), []),
+    then: (onfulfilled) =>
+      Promise.resolve({ data: sorted().slice(0, MAX_ROWS), error: null }).then(onfulfilled),
   }
 }
 
@@ -291,6 +302,30 @@ describe('the batch cap', () => {
     crowd(5)
 
     expect(await digestRecipients()).toHaveLength(5)
+  })
+})
+
+/**
+ * PostgREST corta cada respuesta en mil filas sin avisar. Antes el digest pedía
+ * `.limit(20_000)` y recibía mil: con más de mil sesiones en la quincena, las
+ * profesionales del final quedaban con cero y no recibían nada.
+ */
+describe('reading past the thousand-row cut', () => {
+  it('counts every session of the fortnight, not the first thousand', async () => {
+    tables.practitioners = [LUCIA, MARTIN]
+    tables.sessions = [
+      ...Array.from({ length: 1200 }, () => ({ practitioner_id: LUCIA.id, held_on: daysAgo(2) })),
+      { practitioner_id: MARTIN.id, held_on: daysAgo(2) },
+    ].map((row, index) => ({ ...row, id: `s-${String(index).padStart(5, '0')}` }))
+
+    const recipients = await digestRecipients()
+
+    expect(
+      recipients.map((one) => [one.practitionerId, one.summary.sessionsThisFortnight]),
+    ).toEqual([
+      [LUCIA.id, 1200],
+      [MARTIN.id, 1],
+    ])
   })
 })
 

@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-vi.mock('./db', () => ({ getDb: async () => null, getServiceDb: () => null }))
 
-const { everyRow } = await import('./patient-export')
+const { everyRow } = await import('./every-row')
 
 /**
  * El export de la historia clínica pedía "hasta 10.000 filas" a una API que
