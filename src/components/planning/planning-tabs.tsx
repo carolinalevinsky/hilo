@@ -47,9 +47,14 @@ export function PlanningTabs() {
     // around them is the one addition, and it is what says the three are views of
     // the same place rather than three destinations that happen to sit in a row.
     // The selected one keeps v1's violet.
+    //
+    // On a phone the three labels do not fit in one row, and `flex-wrap` used to
+    // drop "Materiales" alone onto a second line inside a pill-shaped track —
+    // it read as a broken control. Below `sm` it is three equal columns, the
+    // full width, and a long label breaks inside its own tab instead.
     <div
       role="tablist"
-      className="no-print mb-4 inline-flex max-w-full flex-wrap gap-1 rounded-full border border-border bg-muted p-1"
+      className="no-print mb-4 grid grid-cols-3 gap-1 rounded-[22px] border border-border bg-muted p-1 sm:inline-flex sm:max-w-full sm:rounded-full"
     >
       {TABS.map((tab) => {
         const active = tab.exact
@@ -62,7 +67,7 @@ export function PlanningTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'rounded-full px-4 py-2 text-body font-bold transition-colors',
+              'flex items-center justify-center rounded-[18px] px-2 py-2 text-center text-meta leading-tight font-bold transition-colors sm:rounded-full sm:px-4 sm:text-body',
               active
                 ? 'bg-card text-violet shadow-xs'
                 : 'text-muted-foreground hover:text-foreground',

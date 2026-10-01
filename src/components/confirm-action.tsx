@@ -29,7 +29,10 @@ export function ConfirmAction({
   action,
   fields,
   trigger,
-  triggerVariant = 'ghost',
+  // `outline` y no `ghost`: un `ghost` sin hover —que es como se ve en un
+  // teléfono— es una palabra suelta, y "Mandar a la papelera" o "Borrar" no
+  // se leían como algo que se puede tocar.
+  triggerVariant = 'outline',
   title,
   description,
   confirmLabel,

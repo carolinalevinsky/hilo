@@ -85,9 +85,12 @@ export function ReportForm({
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="inputNotes">
+          {/* `block`: `Label` is a flex row, so the question and "· opcional"
+              were two columns, and next to "Dictar" on a phone each one wrapped
+              on its own. As text they wrap together. */}
+          <Label htmlFor="inputNotes" className="block leading-snug">
             ¿Algo que quieras que diga?
-            <span className="font-normal text-muted-foreground"> · opcional</span>
+            <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
           <DictateButton targetId="inputNotes" />
         </div>
