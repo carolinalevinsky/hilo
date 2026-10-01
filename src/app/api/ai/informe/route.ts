@@ -91,7 +91,7 @@ async function* generate(
   aliases: Alias[],
 ): AsyncGenerator<SseEvent> {
   try {
-    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases)) {
+    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases, 'report')) {
       yield { event: 'delta', data: chunk }
     }
     yield { event: 'done', data: AI_MODEL }

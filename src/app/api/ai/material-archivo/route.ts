@@ -111,6 +111,8 @@ export async function POST(request: Request) {
       fileDescriptionInstructions(practitioner.discipline),
       fileDescriptionPrompt(material.area),
       { mediaType: material.file_type, data: file.base64 },
+      [],
+      'describe',
     )) {
       answer += chunk
     }

@@ -129,7 +129,7 @@ async function* generate(
   let received = ''
 
   try {
-    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases)) {
+    for await (const chunk of streamCompletion(instructions, prompt, undefined, aliases, 'note')) {
       received += chunk
     }
   } catch (error) {
