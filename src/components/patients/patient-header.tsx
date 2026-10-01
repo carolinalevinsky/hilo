@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { ageLabel } from '@/lib/age'
-import { patientHex } from '@/lib/patient-colors'
+import { patientHex, patientInk } from '@/lib/patient-colors'
 import { ageGroupLabel } from '@/lib/patient-labels'
 import type { Patient } from '@/server/patients'
 
@@ -35,8 +35,15 @@ export function PatientHeader({
 
   return (
     <div
-      className="mb-5 rounded-lg p-5 text-white shadow-card"
-      style={{ background: `linear-gradient(120deg, ${hex}, ${hex}cc)` }}
+      className="mb-5 rounded-lg p-5 shadow-card"
+      // El texto según el color: blanco sólo sobre violeta (ver `patientInk`).
+      // El degradé termina en el mismo color sin transparencia: con `cc` se
+      // aclaraba hacia la derecha y el contraste bajaba justo donde van los
+      // botones.
+      style={{
+        background: `linear-gradient(120deg, ${hex}, color-mix(in srgb, ${hex} 88%, white))`,
+        color: patientInk(patient.color),
+      }}
     >
       <div className="flex flex-wrap items-center gap-4">
         {/* The camera badge is v1's (`legacy/index.html:1186`) and it is only a
@@ -49,7 +56,7 @@ export function PatientHeader({
             color={patient.color}
             photoUrl={photoUrl}
             size={62}
-            className="bg-white/25 text-white"
+            className="bg-white/25 text-current"
           />
           <Link
             href={`/pacientes/${patient.id}/editar`}
@@ -70,7 +77,7 @@ export function PatientHeader({
           <h1 className="truncate text-[24px] font-extrabold tracking-[-0.6px]">
             {patient.full_name}
           </h1>
-          <p className="mt-0.5 text-body text-white/85">
+          <p className="mt-0.5 text-body opacity-85">
             {meta.join(' · ')}
             {patient.archived_at ? ' · Archivado' : ''}
           </p>

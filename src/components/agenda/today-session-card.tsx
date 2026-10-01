@@ -24,7 +24,7 @@ import type { TodaySession } from '@/server/planning'
 
 const ALERT_CLASSES: Record<TodaySession['alerts'][number]['kind'], string> = {
   goal: 'bg-amber-soft text-[#8a5a00]',
-  payment: 'bg-coral-soft text-[#c0392b]',
+  payment: 'bg-coral-soft text-coral-ink',
 }
 
 const ALERT_ICONS = {

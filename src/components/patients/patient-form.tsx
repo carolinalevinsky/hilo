@@ -551,7 +551,7 @@ function Field({
       <Label htmlFor={htmlFor}>
         {label}
         {required ? (
-          <span aria-hidden="true" className="text-coral">
+          <span aria-hidden="true" className="text-coral-ink">
             *
           </span>
         ) : null}

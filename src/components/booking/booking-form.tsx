@@ -64,8 +64,8 @@ export function BookingForm({ slug, practitionerName }: { slug: string; practiti
   if (status === 'sent') {
     return (
       <div className="rounded-xl bg-green-soft px-4 py-5 text-center">
-        <p className="text-lead font-bold text-[#1a8f57]">¡Listo, llegó tu solicitud!</p>
-        <p className="mt-1.5 text-body leading-relaxed text-[#1a8f57]">
+        <p className="text-lead font-bold text-green-ink">¡Listo, llegó tu solicitud!</p>
+        <p className="mt-1.5 text-body leading-relaxed text-green-ink">
           {/* "Te vamos a escribir" prometía algo en nombre de Ombúa, que no
               escribe: escribe ella. */}
           {practitionerName} te va a escribir al teléfono que dejaste para confirmar el día

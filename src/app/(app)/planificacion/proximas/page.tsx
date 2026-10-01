@@ -68,7 +68,7 @@ export default async function UpcomingPlansPage({
         <Card className="mb-4 border-green/30 bg-green-soft/60">
           <CardContent className="flex flex-wrap items-center justify-between gap-3">
             <p className="flex items-start gap-2 text-item font-bold">
-              <CircleCheck className="mt-0.5 size-[18px] shrink-0 text-green" />
+              <CircleCheck className="mt-0.5 size-[18px] shrink-0 text-green-ink" />
               Guardaste el plan de {firstName(justSaved.fullName)}
               {justSaved.appointment ? (
                 <span className="font-medium text-muted-foreground">

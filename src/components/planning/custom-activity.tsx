@@ -26,7 +26,7 @@ export function CustomActivity({ target }: { target: PlanTarget }) {
       title="Sumá una actividad propia o dinámica libre"
       hint="Lo que vas a hacer y no está en la biblioteca."
       aside={
-        <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-[#1a8f57]">
+        <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-green-ink">
           Reutilizable
         </span>
       }
@@ -51,7 +51,7 @@ export function CustomActivity({ target }: { target: PlanTarget }) {
       {/* Dice lo que pasa, porque pasa: `addActivityToPlanAction` la guarda
           también como material privado tuyo. */}
       <p className="mt-2.5 flex items-start gap-2 text-meta leading-relaxed text-muted-foreground">
-        <CircleCheck className="mt-0.5 size-4 shrink-0 text-green" />
+        <CircleCheck className="mt-0.5 size-4 shrink-0 text-green-ink" />
         Queda guardada en tu biblioteca personal para reutilizarla con otros
         pacientes.
       </p>

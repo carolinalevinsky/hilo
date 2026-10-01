@@ -50,7 +50,7 @@ export default async function SignInPage({ searchParams }: PageProps<'/entrar'>)
       <SignInForm back={back} />
 
       <p className="mt-7 flex items-center justify-center gap-2 text-micro text-muted-foreground">
-        <Lock className="size-3.5 shrink-0 text-green" aria-hidden />
+        <Lock className="size-3.5 shrink-0 text-green-ink" aria-hidden />
         Tu información y la de tus pacientes está protegida.
       </p>
     </>

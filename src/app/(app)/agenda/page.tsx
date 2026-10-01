@@ -378,7 +378,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             {googleUnavailable ? (
               <div
                 role="status"
-                className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-soft px-4 py-3 text-body text-[#8a5a12]"
+                className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-soft px-4 py-3 text-body text-amber-ink"
               >
                 <p className="min-w-[200px] flex-1">
                   <b>No pudimos leer tu Google Calendar.</b> Lo que tenés ahí puede no

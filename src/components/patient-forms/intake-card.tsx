@@ -88,7 +88,7 @@ export function IntakeCard({
         {consent ? (
           <div className="space-y-1.5">
             <p className="text-body">
-              <span className="font-bold text-[#1a8f57]">Consentimiento firmado</span> por{' '}
+              <span className="font-bold text-green-ink">Consentimiento firmado</span> por{' '}
               {consent.signer_name}
               {relationship(consent.signer_relationship)
                 ? ` (${relationship(consent.signer_relationship)})`

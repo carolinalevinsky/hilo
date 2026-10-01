@@ -16,9 +16,9 @@ export const APPOINTMENT_STATUS_LABELS = {
 
 export const APPOINTMENT_STATUS_CLASSES = {
   scheduled: 'bg-violet-soft text-violet',
-  attended: 'bg-green-soft text-[#1a8f57]',
+  attended: 'bg-green-soft text-green-ink',
   cancelled: 'bg-muted text-muted-foreground',
-  no_show: 'bg-coral-soft text-[#c0392b]',
+  no_show: 'bg-coral-soft text-coral-ink',
 } as const
 
 export function appointmentStatusLabel(status: string) {
@@ -59,9 +59,9 @@ export function appointmentStatusClasses(status: string) {
  */
 export const APPOINTMENT_STATUS_TILE = {
   scheduled: { frame: '', glyph: '' },
-  attended: { frame: 'border-2 border-white/85', glyph: '✓' },
+  attended: { frame: 'border-2 border-current/85', glyph: '✓' },
   cancelled: { frame: '', glyph: '' },
-  no_show: { frame: 'border-2 border-dashed border-white/85', glyph: '✕' },
+  no_show: { frame: 'border-2 border-dashed border-current/85', glyph: '✕' },
 } as const
 
 export function appointmentStatusTile(status: string) {

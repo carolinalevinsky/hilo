@@ -80,12 +80,12 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+          <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
             Es un modelo escrito a partir de las leyes 19.529, 18.335 y 18.331, y no lo
             revisó un abogado. Leelo y ajustalo a tu práctica antes de mandarlo.
           </p>
           {practitioner.consent_template ? (
-            <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+            <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
               Usás tu propio texto. El modelo de Ombúa ahora incluye dos puntos que conviene
               que el tuyo también tenga, porque la ley pide el consentimiento expreso para
               guardar datos de salud fuera del país. Podés copiarlos de acá:
@@ -119,8 +119,8 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
               role="status"
               className={
                 result.ok
-                  ? 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]'
-                  : 'rounded-[11px] bg-coral-soft px-3.5 py-2.5 text-meta text-[#c0392b]'
+                  ? 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-green-ink'
+                  : 'rounded-[11px] bg-coral-soft px-3.5 py-2.5 text-meta text-coral-ink'
               }
             >
               {result.message}

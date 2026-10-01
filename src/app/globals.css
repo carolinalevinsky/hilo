@@ -77,6 +77,12 @@
   --color-green-soft: var(--brand-green-soft);
   --color-blue: var(--brand-blue);
   --color-blue-soft: var(--brand-blue-soft);
+  /* Para texto, no para relleno: ver `*Ink` en brand.ts. */
+  --color-teal-ink: var(--brand-teal-ink);
+  --color-coral-ink: var(--brand-coral-ink);
+  --color-amber-ink: var(--brand-amber-ink);
+  --color-green-ink: var(--brand-green-ink);
+  --color-blue-ink: var(--brand-blue-ink);
 
   /* ── Type scale ──────────────────────────────────────────────────────────
      Ombúa's small sizes, which are most of the text in the product.
@@ -139,6 +145,11 @@
   --brand-green-soft: #e2f6ec;
   --brand-blue: #4c8dff;
   --brand-blue-soft: #e7f0ff;
+  --brand-teal-ink: #0b6f66;
+  --brand-coral-ink: #c0392b;
+  --brand-amber-ink: #8a5a12;
+  --brand-green-ink: #157a4a;
+  --brand-blue-ink: #2f63c9;
   /* Los dos extremos del degradé de entrada, de la barra lateral y del
      encabezado de los mails. También en `brand.ts`, porque un cliente de correo
      no evalúa `color-mix` ni lee variables CSS. */

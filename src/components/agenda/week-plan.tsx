@@ -82,7 +82,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                       className={cn(
                         'flex size-[22px] items-center justify-center rounded-md border transition-colors',
                         attended
-                          ? 'border-green bg-green text-white'
+                          ? 'border-green bg-green text-foreground'
                           : 'border-border hover:border-violet',
                       )}
                     >

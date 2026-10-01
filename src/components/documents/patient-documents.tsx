@@ -71,7 +71,7 @@ export function PatientDocuments({
               className={
                 document.kind === 'assessment'
                   ? 'shrink-0 rounded-full bg-violet-soft px-2 py-0.5 text-micro font-bold text-violet'
-                  : 'shrink-0 rounded-full bg-green-soft px-2 py-0.5 text-micro font-bold text-[#1a8f57]'
+                  : 'shrink-0 rounded-full bg-green-soft px-2 py-0.5 text-micro font-bold text-green-ink'
               }
             >
               {document.kind === 'assessment' ? 'Evaluación' : 'Informe'}

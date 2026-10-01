@@ -142,7 +142,7 @@ export default async function DocumentsPage() {
           {/* Sólo en los últimos tres. El resto del mes no hay contador: ver
               `quotaWarning` en src/server/plans.ts. */}
           {runningOut ? (
-            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-meta leading-relaxed text-[#8a5a12]">
+            <p className="mb-4 rounded-lg bg-amber-soft px-4 py-3 text-meta leading-relaxed text-amber-ink">
               {runningOut}
             </p>
           ) : null}
@@ -259,13 +259,13 @@ const FORMAT_STYLE: Record<
   RecipientId | 'assessment',
   { icon: typeof BookOpen; className: string }
 > = {
-  school: { icon: BookOpen, className: 'bg-blue-soft text-blue' },
+  school: { icon: BookOpen, className: 'bg-blue-soft text-blue-ink' },
   family: { icon: Users, className: 'bg-violet-soft text-violet' },
-  health_insurer: { icon: ClipboardList, className: 'bg-green-soft text-green' },
-  anep: { icon: Compass, className: 'bg-amber-soft text-amber' },
-  physician: { icon: Send, className: 'bg-coral-soft text-coral' },
+  health_insurer: { icon: ClipboardList, className: 'bg-green-soft text-green-ink' },
+  anep: { icon: Compass, className: 'bg-amber-soft text-amber-ink' },
+  physician: { icon: Send, className: 'bg-coral-soft text-coral-ink' },
   patient: { icon: User, className: 'bg-violet-soft text-violet' },
-  assessment: { icon: ChartColumn, className: 'bg-blue-soft text-blue' },
+  assessment: { icon: ChartColumn, className: 'bg-blue-soft text-blue-ink' },
 }
 
 function FormatCard({

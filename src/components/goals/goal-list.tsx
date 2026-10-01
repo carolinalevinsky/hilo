@@ -123,7 +123,7 @@ function GoalRow({
         <span className="min-w-0 font-semibold">
           {goal.title}
           {goal.progress >= 100 ? (
-            <span className="ml-1.5 rounded-full bg-green-soft px-2 py-0.5 text-micro font-bold text-[#1a8f57]">
+            <span className="ml-1.5 rounded-full bg-green-soft px-2 py-0.5 text-micro font-bold text-green-ink">
               Logrado
             </span>
           ) : null}

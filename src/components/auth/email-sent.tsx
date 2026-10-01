@@ -10,7 +10,7 @@ import { MailCheck } from 'lucide-react'
 export function EmailSent({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-[16px] bg-green-soft px-4 py-5 text-center">
-      <MailCheck className="mx-auto size-7 text-green" aria-hidden />
+      <MailCheck className="mx-auto size-7 text-green-ink" aria-hidden />
       <p className="mt-2.5 text-item font-bold">{title}</p>
       <p className="mt-1.5 text-meta leading-relaxed text-muted-foreground">{children}</p>
     </div>

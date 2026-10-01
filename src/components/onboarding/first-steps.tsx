@@ -216,7 +216,7 @@ function Step({
       <span
         className={cn(
           'flex size-7 shrink-0 items-center justify-center rounded-full text-meta font-extrabold',
-          done ? 'bg-green-soft text-[#1a8f57]' : 'bg-violet-soft text-violet',
+          done ? 'bg-green-soft text-green-ink' : 'bg-violet-soft text-violet',
         )}
       >
         {done ? <Check className="size-4" /> : number}
