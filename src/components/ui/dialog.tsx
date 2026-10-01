@@ -39,7 +39,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-90 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -66,7 +66,17 @@ function DialogContent({
           // se leen como un bloque pegado en vez de como encabezado y campo.
           // El pie compensa este mismo padding con márgenes negativos, así que
           // los dos números van juntos.
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-xl bg-popover p-5 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          //
+          // `z-90`: por encima de la barra de abajo del teléfono (`z-70`) y de
+          // la hoja de "Más" (`z-80`). En `z-50` la barra le tapaba el pie al
+          // diálogo, que es donde está el botón que confirma: "Registrar" y
+          // "Agendar" quedaban abajo de la barra, sin poder tocarse.
+          //
+          // `max-h` y `overflow-y-auto`: con el teclado abierto un teléfono
+          // deja 400px, y "Agendar una sesión" mide más. Sin esto el diálogo
+          // se salía de la pantalla por arriba y por abajo y no había forma de
+          // llegar al botón. Así se desplaza adentro.
+          "fixed top-1/2 left-1/2 z-90 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] overflow-y-auto overscroll-contain -translate-x-1/2 -translate-y-1/2 gap-5 rounded-xl bg-popover p-5 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}

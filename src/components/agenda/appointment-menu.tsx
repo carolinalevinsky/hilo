@@ -152,7 +152,7 @@ export function AppointmentMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Opciones de la sesión de ${name}`}
-        className={cn('rounded-md p-1', className)}
+        className={cn('hit-area relative rounded-md p-1', className)}
       >
         <MoreHorizontal className="size-4" />
       </DropdownMenuTrigger>

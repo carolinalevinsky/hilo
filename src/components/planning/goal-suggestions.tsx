@@ -125,7 +125,12 @@ export function GoalSuggestions({
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
                     <Target className="size-[18px]" />
                   </span>
-                  <h4 className="min-w-0 truncate text-item font-bold">{goal.title}</h4>
+                  {/* Two lines, not one: next to "Agregar" on a phone one line left
+                      "Producir /r/ en p…", and three goals that start alike read
+                      as the same goal. */}
+                  <h4 className="line-clamp-2 min-w-0 text-item leading-snug font-bold">
+                    {goal.title}
+                  </h4>
                 </div>
 
                 {/* One button, adding one thing: the goal. Added is a state you
