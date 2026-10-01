@@ -43,21 +43,24 @@ comentado en [`dx`](dx) y [`docker/entrypoint.sh`](docker/entrypoint.sh).
 ```bash
 npm run dev               # servidor local
 npm run build             # build de producción
-npm run lint              # las tres reglas de arquitectura
+npm run lint              # eslint, con las tres reglas de arquitectura
 npm run typecheck         # tipos
-npm run test              # tests
+npm run test              # tests unitarios y el de aislamiento entre cuentas (RLS)
+npm run test:e2e          # el recorrido completo en un navegador (Playwright)
 
 npm run db:start          # levantar Postgres local
 npm run db:reset          # rehacer la base desde las migraciones
 npm run db:types          # regenerar los tipos de TypeScript
+npm run db:seed:remote    # cargar la biblioteca compartida de materiales en producción
 
 npm run check:boundaries  # que las reglas de arquitectura sigan funcionando
 npm run check:secrets     # que no haya secretos expuestos al navegador
-npm run check:rls         # que ninguna tabla quede sin protección
+npm run check:rls         # que ninguna tabla quede sin RLS, sin política o sin la de dos pasos
 npm run check:migration   # que ningún cambio destructivo pase sin querer
 ```
 
-Todos corren en CI en cada push.
+Todos corren en CI en cada push. `npm run test` **no** incluye el end-to-end:
+verde ahí no asegura verde en CI.
 
 ---
 
@@ -84,4 +87,10 @@ legacy/           El prototipo v1, congelado. Solo referencia.
 | [`docs/when-things-break.md`](docs/when-things-break.md) | Qué hacer cuando algo se rompe. |
 | [`docs/plan-01-workspace.md`](docs/plan-01-workspace.md) | Cómo se armó este workspace y por qué. |
 | [`docs/plan-02-migration.md`](docs/plan-02-migration.md) | El plan de construcción, milestone por milestone. |
+| [`docs/launch.md`](docs/launch.md) | Todo lo que se configura fuera del repo para producción. |
+| [`docs/donde-corre-cada-cosa.md`](docs/donde-corre-cada-cosa.md) | En qué región corre cada pieza y por qué importa. |
+| [`docs/materiales.md`](docs/materiales.md) | El estándar de la biblioteca compartida de materiales. |
+| [`docs/legales-que-falta.md`](docs/legales-que-falta.md) | Lo que Términos y Privacidad dicen mal, pendiente de corregir. |
+| [`docs/plan-02-progress.md`](docs/plan-02-progress.md), [`docs/plan-03-parity.md`](docs/plan-03-parity.md), [`docs/online-ahora.md`](docs/online-ahora.md) | Registros históricos de la migración desde v1. |
+| [`docs/qa-hallazgos.md`](docs/qa-hallazgos.md), [`docs/hallazgos-2026-09-10.md`](docs/hallazgos-2026-09-10.md), [`docs/auditoria-seguridad-hilo.md`](docs/auditoria-seguridad-hilo.md), [`docs/auditoria-seguridad-resultado-2026-09.md`](docs/auditoria-seguridad-resultado-2026-09.md) | Auditorías y QA de septiembre de 2026, ya cerrados. |
 | [`legacy/README.md`](legacy/README.md) | Qué es la carpeta `legacy/` y qué se rescata de ahí. |

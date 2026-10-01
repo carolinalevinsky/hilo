@@ -29,10 +29,20 @@ message, never with the `NEXT_PUBLIC_` prefix. If it ever leaks, rotate it in
 
 ### Run the migrations
 
+Some migrations must run **before** the code that needs them is deployed, and
+a few must run **after** (they remove what the old code still reads). The
+migration file says which in its first lines; read them before a `db push`.
+
 ```bash
-./dx npx supabase link --project-ref <the project ref>
-./dx npx supabase db push
+./dx npx supabase db push --dry-run --db-url "$(tr -d '[:space:]' < ~/.supabase-db-url)"
+./dx npx supabase db push --yes    --db-url "$(tr -d '[:space:]' < ~/.supabase-db-url)"
 ```
+
+`supabase link` refuses this project ("your account does not have the
+necessary privileges"), so the connection string goes in directly: the
+**Session pooler** one, from *Connect* at the top of the dashboard, port 5432,
+saved in `~/.supabase-db-url` with permissions 600 and never on the command
+line. Always `--dry-run` first and compare the list with what you expect.
 
 `db push` replays `supabase/migrations/` in order against production. Seeding is
 opt-in (`--include-seed`), so **do not pass that flag**: `supabase/config.toml`
@@ -73,6 +83,18 @@ In *Authentication → URL Configuration*:
 values live in the dashboard and are not in the repo — this is the one place
 where "never change the schema in the dashboard" does not apply, because these
 are not schema.
+
+### Two-step verification and the password
+
+In *Authentication → Multi-Factor*: **App Authenticator (TOTP)** enabled for
+both enrolment and verification. It is free on every plan. Practitioners turn
+it on for themselves in *Mi perfil*; with this off the button fails. The
+database already refuses a password-only session for an account that has it
+(migration `mfa_when_enrolled`), so there is nothing else to switch.
+
+In *Authentication → Sign In / Providers → Email*: **minimum password length
+10**. The app asks for 10 when a password is set; this makes Supabase refuse a
+shorter one even when the request does not come through the app.
 
 ### The email templates
 

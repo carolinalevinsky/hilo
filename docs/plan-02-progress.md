@@ -6,6 +6,11 @@ what a fresh session needs to know before touching any of it.
 
 Last updated: 16 August 2026, M9 complete. The code is done.
 
+> **Historical.** This records the state on 16 August 2026 and is not kept up
+> to date. Since then Mercado Pago was removed from the code (2026-09-29), the
+> product was renamed Ombúa, and a lot shipped on top. For what is pending
+> outside the code, `docs/launch.md` is current.
+
 ---
 
 ## Status at a glance
@@ -222,7 +227,7 @@ is not the same as wanting to be indexed.
 ### What is left, and it is not code
 
 `docs/launch.md`, steps 1 to 8: the production Supabase project, Resend's
-domain, a real `ANTHROPIC_API_KEY`, the Mercado Pago webhook, the nine
+domain, a real `ANTHROPIC_API_KEY`, the Mercado Pago webhook (since removed), the nine
 environment variables in Vercel, and the domain. All of it needs accounts and
 credentials.
 
