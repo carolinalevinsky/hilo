@@ -758,6 +758,24 @@ export type Database = {
           },
         ]
       }
+      login_failures: {
+        Row: {
+          failed_at: string
+          id: number
+          key_hash: string
+        }
+        Insert: {
+          failed_at?: string
+          id?: never
+          key_hash: string
+        }
+        Update: {
+          failed_at?: string
+          id?: never
+          key_hash?: string
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           age_range: string | null
@@ -1574,6 +1592,10 @@ export type Database = {
         }
         Returns: string
       }
+      clear_login_failures: {
+        Args: { per_account: string }
+        Returns: undefined
+      }
       delete_goal_point: { Args: { point_id: string }; Returns: undefined }
       document_was_signed: {
         Args: { document_id: string; kind: string }
@@ -1588,6 +1610,14 @@ export type Database = {
           kind: string
           label: string
         }[]
+      }
+      login_allowed: {
+        Args: { per_account: string; per_ip: string }
+        Returns: boolean
+      }
+      note_login_failure: {
+        Args: { per_account: string; per_ip: string }
+        Returns: undefined
       }
       patient_form_by_token: {
         Args: { raw_token: string }

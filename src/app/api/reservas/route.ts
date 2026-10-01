@@ -10,6 +10,7 @@ import {
   submitterHash,
 } from '@/server/booking'
 import { sendBookingNotification } from '@/server/notifications'
+import { clientIp } from '@/lib/client-ip'
 
 /**
  * The public booking form posts here. **Defects #6 and #10.**
@@ -38,33 +39,8 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Ese link no existe.' }, { status: 404 })
   }
 
-  // La dirección de quien manda, para el contador — y de dónde se lee importa.
-  //
-  // Esto tomaba el **primer** valor de `x-forwarded-for`, que es justo el que no
-  // hay que usar: el encabezado se concatena, así que lo que un proxy agrega va
-  // al final y lo que el cliente mandó por su cuenta queda adelante. Con el
-  // primero, quien quisiera saltear el límite sólo tenía que mandar
-  // `X-Forwarded-For: 1.2.3.4` distinto en cada pedido para que
-  // `submitterHash` diera otro y el contador arrancara de cero cada vez.
-  //
-  // `x-vercel-forwarded-for` lo escribe la plataforma y no se puede pisar desde
-  // afuera, así que es el primero que se mira. El último valor de
-  // `x-forwarded-for` es el reemplazo cuando no está —local, o cualquier otro
-  // hosting—: es el que agregó el proxy más cercano y no quien llamó.
-  //
-  // Sin ninguno de los dos queda `'local'`, y ahí todos comparten un contador:
-  // es la dirección segura en la que equivocarse.
-  const forwarded =
-    request.headers.get('x-vercel-forwarded-for') ??
-    request.headers.get('x-forwarded-for')
-
-  const hops =
-    forwarded
-      ?.split(',')
-      .map((hop) => hop.trim())
-      .filter(Boolean) ?? []
-
-  const ip = hops.at(-1) ?? 'local'
+  // La dirección de quien manda, para el contador. Ver `clientIp`.
+  const ip = clientIp(request.headers)
   const hash = submitterHash(practitioner.id, ip)
 
   if ((await recentRequestCount(hash)) >= BOOKINGS_PER_HOUR) {
