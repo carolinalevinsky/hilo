@@ -163,9 +163,9 @@ export function AssessmentForm({
             with the test materials still on the table and the family waiting,
             which is exactly when typing does not happen. */}
         <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="observations">
+          <Label htmlFor="observations" className="block leading-snug">
             Observaciones de conducta
-            <span className="font-normal text-muted-foreground"> · opcional</span>
+            <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
           <DictateButton targetId="observations" />
         </div>

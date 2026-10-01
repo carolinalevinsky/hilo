@@ -168,9 +168,9 @@ export function OnlineConsultation({
           <input type="hidden" name="patientId" value={patientId} />
           <FormMessage message={state.message} />
 
-          <Label htmlFor="videoUrl">
+          <Label htmlFor="videoUrl" className="block leading-snug">
             ¿Usás otra sala?
-            <span className="font-normal text-muted-foreground"> · opcional</span>
+            <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
           <div className="flex gap-2">
             <Input

@@ -252,9 +252,9 @@ export function MaterialForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="focus">
+          <Label htmlFor="focus" className="block leading-snug">
             Dentro del área
-            <span className="font-normal text-muted-foreground"> · opcional</span>
+            <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
           <NativeSelect id="focus" name="focus" defaultValue={material?.focus ?? ''}>
             <option value="">Sin especificar</option>
@@ -278,9 +278,9 @@ export function MaterialForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="ageRange">
+          <Label htmlFor="ageRange" className="block leading-snug">
             Edad
-            <span className="font-normal text-muted-foreground"> · opcional</span>
+            <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
           <NativeSelect id="ageRange" name="ageRange" defaultValue={material?.age_range ?? ''}>
             <option value="">Cualquier edad</option>
