@@ -1,6 +1,6 @@
 'use client'
 
-import { Menu, MessageCircle, X } from '@/components/icons'
+import { Menu, MessageCircle, User, X } from '@/components/icons'
 import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -90,7 +90,9 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
                   isActive('/perfil') && 'border-violet bg-violet-soft text-violet',
                 )}
               >
-                <Menu className="size-5" />
+                {/* Una persona, no las tres rayitas: ésas ya son "Más", el botón
+                    que abrió esta hoja. */}
+                <User className="size-5" />
                 Mi perfil
               </Link>
             </div>
