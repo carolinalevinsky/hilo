@@ -1,6 +1,5 @@
-import { UserPlus } from '@/components/icons'
-
-import { confirmBookingAction, dismissBookingAction } from '@/app/(app)/reservas/actions'
+import { dismissBookingAction } from '@/app/(app)/reservas/actions'
+import { ConvertBookingDialog } from '@/components/booking/convert-booking-dialog'
 import { Button } from '@/components/ui/button'
 import { formatDate, formatLongDate } from '@/lib/dates'
 import { weekdayName } from '@/lib/week'
@@ -16,8 +15,9 @@ import type { BookingRequestWithPatient } from '@/server/booking'
  * waiting on an answer is exactly the thing you deal with in the ten seconds you
  * have, and "go somewhere else first" is how it becomes tomorrow's job.
  *
- * A plain Server Component with `<form action={…}>` inside: no client JavaScript,
- * and the same markup on both screens rather than two copies that drift.
+ * A Server Component, the same markup on both screens rather than two copies
+ * that drift. "Convertir en paciente" is the one client piece: it asks for the
+ * patient's name before creating anything.
  */
 export function PendingBookingRequests({
   requests,
@@ -29,7 +29,15 @@ export function PendingBookingRequests({
       {requests.map((request) => (
         <li key={request.id} className="flex flex-wrap items-center gap-3 py-3">
           <div className="min-w-[180px] flex-1">
-            <p className="text-item font-bold">{request.name}</p>
+            <p className="text-item font-bold">
+              {request.patient_name ?? request.name}
+              {request.patient_name ? (
+                <span className="font-normal text-muted-foreground">
+                  {' '}
+                  · pidió {request.name}
+                </span>
+              ) : null}
+            </p>
             <p className="text-meta text-muted-foreground">
               {request.phone}
               {/* The date when the family gave one (P7); the weekday for
@@ -49,13 +57,11 @@ export function PendingBookingRequests({
           </div>
 
           <div className="flex gap-2">
-            <form action={confirmBookingAction}>
-              <input type="hidden" name="requestId" value={request.id} />
-              <Button type="submit" size="sm">
-                <UserPlus className="size-3.5" />
-                Convertir en paciente
-              </Button>
-            </form>
+            <ConvertBookingDialog
+              requestId={request.id}
+              writerName={request.name}
+              patientName={request.patient_name}
+            />
             <form action={dismissBookingAction}>
               <input type="hidden" name="requestId" value={request.id} />
               <Button type="submit" size="sm" variant="ghost">

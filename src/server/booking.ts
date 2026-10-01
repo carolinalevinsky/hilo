@@ -42,6 +42,15 @@ function aYearFromToday() {
 
 export const PublicBooking = z.object({
   name: z.string().trim().min(2, 'Escribí el nombre.').max(120),
+  // Para quién es, cuando no es quien escribe: casi siempre la madre o el padre
+  // pide por un hijo. Vacío quiere decir "para mí".
+  patientName: z
+    .string()
+    .trim()
+    .max(120, 'El nombre es demasiado largo.')
+    .optional()
+    .nullable()
+    .transform((value) => (value ? value : null)),
   phone: z
     .string()
     .trim()
@@ -137,6 +146,7 @@ export async function createBookingRequest(
     .insert({
       practitioner_id: practitionerId,
       name: data.name,
+      patient_name: data.patientName,
       phone: data.phone,
       preferred_weekday: data.preferredWeekday,
       preferred_date: data.preferredDate,
