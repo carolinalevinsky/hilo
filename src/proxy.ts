@@ -33,6 +33,9 @@ import { publicConfig } from '@/lib/env'
  */
 
 /** Routes a signed-out visitor may reach. Everything else needs a session. */
+/** Donde se pide el código del segundo paso. */
+const VERIFY_PATH = '/verificar'
+
 const PUBLIC_PREFIXES = [
   '/', // the landing page
   '/entrar',
@@ -138,6 +141,21 @@ export async function proxy(request: NextRequest) {
     // So that signing in lands where they were headed.
     url.searchParams.set('volver', pathname)
     return redirectKeepingSession(url, response)
+  }
+
+  // Verificación en dos pasos: con un factor activado y una sesión que sólo
+  // pasó la contraseña, todo lleva a `/verificar`. La base ya no le devuelve
+  // datos a esa sesión (ver `mfa_when_enrolled`); esto es para que la pantalla
+  // pida el código en vez de mostrarse vacía. Lee el token, sin red.
+  if (user && pathname !== VERIFY_PATH && !isApi(pathname)) {
+    const { data: level } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (level?.nextLevel === 'aal2' && level.currentLevel !== 'aal2') {
+      const url = request.nextUrl.clone()
+      url.pathname = VERIFY_PATH
+      url.search = ''
+      if (!isPublic(pathname)) url.searchParams.set('volver', pathname)
+      return redirectKeepingSession(url, response)
+    }
   }
 
   if (user && (pathname === '/entrar' || pathname === '/crear-cuenta' || pathname === '/')) {

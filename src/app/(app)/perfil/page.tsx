@@ -5,11 +5,13 @@ import { signOutAction } from '@/app/(auth)/actions'
 import { disconnectGoogleAction } from '@/app/(app)/perfil/actions'
 import { listAuditLog } from '@/server/audit'
 import { findGoogleAccount } from '@/server/google'
+import { mfaStatus } from '@/server/mfa'
 import { PageHeader } from '@/components/page-header'
 import { CalendarPrivacyForm } from '@/components/profile/calendar-privacy-form'
 import { ConsentTemplateForm } from '@/components/profile/consent-template-form'
 import { PROVIDER_AND_AI_CLAUSES } from '@/lib/consent-template'
 import { ProfileForm } from '@/components/profile/profile-form'
+import { TwoStepCard } from '@/components/profile/two-step-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { auditPhrase, auditWhen } from '@/lib/audit-labels'
@@ -39,12 +41,13 @@ const GOOGLE_RESULTS: Record<string, { ok: boolean; message: string }> = {
 
 export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>) {
   const { practitioner } = await currentSession()
-  const [google, params, trail] = await Promise.all([
+  const [google, params, trail, twoStep] = await Promise.all([
     findGoogleAccount(practitioner.id),
     searchParams,
     // Las últimas treinta. El registro guarda todo; la pantalla muestra lo que
     // alguien va a leer de verdad, y quien necesite ir más atrás tiene la tabla.
     listAuditLog(practitioner.id, 30),
+    mfaStatus(),
   ])
 
   const result =
@@ -229,6 +232,15 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             Se guarda porque Ombúa tiene datos de salud y hay que poder reconstruir qué
             pasó con ellos. Nadie más que vos lo ve, y no se puede editar — ni por vos.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-5">
+        <CardHeader>
+          <CardTitle>Verificación en dos pasos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TwoStepCard enabled={twoStep.enabled} factorId={twoStep.factorId} />
         </CardContent>
       </Card>
 

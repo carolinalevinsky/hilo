@@ -15,6 +15,7 @@ import {
   signOut,
 } from '@/server/auth'
 import { acceptInvitation, InvitationError } from '@/server/invitations'
+import { verifySecondStep } from '@/server/mfa'
 import { createProfile } from '@/server/practitioners'
 
 import { RECOVERY_COOKIE, RECOVERY_PATH } from './recovery-cookie'
@@ -58,6 +59,17 @@ export async function signInAction(
 
   // `volver` comes from the URL the proxy built when it bounced someone off a
   // page, which means it comes from the address bar. See `internalPath`.
+  redirect(internalPath(formData.get('volver'), '/inicio'))
+}
+
+/** El código del segundo paso. Ver `src/server/mfa.ts`. */
+export async function verifySecondStepAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const result = await verifySecondStep(formData.get('code'))
+  if (!result.ok) return formError(result.message)
+
   redirect(internalPath(formData.get('volver'), '/inicio'))
 }
 

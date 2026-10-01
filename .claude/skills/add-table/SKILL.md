@@ -40,6 +40,10 @@ create policy "own_rows" on goals
   for all
   using (practitioner_id = (select auth.uid()))
   with check (practitioner_id = (select auth.uid()));
+
+create policy "mfa_when_enrolled" on goals as restrictive for all to authenticated
+  using ((select public.mfa_satisfied()))
+  with check ((select public.mfa_satisfied()));
 ```
 
 ### The parts that are not optional
@@ -95,7 +99,7 @@ production and in no migration file, and the next `db:reset` destroys it.
 
 - [ ] Migration file created with `supabase migration new`
 - [ ] `practitioner_id` column present
-- [ ] RLS enabled + `own_rows` policy
+- [ ] RLS enabled + `own_rows` policy + `mfa_when_enrolled` (restrictive)
 - [ ] Indexes on foreign keys
 - [ ] `npm run db:reset` succeeds
 - [ ] `npm run db:types` regenerated
