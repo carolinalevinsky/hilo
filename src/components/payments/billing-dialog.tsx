@@ -132,9 +132,9 @@ export function BillingDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="billing-sessions">
+            <Label htmlFor="billing-sessions" className="block leading-snug">
               Sesiones por mes
-              <span className="font-normal text-muted-foreground"> · opcional</span>
+              <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
             </Label>
             <Input
               id="billing-sessions"

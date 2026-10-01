@@ -80,7 +80,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                           : `Marcar la sesión de ${session.patientName} como dada`
                       }
                       className={cn(
-                        'flex size-[22px] items-center justify-center rounded-md border transition-colors',
+                        'hit-area relative flex size-[22px] items-center justify-center rounded-md border transition-colors',
                         attended
                           ? 'border-green bg-green text-foreground'
                           : 'border-border hover:border-violet',
@@ -116,8 +116,11 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                   </Link>
 
                   {/* What is prepared for this session, or what Ombúa would
-                      start from. One line: the whole list is one click away. */}
-                  <p className="min-w-[180px] flex-1 truncate text-meta">
+                      start from. One line: the whole list is one click away.
+                      On a phone it takes the whole width, so it is a line and
+                      not twenty characters, and "Preparar" and "Material" go
+                      under it together instead of one of them alone. */}
+                  <p className="min-w-[180px] flex-1 truncate text-meta max-sm:basis-full">
                     {session.plan.length > 0 ? (
                       <>
                         <b className="font-semibold">Preparada:</b>{' '}

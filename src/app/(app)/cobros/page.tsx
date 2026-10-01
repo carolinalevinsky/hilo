@@ -191,7 +191,10 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     {/* Nothing to do on a deleted patient's row: the payments are
                         history, and there is nobody to charge or bill anymore. */}
                     {row.deleted ? null : (
-                    <div className="flex flex-wrap gap-1.5">
+                    // `max-sm:pl-12`: en teléfono los botones bajan a su propia
+                    // línea, y sin sangría quedaban flotando a la izquierda, sin
+                    // decir de qué paciente eran. Así arrancan bajo el nombre.
+                    <div className="flex flex-wrap items-center gap-1.5 max-sm:w-full max-sm:pl-12">
                       {/* Sin honorario no hay pago que registrar acá: "Registrar
                           pago" abriría un diálogo que no sabe de cuánto, al lado
                           de una etiqueta que ya dice que falta el número. Se
@@ -210,7 +213,9 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                               : null
                           }
                           trigger={
-                            <Button size="sm" variant="ghost">
+                            // `outline` y no `ghost`: sin borde, en teléfono era
+                            // una palabra suelta y no se leía como un botón.
+                            <Button size="sm" variant="outline">
                               Registrar pago
                             </Button>
                           }

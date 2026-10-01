@@ -135,9 +135,9 @@ export function PaymentDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="payment-note">
+              <Label htmlFor="payment-note" className="block leading-snug">
                 Nota
-                <span className="font-normal text-muted-foreground"> · opcional</span>
+                <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
               </Label>
               <Input id="payment-note" name="note" placeholder="Ej: pagó dos sesiones juntas" />
             </div>

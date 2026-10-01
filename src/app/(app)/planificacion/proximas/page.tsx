@@ -107,7 +107,7 @@ export default async function UpcomingPlansPage({
           />
         </Card>
       ) : (
-        <ul className="grid gap-3 lg:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {plans.map((plan) => (
             <li key={`${plan.patientId}-${plan.appointment?.id ?? 'sin-sesion'}`}>
               <Card>

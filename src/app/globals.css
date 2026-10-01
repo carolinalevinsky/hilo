@@ -354,6 +354,37 @@
   }
 }
 
+/* El área que acepta el dedo, más grande que el ícono que se ve.
+   Un lápiz de 14px o una cruz de 12px se dibujan bien de ese tamaño, pero un
+   dedo no acierta a algo menor de unos 40px: tocabas al lado y no pasaba nada.
+   Esto agranda la zona tocable 10px para cada lado sin mover nada en pantalla.
+   Para íconos sueltos, no para botones que ya tienen su tamaño.
+   No pone `position`: el elemento tiene que estar posicionado, y va con
+   `relative` salvo que ya sea `absolute` — escribirla acá le pisaría eso. */
+@utility hit-area {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+}
+
+/* Ningún campo por debajo de 16px en un teléfono.
+   Safari en iPhone agranda la página entera cuando tocás un campo con letra más
+   chica, y no la vuelve a achicar al salir: después de buscar un paciente o
+   escribir un monto quedabas con la pantalla ampliada, corrida hacia un costado.
+   Los campos del producto van de 12.5px a 14px, escritos en cada formulario, así
+   que esto no puede ser una clase más: va fuera de `@layer`, que es lo único que
+   le gana a una utilidad de Tailwind sin `!important`.
+   `pointer: coarse` es por el iPad, que hace lo mismo con la pantalla ancha. */
+@media (max-width: 767px), (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

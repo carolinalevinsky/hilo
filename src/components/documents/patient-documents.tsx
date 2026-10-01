@@ -65,7 +65,7 @@ export function PatientDocuments({
         <li key={document.id}>
           <Link
             href={document.href}
-            className="flex items-center gap-2.5 rounded-xl border border-border px-3 py-2.5 transition-colors hover:bg-muted"
+            className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 rounded-xl border border-border px-3 py-2.5 transition-colors hover:bg-muted"
           >
             <span
               className={
@@ -77,14 +77,19 @@ export function PatientDocuments({
               {document.kind === 'assessment' ? 'Evaluación' : 'Informe'}
             </span>
 
-            <span className="min-w-0 flex-1 truncate text-body font-bold">
+            {/* `min-w-32` and the wrap: on a phone the badge and the date used to
+                share one line with the title, and the title — the only part that
+                says which document this is — was left as "P…". Now, when the
+                four do not fit, the badge and the date go to a second line. */}
+            <span className="min-w-32 flex-1 truncate text-body font-bold">
               {document.title}
             </span>
 
-            <DocumentStateBadge row={document.row} />
-
-            <span className="shrink-0 text-micro text-muted-foreground">
-              abrir · {formatDate(document.date)}
+            <span className="ml-auto flex shrink-0 items-center gap-2.5">
+              <DocumentStateBadge row={document.row} />
+              <span className="text-micro text-muted-foreground">
+                abrir · {formatDate(document.date)}
+              </span>
             </span>
           </Link>
         </li>

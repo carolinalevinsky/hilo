@@ -110,9 +110,9 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="upload-age">
+            <Label htmlFor="upload-age" className="block leading-snug">
               Edad
-              <span className="font-normal text-muted-foreground"> · opcional</span>
+              <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
             </Label>
             <NativeSelect id="upload-age" name="ageRange" defaultValue="">
               <option value="">Cualquier edad</option>
