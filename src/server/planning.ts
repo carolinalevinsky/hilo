@@ -3,6 +3,7 @@ import { currentPeriod } from '@/lib/periods'
 
 import { listAppointments } from './appointments'
 import { getDb } from './db'
+import { everyRow } from './every-row'
 import { bestMaterialFor, listMaterials, type MaterialSummary } from './materials'
 import { monthlyLedger } from './payments'
 import { plansForAppointments, type PlanLine } from './session-plans'
@@ -229,22 +230,29 @@ export async function todayBriefing(
   const patientIds = [...new Set(planned.map((session) => session.patientId))]
   const db = await getDb()
 
-  const [{ data: notes }, ledger] = await Promise.all([
-    db
-      .from('sessions')
-      .select('patient_id, held_on, progress_note')
-      .eq('practitioner_id', practitionerId)
-      .in('patient_id', patientIds)
-      .not('progress_note', 'is', null)
-      .lt('held_on', today)
-      .order('held_on', { ascending: false }),
+  // `today` iba sin llamar: PostgREST recibía el código de la función como
+  // fecha, contestaba error, y `data ?? []` lo leía como "sin notas". La última
+  // nota no apareció nunca. Ahora la fecha va bien y un error se dice.
+  const [notes, ledger] = await Promise.all([
+    everyRow((from, to) =>
+      db
+        .from('sessions')
+        .select('patient_id, held_on, progress_note')
+        .eq('practitioner_id', practitionerId)
+        .in('patient_id', patientIds)
+        .not('progress_note', 'is', null)
+        .lt('held_on', todayInUruguay)
+        .order('held_on', { ascending: false })
+        .order('id')
+        .range(from, to),
+    ),
     monthlyLedger(practitionerId, currentPeriod()),
   ])
 
   // The query is ordered newest first, so the first note seen for a patient is
   // the one to keep.
   const lastNote = new Map<string, string>()
-  for (const note of notes ?? []) {
+  for (const note of notes) {
     if (note.progress_note && !lastNote.has(note.patient_id)) {
       lastNote.set(note.patient_id, note.progress_note)
     }

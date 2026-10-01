@@ -1,6 +1,7 @@
 import { toDateInput, zonedDate } from '@/lib/dates'
 
 import { getServiceDb } from './db'
+import { everyRow } from './every-row'
 import type { DigestSummary } from './notifications'
 import { expectedForMonth } from './payments'
 
@@ -63,9 +64,9 @@ function fortnightAgo(now: Date): string {
 /**
  * Everyone with something worth telling them about, and their numbers.
  *
- * Five queries in total, regardless of how many practitioners exist. Each one
- * returns only the rows in scope, and the joining happens over those — never
- * over the whole table.
+ * Five queries, each paged to the end, regardless of how many practitioners
+ * exist. Each one returns only the rows in scope, and the joining happens over
+ * those — never over the whole table.
  *
  * `now` is an argument so the fortnight window and the reporting month are one
  * decision rather than three separate calls to the clock that a run crossing
@@ -81,15 +82,15 @@ export async function digestRecipients(
 
   const [practitioners, sessions, bookings, patients, paid] = await Promise.all([
     // Least recently written to first, so the cap rotates instead of dropping.
-    rows(
+    rows('practitioners', (from, to) =>
       db
         .from('practitioners')
         .select('id, email, full_name')
         .order('digest_sent_at', { ascending: true, nullsFirst: true })
-        .limit(MAX_DIGEST_ROWS),
-      'practitioners',
+        .order('id')
+        .range(from, to),
     ),
-    rows(
+    rows('sessions', (from, to) =>
       db
         .from('sessions')
         .select('practitioner_id')
@@ -97,37 +98,37 @@ export async function digestRecipients(
         // El digest corre con la llave de servicio, que no pasa por la
         // política que esconde la papelera. Acá hay que decirlo a mano.
         .is('deleted_at', null)
-        .limit(MAX_DIGEST_ROWS),
-      'sessions',
+        .order('id')
+        .range(from, to),
     ),
-    rows(
+    rows('booking_requests', (from, to) =>
       db
         .from('booking_requests')
         .select('practitioner_id')
         .eq('status', 'pending')
-        .limit(MAX_DIGEST_ROWS),
-      'booking_requests',
+        .order('id')
+        .range(from, to),
     ),
     // The unpaid figure needs the fee on the patient and the payments for the
     // month, so it is computed from two small selects rather than a join across
     // a view that does not exist.
-    rows(
+    rows('patients', (from, to) =>
       db
         .from('patients')
         .select('practitioner_id, id, session_fee, billing_frequency, expected_sessions_per_month')
         .is('deleted_at', null)
         .is('archived_at', null)
-        .limit(MAX_DIGEST_ROWS),
-      'patients',
+        .order('id')
+        .range(from, to),
     ),
-    rows(
+    rows('payments', (from, to) =>
       db
         .from('payments')
         .select('practitioner_id, patient_id, amount')
         .eq('period', period)
         .is('deleted_at', null)
-        .limit(MAX_DIGEST_ROWS),
-      'payments',
+        .order('id')
+        .range(from, to),
     ),
   ])
 
@@ -212,54 +213,29 @@ export async function markDigestSent(practitionerIds: string[], now = new Date()
 }
 
 /**
- * Await a query and refuse to read a failure as an empty result.
+ * Every row of a query, and a failure is never an empty result.
  *
- * Every select here returns `data: null` when it errors, and `null ?? []` is an
- * empty fortnight — so a broken query would produce a digest that says nothing
- * happened, on an unattended cron, to everyone at once. This is the one failure
- * mode the feature cannot signal on its own, so it throws and the run fails
- * loudly instead.
+ * A select returns `data: null` when it errors, and `null ?? []` is an empty
+ * fortnight — so a broken query would produce a digest that says nothing
+ * happened, on an unattended cron, to everyone at once. `everyRow` throws on
+ * the error, and the message says which table.
+ *
+ * Paged rather than limited. PostgREST cuts every response at `max_rows`
+ * (1000) without saying so, and a `.limit(20_000)` that used to be here asked
+ * for more than the server would ever send: past a thousand sessions in a
+ * fortnight, practitioners went missing from the digest with nothing in the
+ * log. `DIGEST_BATCH_SIZE` limits the emails sent, not the rows read.
  */
-/**
- * El tope explícito de filas por consulta del digest.
- *
- * PostgREST corta en 1000 filas por defecto **y no lo dice**: la respuesta
- * llega completa, con 1000 filas, y nada distingue "hay 1000" de "hay 40.000 y
- * te mando las primeras". El cron corre cada quince días, sin nadie mirando, y
- * lo que sale del otro lado son números: profesionales con 0 sesiones que no
- * reciben el mail, saldos impagos incompletos. Todo plausible.
- *
- * El comentario del archivo dice "cinco consultas, sin importar cuántos
- * profesionales existan", y sigue siendo cierto — pero `DIGEST_BATCH_SIZE`
- * limita los mails que se mandan, no las filas que se leen, y eran dos cosas
- * distintas que parecían la misma.
- *
- * 20.000 es holgado para una quincena de toda la base y sigue siendo un techo.
- * Lo importante no es el número: es que ahora se pide, y que si se toca se
- * avisa.
- */
-const MAX_DIGEST_ROWS = 20_000
-
 async function rows<T>(
-  query: PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
   table: string,
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
 ): Promise<T[]> {
-  const { data, error } = await query
-  if (error) throw new Error(`[digest] ${table}: ${error.message}`)
-
-  const list = data ?? []
-
-  // Un tope alcanzado se dice. Truncar en silencio es lo que hace que un número
-  // equivocado parezca un número.
-  if (list.length >= MAX_DIGEST_ROWS) {
-    console.warn('[digest] la lectura llegó al tope y puede estar incompleta', {
-      table,
-      rows: list.length,
-      limit: MAX_DIGEST_ROWS,
-    })
+  try {
+    return await everyRow(page)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : (error as { message?: string })?.message
+    throw new Error(`[digest] ${table}: ${message ?? String(error)}`)
   }
-
-  return list
 }
 
 function tally<T>(list: T[], key: (row: T) => string): Map<string, number> {

@@ -1,6 +1,7 @@
 import { startOfDayInUruguay, today, toDateInput, todayDate } from '@/lib/dates'
 
 import { getDb } from './db'
+import { everyRow } from './every-row'
 
 /**
  * The numbers behind the statistics screen and the fortnightly digest.
@@ -67,27 +68,35 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
         .is('patients.deleted_at', null)
         .gte('held_on', lastMonth)
         .lt('held_on', thisMonth),
-      db
-        .from('goals')
-        .select('progress, is_active, patients!inner(id)')
-        .eq('practitioner_id', practitionerId)
-        .is('patients.deleted_at', null),
+      everyRow((from, to) =>
+        db
+          .from('goals')
+          .select('progress, is_active, patients!inner(id)')
+          .eq('practitioner_id', practitionerId)
+          .is('patients.deleted_at', null)
+          .order('id')
+          .range(from, to),
+      ),
       db
         .from('reports')
         .select('id, patients!inner(id)', { count: 'exact', head: true })
         .eq('practitioner_id', practitionerId)
         .is('patients.deleted_at', null)
         .gte('created_at', startOfDayInUruguay(thisMonth).toISOString()),
-      db
-        .from('appointments')
-        .select('status, patients!inner(id)')
-        .eq('practitioner_id', practitionerId)
-        .is('patients.deleted_at', null)
-        .gte('scheduled_on', lastMonth)
-        .lt('scheduled_on', today()),
+      everyRow((from, to) =>
+        db
+          .from('appointments')
+          .select('status, patients!inner(id)')
+          .eq('practitioner_id', practitionerId)
+          .is('patients.deleted_at', null)
+          .gte('scheduled_on', lastMonth)
+          .lt('scheduled_on', today())
+          .order('id')
+          .range(from, to),
+      ),
     ])
 
-  const activeGoals = (goals.data ?? []).filter((goal) => goal.is_active)
+  const activeGoals = goals.filter((goal) => goal.is_active)
   const averageProgress =
     activeGoals.length === 0
       ? 0
@@ -99,7 +108,7 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
   // appointment still sitting at "agendada" a week later means nobody recorded
   // what happened, not that the patient failed to show up. Counting those as
   // absences would make the number a lie in the direction that hurts a family.
-  const resolved = (appointments.data ?? []).filter(
+  const resolved = appointments.filter(
     (appointment) => appointment.status !== 'scheduled',
   )
   const attended = resolved.filter((appointment) => appointment.status === 'attended')
@@ -109,7 +118,7 @@ export async function practitionerStats(practitionerId: string): Promise<Practit
     sessionsThisMonth: sessionsThis.count ?? 0,
     sessionsLastMonth: sessionsLast.count ?? 0,
     averageProgress,
-    goalsAchieved: (goals.data ?? []).filter((goal) => goal.progress >= 100).length,
+    goalsAchieved: goals.filter((goal) => goal.progress >= 100).length,
     activeGoals: activeGoals.length,
     reportsThisMonth: reports.count ?? 0,
     attendanceRate:
@@ -136,37 +145,55 @@ export type PatientProgress = {
 export async function progressByPatient(practitionerId: string): Promise<PatientProgress[]> {
   const db = await getDb()
 
-  const [{ data: patients }, { data: goals }, { data: sessions }] = await Promise.all([
-    db
-      .from('patients')
-      .select('id, full_name, color')
-      .eq('practitioner_id', practitionerId)
-      .is('deleted_at', null)
-      .is('archived_at', null),
-    db
-      .from('goals')
-      .select('patient_id, progress')
-      .eq('practitioner_id', practitionerId)
-      .eq('is_active', true),
-    db.from('sessions').select('patient_id').eq('practitioner_id', practitionerId),
+  // Paginadas: el conteo de sesiones por paciente es de toda la historia, y
+  // pasa de mil filas en el primer año de una agenda llena. Cortado en mil,
+  // los pacientes más viejos aparecían con menos sesiones de las que tuvieron.
+  const [patients, goals, sessions] = await Promise.all([
+    everyRow((from, to) =>
+      db
+        .from('patients')
+        .select('id, full_name, color')
+        .eq('practitioner_id', practitionerId)
+        .is('deleted_at', null)
+        .is('archived_at', null)
+        .order('id')
+        .range(from, to),
+    ),
+    everyRow((from, to) =>
+      db
+        .from('goals')
+        .select('patient_id, progress')
+        .eq('practitioner_id', practitionerId)
+        .eq('is_active', true)
+        .order('id')
+        .range(from, to),
+    ),
+    everyRow((from, to) =>
+      db
+        .from('sessions')
+        .select('patient_id')
+        .eq('practitioner_id', practitionerId)
+        .order('id')
+        .range(from, to),
+    ),
   ])
 
   const goalsByPatient = new Map<string, number[]>()
-  for (const goal of goals ?? []) {
+  for (const goal of goals) {
     const list = goalsByPatient.get(goal.patient_id)
     if (list) list.push(goal.progress)
     else goalsByPatient.set(goal.patient_id, [goal.progress])
   }
 
   const sessionsByPatient = new Map<string, number>()
-  for (const session of sessions ?? []) {
+  for (const session of sessions) {
     sessionsByPatient.set(
       session.patient_id,
       (sessionsByPatient.get(session.patient_id) ?? 0) + 1,
     )
   }
 
-  return (patients ?? [])
+  return patients
     .map((patient) => {
       const own = goalsByPatient.get(patient.id) ?? []
       return {
@@ -193,15 +220,18 @@ export async function progressByPatient(practitionerId: string): Promise<Patient
 export async function mostWorkedGoals(practitionerId: string, limit = 8) {
   const db = await getDb()
 
-  const { data, error } = await db
-    .from('session_goals')
-    .select('goal_id, goals(title)')
-    .eq('practitioner_id', practitionerId)
-
-  if (error) throw error
+  const data = await everyRow((from, to) =>
+    db
+      .from('session_goals')
+      .select('goal_id, goals(title)')
+      .eq('practitioner_id', practitionerId)
+      .order('session_id')
+      .order('goal_id')
+      .range(from, to),
+  )
 
   const counts = new Map<string, { title: string; count: number }>()
-  for (const link of data ?? []) {
+  for (const link of data) {
     const title = link.goals?.title
     if (!title) continue
     const existing = counts.get(title)

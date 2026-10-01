@@ -2,6 +2,7 @@ import type { Database } from '@/lib/database.types'
 
 import { logAction } from './audit'
 import { getDb } from './db'
+import { everyRow } from './every-row'
 import { listGoalProgress, listGoals } from './goals'
 import { getPatient } from './patients'
 import { listTrash, type TrashItem } from './trash'
@@ -98,26 +99,7 @@ export type PatientExport = {
   privateNoteCount: number
 }
 
-/** Cuántas filas se piden por vez. Debajo del `max_rows` de PostgREST. */
-const PAGE = 500
 
-/**
- * Todas las filas de una consulta, página por página.
- *
- * `page(from, to)` arma la consulta con su `.range(from, to)` y un orden
- * estable; esto la repite hasta que una página vuelve incompleta.
- */
-export async function everyRow<T>(
-  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>,
-): Promise<T[]> {
-  const all: T[] = []
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await page(from, from + PAGE - 1)
-    if (error) throw error
-    all.push(...(data ?? []))
-    if (!data || data.length < PAGE) return all
-  }
-}
 
 export async function buildPatientExport(
   practitionerId: string,
