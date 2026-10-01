@@ -31,7 +31,7 @@ vi.mock('./google-calendar', () => ({
   removeAppointment: async () => {},
 }))
 
-const { materialiseAppointments, removeFromAgenda } = await import('./appointments')
+const { materialiseAppointments, removeFromAgenda } = await import('./occurrences')
 
 const service = serviceClient()
 const email = testEmail('quitar-agenda')

@@ -1,4 +1,6 @@
-import { listAppointments, listSchedules, materialiseAppointments } from './appointments'
+import { listAppointments } from './appointments'
+import { listSchedules } from './schedules'
+import { materialiseAppointments } from './occurrences'
 
 /**
  * ¿Se pisa este horario con otra sesión?

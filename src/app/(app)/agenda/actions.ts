@@ -3,14 +3,9 @@
 import { revalidatePath } from 'next/cache'
 
 import { formError, formErrorFor, formOk, typedValues, type FormState } from '@/lib/form-state'
-import {
-  APPOINTMENT_STATUSES,
-  createAppointment,
-  createSchedule,
-  deactivateSchedule,
-  removeFromAgenda,
-  setAppointmentStatus,
-} from '@/server/appointments'
+import { APPOINTMENT_STATUSES, createAppointment, setAppointmentStatus } from '@/server/appointments'
+import { createSchedule, deactivateSchedule } from '@/server/schedules'
+import { removeFromAgenda } from '@/server/occurrences'
 import { requireUser } from '@/server/auth'
 import { setAppointmentFocus } from '@/server/planning'
 import { RescheduleError, rescheduleAppointment } from '@/server/reschedule'

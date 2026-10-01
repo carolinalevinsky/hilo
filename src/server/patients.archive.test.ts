@@ -32,8 +32,9 @@ vi.mock('./db', () => ({
 }))
 
 const { setPatientArchived, softDeletePatient } = await import('./patients')
-const { deactivateSchedule, listAppointments, listSchedules, materialiseAppointments } =
-  await import('./appointments')
+const { listAppointments } = await import('./appointments')
+const { deactivateSchedule, listSchedules } = await import('./schedules')
+const { materialiseAppointments } = await import('./occurrences')
 const { monthlyLedger } = await import('./payments')
 
 const service = serviceClient()

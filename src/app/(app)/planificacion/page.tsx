@@ -17,15 +17,10 @@ import { formatLongDate, today, toDateInput, todayDate } from '@/lib/dates'
 import { areasFor } from '@/lib/material-areas'
 import { formatTime } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
-import {
-  planSessionContext,
-  getAppointment,
-  listAppointments,
-  nextAppointmentFor,
-  type NextAppointment,
-} from '@/server/appointments'
+import { planSessionContext, getAppointment, listAppointments, nextAppointmentFor, type NextAppointment } from '@/server/appointments'
 import { listMaterials } from '@/server/materials'
-import { getPhotoUrl, listPatients } from '@/server/patients'
+import { listPatients } from '@/server/patients'
+import { getPhotoUrl } from '@/server/patient-photos'
 import { listPlanItems, planSuggestions } from '@/server/session-plans'
 import { currentSession } from '../session'
 

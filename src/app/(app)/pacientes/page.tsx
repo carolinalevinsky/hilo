@@ -12,11 +12,7 @@ import { ageLabel } from '@/lib/age'
 import { patientClasses, patientHex } from '@/lib/patient-colors'
 import { ageGroupLabel } from '@/lib/patient-labels'
 import { cn } from '@/lib/utils'
-import {
-  listPatients,
-  patientSummaries,
-  type PatientListOptions,
-} from '@/server/patients'
+import { listPatients, patientSummaries, type PatientListOptions } from '@/server/patients'
 import { currentUser } from '../session'
 import { pageTitle } from '@/lib/brand'
 
