@@ -764,8 +764,13 @@ describe('el refresh token de Google', () => {
     await service.from('google_accounts').insert({
       practitioner_id: idA,
       google_email: 'lucia@gmail.com',
-      refresh_token: '1//refresh-token-secretisimo',
     })
+    const { error } = await service.rpc('google_tokens_save', {
+      practitioner: idA,
+      refresh: '1//refresh-token-secretisimo',
+      access: 'ya29.access-de-una-hora',
+    })
+    if (error) throw error
   })
 
   it('no lo puede leer ni la profesional a la que pertenece', async () => {
@@ -778,20 +783,41 @@ describe('el refresh token de Google', () => {
     if (!error) expect(data).toEqual([])
   })
 
-  it('tampoco lo puede sobrescribir', async () => {
-    const { error } = await asA
-      .from('google_accounts')
-      .update({ refresh_token: 'reemplazado' })
-      .eq('practitioner_id', idA)
+  it('ni por las funciones que lo leen y lo escriben', async () => {
+    const read = await asA.rpc('google_tokens_read', { practitioner: idA })
+    expect(read.error).not.toBeNull()
+    expect(read.data ?? []).toEqual([])
+
+    const write = await asA.rpc('google_tokens_save', { practitioner: idA, refresh: 'reemplazado' })
+    expect(write.error).not.toBeNull()
 
     const { data: stored } = await service
+      .rpc('google_tokens_read', { practitioner: idA })
+      .single()
+    expect(stored?.refresh_token).toBe('1//refresh-token-secretisimo')
+  })
+
+  // Estaba en texto plano en la tabla: un volcado de la base llevaba el
+  // calendario de cada profesional. Ahora la tabla no lo tiene y Vault lo
+  // guarda cifrado.
+  it('no está en texto plano en la tabla, y el servidor lo lee de Vault', async () => {
+    const { data: row } = await service
       .from('google_accounts')
-      .select('refresh_token')
+      .select('refresh_token, access_token, refresh_secret_id')
       .eq('practitioner_id', idA)
       .single()
 
-    expect(stored?.refresh_token).toBe('1//refresh-token-secretisimo')
-    expect(error ?? true).toBeTruthy()
+    expect(row?.refresh_token).toBeNull()
+    expect(row?.access_token).toBeNull()
+    expect(row?.refresh_secret_id).not.toBeNull()
+
+    const { data: tokens } = await service
+      .rpc('google_tokens_read', { practitioner: idA })
+      .single()
+    expect(tokens).toMatchObject({
+      refresh_token: '1//refresh-token-secretisimo',
+      access_token: 'ya29.access-de-una-hora',
+    })
   })
 })
 

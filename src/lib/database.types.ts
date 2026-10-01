@@ -566,6 +566,7 @@ export type Database = {
       }
       google_accounts: {
         Row: {
+          access_secret_id: string | null
           access_token: string | null
           access_token_expires_at: string | null
           calendar_id: string
@@ -576,11 +577,13 @@ export type Database = {
           google_email: string
           last_pulled_at: string | null
           practitioner_id: string
-          refresh_token: string
+          refresh_secret_id: string | null
+          refresh_token: string | null
           sync_token: string | null
           updated_at: string
         }
         Insert: {
+          access_secret_id?: string | null
           access_token?: string | null
           access_token_expires_at?: string | null
           calendar_id?: string
@@ -591,11 +594,13 @@ export type Database = {
           google_email: string
           last_pulled_at?: string | null
           practitioner_id: string
-          refresh_token: string
+          refresh_secret_id?: string | null
+          refresh_token?: string | null
           sync_token?: string | null
           updated_at?: string
         }
         Update: {
+          access_secret_id?: string | null
           access_token?: string | null
           access_token_expires_at?: string | null
           calendar_id?: string
@@ -606,7 +611,8 @@ export type Database = {
           google_email?: string
           last_pulled_at?: string | null
           practitioner_id?: string
-          refresh_token?: string
+          refresh_secret_id?: string | null
+          refresh_token?: string | null
           sync_token?: string | null
           updated_at?: string
         }
@@ -1600,6 +1606,23 @@ export type Database = {
       document_was_signed: {
         Args: { document_id: string; kind: string }
         Returns: boolean
+      }
+      google_tokens_read: {
+        Args: { practitioner: string }
+        Returns: {
+          access_token: string
+          access_token_expires_at: string
+          refresh_token: string
+        }[]
+      }
+      google_tokens_save: {
+        Args: {
+          access?: string
+          access_expires_at?: string
+          practitioner: string
+          refresh?: string
+        }
+        Returns: undefined
       }
       list_trash: {
         Args: { patient: string }
