@@ -1,7 +1,13 @@
 import { z } from 'zod'
 
 import type { Database } from '@/lib/database.types'
-import { instrument, SCORE_SCALES, type ScoreScale } from '@/lib/instruments'
+import {
+  cutoffBand,
+  instrument,
+  instrumentByName,
+  SCORE_SCALES,
+  type ScoreScale,
+} from '@/lib/instruments'
 
 import { logAction } from './audit'
 import { getDb } from './db'
@@ -163,18 +169,37 @@ export type ScoreBands = {
  * "low" and "high" would be inventing a baseline, which is exactly what the
  * prompt forbids.
  */
-export function bandScores(results: AssessmentResultsData): ScoreBands {
-  const empty: ScoreBands = { low: [], average: [], high: [] }
-  const thresholds = SCORE_SCALES[results.scale as ScoreScale]
-  if (thresholds.low === null || thresholds.high === null) return empty
+export function bandScores(results: AssessmentResultsData, instrumentName?: string): ScoreBands {
+  const bands: ScoreBands = { low: [], average: [], high: [] }
+  const entry = instrumentName ? instrumentByName(instrumentName) : undefined
 
-  for (const [area, value] of Object.entries(results.scores)) {
-    if (value < thresholds.low) empty.low.push({ area, value })
-    else if (value >= thresholds.high) empty.high.push({ area, value })
-    else empty.average.push({ area, value })
+  // Puntaje directo con los puntos de corte del instrumento: la franja dice si
+  // es un área a trabajar. Sin puntos de corte no hay con qué comparar.
+  if (results.scale === 'raw') {
+    if (!entry?.cutoffs) return bands
+    for (const [area, value] of Object.entries(results.scores)) {
+      const band = cutoffBand(entry, value)
+      if (band?.concern) bands.low.push({ area, value })
+      else bands.average.push({ area, value })
+    }
+    return bands
   }
 
-  return empty
+  const thresholds = SCORE_SCALES[results.scale as ScoreScale]
+  if (thresholds.low === null || thresholds.high === null) return bands
+
+  for (const [area, value] of Object.entries(results.scores)) {
+    if (entry?.higherIsWorse) {
+      // Al revés: un percentil alto de ansiedad es lo que hay que trabajar, y
+      // uno bajo no es una fortaleza, es ausencia de síntoma.
+      if (value >= thresholds.high) bands.low.push({ area, value })
+      else bands.average.push({ area, value })
+    } else if (value < thresholds.low) bands.low.push({ area, value })
+    else if (value >= thresholds.high) bands.high.push({ area, value })
+    else bands.average.push({ area, value })
+  }
+
+  return bands
 }
 
 /**
@@ -183,15 +208,22 @@ export function bandScores(results: AssessmentResultsData): ScoreBands {
  * v1 offered these with a "cargar objetivos a la ficha" button, and it is the
  * moment the product feels like it is helping — the assessment stops being a
  * document and becomes the next three sessions.
+ *
+ * Cuando el instrumento dice hacia dónde va su puntaje (más es peor, o tiene
+ * puntos de corte), sólo se proponen las áreas a trabajar: un Beck en franja
+ * mínima no sugiere nada. Y en uno donde más es peor, primero el más alto.
  */
 export function suggestedGoals(results: AssessmentResultsData, instrumentName: string) {
-  const bands = bandScores(results)
-  const source = bands.low.length > 0 ? bands.low : [...bands.average, ...bands.high]
+  const entry = instrumentByName(instrumentName)
+  const bands = bandScores(results, instrumentName)
+  const knowsDirection = Boolean(entry?.higherIsWorse || entry?.cutoffs)
+  const source =
+    bands.low.length > 0 || knowsDirection ? bands.low : [...bands.average, ...bands.high]
 
   const fromScores = source
-    .sort((a, b) => a.value - b.value)
+    .sort((a, b) => (entry?.higherIsWorse ? b.value - a.value : a.value - b.value))
     .slice(0, 3)
-    .map((entry) => `Mejorar ${entry.area.toLowerCase()}`)
+    .map((score) => `${entry?.higherIsWorse ? 'Disminuir' : 'Mejorar'} ${score.area.toLowerCase()}`)
 
   if (fromScores.length > 0) return fromScores
   if (results.prose.trim()) {

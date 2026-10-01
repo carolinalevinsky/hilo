@@ -107,7 +107,19 @@ export function AssessmentForm({
         <>
           <div className="space-y-1.5">
             <Label htmlFor="scale">Tipo de puntaje</Label>
-            <NativeSelect id="scale" name="scale" defaultValue={state.values?.scale ?? 'standard'}>
+            {/* Con `key`: cambiar de instrumento vuelve a su escala de siempre.
+                Un Beck se puntúa directo y con "estándar" preseleccionado se
+                leía un 30 como "muy por debajo de la media". */}
+            <NativeSelect
+              key={selected.id}
+              id="scale"
+              name="scale"
+              defaultValue={
+                (state.values?.instrumentId === selected.id ? state.values?.scale : undefined) ??
+                selected.defaultScale ??
+                'standard'
+              }
+            >
               {Object.entries(SCORE_SCALES).map(([value, scale]) => (
                 <option key={value} value={value}>
                   {scale.label}
@@ -117,6 +129,9 @@ export function AssessmentForm({
             <p className="text-xs text-muted-foreground">
               Ombúa interpreta según la escala que elijas: un 85 no significa lo mismo como
               puntaje estándar que como percentil.
+              {selected.higherIsWorse
+                ? ' En esta prueba, más puntaje es más dificultad, y así se interpreta.'
+                : ''}
             </p>
           </div>
 

@@ -145,3 +145,89 @@ describe('assessmentFallback', () => {
     expect(draft).toContain(TO_COMPLETE)
   })
 })
+
+/**
+ * Instrumentos donde más puntaje es peor. Antes todo se leía como un test de
+ * rendimiento: un BDI-II de 32 —depresión grave— salía como fortaleza y los
+ * objetivos sugeridos apuntaban al área que estaba bien.
+ */
+describe('instruments where a higher score is worse', () => {
+  const BECK = 'Beck (BDI-II · depresión)'
+  const STAI = 'STAI (ansiedad)'
+
+  it('a severe Beck is an area to work on, with its band', () => {
+    const results = { scale: 'raw' as const, scores: { 'Puntaje total BDI-II': 32 }, prose: '' }
+
+    expect(bandScores(results, BECK).low).toEqual([{ area: 'Puntaje total BDI-II', value: 32 }])
+
+    const draft = assessmentFallback({
+      instrumentName: BECK,
+      patientName: 'Ana',
+      age: '34 años',
+      results,
+    })
+    expect(draft).not.toContain('Fortalezas')
+    expect(draft).toContain('puntaje total bdi-ii (32, grave)')
+  })
+
+  it('tells the model the direction and the published cut-offs', () => {
+    const prompt = assessmentUserPrompt({
+      instrumentName: BECK,
+      patientName: 'Ana',
+      age: '34 años',
+      results: { scale: 'raw', scores: { 'Puntaje total BDI-II': 32 }, prose: '' },
+    })
+
+    expect(prompt).toContain('un puntaje más alto indica más severidad')
+    expect(prompt).toContain('0 a 13, mínima; 14 a 19, leve; 20 a 28, moderada; 29 a 63, grave')
+    expect(prompt).not.toContain('no los clasifiques como altos o bajos')
+  })
+
+  it('a high anxiety percentile is a difficulty, not a strength', () => {
+    const results = {
+      scale: 'percentile' as const,
+      scores: { 'Ansiedad estado': 90, 'Ansiedad rasgo': 10 },
+      prose: '',
+    }
+
+    const bands = bandScores(results, STAI)
+    expect(bands.low.map((score) => score.area)).toEqual(['Ansiedad estado'])
+    expect(bands.high).toEqual([])
+
+    const prompt = assessmentUserPrompt({
+      instrumentName: STAI,
+      patientName: 'Ana',
+      age: '34 años',
+      results,
+    })
+    expect(prompt).toContain('desde 75 indica dificultad')
+    expect(prompt).not.toContain('se considera fortaleza')
+  })
+
+  it('suggests reducing the worst one first, and nothing when all is well', () => {
+    expect(
+      suggestedGoals(
+        { scale: 'percentile', scores: { 'Ansiedad estado': 80, 'Ansiedad rasgo': 95 }, prose: '' },
+        STAI,
+      ),
+    ).toEqual(['Disminuir ansiedad rasgo', 'Disminuir ansiedad estado'])
+
+    expect(
+      suggestedGoals({ scale: 'raw', scores: { 'Puntaje total BDI-II': 8 }, prose: '' }, BECK),
+    ).toEqual([])
+  })
+
+  it('pain on a 0–10 scale is read the same way', () => {
+    const results = { scale: 'raw' as const, scores: { 'Dolor (0-10)': 7 }, prose: '' }
+
+    expect(bandScores(results, 'EVA (dolor)').low).toHaveLength(1)
+    expect(suggestedGoals(results, 'EVA (dolor)')).toEqual(['Disminuir dolor (0-10)'])
+  })
+
+  it('a WISC is still read as more is better', () => {
+    const bands = bandScores({ scale: 'standard', scores: SCORES, prose: '' }, 'WISC-V (inteligencia)')
+
+    expect(bands.low.map((score) => score.area)).toEqual(['Comprensión verbal'])
+    expect(bands.high.map((score) => score.area)).toEqual(['Visoespacial'])
+  })
+})
