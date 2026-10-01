@@ -39,7 +39,10 @@ export function StatCardGrid({
   return (
     <div
       className={cn(
-        'mb-4.5 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:mb-6',
+        // The last card of an odd count spans both columns on a phone. Pagos has
+        // three, and the third sat alone under the other two with half a row of
+        // empty background beside it.
+        'mb-4.5 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:mb-6 max-lg:[&>:last-child:nth-child(odd)]:col-span-2',
         className,
       )}
     >
