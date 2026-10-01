@@ -30,6 +30,7 @@ import {
   snapToQuarterHour,
   weekdayName,
 } from '@/lib/week'
+import { useOkToast } from '@/components/done-toast'
 
 type PatientOption = { id: string; full_name: string }
 
@@ -179,6 +180,7 @@ function AppointmentFields({
     createAppointmentAction,
     EMPTY_FORM_STATE,
   )
+  useOkToast(state, 'Sesión agendada.')
 
   useEffect(() => {
     if (state.ok) onDone()
@@ -229,6 +231,7 @@ function ScheduleFields({
   slot: AgendaSlot | null
 }) {
   const [state, formAction, pending] = useActionState(createScheduleAction, EMPTY_FORM_STATE)
+  useOkToast(state, 'Horario fijo guardado.')
 
   useEffect(() => {
     if (state.ok) onDone()

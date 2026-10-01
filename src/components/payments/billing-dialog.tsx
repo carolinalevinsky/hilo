@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/ui/native-select'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { BILLING_FREQUENCY_LABELS } from '@/lib/patient-labels'
+import { useOkToast } from '@/components/done-toast'
 
 /**
  * The `···` on a Cobros row: what this patient's session costs and how often it
@@ -55,6 +56,7 @@ export function BillingDialog({
   trigger?: React.ReactNode
 }) {
   const [state, formAction, pending] = useActionState(updateBillingAction, EMPTY_FORM_STATE)
+  useOkToast(state, 'Honorario guardado.')
   const [open, setOpen] = useState(false)
 
   // Close on a successful save, decided during render rather than in an effect —

@@ -20,6 +20,7 @@ import { today } from '@/lib/dates'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { PAYMENT_METHOD_LABELS } from '@/lib/patient-labels'
 import { periodLabel } from '@/lib/periods'
+import { useOkToast } from '@/components/done-toast'
 
 /**
  * Recording a payment by hand — cash after a session, a bank transfer, a
@@ -44,6 +45,7 @@ export function PaymentDialog({
 }) {
   const [open, setOpen] = useState(false)
   const [state, formAction, pending] = useActionState(recordPaymentAction, EMPTY_FORM_STATE)
+  useOkToast(state, 'Pago registrado.')
 
   // Close on a successful save, decided during render rather than in an effect.
   // Both state values belong to this component, so React's "adjust state when

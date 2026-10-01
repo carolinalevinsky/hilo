@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { useOkToast } from '@/components/done-toast'
 
 /**
  * "Cambiar día u hora" de una sesión agendada. La regla está en
@@ -51,6 +52,7 @@ export function RescheduleDialog({
     rescheduleAppointmentAction,
     EMPTY_FORM_STATE,
   )
+  useOkToast(state, 'Sesión movida.')
 
   // Se cierra solo cuando el servidor dijo que sí. Se ajusta durante el render,
   // que es como React pide reaccionar a un cambio de estado de la acción.
