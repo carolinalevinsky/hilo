@@ -44,7 +44,7 @@ export function CustomInstructionsField({
     <details className="rounded-xl border border-border px-3.5 py-2.5">
       <summary className="cursor-pointer text-sm font-medium">
         Tus instrucciones
-        <span className="font-normal text-muted-foreground"> · opcional</span>
+        <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
       </summary>
 
       <div className="mt-3 space-y-3">

@@ -96,7 +96,7 @@ export function GoalHistory({
                         <button
                           type="submit"
                           aria-label={`Borrar la medición del ${when} (${point.value}%)`}
-                          className="rounded-full p-0.5 text-muted-foreground hover:bg-card hover:text-destructive"
+                          className="hit-area relative rounded-full p-0.5 text-muted-foreground hover:bg-card hover:text-destructive"
                         >
                           <X className="size-3" />
                         </button>

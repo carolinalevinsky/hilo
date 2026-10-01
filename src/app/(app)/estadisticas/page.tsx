@@ -102,7 +102,7 @@ export default async function StatisticsPage() {
           paciente" ends up with a hand's width of empty card under the last
           patient — which reads as something missing rather than as a card that
           finished. */}
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Avance por paciente</CardTitle>

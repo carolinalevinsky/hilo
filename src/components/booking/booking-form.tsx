@@ -103,7 +103,7 @@ export function BookingForm({ slug, practitionerName }: { slug: string; practiti
       <fieldset className="grid grid-cols-2 gap-3">
         <legend className="mb-1.5 text-sm font-medium">
           ¿Qué día y a qué hora te queda mejor?
-          <span className="font-normal text-muted-foreground"> · opcional</span>
+          <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
         </legend>
 
         <div className="space-y-1.5">
@@ -122,9 +122,9 @@ export function BookingForm({ slug, practitionerName }: { slug: string; practiti
       </fieldset>
 
       <div className="space-y-1.5">
-        <Label htmlFor="note">
+        <Label htmlFor="note" className="block leading-snug">
           ¿Nos contás un poco?
-          <span className="font-normal text-muted-foreground"> · opcional</span>
+          <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
         </Label>
         <Textarea
           id="note"
