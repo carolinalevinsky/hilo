@@ -50,7 +50,7 @@ export function BookingLink({ url, practitionerName }: { url: string; practition
           </a>
         </Button>
 
-        <Button asChild size="sm" variant="ghost">
+        <Button asChild size="sm" variant="outline">
           <a href={url} target="_blank" rel="noopener noreferrer">
             Ver cómo lo ven ellos
           </a>

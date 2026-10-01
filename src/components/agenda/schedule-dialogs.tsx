@@ -389,7 +389,10 @@ export function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor}>
+      {/* `block`: `Label` es una fila flex, y el nombre y "· opcional" quedaban
+          como dos columnas con un hueco de más entre las dos — y en teléfono,
+          si no entraban, cada una se partía por su lado. */}
+      <Label htmlFor={htmlFor} className="block leading-snug">
         {label}
         {hint ? <span className="font-normal text-muted-foreground"> · {hint}</span> : null}
       </Label>

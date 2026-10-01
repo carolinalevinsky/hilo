@@ -214,8 +214,14 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
 
       {/* `items-start`: see the same note in `estadisticas/page.tsx`. The plan is
           short and the sources beside it are long, so a stretched column left a
-          third of a screen of empty card. */}
-      <div className="grid items-start gap-4 print:block lg:grid-cols-12 lg:gap-6">
+          third of a screen of empty card.
+
+          `grid-cols-1` is what keeps this a phone screen. Without it a phone
+          gets one implicit `auto` column, and an auto column is as wide as its
+          widest content can't shrink below — the library's row of cards, which
+          scrolls sideways and is 3,500 px of cards end to end. The page laid
+          out at that width and the phone zoomed out to show it. */}
+      <div className="grid grid-cols-1 items-start gap-4 print:block lg:grid-cols-12 lg:gap-6">
         {/* Everything something can come from. `no-print`, with the session card
             above it: what gets printed is the plan, not the workbench that
             produced it. */}
