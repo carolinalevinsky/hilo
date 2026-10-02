@@ -114,6 +114,9 @@ export async function POST(request: Request) {
             request: asked,
           }),
       fallback,
+      adjustment
+        ? 'La IA no respondió, así que la actividad queda como estaba. Probá de nuevo en un rato.'
+        : 'La IA no respondió. Te dejo una actividad base para editar, o probá de nuevo.',
     ),
   )
 }
@@ -130,6 +133,8 @@ async function* generate(
   instructions: string,
   prompt: string,
   fallback: string,
+  /** What to say when the fallback is all there is. */
+  nothingArrived: string,
 ): AsyncGenerator<SseEvent> {
   let received = ''
 
@@ -144,7 +149,23 @@ async function* generate(
     // Only fall back to the offline activity if nothing useful arrived. Half an
     // activity plus a whole second one underneath is worse than half an
     // activity.
-    if (!received.trim()) yield { event: 'delta', data: fallback }
+    //
+    // And the two cases get different sentences. "Se cortó, revisá lo que
+    // quedó" over the fallback is false twice: nothing was cut, and what is on
+    // screen is not what the model wrote. A refusal keeps its own message
+    // either way — it is the one failure trying again will not fix.
+    if (!received.trim()) {
+      yield { event: 'delta', data: fallback }
+      yield {
+        event: 'error',
+        data:
+          error instanceof AiUnavailableError && error.reason === 'refusal'
+            ? error.message
+            : nothingArrived,
+      }
+      return
+    }
+
     yield {
       event: 'error',
       data:
@@ -157,7 +178,7 @@ async function* generate(
 
   if (!received.trim()) {
     yield { event: 'delta', data: fallback }
-    yield { event: 'error', data: 'El modelo no devolvió nada; te dejo una actividad base.' }
+    yield { event: 'error', data: nothingArrived }
     return
   }
 
