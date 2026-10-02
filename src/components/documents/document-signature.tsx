@@ -24,6 +24,7 @@ import {
 } from '@/app/(app)/document-actions'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import type { DocumentKind } from '@/server/document-versions'
+import { useOkToast } from '@/components/done-toast'
 
 /**
  * Los tres pasos que cambian qué es un documento: firmarlo, abrirlo para
@@ -159,6 +160,7 @@ export function VoidDialog({ kind, documentId }: { kind: DocumentKind; documentI
     voidDocumentAction.bind(null, kind, documentId),
     EMPTY_FORM_STATE,
   )
+  useOkToast(state, 'Listo.')
 
   return (
     <Dialog open={open && !state.ok} onOpenChange={setOpen}>

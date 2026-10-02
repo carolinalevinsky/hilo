@@ -16,6 +16,7 @@ import {
 } from '@/server/booking'
 import { findClash, findScheduleClash } from '@/server/clashes'
 import { createPatient } from '@/server/patients'
+import { withDone } from '@/lib/done'
 
 export async function dismissBookingAction(formData: FormData) {
   const user = await requireUser()
@@ -130,7 +131,7 @@ export async function confirmBookingAction(
   revalidatePath('/reservas')
   revalidatePath('/pacientes')
   revalidatePath('/agenda')
-  redirect(`/pacientes/${patient.id}`)
+  redirect(withDone(`/pacientes/${patient.id}`, 'reserva-convertida'))
 }
 
 /** Lo que se agenda al convertir, o `null` si la reserva no dice lo suficiente. */

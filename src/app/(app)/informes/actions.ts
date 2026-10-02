@@ -22,6 +22,7 @@ import {
   updateReportContent,
 } from '@/server/reports'
 import { trashRecord } from '@/server/trash'
+import { withDone } from '@/lib/done'
 
 /**
  * Creating a report.
@@ -131,7 +132,7 @@ export async function trashReportAction(formData: FormData) {
 
   await trashRecord(user.id, 'report', String(formData.get('reportId')))
   revalidatePath('/informes')
-  redirect('/informes')
+  redirect(withDone('/informes', 'documento-papelera'))
 }
 
 /**

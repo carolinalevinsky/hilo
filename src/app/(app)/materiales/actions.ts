@@ -17,6 +17,7 @@ import {
 import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
+import { withDone } from '@/lib/done'
 
 /**
  * The sentence a practitioner sees when a material could not be saved.
@@ -79,7 +80,7 @@ export async function createMaterialAction(
   }
 
   revalidatePath('/materiales')
-  redirect(`/materiales/${material.id}`)
+  redirect(withDone(`/materiales/${material.id}`, 'material-guardado'))
 }
 
 export async function updateMaterialAction(
@@ -100,7 +101,7 @@ export async function updateMaterialAction(
 
   revalidatePath('/materiales')
   revalidatePath(`/materiales/${materialId}`)
-  redirect(`/materiales/${materialId}`)
+  redirect(withDone(`/materiales/${materialId}`, 'material-guardado'))
 }
 
 /**
@@ -237,7 +238,7 @@ export async function copyMaterialAction(formData: FormData) {
   revalidatePath('/materiales')
   // Straight to the copy's own edit form: you copy something in order to change
   // it, and landing on a read-only view of a duplicate is a dead end.
-  redirect(`/materiales/${copy.id}/editar`)
+  redirect(withDone(`/materiales/${copy.id}/editar`, 'material-copiado'))
 }
 
 export async function deleteMaterialAction(formData: FormData) {
@@ -245,5 +246,5 @@ export async function deleteMaterialAction(formData: FormData) {
 
   await deleteMaterial(user.id, String(formData.get('materialId')))
   revalidatePath('/materiales')
-  redirect('/materiales')
+  redirect(withDone('/materiales', 'material-borrado'))
 }

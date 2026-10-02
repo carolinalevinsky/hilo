@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { PATIENT_COLOR_HEX } from '@/lib/patient-colors'
 import type { Goal } from '@/server/goals'
+import { useOkToast } from '@/components/done-toast'
 
 const CHART_COLORS = ['violet', 'teal', 'coral', 'blue', 'amber', 'green'] as const
 
@@ -178,6 +179,7 @@ function GoalDialog({
   onClose: () => void
 }) {
   const [state, formAction, pending] = useActionState(saveGoalAction, EMPTY_FORM_STATE)
+  useOkToast(state, 'Objetivo guardado.')
 
   useEffect(() => {
     if (state.ok) onClose()
