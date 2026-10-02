@@ -108,7 +108,9 @@ export function DocumentEditor({
   // `kept` es `failed` cuando había texto propio: la IA no respondió y no se
   // tocó nada. Es otro mensaje porque el de `failed` promete un borrador base
   // que en ese caso no existe — lo que hay es lo que ella escribió, intacto.
-  const [aiNote, setAiNote] = useState<'ok' | 'failed' | 'kept' | 'saved' | null>(null)
+  const [aiNote, setAiNote] = useState<
+    'ok' | 'failed' | 'kept' | 'saved' | 'unsaved' | null
+  >(null)
   // The reason, when there is a specific one worth reading — an exceeded quota,
   // a refusal. Shown in the banner rather than an alert(): a modal dialog over a
   // document that is still on screen is worse than a line of text next to it,
@@ -116,6 +118,9 @@ export function DocumentEditor({
   const [aiError, setAiError] = useState<string | null>(null)
   const [adjustment, setAdjustment] = useState('')
   const started = useRef(false)
+  // Lo último que la base tiene. Salir de la página con algo distinto en el
+  // editor pregunta antes; antes se perdía sin aviso.
+  const savedText = useRef(initialText)
 
   // Firmar, corregir y anular vuelven del servidor con la página re-renderizada:
   // el historial nuevo (la copia firmada) llega por props, y el aviso de
@@ -134,6 +139,12 @@ export function DocumentEditor({
   useEffect(() => {
     if (!autoStart || started.current) return
     started.current = true
+    // `?ia=1` sale de la dirección apenas se usa. Si quedaba, recargar la
+    // página volvía a generar y reemplazaba sin preguntar lo que hubiera,
+    // incluido lo que ella había escrito y todavía no había guardado.
+    const url = new URL(window.location.href)
+    url.searchParams.delete('ia')
+    window.history.replaceState(window.history.state, '', url)
     // La única que reemplaza sin preguntar. Ver la nota de arriba.
     void generate(undefined, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -208,9 +219,21 @@ export function DocumentEditor({
     await save(received, 'ai')
   }
 
+  // Sin el `catch`, un guardado que fallaba dejaba el editor trabado en
+  // "guardando", sin el cuadro de texto y con "Regenerar" habilitado: lo
+  // escrito vivía sólo en pantalla y el próximo "Aplicar" lo pisaba sin dejar
+  // versión. Ahora vuelve a donde estaba, con el texto intacto, y lo dice.
   async function save(next: string, reason: 'ai' | 'edit') {
     setStatus('saving')
-    setVersions(await onSave(next, reason))
+    try {
+      setVersions(await onSave(next, reason))
+    } catch {
+      setStatus(reason === 'edit' ? 'editing' : 'idle')
+      setAiError(null)
+      setAiNote('unsaved')
+      return
+    }
+    savedText.current = next
     setStatus('idle')
     setAiNote('saved')
   }
@@ -225,6 +248,7 @@ export function DocumentEditor({
 
   async function restore(versionId: string) {
     const restored = await onRestore(versionId)
+    savedText.current = restored.body
     setText(restored.body)
     setVersions(restored.versions)
     setPending(null)
@@ -235,6 +259,15 @@ export function DocumentEditor({
 
   const streaming = status === 'streaming'
   const editing = status === 'editing'
+
+  // Cerrar o recargar con cambios sin guardar pregunta, como cualquier editor.
+  const dirty = editing && text !== savedText.current
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
   const locked = state !== 'draft'
   const unfinished = text.includes(TO_COMPLETE)
   const proposal = pending?.done ? pending.text : null
@@ -245,7 +278,7 @@ export function DocumentEditor({
       {state === 'draft' ? (
         <div className="no-print flex flex-wrap items-center gap-2">
           {editing ? (
-            <Button onClick={() => void save(text, 'edit').then(() => setStatus('idle'))}>
+            <Button onClick={() => void save(text, 'edit')}>
               <Check className="size-4" />
               Guardar cambios
             </Button>
@@ -265,7 +298,7 @@ export function DocumentEditor({
           <Button
             variant="outline"
             onClick={() => void generate()}
-            disabled={streaming || editing}
+            disabled={streaming || editing || status === 'saving'}
           >
             <RefreshCw className={`size-4 ${streaming ? 'animate-spin' : ''}`} />
             {streaming ? 'Escribiendo…' : 'Regenerar con IA'}
@@ -363,7 +396,7 @@ export function DocumentEditor({
         </div>
         <Button
           variant="secondary"
-          disabled={streaming || editing || !adjustment.trim()}
+          disabled={streaming || editing || status === 'saving' || !adjustment.trim()}
           onClick={() => {
             void generate(adjustment)
             setAdjustment('')
@@ -453,9 +486,22 @@ function AiNote({
   state,
   detail,
 }: {
-  state: 'ok' | 'failed' | 'kept' | 'saved'
+  state: 'ok' | 'failed' | 'kept' | 'saved' | 'unsaved'
   detail?: string | null
 }) {
+  if (state === 'unsaved') {
+    return (
+      <p
+        role="alert"
+        className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]"
+      >
+        <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+        No se pudo guardar. Lo que escribiste sigue en pantalla: probá guardar de nuevo antes
+        de salir.
+      </p>
+    )
+  }
+
   if (state === 'kept') {
     return (
       <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">

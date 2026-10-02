@@ -23,11 +23,33 @@ import { aliasInstructions, hideNames, revealStream, type Alias } from '@/lib/ps
 const MODEL = 'claude-opus-5'
 
 /**
- * Thinking is on by default on this model, and `max_tokens` caps thinking *plus*
- * output text together. A value sized for the report body alone truncates the
- * report; this leaves headroom for both.
+ * Cuánto piensa y cuánto puede escribir cada tipo de pedido.
+ *
+ * Antes era un solo `MAX_TOKENS = 20_000` y el esfuerzo por defecto del modelo
+ * para todo: la respuesta de dos frases del chat pensaba como un informe, y el
+ * informe —el documento que se firma— tenía el mismo techo que un título de
+ * material. Ahora cada uno pide lo suyo:
+ *
+ *   - `report` y `assessment`: lo que se firma. Esfuerzo alto y techo amplio,
+ *     porque el thinking cuenta dentro de `max_tokens` y un techo justo corta
+ *     el texto (ver `truncated` abajo).
+ *   - `material`: una actividad, media página.
+ *   - `chat`, `note`, `describe`: dos o tres frases, o un título. Esfuerzo
+ *     bajo, que es más rápido y gasta menos sin perder nada en algo tan corto.
+ *
+ * Todo va por streaming, así que un techo alto no es un riesgo de timeout.
+ * El modelo sigue siendo uno solo y fijo: esto cambia cuánto piensa, no quién.
  */
-const MAX_TOKENS = 20_000
+export type AiTask = 'report' | 'assessment' | 'material' | 'chat' | 'note' | 'describe'
+
+const TASKS: Record<AiTask, { maxTokens: number; effort: 'low' | 'medium' | 'high' }> = {
+  report: { maxTokens: 32_000, effort: 'high' },
+  assessment: { maxTokens: 24_000, effort: 'high' },
+  material: { maxTokens: 12_000, effort: 'medium' },
+  chat: { maxTokens: 8_000, effort: 'low' },
+  note: { maxTokens: 8_000, effort: 'low' },
+  describe: { maxTokens: 6_000, effort: 'low' },
+}
 
 export const AI_MODEL = MODEL
 
@@ -186,12 +208,13 @@ export async function* streamCompletion(
    * los suyos.
    */
   aliases: Alias[] = [],
+  task: AiTask = 'report',
 ): AsyncGenerator<string> {
   const guidance = aliasInstructions(aliases)
   const text = hideNames(guidance ? `${userPrompt}\n\n${guidance}` : userPrompt, aliases)
 
   yield* revealStream(
-    streamMessages(taskInstructions, [
+    streamMessages(task, taskInstructions, [
       {
         role: 'user',
         content: attachment ? [attachmentBlock(attachment), { type: 'text', text }] : text,
@@ -233,6 +256,7 @@ export async function* streamChat(
 
   yield* revealStream(
     streamMessages(
+      'chat',
       task,
       messages.map((message) => ({
         role: message.role,
@@ -244,12 +268,15 @@ export async function* streamChat(
 }
 
 async function* streamMessages(
+  task: AiTask,
   taskInstructions: string,
   messages: Anthropic.MessageParam[],
 ): AsyncGenerator<string> {
+  const { maxTokens, effort } = TASKS[task]
   const stream = anthropic().messages.stream({
     model: MODEL,
-    max_tokens: MAX_TOKENS,
+    max_tokens: maxTokens,
+    output_config: { effort },
     system: systemPrompt(taskInstructions),
     messages,
   })
@@ -273,7 +300,7 @@ async function* streamMessages(
     )
   }
 
-  // Se llegó al techo de `MAX_TOKENS` y el texto quedó cortado a mitad de
+  // Se llegó al techo de `max_tokens` y el texto quedó cortado a mitad de
   // frase. Sin esto la ruta mandaba `event: done` igual y la pantalla lo daba
   // por terminado: un informe clínico incompleto que parece completo, que es
   // exactamente lo que una profesional no puede firmar sin darse cuenta.
@@ -283,7 +310,7 @@ async function* streamMessages(
   // es que el final dice que está cortado en vez de decir que está listo. Un
   // informe casi entero es mucho más útil que ninguno.
   //
-  // Ojo con el techo: `MAX_TOKENS` cuenta el thinking además del texto, así que
+  // Ojo con el techo: `max_tokens` cuenta el thinking además del texto, así que
   // esto se dispara antes de lo que sugiere el largo de lo que se ve.
   if (message.stop_reason === 'max_tokens') {
     throw new AiUnavailableError(
