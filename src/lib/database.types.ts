@@ -260,6 +260,7 @@ export type Database = {
           name: string
           note: string | null
           patient_id: string | null
+          patient_name: string | null
           phone: string
           practitioner_id: string
           preferred_date: string | null
@@ -275,6 +276,7 @@ export type Database = {
           name: string
           note?: string | null
           patient_id?: string | null
+          patient_name?: string | null
           phone: string
           practitioner_id: string
           preferred_date?: string | null
@@ -290,6 +292,7 @@ export type Database = {
           name?: string
           note?: string | null
           patient_id?: string | null
+          patient_name?: string | null
           phone?: string
           practitioner_id?: string
           preferred_date?: string | null

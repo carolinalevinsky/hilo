@@ -37,6 +37,7 @@ export function BookingForm({ slug, practitionerName }: { slug: string; practiti
       body: JSON.stringify({
         slug,
         name: formData.get('name'),
+        patientName: formData.get('patientName'),
         phone: formData.get('phone'),
         preferredDate: formData.get('preferredDate'),
         preferredTime: formData.get('preferredTime'),
@@ -79,8 +80,24 @@ export function BookingForm({ slug, practitionerName }: { slug: string; practiti
       <FormMessage message={error} />
 
       <div className="space-y-1.5">
-        <Label htmlFor="name">Nombre y apellido</Label>
+        <Label htmlFor="name">Tu nombre y apellido</Label>
         <Input id="name" name="name" autoComplete="name" required />
+      </div>
+
+      {/* Quien llena esto casi siempre es la madre o el padre, y "Convertir en
+          paciente" ponía ese nombre en la ficha del niño. */}
+      <div className="space-y-1.5">
+        <Label htmlFor="patientName">
+          ¿Para quién es la consulta?
+          <span className="font-normal text-muted-foreground"> · si no es para vos</span>
+        </Label>
+        <Input
+          id="patientName"
+          name="patientName"
+          autoComplete="off"
+          maxLength={120}
+          placeholder="Por ejemplo, el nombre de tu hijo o hija"
+        />
       </div>
 
       <div className="space-y-1.5">
