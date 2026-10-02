@@ -3,9 +3,10 @@
 import { revalidatePath } from 'next/cache'
 
 import { DEFAULT_CONSENT_TEMPLATE } from '@/lib/consent-template'
-import { formErrorFor, formOk, type FormState } from '@/lib/form-state'
+import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { disconnect } from '@/server/google'
+import { confirmEnrollment, disableMfa, startEnrollment } from '@/server/mfa'
 import { updateCalendarPrivacy, updatePractitioner } from '@/server/practitioners'
 import { updateConsentTemplate } from '@/server/patient-forms'
 
@@ -100,4 +101,37 @@ export async function updateConsentTemplateAction(
       ? 'Listo, volviste al modelo de Ombúa.'
       : 'Listo. Los links que mandes desde ahora llevan este texto.',
   )
+}
+
+// ─── Verificación en dos pasos ─────────────────────────────────────────────
+
+/** El QR y la clave para la app autenticadora. Nada queda activado todavía. */
+export async function startMfaAction() {
+  await requireUser()
+  return startEnrollment()
+}
+
+/** El primer código confirma el factor: recién ahí queda activada. */
+export async function confirmMfaAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireUser()
+  const result = await confirmEnrollment(String(formData.get('factorId')), formData.get('code'))
+  if (!result.ok) return formError(result.message)
+
+  revalidatePath('/perfil')
+  return formOk('Listo: desde ahora, para entrar te vamos a pedir el código.')
+}
+
+export async function disableMfaAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireUser()
+  const result = await disableMfa(String(formData.get('factorId')))
+  if (!result.ok) return formError(result.message)
+
+  revalidatePath('/perfil')
+  return formOk('Desactivada. Para entrar alcanza con la contraseña.')
 }

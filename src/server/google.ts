@@ -185,9 +185,6 @@ export async function completeConnection(
     {
       practitioner_id: practitionerId,
       google_email: email,
-      refresh_token: token.refresh_token,
-      access_token: token.access_token,
-      access_token_expires_at: expiryFrom(token.expires_in),
       // Reconectar arranca de cero: los datos de la conexión anterior —el punto
       // de sincronización y el canal de avisos— pertenecen a la cuenta vieja y
       // no significan nada para la nueva.
@@ -199,12 +196,48 @@ export async function completeConnection(
     { onConflict: 'practitioner_id' },
   )
 
-  if (error) {
+  // Los tokens van aparte, cifrados en Vault. Ver `saveTokens`.
+  const saved = error ? error : await saveTokens(practitionerId, token.refresh_token, token)
+  if (saved) {
     return { ok: false, message: 'No pudimos guardar la conexión. Probá de nuevo.' }
   }
 
   await logAction(practitionerId, 'connect', 'google_account', practitionerId)
   return { ok: true, email }
+}
+
+/**
+ * Los tokens, cifrados en Supabase Vault y no en la tabla.
+ *
+ * Estaban en texto plano en `google_accounts`, y un refresh token de Google no
+ * vence: el que tuviera un volcado de la base tenía el calendario entero de
+ * cada profesional. Ver la migración `google_tokens_in_vault`. Estas dos son
+ * las únicas que los tocan, y las funciones de la base que llaman sólo las
+ * puede ejecutar la llave de servicio.
+ *
+ * Devuelve el error en vez de tirarlo, para que `completeConnection` lo
+ * traduzca.
+ */
+async function saveTokens(
+  practitionerId: string,
+  refresh: string | null,
+  token: { access_token?: string; expires_in?: number },
+): Promise<unknown> {
+  const { error } = await getServiceDb().rpc('google_tokens_save', {
+    practitioner: practitionerId,
+    refresh: refresh ?? undefined,
+    access: token.access_token ?? undefined,
+    access_expires_at: expiryFrom(token.expires_in),
+  })
+  return error
+}
+
+async function readTokens(practitionerId: string) {
+  const { data, error } = await getServiceDb()
+    .rpc('google_tokens_read', { practitioner: practitionerId })
+    .maybeSingle()
+  if (error) throw error
+  return data
 }
 
 async function fetchEmail(accessToken: string): Promise<string | null> {
@@ -251,15 +284,8 @@ export async function findGoogleAccount(
  * token, y así queda un solo lugar donde el secreto se lee.
  */
 export async function accessTokenFor(practitionerId: string): Promise<string | null> {
-  const db = getServiceDb()
-  const { data, error } = await db
-    .from('google_accounts')
-    .select('refresh_token, access_token, access_token_expires_at')
-    .eq('practitioner_id', practitionerId)
-    .maybeSingle()
-
-  if (error) throw error
-  if (!data) return null
+  const data = await readTokens(practitionerId)
+  if (!data?.refresh_token) return null
 
   const stillValid =
     data.access_token &&
@@ -277,13 +303,9 @@ export async function accessTokenFor(practitionerId: string): Promise<string | n
 
   if (!token.access_token) return null
 
-  await db
-    .from('google_accounts')
-    .update({
-      access_token: token.access_token,
-      access_token_expires_at: expiryFrom(token.expires_in),
-    })
-    .eq('practitioner_id', practitionerId)
+  // Google a veces rota el refresh token al renovar; si vino uno, reemplaza al
+  // viejo, que deja de servir.
+  await saveTokens(practitionerId, token.refresh_token ?? null, token)
 
   return token.access_token
 }
@@ -373,11 +395,7 @@ export async function saveSyncPoint(
  */
 export async function disconnect(practitionerId: string): Promise<void> {
   const db = getServiceDb()
-  const { data } = await db
-    .from('google_accounts')
-    .select('refresh_token')
-    .eq('practitioner_id', practitionerId)
-    .maybeSingle()
+  const data = await readTokens(practitionerId)
 
   if (data?.refresh_token) {
     try {
@@ -392,6 +410,7 @@ export async function disconnect(practitionerId: string): Promise<void> {
     }
   }
 
+  // Borrar la fila borra también los secretos de Vault (un trigger).
   const { error } = await db
     .from('google_accounts')
     .delete()
