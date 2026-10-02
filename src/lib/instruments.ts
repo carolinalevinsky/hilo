@@ -25,6 +25,25 @@ export type Instrument = {
   name: string
   fields?: string[]
   prose?: string
+  /**
+   * Más puntaje es **peor**: más depresión, más ansiedad, más dolor, peor sueño.
+   *
+   * Sin esto todo se leía como un test de rendimiento, donde más es mejor: un
+   * BDI-II de 32 —depresión grave— salía como fortaleza, y "Objetivos
+   * sugeridos" proponía trabajar el área que estaba bien. La regla 2 de las
+   * instrucciones clínicas ("un puntaje bajo es un área descendida") es cierta
+   * para un WISC y al revés para un Beck, y el modelo no tiene cómo saberlo si
+   * no se le dice.
+   */
+  higherIsWorse?: true
+  /**
+   * Los puntos de corte publicados del instrumento, para puntajes directos.
+   * Un puntaje directo no tiene baremo de media 100 ni percentil; lo que tiene
+   * es esto. `concern` marca las franjas que son un área a trabajar.
+   */
+  cutoffs?: { upTo: number; label: string; concern: boolean }[]
+  /** La escala en la que este instrumento se puntúa casi siempre. */
+  defaultScale?: ScoreScale
 }
 
 export const INSTRUMENTS: Instrument[] = [
@@ -105,12 +124,33 @@ export const INSTRUMENTS: Instrument[] = [
     id: 'bdi-ii',
     name: 'Beck (BDI-II · depresión)',
     fields: ['Puntaje total BDI-II'],
+    higherIsWorse: true,
+    defaultScale: 'raw',
+    cutoffs: [
+      { upTo: 13, label: 'mínima', concern: false },
+      { upTo: 19, label: 'leve', concern: true },
+      { upTo: 28, label: 'moderada', concern: true },
+      { upTo: 63, label: 'grave', concern: true },
+    ],
   },
-  { id: 'stai', name: 'STAI (ansiedad)', fields: ['Ansiedad estado', 'Ansiedad rasgo'] },
+  {
+    id: 'stai',
+    name: 'STAI (ansiedad)',
+    fields: ['Ansiedad estado', 'Ansiedad rasgo'],
+    higherIsWorse: true,
+    // La adaptación española (TEA) se informa en centiles.
+    defaultScale: 'percentile',
+  },
   {
     id: 'psqi',
     name: 'Escala de sueño de Pittsburgh',
     fields: ['Puntaje global PSQI'],
+    higherIsWorse: true,
+    defaultScale: 'raw',
+    cutoffs: [
+      { upTo: 5, label: 'buena calidad de sueño', concern: false },
+      { upTo: 21, label: 'mala calidad de sueño', concern: true },
+    ],
   },
   {
     id: 'tar',
@@ -149,14 +189,48 @@ export const INSTRUMENTS: Instrument[] = [
     fields: ['Coordinación', 'Lenguaje', 'Motricidad'],
   },
   { id: 'eedp', name: 'EEDP (desarrollo)', fields: ['Coeficiente de desarrollo'] },
-  { id: 'eva', name: 'EVA (dolor)', fields: ['Dolor (0-10)'] },
+  {
+    id: 'eva',
+    name: 'EVA (dolor)',
+    fields: ['Dolor (0-10)'],
+    higherIsWorse: true,
+    defaultScale: 'raw',
+    cutoffs: [
+      { upTo: 0, label: 'sin dolor', concern: false },
+      { upTo: 3, label: 'dolor leve', concern: true },
+      { upTo: 6, label: 'dolor moderado', concern: true },
+      { upTo: 10, label: 'dolor intenso', concern: true },
+    ],
+  },
   {
     id: 'goniometria',
     name: 'Goniometría / rango articular',
     prose: 'Rango articular por articulación (en grados) y limitaciones observadas.',
   },
-  { id: 'barthel', name: 'Barthel (autonomía)', fields: ['Índice de Barthel (0-100)'] },
-  { id: 'berg', name: 'Berg (equilibrio)', fields: ['Escala de Berg (0-56)'] },
+  {
+    id: 'barthel',
+    name: 'Barthel (autonomía)',
+    fields: ['Índice de Barthel (0-100)'],
+    defaultScale: 'raw',
+    cutoffs: [
+      { upTo: 20, label: 'dependencia total', concern: true },
+      { upTo: 60, label: 'dependencia severa', concern: true },
+      { upTo: 90, label: 'dependencia moderada', concern: true },
+      { upTo: 99, label: 'dependencia escasa', concern: true },
+      { upTo: 100, label: 'independencia', concern: false },
+    ],
+  },
+  {
+    id: 'berg',
+    name: 'Berg (equilibrio)',
+    fields: ['Escala de Berg (0-56)'],
+    defaultScale: 'raw',
+    cutoffs: [
+      { upTo: 20, label: 'riesgo alto de caída', concern: true },
+      { upTo: 40, label: 'riesgo moderado de caída', concern: true },
+      { upTo: 56, label: 'riesgo bajo de caída', concern: false },
+    ],
+  },
   {
     id: 'otra',
     name: 'Otra',
@@ -198,6 +272,16 @@ export function instrumentsFor(discipline: string): Instrument[] {
 
 export function instrument(id: string): Instrument | undefined {
   return INSTRUMENTS.find((entry) => entry.id === id)
+}
+
+/** Por nombre, que es lo que guarda la fila de la evaluación. */
+export function instrumentByName(name: string): Instrument | undefined {
+  return INSTRUMENTS.find((entry) => entry.name === name)
+}
+
+/** La franja de los puntos de corte en la que cae un puntaje, si el instrumento los tiene. */
+export function cutoffBand(entry: Instrument | undefined, value: number) {
+  return entry?.cutoffs?.find((band) => value <= band.upTo) ?? null
 }
 
 /**

@@ -29,7 +29,7 @@ vi.mock('./google-calendar', () => ({
 }))
 
 const { rescheduleAppointment, RescheduleError } = await import('./reschedule')
-const { materialiseAppointments } = await import('./appointments')
+const { materialiseAppointments } = await import('./occurrences')
 
 const service = serviceClient()
 const email = testEmail('mover-sesion')

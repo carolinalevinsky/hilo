@@ -12,12 +12,8 @@ import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
-import {
-  getMaterial,
-  getMaterialFileUrl,
-  materialFileName,
-  materialOrigin,
-} from '@/server/materials'
+import { getMaterial, materialOrigin } from '@/server/materials'
+import { getMaterialFileUrl, materialFileName } from '@/server/material-files'
 import { listPatients } from '@/server/patients'
 import { currentUser } from '../../session'
 
@@ -104,7 +100,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
               </span>
             ) : null}
             {material.source === 'ai' ? (
-              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-[#8a5a12]">
+              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-amber-ink">
                 Generado con IA
               </span>
             ) : null}

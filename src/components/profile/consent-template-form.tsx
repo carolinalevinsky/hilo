@@ -30,7 +30,7 @@ export function ConsentTemplateForm({ current }: { current: string | null }) {
   return (
     <form action={formAction} className="space-y-3">
       {state.ok ? (
-        <p role="status" className="rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]">
+        <p role="status" className="rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-green-ink">
           {state.message}
         </p>
       ) : (

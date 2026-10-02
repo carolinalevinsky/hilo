@@ -231,7 +231,7 @@ export function Ask({ fill = false }: { fill?: boolean }) {
                     {/* Beside the answer, not instead of it: the answer above is
                         real either way, it just did not come from the model. */}
                     {turn.note ? (
-                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+                      <p className="flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
                         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
                         <span>{turn.note}</span>
                       </p>

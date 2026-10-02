@@ -16,7 +16,8 @@ import { EMPTY_FORM_STATE } from '@/lib/form-state'
 import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
 import { readSseStream } from '@/lib/sse-client'
 import { cn } from '@/lib/utils'
-import type { Material, MaterialFileLinks, MaterialVisibility } from '@/server/materials'
+import type { Material, MaterialVisibility } from '@/server/materials'
+import type { MaterialFileLinks } from '@/server/material-files'
 
 /**
  * The strip above the activity field while Ombúa writes into it, and after.

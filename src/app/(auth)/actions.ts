@@ -1,9 +1,10 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { AUTH_COOKIE_OPTIONS, SESSION_ONLY_COOKIE } from '@/lib/auth-cookie'
+import { clientIp } from '@/lib/client-ip'
 import { formError, formErrorFor, formOk, type FormState } from '@/lib/form-state'
 import { internalPath } from '@/lib/safe-path'
 import {
@@ -14,6 +15,7 @@ import {
   signOut,
 } from '@/server/auth'
 import { acceptInvitation, InvitationError } from '@/server/invitations'
+import { verifySecondStep } from '@/server/mfa'
 import { createProfile } from '@/server/practitioners'
 
 import { RECOVERY_COOKIE, RECOVERY_PATH } from './recovery-cookie'
@@ -45,15 +47,29 @@ export async function signInAction(
     cookieStore.set(SESSION_ONLY_COOKIE, '1', AUTH_COOKIE_OPTIONS)
   }
 
-  const result = await signIn({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  })
+  const result = await signIn(
+    {
+      email: formData.get('email'),
+      password: formData.get('password'),
+    },
+    clientIp(await headers()),
+  )
 
   if (!result.ok) return formError(result.message)
 
   // `volver` comes from the URL the proxy built when it bounced someone off a
   // page, which means it comes from the address bar. See `internalPath`.
+  redirect(internalPath(formData.get('volver'), '/inicio'))
+}
+
+/** El código del segundo paso. Ver `src/server/mfa.ts`. */
+export async function verifySecondStepAction(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const result = await verifySecondStep(formData.get('code'))
+  if (!result.ok) return formError(result.message)
+
   redirect(internalPath(formData.get('volver'), '/inicio'))
 }
 

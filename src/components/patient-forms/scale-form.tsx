@@ -45,8 +45,8 @@ export function ScaleForm({
       <div className="space-y-4">
         {selfHarm ? <CrisisLine prominent /> : null}
         <div role="status" className="rounded-xl bg-green-soft px-4 py-5 text-center">
-          <p className="text-lead font-bold text-[#1a8f57]">¡Gracias!</p>
-          <p className="mt-1.5 text-body leading-relaxed text-[#1a8f57]">
+          <p className="text-lead font-bold text-green-ink">¡Gracias!</p>
+          <p className="mt-1.5 text-body leading-relaxed text-green-ink">
             Tus respuestas le llegan sólo a {practitionerName}. Podés cerrar esta página.
           </p>
         </div>

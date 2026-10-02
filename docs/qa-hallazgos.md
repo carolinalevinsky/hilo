@@ -1,5 +1,9 @@
 # Ombúa — hallazgos de QA
 
+> **Cerrado.** Todo lo que dependía de código entró a `main` el 2026-09-12
+> (PR #6 y las ramas que le siguieron). Esto queda como registro de qué se
+> encontró y por qué se decidió cada cosa.
+
 Dos partes: lo que salió de leer el código, y lo que salió de probar la app a mano.
 
 `npm run typecheck` pasa. `npm run test` **no corre en esta máquina** por lo que

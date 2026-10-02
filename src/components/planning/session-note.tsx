@@ -112,7 +112,7 @@ function Status({
 
   if (saved) {
     return (
-      <span className="flex items-center gap-1 text-meta font-semibold text-green">
+      <span className="flex items-center gap-1 text-meta font-semibold text-green-ink">
         <CircleCheck className="size-3.5" />
         Guardada
       </span>

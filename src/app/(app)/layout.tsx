@@ -2,9 +2,11 @@ import { MobileNav } from '@/components/app-shell/mobile-nav'
 import { Sidebar } from '@/components/app-shell/sidebar'
 import { AskProvider } from '@/components/assistant/ask-dock'
 import { InstallPrompt } from '@/components/install-prompt'
+import { DoneToast } from '@/components/done-toast'
 import { Toaster } from '@/components/ui/sonner'
 import { disciplineLabel } from '@/lib/disciplines'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 
 import { currentUser, findCurrentPractitioner } from './session'
 
@@ -59,6 +61,9 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
 
         <MobileNav isAdmin={practitioner.is_admin} />
         <Toaster position="top-center" />
+        <Suspense>
+          <DoneToast />
+        </Suspense>
       </div>
     </AskProvider>
   )

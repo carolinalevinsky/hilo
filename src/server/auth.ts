@@ -1,6 +1,8 @@
+import { createHash } from 'node:crypto'
+
 import { z } from 'zod'
 
-import { publicConfig } from '@/lib/env'
+import { env, publicConfig } from '@/lib/env'
 
 import { getDb } from './db'
 
@@ -122,14 +124,52 @@ export const SignInInput = z.object({
   password: z.string().min(1, 'Escribí tu contraseña.'),
 })
 
-export async function signIn(input: unknown): Promise<AuthResult> {
+/**
+ * Las dos claves con las que se cuentan los intentos: correo + IP, y sólo IP.
+ * Hasheadas con el secreto de la app, como `submitterHash` en las reservas: ni
+ * el correo ni la IP quedan guardados. Ver la migración `login_failures`.
+ */
+export function loginKeys(email: string, ip: string) {
+  const hash = (value: string) =>
+    createHash('sha256').update(`${env.CRON_SECRET}:login:${value}`).digest('hex').slice(0, 32)
+  return { perAccount: hash(`${email.trim().toLowerCase()}:${ip}`), perIp: hash(`ip:${ip}`) }
+}
+
+export const TOO_MANY_ATTEMPTS =
+  'Hubo demasiados intentos fallidos. Esperá 15 minutos y probá de nuevo, o recuperá la contraseña.'
+
+/**
+ * `ip` viene del pedido (ver `clientIp`): esta función no lee encabezados, para
+ * que se pueda probar sin uno.
+ */
+export async function signIn(input: unknown, ip = 'local'): Promise<AuthResult> {
   const parsed = SignInInput.safeParse(input)
   if (!parsed.success) {
     return { ok: false, message: firstMessage(parsed.error) }
   }
 
   const db = await getDb()
+  const keys = loginKeys(parsed.data.email, ip)
+
+  // Antes de probar la contraseña, no después: un intento que se bloquea no
+  // tiene que llegar a Supabase, o el límite no limita nada.
+  const { data: allowed, error: limitError } = await db.rpc('login_allowed', {
+    per_account: keys.perAccount,
+    per_ip: keys.perIp,
+  })
+  if (limitError) {
+    if (unreachable(limitError)) return { ok: false, message: NO_CONNECTION }
+    throw limitError
+  }
+  if (!allowed) return { ok: false, message: TOO_MANY_ATTEMPTS }
+
   const { error } = await db.auth.signInWithPassword(parsed.data)
+
+  if (!error) {
+    await db.rpc('clear_login_failures', { per_account: keys.perAccount })
+  } else if (error.code === 'invalid_credentials') {
+    await db.rpc('note_login_failure', { per_account: keys.perAccount, per_ip: keys.perIp })
+  }
 
   if (error) {
     // "Falta confirmar el correo" sí se dice, y es la única excepción.

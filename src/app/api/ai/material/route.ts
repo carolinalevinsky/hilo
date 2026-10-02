@@ -139,7 +139,7 @@ async function* generate(
   let received = ''
 
   try {
-    for await (const chunk of streamCompletion(instructions, prompt)) {
+    for await (const chunk of streamCompletion(instructions, prompt, undefined, [], 'material')) {
       received += chunk
       yield { event: 'delta', data: chunk }
     }

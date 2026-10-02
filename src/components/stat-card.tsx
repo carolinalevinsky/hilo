@@ -22,11 +22,11 @@ export type StatTone = 'violet' | 'teal' | 'coral' | 'amber' | 'green' | 'blue'
 
 const TONE_CLASSES: Record<StatTone, string> = {
   violet: 'bg-violet-soft text-violet',
-  teal: 'bg-teal-soft text-teal',
-  coral: 'bg-coral-soft text-coral',
-  amber: 'bg-amber-soft text-amber',
-  green: 'bg-green-soft text-green',
-  blue: 'bg-blue-soft text-blue',
+  teal: 'bg-teal-soft text-teal-ink',
+  coral: 'bg-coral-soft text-coral-ink',
+  amber: 'bg-amber-soft text-amber-ink',
+  green: 'bg-green-soft text-green-ink',
+  blue: 'bg-blue-soft text-blue-ink',
 }
 
 export function StatCardGrid({

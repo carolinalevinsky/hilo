@@ -22,6 +22,7 @@ import { listVersions, type VersionReason } from '@/server/document-versions'
 import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { trashRecord } from '@/server/trash'
+import { withDone } from '@/lib/done'
 
 /**
  * Creating an assessment.
@@ -132,7 +133,7 @@ export async function trashAssessmentAction(formData: FormData) {
 
   await trashRecord(user.id, 'assessment', String(formData.get('assessmentId')))
   revalidatePath('/informes')
-  redirect('/informes')
+  redirect(withDone('/informes', 'documento-papelera'))
 }
 
 /**
@@ -154,5 +155,5 @@ export async function adoptSuggestedGoalsAction(formData: FormData) {
   }
 
   revalidatePath(`/pacientes/${patientId}`)
-  redirect(`/pacientes/${patientId}`)
+  redirect(withDone(`/pacientes/${patientId}`, 'objetivos-cargados'))
 }

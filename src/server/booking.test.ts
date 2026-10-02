@@ -71,4 +71,12 @@ describe('PublicBooking', () => {
     expect(data.preferredDate).toBeNull()
     expect(data.preferredTime).toBeNull()
   })
+
+  it('keeps who the consultation is for apart from who asks, and empty means themselves', () => {
+    expect(PublicBooking.parse({ ...base, patientName: ' Tomás Pérez ' }).patientName).toBe(
+      'Tomás Pérez',
+    )
+    expect(PublicBooking.parse({ ...base, patientName: '' }).patientName).toBeNull()
+    expect(PublicBooking.parse(base).patientName).toBeNull()
+  })
 })

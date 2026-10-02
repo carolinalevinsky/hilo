@@ -1,7 +1,7 @@
 # Auditoría de seguridad — Ombúa · resultado
 
 **Fecha:** 6 de septiembre de 2026
-**Alcance:** las dieciséis líneas de investigación de `docs/auditoria-seguridad-ombua.md`.
+**Alcance:** las dieciséis líneas de investigación de `docs/auditoria-seguridad-hilo.md`.
 
 **Dos pasadas, y la segunda existe porque la primera se equivocó de rama:**
 

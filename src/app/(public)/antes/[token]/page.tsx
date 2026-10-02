@@ -96,8 +96,8 @@ function Notice({ tone, children }: { tone: 'done' | 'expired'; children: React.
       role="status"
       className={
         tone === 'done'
-          ? 'rounded-xl bg-green-soft px-4 py-4 text-body text-[#1a8f57]'
-          : 'rounded-xl bg-amber-soft px-4 py-4 text-body text-[#8a5a12]'
+          ? 'rounded-xl bg-green-soft px-4 py-4 text-body text-green-ink'
+          : 'rounded-xl bg-amber-soft px-4 py-4 text-body text-amber-ink'
       }
     >
       {children}

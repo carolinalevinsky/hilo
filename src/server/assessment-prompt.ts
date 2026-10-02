@@ -1,4 +1,4 @@
-import { SCORE_SCALES, type ScoreScale } from '@/lib/instruments'
+import { cutoffBand, instrumentByName, SCORE_SCALES, type ScoreScale } from '@/lib/instruments'
 import { joinEs } from '@/lib/text'
 import { TO_COMPLETE } from '@/lib/to-complete'
 import { disciplineAdjective } from '@/lib/recipients'
@@ -59,12 +59,7 @@ export function assessmentUserPrompt({
     parts.push(
       `Tipo de puntaje: ${scale.label}.`,
       `Puntajes: ${scoreLines}.`,
-      // Spelled out rather than assumed. It is the difference between "85 is
-      // below average" and "85 is above the median", and the model cannot know
-      // which from the number alone.
-      results.scale === 'raw'
-        ? 'Son puntajes directos, sin baremo: interpretalos cualitativamente y no los clasifiques como altos o bajos respecto de una norma.'
-        : `En esta escala, por debajo de ${scale.low} se considera descendido y desde ${scale.high} se considera fortaleza.`,
+      ...scoreReading(instrumentName, results),
     )
   }
 
@@ -89,6 +84,57 @@ export function assessmentUserPrompt({
 }
 
 /**
+ * Cómo se leen los puntajes, dicho y no supuesto.
+ *
+ * Es la diferencia entre "85 está por debajo de la media" y "85 está por encima
+ * de la mediana", y el modelo no puede saber cuál por el número solo. Tampoco
+ * puede saber hacia dónde va el instrumento: la regla 2 de las instrucciones
+ * clínicas dice que un puntaje bajo es un área descendida, y eso es cierto para
+ * un WISC y al revés para un Beck, una EVA o un Pittsburgh. Antes un BDI-II de
+ * 32 se interpretaba como fortaleza.
+ */
+function scoreReading(instrumentName: string, results: AssessmentResultsData): string[] {
+  const entry = instrumentByName(instrumentName)
+  const scale = SCORE_SCALES[results.scale as ScoreScale]
+  const lines: string[] = []
+
+  if (entry?.higherIsWorse) {
+    lines.push(
+      'En este instrumento un puntaje más alto indica más severidad o malestar: un puntaje alto es un área a trabajar y nunca una fortaleza, y uno bajo indica ausencia del síntoma. Esto prevalece sobre la regla general de puntajes.',
+    )
+  }
+
+  if (results.scale === 'raw') {
+    if (entry?.cutoffs) {
+      let from = 0
+      const bands = entry.cutoffs.map((band) => {
+        const text =
+          band.upTo === from ? `${from}, ${band.label}` : `${from} a ${band.upTo}, ${band.label}`
+        from = band.upTo + 1
+        return text
+      })
+      lines.push(
+        `Son puntajes directos. Puntos de corte de referencia del instrumento: ${bands.join('; ')}. Ubicá cada puntaje en su franja y no uses otras normas.`,
+      )
+    } else {
+      lines.push(
+        'Son puntajes directos, sin baremo: interpretalos cualitativamente y no los clasifiques como altos o bajos respecto de una norma.',
+      )
+    }
+  } else if (entry?.higherIsWorse) {
+    lines.push(
+      `En esta escala, desde ${scale.high} indica dificultad clínicamente relevante y por debajo de ${scale.low} no indica dificultad.`,
+    )
+  } else {
+    lines.push(
+      `En esta escala, por debajo de ${scale.low} se considera descendido y desde ${scale.high} se considera fortaleza.`,
+    )
+  }
+
+  return lines
+}
+
+/**
  * The draft used when the AI is unavailable.
  *
  * Deliberately cautious. It states what was administered and which areas fall
@@ -109,9 +155,16 @@ export function assessmentFallback({
   results: AssessmentResultsData
   observations?: string | null
 }): string {
-  const bands = bandScores(results)
+  const bands = bandScores(results, instrumentName)
+  const entry = instrumentByName(instrumentName)
+  // Con puntos de corte, la franja al lado del número: "32, grave".
   const list = (entries: { area: string; value: number }[]) =>
-    joinEs(entries.map((entry) => `${entry.area.toLowerCase()} (${entry.value})`))
+    joinEs(
+      entries.map((score) => {
+        const band = results.scale === 'raw' ? cutoffBand(entry, score.value) : null
+        return `${score.area.toLowerCase()} (${score.value}${band ? `, ${band.label}` : ''})`
+      }),
+    )
 
   const lines: string[] = [
     'Síntesis general:',
@@ -135,8 +188,9 @@ export function assessmentFallback({
 
   if (bands.low.length > 0) {
     lines.push(
-      'Áreas descendidas:',
-      `Aparecen por debajo de lo esperado: ${list(bands.low)}.`,
+      ...(entry?.higherIsWorse
+        ? ['Áreas a trabajar:', `Indican dificultad: ${list(bands.low)}.`]
+        : ['Áreas descendidas:', `Aparecen por debajo de lo esperado: ${list(bands.low)}.`]),
       '',
     )
   }

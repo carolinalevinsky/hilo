@@ -5,20 +5,14 @@ import { redirect } from 'next/navigation'
 
 import { formError, formOk, typedValues, type FormState } from '@/lib/form-state'
 import { nextDateForWeekday } from '@/lib/week'
-import { createAppointment, createSchedule } from '@/server/appointments'
+import { createAppointment } from '@/server/appointments'
+import { createSchedule } from '@/server/schedules'
 import { requireUser } from '@/server/auth'
 import { createGoal } from '@/server/goals'
-import {
-  createPatient,
-  ensurePatientRoom,
-  removePatientPhoto,
-  rotatePatientRoom,
-  savePatientPhoto,
-  setPatientArchived,
-  setPatientVideoUrl,
-  softDeletePatient,
-  updatePatient,
-} from '@/server/patients'
+import { createPatient, setPatientArchived, softDeletePatient, updatePatient } from '@/server/patients'
+import { ensurePatientRoom, rotatePatientRoom, setPatientVideoUrl } from '@/server/patient-room'
+import { removePatientPhoto, savePatientPhoto } from '@/server/patient-photos'
+import { withDone } from '@/lib/done'
 
 /**
  * Server Actions for patients. Thin: read the form, call `src/server/patients`,
@@ -165,7 +159,7 @@ export async function createPatientAction(
 
   revalidatePath('/pacientes')
   if (scheduled) revalidatePath('/agenda')
-  redirect(`/pacientes/${patientId}`)
+  redirect(withDone(`/pacientes/${patientId}`, 'paciente-creado'))
 }
 
 export async function updatePatientAction(
@@ -185,7 +179,7 @@ export async function updatePatientAction(
 
   revalidatePath('/pacientes')
   revalidatePath(`/pacientes/${patientId}`)
-  redirect(`/pacientes/${patientId}`)
+  redirect(withDone(`/pacientes/${patientId}`, 'paciente-guardado'))
 }
 
 export async function removePhotoAction(formData: FormData) {
@@ -218,7 +212,7 @@ export async function deletePatientAction(formData: FormData) {
   await softDeletePatient(user.id, patientId)
   revalidatePath('/pacientes')
   revalidatePath('/agenda')
-  redirect('/pacientes')
+  redirect(withDone('/pacientes', 'paciente-borrado'))
 }
 
 /** Makes the room the first time it is asked for, and keeps it after that. */

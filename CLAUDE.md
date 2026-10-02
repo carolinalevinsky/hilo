@@ -158,7 +158,7 @@ something breaks strangely.
 reason there is no mapper layer: change the SQL, regenerate, and the compiler
 points at every place that must change.
 
-### Every new table needs these two things
+### Every new table needs these three things
 
 ```sql
 alter table patients enable row level security;
@@ -167,7 +167,17 @@ create policy "own_rows" on patients
   for all
   using (practitioner_id = (select auth.uid()))
   with check (practitioner_id = (select auth.uid()));
+
+create policy "mfa_when_enrolled" on patients as restrictive for all to authenticated
+  using ((select public.mfa_satisfied()))
+  with check ((select public.mfa_satisfied()));
 ```
+
+The third is two-step verification, enforced where it cannot be skipped. A
+practitioner who turned it on has a verified factor, and a session that only
+passed the password (`aal1`) gets no rows back. Without it on a new table, a
+password alone — used straight against PostgREST with the public anon key —
+reads that table.
 
 Every table carries `practitioner_id` — even child tables that could reach it
 through a join. That denormalisation is deliberate: it makes every policy
@@ -176,7 +186,7 @@ identical and one line long.
 The `(select auth.uid())` wrapper is not stylistic. Postgres evaluates a
 subquery once per query and a bare `auth.uid()` once per row.
 
-`npm run check:rls` fails the build if any table is missing either piece.
+`npm run check:rls` fails the build if any table is missing any of the three.
 
 ---
 

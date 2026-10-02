@@ -303,14 +303,14 @@ function Status({
 
   if ((row.outstanding ?? 0) <= 0) {
     return (
-      <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-[#1a8f57]">
+      <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-green-ink">
         Al día
       </span>
     )
   }
 
   return (
-    <span className="rounded-full bg-amber-soft px-2.5 py-1 text-micro font-bold text-[#8a5a12]">
+    <span className="rounded-full bg-amber-soft px-2.5 py-1 text-micro font-bold text-amber-ink">
       Debe {`$ ${row.outstanding!.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`}
     </span>
   )

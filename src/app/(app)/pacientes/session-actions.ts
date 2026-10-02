@@ -13,6 +13,7 @@ import {
   updateSession,
 } from '@/server/sessions'
 import { trashRecord } from '@/server/trash'
+import { withDone } from '@/lib/done'
 
 export async function saveSessionAction(
   _previous: FormState,
@@ -77,7 +78,7 @@ export async function saveSessionAction(
   }
 
   revalidatePath(`/pacientes/${patientId}`)
-  redirect(`/pacientes/${patientId}`)
+  redirect(withDone(`/pacientes/${patientId}`, 'registro-guardado'))
 }
 
 /**
@@ -119,5 +120,5 @@ export async function trashSessionAction(formData: FormData) {
 
   await trashRecord(user.id, 'session', String(formData.get('sessionId')))
   revalidatePath(`/pacientes/${patientId}`)
-  redirect(`/pacientes/${patientId}`)
+  redirect(withDone(`/pacientes/${patientId}`, 'registro-papelera'))
 }

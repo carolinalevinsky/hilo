@@ -21,7 +21,7 @@ export default function LegalLayout({ children }: LayoutProps<'/'>) {
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-8 pb-16">
-        <div className="mb-4 rounded-xl bg-amber-soft px-4 py-3 text-meta leading-relaxed text-[#8a5a12]">
+        <div className="mb-4 rounded-xl bg-amber-soft px-4 py-3 text-meta leading-relaxed text-amber-ink">
           Documento modelo, orientativo. Antes de usarse con pacientes reales conviene una
           revisión legal, sobre todo por tratarse de datos de salud de menores.
         </div>

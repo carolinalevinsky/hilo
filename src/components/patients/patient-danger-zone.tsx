@@ -142,7 +142,7 @@ export function PatientDangerZone({
       {confirming ? (
         <form action={deletePatientAction} className="space-y-2 rounded-xl bg-coral-soft p-3.5">
           <input type="hidden" name="patientId" value={patientId} />
-          <p className="text-meta leading-relaxed text-[#c0392b]">
+          <p className="text-meta leading-relaxed text-coral-ink">
             Se borran la ficha, las sesiones, los objetivos y los informes de{' '}
             <b>{fullName}</b>. Esto no se puede deshacer desde la app. Escribí{' '}
             <b>{expected}</b> para confirmar.

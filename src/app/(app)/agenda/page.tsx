@@ -28,11 +28,9 @@ import { ageLabel } from '@/lib/age'
 import { frequencyLabel } from '@/lib/appointment-labels'
 import { toDateInput, today as todayString, todayDate } from '@/lib/dates'
 import { formatTime, weekDates, weekLabel, weekdayName, weekOffsetFrom } from '@/lib/week'
-import {
-  listAppointments,
-  listSchedules,
-  materialiseAppointments,
-} from '@/server/appointments'
+import { listAppointments } from '@/server/appointments'
+import { listSchedules } from '@/server/schedules'
+import { materialiseAppointments } from '@/server/occurrences'
 import { listBookingRequests } from '@/server/booking'
 import { findGoogleAccount } from '@/server/google'
 import { listBusyBlocks, pullFromGoogle, pushPending } from '@/server/google-calendar'
@@ -381,7 +379,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             {googleUnavailable ? (
               <div
                 role="status"
-                className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-soft px-4 py-3 text-body text-[#8a5a12]"
+                className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-soft px-4 py-3 text-body text-amber-ink"
               >
                 <p className="min-w-[200px] flex-1">
                   <b>No pudimos leer tu Google Calendar.</b> Lo que tenés ahí puede no

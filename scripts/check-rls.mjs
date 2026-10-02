@@ -65,4 +65,41 @@ if (rows.length > 0) {
   process.exit(1)
 }
 
-console.log('✓ check:rls — every public table has RLS enabled and at least one policy')
+// La verificación en dos pasos se exige en la base: cada tabla lleva la
+// política restrictiva `mfa_when_enrolled`. Una tabla nueva sin ella sería la
+// puerta por la que una contraseña sola, sin el código, lee datos. Ver la
+// migración `20261001050000_mfa_when_enrolled`.
+const MFA_QUERY = `
+select c.relname
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relkind = 'r'
+  and not exists (
+    select 1 from pg_policy p
+     where p.polrelid = c.oid and p.polname = 'mfa_when_enrolled' and not p.polpermissive
+  )
+order by c.relname;
+`
+
+const missingMfa = execFileSync('psql', [DB_URL, '-At', '-c', MFA_QUERY], {
+  encoding: 'utf8',
+  stdio: ['ignore', 'pipe', 'pipe'],
+})
+  .trim()
+  .split('\n')
+  .filter(Boolean)
+
+if (missingMfa.length > 0) {
+  console.error('\n✗ Tables without the two-step verification policy:\n')
+  for (const table of missingMfa) console.error(`  ${table}`)
+  console.error('\nAdd it in the same migration that creates the table:\n')
+  console.error('  create policy "mfa_when_enrolled" on <table> as restrictive for all to authenticated')
+  console.error('    using ((select public.mfa_satisfied()))')
+  console.error('    with check ((select public.mfa_satisfied()));\n')
+  process.exit(1)
+}
+
+console.log(
+  '✓ check:rls — every public table has RLS enabled, at least one policy, and the two-step verification policy',
+)
