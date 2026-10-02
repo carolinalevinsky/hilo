@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation'
 import { requireUser } from '@/server/auth'
 import { today } from '@/lib/dates'
 import { formError, formErrorFor, type FormState, typedValues } from '@/lib/form-state'
-import { createAppointment, createSchedule } from '@/server/appointments'
+import { createAppointment } from '@/server/appointments'
+import { createSchedule } from '@/server/schedules'
 import {
   claimBookingRequest,
   dismissBookingRequest,

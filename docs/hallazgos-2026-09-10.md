@@ -1,5 +1,8 @@
 # Tres cosas que encontré y no toqué
 
+> **Las tres están cerradas** (2026-09-11): la 1 en `cbfaa14`, la 2 en
+> `ba478c6` y la 3 en `e8eac8e`. Esto queda como registro.
+
 **10 de septiembre de 2026.** No son del documento de Thomas: salieron de
 cerrar P19 y de revisar dónde más falla algo sin que nadie se entere.
 

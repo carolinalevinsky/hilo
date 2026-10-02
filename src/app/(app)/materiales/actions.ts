@@ -6,14 +6,8 @@ import { redirect } from 'next/navigation'
 import { formError, formErrorFor, type FormState } from '@/lib/form-state'
 import { requireUser } from '@/server/auth'
 import { offlineMaterial } from '@/server/material-prompt'
-import {
-  copyMaterial,
-  createMaterial,
-  deleteMaterial,
-  MaterialError,
-  saveMaterialFile,
-  updateMaterial,
-} from '@/server/materials'
+import { copyMaterial, createMaterial, deleteMaterial, MaterialError, updateMaterial } from '@/server/materials'
+import { saveMaterialFile } from '@/server/material-files'
 import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'

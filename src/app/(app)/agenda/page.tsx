@@ -28,11 +28,9 @@ import { ageLabel } from '@/lib/age'
 import { frequencyLabel } from '@/lib/appointment-labels'
 import { toDateInput, today as todayString, todayDate } from '@/lib/dates'
 import { formatTime, weekDates, weekLabel, weekdayName, weekOffsetFrom } from '@/lib/week'
-import {
-  listAppointments,
-  listSchedules,
-  materialiseAppointments,
-} from '@/server/appointments'
+import { listAppointments } from '@/server/appointments'
+import { listSchedules } from '@/server/schedules'
+import { materialiseAppointments } from '@/server/occurrences'
 import { listBookingRequests } from '@/server/booking'
 import { findGoogleAccount } from '@/server/google'
 import { listBusyBlocks, pullFromGoogle, pushPending } from '@/server/google-calendar'

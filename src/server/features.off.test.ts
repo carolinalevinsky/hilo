@@ -55,7 +55,7 @@ vi.mock('./db', () => ({
   getServiceDb: () => loudDb(),
 }))
 
-const { ensurePatientRoom, rotatePatientRoom } = await import('./patients')
+const { ensurePatientRoom, rotatePatientRoom } = await import('./patient-room')
 
 describe('videollamadas apagadas', () => {
   it('no abre una sala, ni escribe room_id', async () => {

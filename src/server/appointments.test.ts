@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { AppointmentInput, ScheduleInput, occurrencesBetween } from './appointments'
+import { AppointmentInput, ScheduleInput } from './appointments'
+import { occurrencesBetween } from './occurrences'
 
 /**
  * Recurrence arithmetic.

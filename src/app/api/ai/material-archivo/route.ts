@@ -5,7 +5,8 @@ import {
   fileDescriptionPrompt,
   parseFileDescription,
 } from '@/server/material-prompt'
-import { getMaterial, markMaterialAiWritten, readMaterialFile } from '@/server/materials'
+import { getMaterial, markMaterialAiWritten } from '@/server/materials'
+import { readMaterialFile } from '@/server/material-files'
 import { claimUsage } from '@/server/ai-usage'
 import { assertQuota, QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'

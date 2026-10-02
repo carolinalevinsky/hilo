@@ -12,12 +12,8 @@ import { PrintButton } from '@/components/print-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { materialKindLabel } from '@/lib/material-areas'
-import {
-  getMaterial,
-  getMaterialFileUrl,
-  materialFileName,
-  materialOrigin,
-} from '@/server/materials'
+import { getMaterial, materialOrigin } from '@/server/materials'
+import { getMaterialFileUrl, materialFileName } from '@/server/material-files'
 import { listPatients } from '@/server/patients'
 import { currentUser } from '../../session'
 

@@ -5,20 +5,13 @@ import { redirect } from 'next/navigation'
 
 import { formError, formOk, typedValues, type FormState } from '@/lib/form-state'
 import { nextDateForWeekday } from '@/lib/week'
-import { createAppointment, createSchedule } from '@/server/appointments'
+import { createAppointment } from '@/server/appointments'
+import { createSchedule } from '@/server/schedules'
 import { requireUser } from '@/server/auth'
 import { createGoal } from '@/server/goals'
-import {
-  createPatient,
-  ensurePatientRoom,
-  removePatientPhoto,
-  rotatePatientRoom,
-  savePatientPhoto,
-  setPatientArchived,
-  setPatientVideoUrl,
-  softDeletePatient,
-  updatePatient,
-} from '@/server/patients'
+import { createPatient, setPatientArchived, softDeletePatient, updatePatient } from '@/server/patients'
+import { ensurePatientRoom, rotatePatientRoom, setPatientVideoUrl } from '@/server/patient-room'
+import { removePatientPhoto, savePatientPhoto } from '@/server/patient-photos'
 import { withDone } from '@/lib/done'
 
 /**
