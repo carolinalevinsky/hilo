@@ -33,7 +33,7 @@ export function InPlanChip({
         type="submit"
         aria-label={`Quitar del plan: ${name}`}
         title="Quitar del plan"
-        className="group/chip flex items-center gap-1 rounded-lg bg-green-soft px-2.5 py-1.5 text-micro font-bold text-[#1a8f57] transition-colors outline-none hover:bg-coral-soft hover:text-[#c0392b] focus-visible:bg-coral-soft focus-visible:text-[#c0392b] focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="group/chip flex items-center gap-1 rounded-lg bg-green-soft px-2.5 py-1.5 text-micro font-bold text-green-ink transition-colors outline-none hover:bg-coral-soft hover:text-coral-ink focus-visible:bg-coral-soft focus-visible:text-coral-ink focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <Check className="size-3.5 group-hover/chip:hidden group-focus-visible/chip:hidden" />
         <X className="hidden size-3.5 group-hover/chip:block group-focus-visible/chip:block" />

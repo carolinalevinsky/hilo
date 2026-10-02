@@ -31,7 +31,7 @@ export function ProfileForm({
       {state.ok ? (
         <p
           role="status"
-          className="rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]"
+          className="rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-green-ink"
         >
           {state.message}
         </p>

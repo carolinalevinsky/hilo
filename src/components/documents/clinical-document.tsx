@@ -47,7 +47,7 @@ export function ClinicalDocument({
         </p>
       ) : null}
       {seal.state === 'voided' ? (
-        <div className="mb-5 rounded-lg border-2 border-[#c0392b] px-3 py-2 text-center text-[#c0392b]">
+        <div className="mb-5 rounded-lg border-2 border-[#c0392b] px-3 py-2 text-center text-coral-ink">
           <p className="text-meta font-extrabold tracking-[1px] uppercase">
             Anulado el {formatDateTime(seal.voidedAt)}
           </p>

@@ -104,7 +104,7 @@ export function SendLinkButton({
         <Send className="size-4" />
         {pending ? 'Creando…' : again ? againLabel : label}
       </Button>
-      {error ? <p className="text-meta text-[#c0392b]">{error}</p> : null}
+      {error ? <p className="text-meta text-coral-ink">{error}</p> : null}
     </div>
   )
 }

@@ -6,7 +6,7 @@ import { recordLink } from '@/lib/record-link'
 import { AttendanceToggle } from '@/components/agenda/attendance-toggle'
 import { Button } from '@/components/ui/button'
 import { appointmentStatusClasses, appointmentStatusLabel } from '@/lib/appointment-labels'
-import { patientHex } from '@/lib/patient-colors'
+import { patientHex, patientInk } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
 import { formatTime } from '@/lib/week'
 import type { AppointmentWithPatient } from '@/server/appointments'
@@ -70,8 +70,11 @@ export function SessionPanel({
       <div className="mb-4 flex items-start gap-3">
         <span
           aria-hidden
-          className="flex size-10 shrink-0 items-center justify-center rounded-full text-body font-bold text-white"
-          style={{ background: patientHex(patient?.color ?? null) }}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full text-body font-bold"
+          style={{
+            background: patientHex(patient?.color ?? null),
+            color: patientInk(patient?.color ?? null),
+          }}
         >
           {monogram(name)}
         </span>

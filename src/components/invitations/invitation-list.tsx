@@ -83,7 +83,7 @@ export function InvitationList({ invitations }: { invitations: ListedInvitation[
                 </p>
                 <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                   {accepted ? (
-                    <Check className="size-3.5 text-[#1a8f57]" />
+                    <Check className="size-3.5 text-green-ink" />
                   ) : (
                     <Clock className="size-3.5" />
                   )}

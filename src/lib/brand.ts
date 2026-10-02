@@ -82,6 +82,20 @@ export const BRAND_COLORS = {
   greenSoft: '#e2f6ec',
   blue: '#4c8dff',
   blueSoft: '#e7f0ff',
+
+  /**
+   * Los mismos acentos, oscurecidos para usarlos como **texto**.
+   *
+   * Los acentos son colores de relleno: blanco encima de ámbar da 2:1, y ámbar
+   * sobre su propio fondo suave, 1,8:1. Se leían "Al día", "Debe", los chips y
+   * las iniciales de los avatares a duras penas. Cada uno de éstos da al menos
+   * 4,5:1 (WCAG AA) sobre blanco y sobre su `*Soft`; `brand.test.ts` lo mide.
+   */
+  tealInk: '#0b6f66',
+  coralInk: '#c0392b',
+  amberInk: '#8a5a12',
+  greenInk: '#157a4a',
+  blueInk: '#2f63c9',
 } as const
 
 /**

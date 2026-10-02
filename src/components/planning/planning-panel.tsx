@@ -16,8 +16,8 @@ type PanelTone = 'violet' | 'blue' | 'teal'
 
 const TONE_CLASSES: Record<PanelTone, string> = {
   violet: 'bg-violet-soft text-violet',
-  blue: 'bg-blue-soft text-blue',
-  teal: 'bg-teal-soft text-teal',
+  blue: 'bg-blue-soft text-blue-ink',
+  teal: 'bg-teal-soft text-teal-ink',
 }
 
 export function PlanningPanel({

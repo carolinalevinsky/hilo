@@ -32,7 +32,7 @@ export function InviteResult({ state }: { state: InviteState }) {
       className={
         state.emailed === false
           ? 'rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta text-[#8a5a00]'
-          : 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-[#1a8f57]'
+          : 'rounded-[11px] bg-green-soft px-3.5 py-2.5 text-meta text-green-ink'
       }
     >
       {state.message}

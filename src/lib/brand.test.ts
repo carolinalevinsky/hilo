@@ -180,3 +180,30 @@ describe('pageTitle', () => {
     expect(pageTitle('Pacientes')).toBe(`Pacientes · ${BRAND_NAME}`)
   })
 })
+
+/**
+ * El texto de color se lee. Ámbar sobre ámbar suave daba 1,8:1 y blanco sobre
+ * verde 2,4:1; el mínimo de WCAG AA para texto chico es 4,5:1.
+ */
+describe('contraste del texto de color', () => {
+  function luminance(hex: string) {
+    const [r, g, b] = [1, 3, 5].map((index) => {
+      const channel = parseInt(hex.slice(index, index + 2), 16) / 255
+      return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+  }
+  function contrast(a: string, b: string) {
+    const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+    return (light! + 0.05) / (dark! + 0.05)
+  }
+
+  it.each(['teal', 'coral', 'amber', 'green', 'blue'] as const)(
+    '%s: la tinta pasa 4,5:1 sobre blanco y sobre su fondo suave',
+    (accent) => {
+      const ink = BRAND_COLORS[`${accent}Ink`]
+      expect(contrast(ink, '#ffffff')).toBeGreaterThanOrEqual(4.5)
+      expect(contrast(ink, BRAND_COLORS[`${accent}Soft`])).toBeGreaterThanOrEqual(4.5)
+    },
+  )
+})

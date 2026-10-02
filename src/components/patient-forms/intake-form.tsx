@@ -49,8 +49,8 @@ export function IntakeForm({
   if (state.ok) {
     return (
       <div role="status" className="rounded-xl bg-green-soft px-4 py-5 text-center">
-        <p className="text-lead font-bold text-[#1a8f57]">¡Listo, gracias!</p>
-        <p className="mt-1.5 text-body leading-relaxed text-[#1a8f57]">
+        <p className="text-lead font-bold text-green-ink">¡Listo, gracias!</p>
+        <p className="mt-1.5 text-body leading-relaxed text-green-ink">
           {practitionerName} ya tiene los datos y el consentimiento firmado. Podés cerrar esta
           página.
         </p>

@@ -44,7 +44,7 @@ function kindOf(item: PlanItem) {
   if (item.material) {
     return {
       label: 'Material',
-      classes: 'bg-blue-soft text-blue',
+      classes: 'bg-blue-soft text-blue-ink',
       title: item.material.title,
       detail: [item.material.area, item.material.focus].filter(Boolean).join(' · '),
     }
@@ -52,7 +52,7 @@ function kindOf(item: PlanItem) {
 
   return {
     label: 'Actividad tuya',
-    classes: 'bg-amber-soft text-[#8a5a12]',
+    classes: 'bg-amber-soft text-amber-ink',
     title: item.title ?? 'Actividad',
     detail: '',
   }

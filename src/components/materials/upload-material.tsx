@@ -63,7 +63,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
         <form action={formAction} className="space-y-4">
           <FormMessage message={state.message} />
 
-          <p className="rounded-xl bg-amber-soft px-3 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+          <p className="rounded-xl bg-amber-soft px-3 py-2.5 text-meta leading-relaxed text-amber-ink">
             Para describirlo, Ombúa le manda el archivo al modelo de IA. Fijate que no
             tenga el nombre de ningún paciente escrito. Una foto sacada en el consultorio
             a veces lo tiene.

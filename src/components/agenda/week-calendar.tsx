@@ -4,7 +4,7 @@ import { AppointmentMenu } from '@/components/agenda/appointment-menu'
 import { NowLine } from '@/components/agenda/now-line'
 import { HOUR_HEIGHT, placeSpans, type Span } from '@/lib/agenda-layout'
 import { appointmentStatusLabel, appointmentStatusTile } from '@/lib/appointment-labels'
-import { patientHex } from '@/lib/patient-colors'
+import { patientHex, patientInk } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
 import { WEEK_ORDER, formatTime, weekdayName } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
@@ -455,14 +455,19 @@ function Event({
   return (
     <div
       className={cn(
-        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1 pr-6 text-nano leading-[13px] font-semibold text-white',
+        'relative h-full overflow-hidden rounded-[9px] px-1.5 py-1 pr-6 text-nano leading-[13px] font-semibold',
         appointment.status === 'cancelled' && 'line-through opacity-55',
         // El anillo va por fuera del color del paciente, que ya ocupa el fondo.
         // Sin esto no habría forma de saber cuál de las doce es la que estás
         // mirando en el panel.
         selected && 'ring-2 ring-foreground ring-offset-1',
       )}
-      style={{ background: patientHex(patient?.color ?? null) }}
+      // El texto encima, según el fondo: blanco sólo sobre violeta. Ver
+      // `patientInk`; blanco sobre ámbar no se leía.
+      style={{
+        background: patientHex(patient?.color ?? null),
+        color: patientInk(patient?.color ?? null),
+      }}
     >
       {/* Ver `APPOINTMENT_STATUS_TILE`: los cuatro estados se dibujaban igual
           salvo el cancelado, así que marcar "Vino" no movía un pixel. */}
@@ -503,7 +508,7 @@ function Event({
       <AppointmentMenu
         appointment={appointment}
         calendarPrivacy={calendarPrivacy}
-        className="absolute top-0.5 right-0 text-white/80 hover:text-white"
+        className="absolute top-0.5 right-0 opacity-80 hover:opacity-100"
       />
     </div>
   )

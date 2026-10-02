@@ -493,7 +493,7 @@ function AiNote({
     return (
       <p
         role="alert"
-        className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]"
+        className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink"
       >
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
         No se pudo guardar. Lo que escribiste sigue en pantalla: probá guardar de nuevo antes
@@ -504,7 +504,7 @@ function AiNote({
 
   if (state === 'kept') {
     return (
-      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
         <span>
           {detail ?? 'La IA no respondió esta vez.'} No se cambió nada: tu texto quedó como
@@ -516,7 +516,7 @@ function AiNote({
 
   if (state === 'failed') {
     return (
-      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#8a5a12]">
+      <p className="no-print flex items-start gap-2 rounded-xl bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
         <span>
           {detail ?? 'La IA no respondió esta vez.'} Te dejamos un borrador base con lo que es
@@ -528,7 +528,7 @@ function AiNote({
 
   if (state === 'saved') {
     return (
-      <p className="no-print flex items-start gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-meta leading-relaxed text-[#1a8f57]">
+      <p className="no-print flex items-start gap-2 rounded-xl bg-green-soft px-3.5 py-2.5 text-meta leading-relaxed text-green-ink">
         <Check className="mt-0.5 size-4 shrink-0" />
         Guardado. Cuando lo hayas revisado, firmalo.
       </p>

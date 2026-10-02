@@ -104,7 +104,7 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
               </span>
             ) : null}
             {material.source === 'ai' ? (
-              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-[#8a5a12]">
+              <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-amber-ink">
                 Generado con IA
               </span>
             ) : null}

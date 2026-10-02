@@ -139,7 +139,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
                     {materialKindLabel(material.kind)}
                   </span>
                   {materialOrigin(material, user.id) === 'mine' ? (
-                    <span className="rounded-full bg-teal-soft px-2 py-0.5 text-micro font-bold text-teal">
+                    <span className="rounded-full bg-teal-soft px-2 py-0.5 text-micro font-bold text-teal-ink">
                       {material.visibility === 'public' ? 'Tuyo · publicado' : 'Tuyo'}
                     </span>
                   ) : null}
@@ -149,7 +149,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
                     </span>
                   ) : null}
                   {material.source === 'ai' ? (
-                    <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-[#8a5a12]">
+                    <span className="rounded-full bg-amber-soft px-2 py-0.5 text-micro font-bold text-amber-ink">
                       IA
                     </span>
                   ) : null}
