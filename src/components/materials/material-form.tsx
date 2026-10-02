@@ -1,6 +1,6 @@
 'use client'
 
-import { Globe, Lock, Sparkles } from '@/components/icons'
+import { Globe, Lock, RefreshCw, Sparkles, TriangleAlert } from '@/components/icons'
 import { useActionState, useEffect, useRef, useState } from 'react'
 
 import { createMaterialAction, updateMaterialAction } from '@/app/(app)/materiales/actions'
@@ -18,6 +18,25 @@ import { readSseStream } from '@/lib/sse-client'
 import { cn } from '@/lib/utils'
 import type { Material, MaterialVisibility } from '@/server/materials'
 import type { MaterialFileLinks } from '@/server/material-files'
+
+/**
+ * The strip above the activity field while Ombúa writes into it, and after.
+ *
+ * Three tones because they are three different things to be told. `working`
+ * means wait: the field is being written and is locked until it ends. `info` is
+ * a note about where the text came from. `warning` means the model did not
+ * finish, and it is amber with its own icon because in violet with a sparkle it
+ * read as one more hint and the practitioner saved a generic activity believing
+ * it was the one she asked for.
+ */
+type Notice = { tone: 'working' | 'info' | 'warning'; text: string }
+
+/**
+ * The stream closed without saying how it ended — no `done`, no `error`. A
+ * serverless timeout looks like this: the connection just stops. Without a
+ * sentence for it the strip stayed on "está escribiendo…" forever.
+ */
+const STREAM_DROPPED = 'Se cortó la conexión antes de terminar. Revisá lo que quedó antes de guardarlo.'
 
 /**
  * Writing or editing a material.
@@ -62,16 +81,22 @@ export function MaterialForm({
   const content = useRef<HTMLTextAreaElement>(null)
   const title = useRef<HTMLInputElement>(null)
   const objective = useRef<HTMLInputElement>(null)
-  const [generation, setGeneration] = useState<string | null>(
+  const [notice, setNotice] = useState<Notice | null>(
     generateFor
-      ? 'Ombúa está escribiendo la actividad…'
+      ? { tone: 'working', text: 'Ombúa está escribiendo la actividad…' }
       : describeFile
-        ? 'Ombúa está leyendo el archivo…'
+        ? { tone: 'working', text: 'Ombúa está leyendo el archivo…' }
         : null,
   )
+  // Whether "Probar de nuevo" is offered: only after a generation that failed.
+  const [canRetry, setCanRetry] = useState(false)
   const started = useRef(false)
   const [adjusting, setAdjusting] = useState(false)
   const [adjustment, setAdjustment] = useState('')
+
+  // The field is being written by the model. Typing into it now would be
+  // interleaved with the stream, and saving now would save half an activity.
+  const busy = notice?.tone === 'working'
 
   /**
    * "Modificar con IA" — v1's button, doing what it said.
@@ -82,12 +107,17 @@ export function MaterialForm({
    */
   async function adjust() {
     const field = content.current
-    if (!material || !field || !adjustment.trim()) return
+    // `busy` too: Enter in the box gets here without passing by the button.
+    if (!material || !field || !adjustment.trim() || busy) return
 
     const previous = field.value
-    setGeneration('Ombúa está ajustando la actividad…')
+    setNotice({ tone: 'working', text: 'Ombúa está ajustando la actividad…' })
+    setCanRetry(false)
     setAdjusting(true)
     field.value = ''
+
+    let failure: string | null = null
+    let finished = false
 
     try {
       const response = await fetch('/api/ai/material', {
@@ -104,17 +134,27 @@ export function MaterialForm({
         onDelta: (text) => {
           if (content.current) content.current.value += text
         },
-        onError: (message) => setGeneration(message),
+        onError: (message) => {
+          failure = message
+        },
         onDone: () => {
-          setGeneration(null)
-          setAdjustment('')
+          finished = true
         },
       })
+
+      if (finished) {
+        setNotice(null)
+        setAdjustment('')
+      } else {
+        // The request stays in the box: asking again is one click.
+        setNotice({ tone: 'warning', text: failure ?? STREAM_DROPPED })
+      }
     } catch (error) {
       if (content.current) content.current.value = previous
-      setGeneration(
-        `${(error as Error).message} Te dejo la actividad como estaba.`,
-      )
+      setNotice({
+        tone: 'warning',
+        text: `${(error as Error).message} Te dejo la actividad como estaba.`,
+      })
     } finally {
       setAdjusting(false)
     }
@@ -148,57 +188,89 @@ export function MaterialForm({
         if (objective.current && body.objective) objective.current.value = body.objective
         if (content.current && body.content) content.current.value = body.content
 
-        setGeneration(
-          'Lo escribió Ombúa leyendo el archivo. Revisalo y corregí lo que haga falta.',
-        )
+        setNotice({
+          tone: 'info',
+          text: 'Lo escribió Ombúa leyendo el archivo. Revisalo y corregí lo que haga falta.',
+        })
       })
       .catch((error: Error) => {
-        setGeneration(`${error.message} Escribí la descripción a mano.`)
+        setNotice({ tone: 'warning', text: `${error.message} Escribí la descripción a mano.` })
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Streams the generated activity into the field, once.
+  // Streams the generated activity into the field.
   //
   // It writes through the ref rather than through state, for the same reason the
   // remembered email does: this is a `defaultValue` textarea the practitioner is
   // about to edit, and turning it into a controlled input to receive one stream
   // would fight every keystroke afterwards.
-  useEffect(() => {
-    if (!generateFor || !material || started.current) return
-    started.current = true
+  async function streamActivity() {
+    if (!generateFor || !material) return
 
     const field = content.current
     if (field) field.value = ''
 
-    fetch('/api/ai/material', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ materialId: material.id, request: generateFor }),
-    })
-      .then(async (response) => {
-        if (!response.ok || !response.body) {
-          const { error } = (await response.json().catch(() => ({}))) as { error?: string }
-          throw new Error(error ?? 'No pudimos generar la actividad.')
-        }
+    let failure: string | null = null
+    let finished = false
 
-        await readSseStream(response.body, {
-          onDelta: (text) => {
-            if (content.current) content.current.value += text
-          },
-          onError: (message) => setGeneration(message),
-          onDone: () => setGeneration(null),
-        })
+    try {
+      const response = await fetch('/api/ai/material', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ materialId: material.id, request: generateFor }),
       })
-      .catch((error: Error) => {
-        setGeneration(`${error.message} Te dejo la actividad base para editar.`)
-        // Whatever the server already saved is still in the row; reloading is
-        // what brings it back, and the practitioner is told rather than left
-        // looking at an empty field.
-        if (content.current && !content.current.value) {
-          content.current.value = material.content
-        }
+      if (!response.ok || !response.body) {
+        const { error } = (await response.json().catch(() => ({}))) as { error?: string }
+        throw new Error(error ?? 'No pudimos generar la actividad.')
+      }
+
+      await readSseStream(response.body, {
+        onDelta: (text) => {
+          if (content.current) content.current.value += text
+        },
+        onError: (message) => {
+          failure = message
+        },
+        onDone: () => {
+          finished = true
+        },
       })
+
+      if (finished) {
+        setNotice(null)
+        return
+      }
+      setNotice({ tone: 'warning', text: failure ?? STREAM_DROPPED })
+    } catch (error) {
+      setNotice({
+        tone: 'warning',
+        text: `${(error as Error).message} Te dejo la actividad base para editar.`,
+      })
+      // Whatever the server already saved is still in the row, and the
+      // practitioner is told rather than left looking at an empty field.
+      if (content.current && !content.current.value) {
+        content.current.value = material.content
+      }
+    }
+
+    // Every way of getting here is a generation that did not finish, and the
+    // row is already counted against the month (`alreadyCounted` in the route),
+    // so asking again costs the practitioner nothing.
+    setCanRetry(true)
+  }
+
+  function retry() {
+    setCanRetry(false)
+    setNotice({ tone: 'working', text: 'Ombúa está escribiendo la actividad…' })
+    void streamActivity()
+  }
+
+  // Once, on arriving from "Generar con IA".
+  useEffect(() => {
+    if (!generateFor || !material || started.current) return
+    started.current = true
+    void streamActivity()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -216,7 +288,9 @@ export function MaterialForm({
           placeholder="Ej: Bingo de sonidos iniciales"
           defaultValue={material?.title ?? ''}
           required
-          autoFocus
+          // Not while Ombúa is filling the form in: a focus ring on the title
+          // points at the one field where nothing is happening.
+          autoFocus={!generateFor && !describeFile}
         />
       </div>
 
@@ -253,7 +327,7 @@ export function MaterialForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="focus" className="block leading-snug">
+          <Label htmlFor="focus" className="block leading-snug sm:leading-none">
             Dentro del área
             <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
@@ -279,7 +353,7 @@ export function MaterialForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="ageRange" className="block leading-snug">
+          <Label htmlFor="ageRange" className="block leading-snug sm:leading-none">
             Edad
             <span className="font-normal text-muted-foreground"> ·&nbsp;opcional</span>
           </Label>
@@ -310,11 +384,31 @@ export function MaterialForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="content">La actividad</Label>
-        {generation ? (
-          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-3 py-2.5 text-meta text-violet">
-            <Sparkles className="size-4 shrink-0" />
-            {generation}
-          </p>
+        {notice ? (
+          <div
+            role={notice.tone === 'warning' ? 'alert' : 'status'}
+            className={cn(
+              'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-3 py-2.5 text-meta leading-relaxed',
+              notice.tone === 'warning'
+                ? 'bg-amber-soft text-[#8a5a12]'
+                : 'bg-violet-soft text-violet',
+            )}
+          >
+            <span className="flex min-w-0 flex-1 basis-60 items-start gap-2">
+              {notice.tone === 'warning' ? (
+                <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+              ) : (
+                <Sparkles className={cn('mt-0.5 size-4 shrink-0', busy && 'animate-pulse')} />
+              )}
+              {notice.text}
+            </span>
+            {canRetry ? (
+              <Button type="button" variant="outline" size="sm" onClick={retry}>
+                <RefreshCw />
+                Probar de nuevo
+              </Button>
+            ) : null}
+          </div>
         ) : null}
         <Textarea
           ref={content}
@@ -322,8 +416,12 @@ export function MaterialForm({
           name="content"
           rows={12}
           required
+          readOnly={busy}
+          aria-busy={busy}
           defaultValue={material?.content ?? ''}
-          placeholder={`Cómo se juega:\nSe dice una palabra en voz alta y el niño marca la imagen que empieza con el mismo sonido.\n\nMateriales:\nCartones impresos y fichas.`}
+          // Empty while Ombúa writes: the example in an emptied field read as
+          // the first lines of the activity arriving.
+          placeholder={busy ? '' : `Cómo se juega:\nSe dice una palabra en voz alta y el niño marca la imagen que empieza con el mismo sonido.\n\nMateriales:\nCartones impresos y fichas.`}
         />
         <p className="text-xs leading-relaxed text-muted-foreground">
           Los renglones cortos que terminan en dos puntos, como{' '}
@@ -353,7 +451,7 @@ export function MaterialForm({
               type="button"
               variant="outline"
               onClick={() => void adjust()}
-              disabled={adjusting || !adjustment.trim()}
+              disabled={busy || !adjustment.trim()}
             >
               <Sparkles className="size-4" />
               {adjusting ? 'Ajustando…' : 'Modificar con IA'}
@@ -417,7 +515,7 @@ export function MaterialForm({
       <Button
         type="submit"
         size="lg"
-        disabled={pending || (visibility === 'public' && !ownWork)}
+        disabled={pending || busy || (visibility === 'public' && !ownWork)}
         className="max-sm:w-full"
       >
         {pending

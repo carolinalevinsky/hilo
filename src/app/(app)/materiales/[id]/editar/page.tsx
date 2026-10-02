@@ -48,7 +48,19 @@ export default async function EditMaterialPage({
         Volver al material
       </Link>
 
-      <PageHeader title="Editar material" subtitle={material.title} />
+      {/* Arriving from "Generar con IA" or "Subir un material" the title is a
+          placeholder, and it is already in the field right below. What the
+          practitioner needs here is to know what is happening to the form. */}
+      <PageHeader
+        title="Editar material"
+        subtitle={
+          typeof generar === 'string'
+            ? 'Ombúa escribe un borrador. Revisalo y ajustalo antes de guardarlo.'
+            : describir === '1'
+              ? 'Ombúa lee el archivo y completa la descripción. Revisala antes de guardar.'
+              : material.title
+        }
+      />
 
       <Card className="max-w-2xl">
         <CardContent>
