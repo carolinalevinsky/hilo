@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
+import { StepHint } from '@/components/onboarding/step-hint'
 import { PageHeader } from '@/components/page-header'
 import { PeriodNav } from '@/components/period-nav'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
@@ -13,6 +14,7 @@ import { ConfirmAction } from '@/components/confirm-action'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDayMonth } from '@/lib/dates'
+import { readStepHint } from '@/lib/first-steps'
 import { currentPeriod, periodLabel, shiftPeriod } from '@/lib/periods'
 import { listPatients } from '@/server/patients'
 import { monthlyLedger } from '@/server/payments'
@@ -57,6 +59,9 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
 
   return (
     <>
+      {/* "Primeros pasos" sends its third step here, with a line on top. */}
+      <StepHint name={readStepHint(params.pasos, ['pagos'])} />
+
       <PageHeader
         title="Pagos"
         subtitle="Lo pagado y lo pendiente, mes a mes."

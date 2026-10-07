@@ -1091,6 +1091,7 @@ export type Database = {
           id: string
           is_admin: boolean
           onboarded_at: string | null
+          payments_seen_at: string | null
           phone: string | null
           plan: string
           slug: string | null
@@ -1108,6 +1109,7 @@ export type Database = {
           id: string
           is_admin?: boolean
           onboarded_at?: string | null
+          payments_seen_at?: string | null
           phone?: string | null
           plan?: string
           slug?: string | null
@@ -1125,6 +1127,7 @@ export type Database = {
           id?: string
           is_admin?: boolean
           onboarded_at?: string | null
+          payments_seen_at?: string | null
           phone?: string | null
           plan?: string
           slug?: string | null
@@ -1638,6 +1641,7 @@ export type Database = {
         Args: { per_account: string; per_ip: string }
         Returns: boolean
       }
+      mfa_satisfied: { Args: never; Returns: boolean }
       note_login_failure: {
         Args: { per_account: string; per_ip: string }
         Returns: undefined

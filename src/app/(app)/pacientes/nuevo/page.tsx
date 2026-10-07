@@ -2,16 +2,22 @@ import { ArrowLeft } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { StepHint } from '@/components/onboarding/step-hint'
 import { PageHeader } from '@/components/page-header'
 import { PatientForm } from '@/components/patients/patient-form'
 import { Card, CardContent } from '@/components/ui/card'
 import { pageTitle } from '@/lib/brand'
+import { readStepHint } from '@/lib/first-steps'
 
 export const metadata: Metadata = { title: pageTitle('Nuevo paciente') }
 
-export default function NewPatientPage() {
+export default async function NewPatientPage({ searchParams }: PageProps<'/pacientes/nuevo'>) {
+  const { pasos } = await searchParams
+
   return (
     <>
+      <StepHint name={readStepHint(pasos, ['paciente'])} />
+
       <Link
         href="/pacientes"
         className="mb-3 inline-flex items-center gap-1.5 text-body font-semibold text-muted-foreground hover:text-foreground"

@@ -13,15 +13,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
 import { formatDayMonthShort, today, todayDate } from '@/lib/dates'
-import { disciplineLabel } from '@/lib/disciplines'
-import { formatTime, weekdayName } from '@/lib/week'
+import { weekdayName } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
-import { hasAnyAppointment, nextAppointmentFor } from '@/server/appointments'
-import { hasAnyGoal } from '@/server/goals'
-import { countMaterials } from '@/server/materials'
+import { firstSteps } from '@/server/first-steps'
 import { listPatients } from '@/server/patients'
 import { todayBriefing } from '@/server/planning'
-import { countSessions } from '@/server/sessions'
 import { currentSession } from '../session'
 import { pageTitle } from '@/lib/brand'
 
@@ -29,35 +25,13 @@ export const metadata: Metadata = { title: pageTitle('Inicio') }
 
 export default async function HomePage() {
   const { user, practitioner } = await currentSession()
-  const [patients, todaySessions, sessionCount, goalExists, appointmentExists] =
-    await Promise.all([
-      listPatients(user.id, { sort: 'recent' }),
-      todayBriefing(user.id, practitioner.discipline),
-      // Just the numbers, for "Primeros pasos". They read an index and return no
-      // rows.
-      countSessions(user.id),
-      hasAnyGoal(user.id),
-      hasAnyAppointment(user.id),
-    ])
-
-  // Only while "Primeros pasos" is still on screen, which is a few days out of
-  // the life of an account. The same condition `FirstSteps` hides itself on —
-  // patient, goal and record; see there for why scheduling is not part of it.
-  const stillOnboarding = patients.length === 0 || sessionCount === 0 || !goalExists
-  const firstPatient = patients[0] ?? null
-  const [materialCount, firstPatientNext] = stillOnboarding
-    ? await Promise.all([
-        countMaterials(user.id, practitioner.discipline),
-        firstPatient ? nextAppointmentFor(user.id, firstPatient.id) : Promise.resolve(null),
-      ])
-    : [0, null]
-
-  // Step four is tied to that patient's session only when it is today: tying the
-  // record to next Tuesday's would mark it attended before it happened.
-  const todaysAppointment =
-    firstPatientNext && firstPatientNext.scheduled_on === today()
-      ? { id: firstPatientNext.id, startTime: formatTime(firstPatientNext.start_time) }
-      : null
+  const [patients, todaySessions, steps] = await Promise.all([
+    listPatients(user.id, { sort: 'recent' }),
+    todayBriefing(user.id, practitioner.discipline),
+    // Just the numbers, for "Primeros pasos". They read an index and return no
+    // rows.
+    firstSteps(user.id),
+  ])
 
   // The briefing carries the patient's name and colour but not their birthday,
   // and the list is already here — no reason to ask the database twice.
@@ -93,7 +67,7 @@ export default async function HomePage() {
       />
 
       {/* v1's onboarding, and the thing that made the first ten minutes make
-          sense (`legacy/index.html:1033`). It removes itself once both steps are
+          sense (`legacy/index.html:1033`). It removes itself once the steps are
           done, so it never becomes furniture.
 
           It also *is* the empty state now. There used to be a card underneath
@@ -102,18 +76,9 @@ export default async function HomePage() {
           same form — the same instruction twice, on the first screen anyone
           sees. */}
       <FirstSteps
-        hasPatient={patients.length > 0}
-        hasGoal={goalExists}
-        hasAppointment={appointmentExists}
-        hasSession={sessionCount > 0}
-        firstPatient={
-          firstPatient
-            ? { id: firstPatient.id, firstName: firstName(firstPatient.full_name) }
-            : null
-        }
-        todaysAppointment={todaysAppointment}
-        materialCount={materialCount}
-        disciplineLabel={disciplineLabel(practitioner.discipline)}
+        hasPatient={steps.hasPatient}
+        hasPlan={steps.hasPlan}
+        hasSeenPayments={steps.hasSeenPayments}
       />
 
       {patients.length === 0 ? null : (

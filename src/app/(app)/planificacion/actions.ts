@@ -3,8 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { withDone } from '@/lib/done'
 import { setAppointmentNote } from '@/server/appointments'
 import { requireUser } from '@/server/auth'
+import { firstSteps } from '@/server/first-steps'
 import { createGoal } from '@/server/goals'
 import { createOwnActivity } from '@/server/materials'
 import { getPractitioner } from '@/server/practitioners'
@@ -48,8 +50,25 @@ function refresh() {
   revalidatePath('/inicio')
 }
 
+/**
+ * The first thing ever put in a plan is step two of "Primeros pasos": that
+ * save goes back to Inicio, where the step is crossed out and the next one is
+ * open. Asked before the write, because afterwards it is no longer the first.
+ * Every other add stays on the planner.
+ */
+async function firstPlanEver(practitionerId: string): Promise<boolean> {
+  const steps = await firstSteps(practitionerId)
+  return steps.open && !steps.hasPlan
+}
+
+function backToFirstSteps(): never {
+  revalidatePath('/inicio')
+  redirect(withDone('/inicio', 'plan-guardado'))
+}
+
 export async function addGoalToPlanAction(formData: FormData) {
   const user = await requireUser()
+  const first = await firstPlanEver(user.id)
 
   await addGoalToPlan(
     user.id,
@@ -58,6 +77,7 @@ export async function addGoalToPlanAction(formData: FormData) {
     sessionOf(formData),
   )
   refresh()
+  if (first) backToFirstSteps()
 }
 
 /**
@@ -75,6 +95,7 @@ export async function addGoalToPlanAction(formData: FormData) {
 export async function addActivityToPlanAction(formData: FormData) {
   const user = await requireUser()
   const practitioner = await getPractitioner(user.id)
+  const first = await firstPlanEver(user.id)
   const activity = String(formData.get('activity') ?? '')
 
   await addActivityToPlan(
@@ -91,6 +112,7 @@ export async function addActivityToPlanAction(formData: FormData) {
 
   refresh()
   revalidatePath('/materiales')
+  if (first) backToFirstSteps()
 }
 
 /**
@@ -142,6 +164,7 @@ export async function savePlanNoteAction(formData: FormData) {
 
 export async function addMaterialToPlanAction(formData: FormData) {
   const user = await requireUser()
+  const first = await firstPlanEver(user.id)
 
   await addMaterialToPlan(
     user.id,
@@ -150,6 +173,7 @@ export async function addMaterialToPlanAction(formData: FormData) {
     sessionOf(formData),
   )
   refresh()
+  if (first) backToFirstSteps()
 }
 
 /**
@@ -165,9 +189,11 @@ export async function addMaterialToPlanAction(formData: FormData) {
 export async function addMaterialFromLibraryAction(formData: FormData) {
   const user = await requireUser()
   const patientId = String(formData.get('patientId'))
+  const first = await firstPlanEver(user.id)
 
   await addMaterialToPlan(user.id, patientId, String(formData.get('materialId')))
   refresh()
+  if (first) backToFirstSteps()
   redirect(`/planificacion?paciente=${patientId}`)
 }
 

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { agree, type Agreement } from '@/lib/grammatical-gender'
 
 import { markTourSeenAction } from '@/app/(app)/inicio/actions'
+import { Scene, SceneStyles } from '@/components/onboarding/tour-scenes'
 import { TOUR_STOPS } from '@/components/onboarding/tour-stops'
 import { Button } from '@/components/ui/button'
 
@@ -12,10 +13,19 @@ import { Button } from '@/components/ui/button'
  *
  * ─── The two things that make a tour tolerable ─────────────────────────────
  *
- * **It points at the real thing.** A carousel of screenshots teaches nothing,
- * because the reader still has to find the screen afterwards. This highlights
- * the actual nav item, in the actual sidebar, so the next time they look for
- * Cobros their eye already knows where to go.
+ * **It points at the real thing, and shows what happens there.** A carousel of
+ * screenshots teaches nothing, because the reader still has to find the screen
+ * afterwards. This highlights the actual nav item, in the actual sidebar, so
+ * the next time they look for Cobros their eye already knows where to go. And
+ * at the top of the card a short drawing plays what that screen is for — a
+ * session being marked "Vino", a goal dropping into a plan — because on a new
+ * account the screens themselves are empty, and an empty screen explains
+ * nothing. See `tour-scenes.tsx`.
+ *
+ * Carolina, 2026-10-07: the first version only ringed the nav item; a later
+ * one created a sample patient and walked the real screens with him. She asked
+ * for this one, the drawings, back: the real screens were "no se entiende
+ * nada" — too much happening, and every stop asked for a click.
  *
  * **It runs once and says so.** Five stops, a counter that shows how many are
  * left, and "Saltar" on every one of them. A tour that cannot be skipped gets
@@ -191,10 +201,12 @@ export function AppTour({ seen, agreement }: { seen: boolean; agreement: Agreeme
       <div
         className="absolute rounded-2xl bg-card p-5 shadow-2xl"
         style={{
-          width: 'min(340px, calc(100vw - 32px))',
+          width: 'min(380px, calc(100vw - 32px))',
           ...(foco
             ? {
-                top: Math.min(foco.top, window.innerHeight - 260),
+                // Beside the ringed item, and never off the bottom: the card
+                // is about 420px tall with its drawing.
+                top: Math.max(16, Math.min(foco.top, window.innerHeight - 436)),
                 left: foco.left + foco.width + 16,
               }
             : // Centred in both directions, which is what the note at the top
@@ -213,6 +225,13 @@ export function AppTour({ seen, agreement }: { seen: boolean; agreement: Agreeme
               }),
         }}
       >
+        <SceneStyles />
+        {stop.scene ? (
+          <div className="mb-4">
+            <Scene name={stop.scene} />
+          </div>
+        ) : null}
+
         {/* El saludo no lleva contador: no es una de las cinco pantallas, y
             numerarlo haría que "1 de 6" empiece antes de mostrar nada. */}
         {step > 0 ? (

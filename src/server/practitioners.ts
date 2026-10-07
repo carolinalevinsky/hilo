@@ -186,6 +186,22 @@ export async function markTourSeen(practitionerId: string) {
   if (error) throw error
 }
 
+/**
+ * "Ya miré Pagos": the third of "Primeros pasos", which is a visit and not a
+ * thing saved. Written when the step's button opens the screen. Like the tour,
+ * once per account and never overwritten.
+ */
+export async function markPaymentsSeen(practitionerId: string) {
+  const db = await getDb()
+  const { error } = await db
+    .from('practitioners')
+    .update({ payments_seen_at: new Date().toISOString() })
+    .eq('id', practitionerId)
+    .is('payments_seen_at', null)
+
+  if (error) throw error
+}
+
 // ─── The repair path ────────────────────────────────────────────────────────
 
 export const NewProfile = z.object({

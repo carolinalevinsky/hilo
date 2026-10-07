@@ -1,7 +1,12 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+
+import { withDone } from '@/lib/done'
 import { requireUser } from '@/server/auth'
-import { markTourSeen } from '@/server/practitioners'
+import { firstSteps } from '@/server/first-steps'
+import { markPaymentsSeen, markTourSeen } from '@/server/practitioners'
 
 /**
  * "Ya vi el recorrido."
@@ -14,4 +19,19 @@ import { markTourSeen } from '@/server/practitioners'
 export async function markTourSeenAction() {
   const user = await requireUser()
   await markTourSeen(user.id)
+}
+
+/**
+ * "Ver pagos", the third of "Primeros pasos". The step is the visit, so the
+ * button is this action and not a link: it remembers the visit and then opens
+ * the screen. When it was the last step left, the screen says so.
+ */
+export async function openPaymentsStepAction() {
+  const user = await requireUser()
+  const before = await firstSteps(user.id)
+  await markPaymentsSeen(user.id)
+  revalidatePath('/inicio')
+
+  const last = before.hasPatient && before.hasPlan
+  redirect(last ? withDone('/cobros?pasos=pagos', 'primeros-pasos-listos') : '/cobros?pasos=pagos')
 }

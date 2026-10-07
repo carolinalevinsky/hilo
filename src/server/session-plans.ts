@@ -105,6 +105,22 @@ function belongsTo(
  * What is planned for one of a patient's sessions, in the order it will be
  * worked. Without `appointmentId`, the next session's.
  */
+/**
+ * Whether anything has ever been put in a plan, for "Primeros pasos". Asked the
+ * way the other counts are: `head: true`, no rows.
+ */
+export async function hasAnyPlanItem(practitionerId: string): Promise<boolean> {
+  const db = await getDb()
+  const { count, error } = await db
+    .from('session_plan_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('practitioner_id', practitionerId)
+    .limit(1)
+
+  if (error) throw error
+  return (count ?? 0) > 0
+}
+
 export async function listPlanItems(
   practitionerId: string,
   patientId: string,

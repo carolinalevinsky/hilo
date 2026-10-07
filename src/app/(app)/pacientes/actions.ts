@@ -8,6 +8,7 @@ import { nextDateForWeekday } from '@/lib/week'
 import { createAppointment } from '@/server/appointments'
 import { createSchedule } from '@/server/schedules'
 import { requireUser } from '@/server/auth'
+import { firstSteps } from '@/server/first-steps'
 import { createGoal } from '@/server/goals'
 import { createPatient, setPatientArchived, softDeletePatient, updatePatient } from '@/server/patients'
 import { ensurePatientRoom, rotatePatientRoom, setPatientVideoUrl } from '@/server/patient-room'
@@ -145,6 +146,9 @@ export async function createPatientAction(
 ): Promise<FormState> {
   const user = await requireUser()
 
+  // Antes de escribir: después ya no se puede saber si éste era el primero.
+  const steps = await firstSteps(user.id)
+
   let patientId: string
   try {
     const patient = await createPatient(user.id, readPatientForm(formData))
@@ -159,6 +163,14 @@ export async function createPatientAction(
 
   revalidatePath('/pacientes')
   if (scheduled) revalidatePath('/agenda')
+
+  // El primer paciente es el paso 1 de "Primeros pasos": se vuelve a Inicio,
+  // donde queda tachado —junto con el objetivo y la agenda, si se cargaron
+  // acá— y el siguiente está abierto. Todos los demás terminan en su ficha.
+  if (!steps.hasPatient) {
+    revalidatePath('/inicio')
+    redirect(withDone('/inicio', 'paciente-creado'))
+  }
   redirect(withDone(`/pacientes/${patientId}`, 'paciente-creado'))
 }
 
