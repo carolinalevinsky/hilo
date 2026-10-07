@@ -1,51 +1,10 @@
-import Link from 'next/link'
-
-import { Wordmark } from '@/components/brand/wordmark'
-
-import { Button } from '@/components/ui/button'
+import { redirect } from 'next/navigation'
 
 /**
- * The landing page, for someone who is not signed in.
+ * The root, for someone who is not signed in, is the sign-in screen.
  *
- * Anyone with a session never sees it — the proxy sends them to `/inicio`.
+ * Anyone with a session never gets here — the proxy sends them to `/inicio`.
  */
-export default function LandingPage() {
-  return (
-    <div className="app-auth-bg flex min-h-dvh flex-col items-center justify-center px-6 py-16 text-center text-white">
-      <Wordmark tone="white" height={46} className="mb-7" />
-
-      <h1 className="max-w-xl text-[26px] leading-tight font-extrabold tracking-[-0.6px] sm:text-[32px]">
-        Tus pacientes, tus sesiones y tus informes, en un solo lugar
-      </h1>
-
-      <p className="mt-4 max-w-md text-lead leading-relaxed text-white/85">
-        Hecho para fonoaudiólogas, psicopedagogas, terapeutas ocupacionales, psicólogas,
-        psicomotricistas y kinesiólogas de Uruguay.
-      </p>
-
-      <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
-        <Button asChild size="lg" className="w-full bg-white text-violet hover:bg-white/90">
-          <Link href="/entrar">Entrar</Link>
-        </Button>
-        <Button
-          asChild
-          size="lg"
-          variant="outline"
-          className="w-full border-white/40 bg-transparent text-white hover:bg-white/12 hover:text-white"
-        >
-          <Link href="/crear-cuenta">Quiero una cuenta</Link>
-        </Button>
-      </div>
-
-      <p className="mt-10 text-meta text-white/70">
-        <Link href="/terminos" className="underline">
-          Términos
-        </Link>
-        {' · '}
-        <Link href="/privacidad" className="underline">
-          Privacidad
-        </Link>
-      </p>
-    </div>
-  )
+export default function RootPage() {
+  redirect('/entrar')
 }
