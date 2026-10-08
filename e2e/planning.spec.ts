@@ -93,6 +93,11 @@ test('prepara una sesión, y la nota sobrevive irse a mirar un material', async 
     await page.getByLabel('Motivo de consulta').fill('Dificultades en la conciencia fonológica.')
     await page.getByRole('button', { name: 'Crear paciente' }).click()
 
+    // La primera paciente es el paso 1 de "Primeros pasos": se vuelve a Inicio.
+    // La ficha se abre desde la lista.
+    await expect(page).toHaveURL(/\/inicio/)
+    await page.goto('/pacientes')
+    await page.getByRole('link', { name: new RegExp(PATIENT) }).click()
     await expect(page.getByRole('heading', { name: PATIENT })).toBeVisible()
 
     // Sin un objetivo activo el panel de Planificación muestra su estado vacío,
@@ -134,6 +139,10 @@ test('prepara una sesión, y la nota sobrevive irse a mirar un material', async 
     // El objetivo entra solo — desde que el panel dejó de ofrecer materiales,
     // "Agregar" agrega el objetivo y nada más.
     await page.getByRole('button', { name: 'Agregar', exact: true }).click()
+    // Lo primero que entra a un plan es el paso 2 de "Primeros pasos": se vuelve
+    // a Inicio con el paso tachado, y el plan sigue acá.
+    await expect(page).toHaveURL(/\/inicio/)
+    await page.goto('/planificacion')
     // La chip que confirma es la misma que lo saca, y su nombre accesible lo dice.
     await expect(page.getByRole('button', { name: `Quitar del plan: ${GOAL}` })).toBeVisible()
 

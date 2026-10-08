@@ -21,6 +21,10 @@ export const DONE_MESSAGES = {
   'documento-papelera': 'El documento pasó a la papelera.',
   'objetivos-cargados': 'Objetivos cargados en la ficha.',
   'reserva-convertida': 'Paciente creado desde la reserva.',
+  // Los que dicen las acciones que, durante "Primeros pasos", vuelven a Inicio
+  // en vez de quedarse en su pantalla. Ver `src/server/first-steps.ts`.
+  'plan-guardado': 'Listo, la sesión quedó planificada.',
+  'primeros-pasos-listos': '¡Listo! Terminaste los primeros pasos.',
 } as const
 
 export type DoneCode = keyof typeof DONE_MESSAGES

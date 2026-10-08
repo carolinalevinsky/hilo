@@ -111,13 +111,15 @@ test('sign in, load a patient, register a session, get a report', async ({ page 
     await expect(page.getByRole('dialog', { name: /Recorrido por Ombúa/ })).toBeHidden()
   })
 
+  // Where the ficha is, once there is one.
+  let ficha = ''
+
   await test.step('loads a patient', async () => {
-    // The full form, not the quick one. Inicio's first step now loads a patient
-    // from a name alone, and its button is also called "Cargar paciente" — but
-    // this test needs the screen that has the birth date and the motivo, which
-    // is the one behind the link beside it.
-    await page.getByRole('link', { name: /ficha completa/ }).click()
-    await expect(page).toHaveURL(/\/pacientes\/nuevo$/)
+    // Step one of "Primeros pasos" has no form of its own any more: it opens the
+    // real alta, with a line on top saying what to do there.
+    await page.getByRole('link', { name: /Cargar paciente/ }).click()
+    await expect(page).toHaveURL(/\/pacientes\/nuevo\?pasos=paciente$/)
+    await expect(page.getByText('Primeros pasos · 1 de 3.')).toBeVisible()
 
     await page.getByLabel('Nombre y apellido').fill(PATIENT)
     await page.getByLabel('Fecha de nacimiento').fill('2019-04-12')
@@ -128,7 +130,15 @@ test('sign in, load a patient, register a session, get a report', async ({ page 
 
     await page.getByRole('button', { name: 'Crear paciente' }).click()
 
+    // The first patient is step one, so saving lands back on Inicio with it
+    // crossed out and step two open. The ficha is reached through the list.
+    await expect(page).toHaveURL(/\/inicio/)
+    await expect(page.getByText('1 de 3', { exact: true })).toBeVisible()
+    await page.goto('/pacientes')
+    await page.getByRole('link', { name: new RegExp(PATIENT) }).click()
+
     await expect(page.getByRole('heading', { name: PATIENT })).toBeVisible()
+    ficha = new URL(page.url()).pathname
     // The age is derived, not stored — this is the assertion that it is derived
     // correctly, in the practitioner's own timezone.
     await expect(page.getByText(/años/).first()).toBeVisible()
@@ -157,6 +167,8 @@ test('sign in, load a patient, register a session, get a report', async ({ page 
 
     await page.getByRole('button', { name: 'Guardar registro' }).click()
 
+    // Saving lands back on the ficha, with the record on it.
+    await expect(page).toHaveURL(new RegExp(ficha))
     await expect(page.getByText(NOTE.slice(0, 40), { exact: false })).toBeVisible()
   })
 

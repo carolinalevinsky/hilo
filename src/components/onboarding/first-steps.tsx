@@ -1,13 +1,9 @@
-import { BookOpen, Check, FileText, Sparkles, Target } from '@/components/icons'
+import { Check, FileText, Sparkles, Target } from '@/components/icons'
 import Link from 'next/link'
 
+import { openPaymentsStepAction } from '@/app/(app)/inicio/actions'
 import { TourButton } from '@/components/onboarding/app-tour'
-import {
-  AppointmentStepForm,
-  GoalStepForm,
-  PatientStepForm,
-  RecordStepForm,
-} from '@/components/onboarding/step-forms'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
@@ -15,70 +11,50 @@ import { cn } from '@/lib/utils'
  * "Primeros pasos" — v1's onboarding card (`legacy/index.html:1033`), and the
  * only thing standing between a new practitioner and six empty screens.
  *
- * ─── Each step is done here (P21) ──────────────────────────────────────────
+ * ─── Each step opens the real screen ───────────────────────────────────────
  *
- * Thomas's QA: the card listed things and sent you elsewhere to do each one — a
- * list of chores with links. Carolina chose that every step be doable right
- * here, and cross itself out when it is done. So each open step carries a small
- * form (`step-forms.tsx`) with the fewest fields that make sense on day one, and
- * a link to the full screen for anybody who wants it.
+ * For a while every step was done right here, in a small form of its own (P21).
+ * Carolina, using it: "esto no tiene sentido, no es como funciona la app". The
+ * small forms were a second way of doing each thing that exists nowhere else.
  *
- * Four steps, in the order a first week goes: somebody to see, what you are
- * working on with them, when you see them, and what happened. The goal comes
- * before the session because everything that makes Ombúa more than a notebook
- * hangs off a goal — the progress chart, the material the planner suggests, most
- * of what a report is built from — and because the record of the first session
- * can then say which goal it worked.
+ * So a step is a sentence and a button. The button opens the screen where that
+ * thing is always done, which says what to do there (`StepHint`), and saving
+ * brings you back here with the step crossed out — the Server Action decides
+ * that, from `src/server/first-steps.ts`. What P21 asked for and stays: nothing
+ * to tick by hand, each step crosses itself out.
+ *
+ * ─── The three steps ───────────────────────────────────────────────────────
+ *
+ * Carolina's, 2026-10-07: a patient, a planned session, and a look at Pagos.
+ * There were four before — patient, goal, scheduling, a record — which is the
+ * clinical order but is also four screens before anything feels done. These
+ * three are the product's shape: somebody to see, what you will do with them,
+ * and what it is worth. The third is a visit rather than a save, so its
+ * button is an action that remembers the visit (`openPaymentsStepAction`).
+ *
+ * One step is open at a time, the first one not done. The rest are listed so
+ * the road is visible, without a button.
  *
  * ─── When it goes away ─────────────────────────────────────────────────────
  *
- * **The card removes itself** once the steps are done, which keeps it from
- * becoming furniture; there is no dismiss button. "Done" is patient, goal and
- * record: the scheduling step was added in P21, and accounts that finished the
- * three steps before it must not see the card come back to ask for the fourth.
- * For a new account the steps go in order, so by the time there is a record
- * there is almost always something scheduled.
- *
- * ─── Why the library is here and is not a step ────────────────────────────
- *
- * Every screen funnels to "cargá tu primer paciente", and typing a real child's
- * name into software you have used for ninety seconds is a reasonable thing to
- * hesitate over. The library already has materials for their discipline on the
- * day they sign up — the one piece of present-tense value available before any
- * data is entered — so it sits below the steps, worded as a fact, not a task.
+ * **The card removes itself** once the three are done, which keeps it from
+ * becoming furniture; there is no dismiss button.
  */
 export function FirstSteps({
   hasPatient,
-  hasGoal,
-  hasAppointment,
-  hasSession,
-  firstPatient,
-  todaysAppointment,
-  materialCount,
-  disciplineLabel,
+  hasPlan,
+  hasSeenPayments,
 }: {
   hasPatient: boolean
-  hasGoal: boolean
-  hasAppointment: boolean
-  hasSession: boolean
-  /** Who steps two to four are about, once there is somebody. */
-  firstPatient: { id: string; firstName: string } | null
-  /** That patient's session today, if there is one — step four is tied to it. */
-  todaysAppointment: { id: string; startTime: string } | null
-  materialCount: number
-  /** "Fonoaudiología", to be lowercased into running text. */
-  disciplineLabel: string
+  hasPlan: boolean
+  hasSeenPayments: boolean
 }) {
-  if (hasPatient && hasGoal && hasSession) return null
+  if (hasPatient && hasPlan && hasSeenPayments) return null
 
-  const steps = [hasPatient, hasGoal, hasAppointment, hasSession]
+  const steps = [hasPatient, hasPlan, hasSeenPayments]
   const done = steps.filter(Boolean).length
-
-  // Said rather than left blank: an inert row reads as broken, and "after the
-  // first one" reads as a sequence.
-  const afterStepOne = (
-    <span className="text-meta text-muted-foreground">Después del paso 1</span>
-  )
+  // The one that is open. Never -1: the card is gone when all of them are done.
+  const current = steps.indexOf(false) + 1
 
   return (
     <Card className="mb-4 border-violet">
@@ -90,82 +66,42 @@ export function FirstSteps({
           </span>
         </div>
         <p className="mb-3 text-meta text-muted-foreground">
-          Cuatro pasos para empezar a usar Ombúa. Se hacen acá mismo.
+          Tres pasos para empezar. Cada uno te lleva a la pantalla donde se hace, y al
+          terminar volvés acá.
         </p>
 
         <Step
           done={hasPatient}
+          open={current === 1}
           number={1}
           title="Cargá tu primer paciente"
-          text="Con el nombre alcanza para empezar. El resto de la ficha lo completás cuando quieras."
-          action={<PatientStepForm />}
+          text="En su ficha ponés el nombre, qué van a trabajar y qué día viene. Con eso la sesión aparece sola en tu Agenda."
+          action={<StepLink href="/pacientes/nuevo?pasos=paciente">Cargar paciente</StepLink>}
         />
 
         <Step
-          done={hasGoal}
+          done={hasPlan}
+          open={current === 2}
           number={2}
-          title={
-            firstPatient ? `Ponele un objetivo a ${firstPatient.firstName}` : 'Ponele un objetivo'
-          }
-          text="Es lo que Ombúa usa para seguir el progreso, sugerirte materiales y armar los informes."
-          action={
-            firstPatient ? (
-              <GoalStepForm patientId={firstPatient.id} patientName={firstPatient.firstName} />
-            ) : (
-              afterStepOne
-            )
-          }
+          title="Planificá una sesión"
+          text="Elegís al paciente, Ombúa te sugiere sus objetivos y materiales de tu biblioteca, y con «Agregar» pasan al plan de ese día."
+          action={<StepLink href="/planificacion?pasos=planificar">Planificar sesión</StepLink>}
         />
 
         <Step
-          done={hasAppointment}
+          done={hasSeenPayments}
+          open={current === 3}
           number={3}
-          title="Agendá su sesión"
-          text="Aparece en tu Agenda, y el día anterior podés mandarle el recordatorio."
+          title="Mirá tus pagos"
+          text="Quién pagó y quién debe, mes a mes. Anotás cada pago cuando llega y el mes se cuenta solo."
           action={
-            firstPatient ? <AppointmentStepForm patientId={firstPatient.id} /> : afterStepOne
+            <form action={openPaymentsStepAction}>
+              <Button type="submit" size="sm">
+                Ver pagos →
+              </Button>
+            </form>
           }
         />
-
-        <Step
-          done={hasSession}
-          number={4}
-          title="Registrá cómo salió"
-          text={
-            todaysAppointment
-              ? `Es el registro de la sesión de hoy a las ${todaysAppointment.startTime}: al guardarlo queda marcada como que vino.`
-              : 'Anotá cómo salió la sesión. Es lo que Ombúa lee después para armar los informes.'
-          }
-          action={
-            firstPatient ? (
-              <RecordStepForm
-                patientId={firstPatient.id}
-                todaysAppointment={todaysAppointment}
-              />
-            ) : (
-              afterStepOne
-            )
-          }
-        />
-
-        {/* Something to do right now that needs no patient. See above. */}
-        {materialCount > 0 ? (
-          <Link
-            href="/materiales"
-            className="mt-3 flex items-center gap-2.5 rounded-xl bg-violet-soft px-3 py-2.5 text-meta leading-relaxed text-violet transition-opacity hover:opacity-85"
-          >
-            <BookOpen className="size-4 shrink-0" />
-            <span>
-              Mientras tanto, tu biblioteca ya tiene{' '}
-              <b>
-                {materialCount} {materialCount === 1 ? 'material' : 'materiales'} de{' '}
-                {disciplineLabel.toLowerCase()}
-              </b>{' '}
-              para usar hoy.
-            </span>
-            <span className="ml-auto shrink-0 font-bold">Ver →</span>
-          </Link>
-        ) : null}
 
         {/* v1 closed the card with what all this is *for*. It is the answer to
             "why am I typing this in", and it is the reason somebody finishes
@@ -179,9 +115,9 @@ export function FirstSteps({
             <TourButton>Ver el recorrido</TourButton>
           </p>
 
-          <p className="mb-2 text-meta text-muted-foreground">
-            Con lo que cargás, Ombúa te arma:
-          </p>
+          {/* "Ombúa arma", never "Ombúa te arma": the product's voice is one
+              that does things, not one that does them for you. Carolina. */}
+          <p className="mb-2 text-meta text-muted-foreground">Con lo que cargás, Ombúa arma:</p>
           <ul className="grid gap-2 sm:grid-cols-3">
             <Promise icon={FileText} text="Informes para el colegio o la mutualista" />
             <Promise icon={Target} text="El seguimiento de cada objetivo" />
@@ -193,19 +129,30 @@ export function FirstSteps({
   )
 }
 
+function StepLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Button asChild size="sm">
+      <Link href={href}>{children} →</Link>
+    </Button>
+  )
+}
+
 /**
- * One step. Open, it shows what it is for and the form that does it, under the
- * text rather than beside it — a form needs the width a button did not. Done, it
- * collapses to its title, crossed out, with a check.
+ * One step. Done, it collapses to its title, crossed out, with a check. Open,
+ * it says what it is for and has the button that goes and does it. Still ahead,
+ * it says the same thing without the button and a shade quieter — it is there
+ * to show the road, and an inert row with no words reads as broken.
  */
 function Step({
   done,
+  open,
   number,
   title,
   text,
   action,
 }: {
   done: boolean
+  open: boolean
   number: number
   title: string
   text: string
@@ -216,20 +163,30 @@ function Step({
       <span
         className={cn(
           'flex size-7 shrink-0 items-center justify-center rounded-full text-meta font-extrabold',
-          done ? 'bg-green-soft text-green-ink' : 'bg-violet-soft text-violet',
+          done
+            ? 'bg-green-soft text-green-ink'
+            : open
+              ? 'bg-violet-soft text-violet'
+              : 'bg-muted text-muted-foreground',
         )}
       >
         {done ? <Check className="size-4" /> : number}
       </span>
 
       <div className="min-w-0 flex-1 pt-0.5">
-        <p className={cn('text-item font-bold', done && 'text-muted-foreground line-through')}>
+        <p
+          className={cn(
+            'text-item font-bold',
+            done && 'text-muted-foreground line-through',
+            !done && !open && 'text-muted-foreground',
+          )}
+        >
           {title}
         </p>
         {done ? null : (
           <>
             <p className="mt-0.5 text-meta text-muted-foreground">{text}</p>
-            <div className="mt-2">{action}</div>
+            {open && action ? <div className="mt-2">{action}</div> : null}
           </>
         )}
       </div>

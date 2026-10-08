@@ -292,7 +292,7 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="objetivos" className="scroll-mt-4">
             <CardHeader>
               <CardTitle>Objetivos</CardTitle>
             </CardHeader>

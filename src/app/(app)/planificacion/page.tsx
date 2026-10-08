@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { EmptyState } from '@/components/empty-state'
+import { StepHint } from '@/components/onboarding/step-hint'
 import { PageHeader } from '@/components/page-header'
 import { CustomActivity } from '@/components/planning/custom-activity'
 import { GoalSuggestions } from '@/components/planning/goal-suggestions'
@@ -14,6 +15,7 @@ import { StepHeading } from '@/components/planning/step-heading'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatLongDate, today, toDateInput, todayDate } from '@/lib/dates'
+import { readStepHint } from '@/lib/first-steps'
 import { areasFor } from '@/lib/material-areas'
 import { formatTime } from '@/lib/week'
 import { firstName } from '@/lib/whatsapp'
@@ -82,10 +84,14 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
     listAppointments(user.id, today(), toDateInput(until)),
   ])
 
+  // "Primeros pasos" sends its second step here, with a line on top.
+  const stepHint = readStepHint(params.pasos, ['planificar'])
+
   const [firstPatient] = patients
   if (!firstPatient) {
     return (
       <>
+        <StepHint name={stepHint} />
         <PlanningHeader />
         <Card>
           <EmptyState
@@ -197,6 +203,7 @@ export default async function PlanningPage({ searchParams }: PageProps<'/planifi
 
   return (
     <>
+      <StepHint name={stepHint} />
       <PlanningHeader />
 
       <SessionContextCard
