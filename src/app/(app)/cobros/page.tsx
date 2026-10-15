@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
 import { StepHint } from '@/components/onboarding/step-hint'
 import { PageHeader } from '@/components/page-header'
+import { PeriodBar } from '@/components/period-bar'
 import { PeriodNav } from '@/components/period-nav'
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { BillingDialog } from '@/components/payments/billing-dialog'
@@ -91,7 +92,16 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
           {/* La misma barra que la Agenda en escritorio. Sin el "Mes actual"
               chiquito que había debajo: el botón de la derecha ya lo dice, y
               apagado cuando ya estás ahí. */}
-          <div className="mb-4 flex items-center gap-3">
+          <PeriodBar
+            className="mb-3 sm:hidden"
+            prevHref={`/cobros?mes=${shiftPeriod(period, -1)}`}
+            nextHref={period < now ? `/cobros?mes=${shiftPeriod(period, 1)}` : undefined}
+            label={periodLabel(period)}
+            resetHref="/cobros"
+            resetLabel="Este mes"
+            isCurrent={period === now}
+          />
+          <div className="mb-4 flex items-center gap-3 max-sm:hidden">
             <PeriodNav
               prevHref={`/cobros?mes=${shiftPeriod(period, -1)}`}
               nextHref={period < now ? `/cobros?mes=${shiftPeriod(period, 1)}` : undefined}
@@ -134,14 +144,23 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
             <CardContent>
               <ul className="divide-y divide-border">
                 {ledger.rows.map((row) => (
-                  <li key={row.patientId} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 sm:gap-y-3 sm:py-3">
+                  // En teléfono, una grilla de tres columnas: la cara, el nombre
+                  // con lo pagado, y a la derecha el estado arriba y los botones
+                  // abajo. Antes los botones bajaban a un renglón propio con
+                  // sangría y cada paciente medía el doble, con un hueco a la
+                  // derecha de cada uno.
+                  <li
+                    key={row.patientId}
+                    className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 py-2.5 sm:flex sm:flex-wrap sm:gap-3 sm:py-3"
+                  >
                     <PatientAvatar
                       fullName={row.fullName}
                       color={row.color}
                       size={36}
+                      className="max-sm:row-span-2 max-sm:size-8!"
                     />
 
-                    <div className="min-w-[140px] flex-1">
+                    <div className="min-w-0 max-sm:row-span-2 sm:min-w-[140px] sm:flex-1">
                       <p className="text-body font-bold">
                         {row.fullName}
                         {/* Dicho, y no sólo insinuado por la fila más apagada:
@@ -184,15 +203,21 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                         ) : (
                           `${money(row.paid)} de ${money(row.expected)}`
                         )}
-                        {row.payments.length > 0
-                          ? ` · ${row.payments
+                        {/* En teléfono sin las fechas: partían el renglón en dos, y
+                            están en "Pagos de este mes", abajo. */}
+                        {row.payments.length > 0 ? (
+                          <span className="max-sm:hidden">
+                            {` · ${row.payments
                               .map((payment) => formatDayMonth(payment.paid_on))
-                              .join(', ')}`
-                          : ''}
+                              .join(', ')}`}
+                          </span>
+                        ) : null}
                       </p>
                     </div>
 
-                    <Status row={row} />
+                    <div className="justify-self-end">
+                      <Status row={row} />
+                    </div>
 
                     {/* Nothing to do on a deleted patient's row: the payments are
                         history, and there is nobody to charge or bill anymore. */}
@@ -206,7 +231,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     // que "Cargar el honorario", que está justo arriba.
                     <div
                       className={cn(
-                        'flex flex-wrap items-center gap-1.5 max-sm:w-full max-sm:pl-12',
+                        'flex items-center gap-1 max-sm:col-start-3 max-sm:justify-end sm:flex-wrap sm:gap-1.5',
                         row.expected === null && !row.archived && 'max-sm:hidden',
                       )}
                     >
@@ -231,7 +256,8 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                             // `outline` y no `ghost`: sin borde, en teléfono era
                             // una palabra suelta y no se leía como un botón.
                             <Button size="sm" variant="outline">
-                              Registrar pago
+                              <span className="sm:hidden">+ Pago</span>
+                              <span className="max-sm:hidden">Registrar pago</span>
                             </Button>
                           }
                         />

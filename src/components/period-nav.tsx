@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils'
  * La barra de navegación por período: flechas juntas a la izquierda, el rango al
  * lado, y el botón para volver al actual.
  *
- * En la Agenda en teléfono la fila es otra, escrita en la página: el rango a la
- * izquierda y las flechas juntas a la derecha. Acá es una barra de herramientas
+ * En teléfono la fila es otra, `PeriodBar`: el período a la izquierda y las
+ * flechas juntas a la derecha. Acá es una barra de herramientas
  * arriba del contenido, y en una barra los controles van juntos a la izquierda y
  * el texto los acompaña.
  *

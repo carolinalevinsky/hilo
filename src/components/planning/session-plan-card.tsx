@@ -83,16 +83,20 @@ export function SessionPlanCard({
     // `h-fit`: the card is short and the column beside it is long, so a
     // stretched card left a third of a screen of empty white.
     <Card className="app-doc h-fit gap-0 py-0">
-      <header className="bg-violet px-4 py-3.5 text-white print:bg-transparent print:text-foreground">
+      {/* Lila suave y no violeta lleno: una banda violeta con el nombre en
+          negrita grande era lo más fuerte de la pantalla, más que el título de
+          la página, y repetía el paciente y la hora que ya dice el selector de
+          arriba. Es el encabezado de una tarjeta, y pesa como tal. */}
+      <header className="border-b border-violet/10 bg-violet-soft px-4 py-3 print:bg-transparent">
         <div className="flex items-start justify-between gap-2.5">
           <div className="min-w-0">
-            <p className="text-micro font-bold uppercase text-white/70 print:text-muted-foreground">
+            <p className="text-nano font-bold tracking-[0.06em] text-violet uppercase print:text-muted-foreground">
               Plan de la sesión
             </p>
-            <h3 className="text-lead font-extrabold">{patientName}</h3>
+            <h3 className="text-item font-bold">{patientName}</h3>
           </div>
 
-          <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-1 text-micro font-bold print:bg-muted print:text-foreground">
+          <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-micro font-bold text-violet print:bg-muted print:text-foreground">
             {items.length === 0
               ? 'Vacío'
               : items.length === 1
@@ -103,7 +107,7 @@ export function SessionPlanCard({
 
         {/* When, right under the name. A plan without a date is a list you
             cannot place. */}
-        <p className="mt-1.5 flex items-center gap-1.5 text-meta font-medium text-white/90 print:text-muted-foreground">
+        <p className="mt-1 flex items-center gap-1.5 text-meta text-muted-foreground">
           <CalendarDays className="size-3.5 shrink-0" />
           {when ?? 'Sin sesión agendada: queda para la próxima que agendes'}
         </p>
@@ -117,7 +121,7 @@ export function SessionPlanCard({
           <p
             className={cn(
               'mt-2 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-micro font-bold w-fit print:bg-transparent print:px-0 print:text-muted-foreground',
-              planned > sessionMinutes ? 'bg-amber text-[#3d2a00]' : 'bg-white/20',
+              planned > sessionMinutes ? 'bg-amber text-[#3d2a00]' : 'bg-card text-violet',
             )}
           >
             <Clock className="size-3.5 shrink-0" />
@@ -136,9 +140,9 @@ export function SessionPlanCard({
 
       <CardContent className="py-4">
         {items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
-            <ClipboardList className="mx-auto mb-2.5 size-6 text-muted-foreground/70" />
-            <p className="text-item font-bold">Tu plan está listo para armarse</p>
+          <div className="rounded-xl border border-dashed border-border px-4 py-5 text-center">
+            <ClipboardList className="mx-auto mb-2 size-5 text-muted-foreground/70" />
+            <p className="text-body font-bold">Tu plan está listo para armarse</p>
             <p className="mx-auto mt-1 max-w-xs text-meta leading-relaxed text-muted-foreground">
               {/* "Desde el paso 2" no se entendía en el teléfono, donde los
                   números de los pasos no se muestran y esta tarjeta sube

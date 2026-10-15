@@ -44,7 +44,13 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname()
   const barItems = mobileBarItemsFor(isAdmin)
   const sheetItems = mobileSheetItemsFor(isAdmin)
-  const [sheetOpen, setSheetOpen] = useState(false)
+  // La hoja recuerda en qué pantalla se abrió, y sólo está abierta ahí. La
+  // barra vive en el layout y no se desmonta al navegar, así que con un
+  // booleano la hoja seguía abierta encima de la pantalla nueva cuando se
+  // llegaba por otro lado (el "atrás", un link de la página).
+  const [openOn, setOpenOn] = useState<string | null>(null)
+  const sheetOpen = openOn === pathname
+  const setSheetOpen = (open: boolean) => setOpenOn(open ? pathname : null)
 
   const sheetHasActive = sheetItems.some((item) => isNavItemActive(item, pathname))
 

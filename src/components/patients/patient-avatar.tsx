@@ -1,10 +1,17 @@
 import Image from 'next/image'
 
-import { patientSolidClasses } from '@/lib/patient-colors'
+import { patientClasses } from '@/lib/patient-colors'
 import { cn } from '@/lib/utils'
 
 /**
  * The patient's photo, or their initials on their colour.
+ *
+ * The tinted pair — a pale background, the initials in the deep version of the
+ * same colour — and not the solid colour. Solid, a list of patients was a row of
+ * violet, amber, coral, green and teal squares at full strength, and the
+ * avatars were the loudest thing on every screen they were on. The tinted pairs
+ * are the brand's own (`brand.ts`), built to sit together; the colour still
+ * tells patients apart at a glance.
  *
  * The colour is stored on the row and derived from the name, so the same person
  * is the same colour on every screen. v1 assigned colours in creation order,
@@ -35,7 +42,7 @@ export function PatientAvatar({
 }) {
   const classes = cn(
     'flex shrink-0 items-center justify-center overflow-hidden rounded-[29%] font-extrabold',
-    patientSolidClasses(color),
+    patientClasses(color),
     className,
   )
 

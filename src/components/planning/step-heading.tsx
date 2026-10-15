@@ -49,8 +49,11 @@ export function StepHeading({
   tone?: 'muted' | 'violet'
 }) {
   return (
-    <div className="mb-3 border-b border-border pb-2.5">
-      <h2 className="flex items-center gap-2 text-item font-extrabold">
+    // Un subtítulo y no un título: 14,5 px en negrita, sin la línea abajo en
+    // teléfono. En extranegrita y subrayado competía con el título de la
+    // página, que es lo único que tiene que ganarle a todo.
+    <div className="mb-2.5 lg:mb-3 lg:border-b lg:border-border lg:pb-2.5">
+      <h2 className="flex items-center gap-2 text-item font-bold">
         <StepBadge step={step} tone={tone} />
         <span className="sr-only">Paso {step}: </span>
         {title}

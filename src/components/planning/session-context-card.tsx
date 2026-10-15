@@ -50,12 +50,21 @@ export function SessionContextCard({
   return (
     <Card className="no-print mb-4">
       <CardContent className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-        <div className="min-w-[260px] flex-1">
+        <div className="min-w-0 flex-1 sm:min-w-[260px]">
           <div className="mb-1.5 flex items-center gap-2">
             <StepBadge step={1} />
-            <label htmlFor="plan-session" className="text-body font-bold">
+            <label htmlFor="plan-session" className="text-meta font-semibold text-muted-foreground lg:text-body lg:font-bold lg:text-foreground">
               Elegí la sesión que estás preparando
             </label>
+            {/* En teléfono la ficha es un link chico en este renglón, no un
+                botón grande abajo: era el segundo botón más grande de la
+                pantalla para algo que no es lo que se viene a hacer acá. */}
+            <Link
+              href={`/pacientes/${patient.id}`}
+              className="ml-auto shrink-0 text-meta font-semibold text-violet lg:hidden"
+            >
+              Ver ficha →
+            </Link>
           </div>
 
           {/* The photo sits in the field, not next to it. `pointer-events-none`
@@ -67,13 +76,14 @@ export function SessionContextCard({
               color={patient.color}
               size={30}
               photoUrl={photoUrl}
-              className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
+              // `z-10`: el selector va después en el DOM y su fondo la tapaba.
+              className="pointer-events-none absolute top-1/2 left-2 z-10 -translate-y-1/2"
             />
             <PlanSessionPicker
               sessions={sessions}
               unscheduled={unscheduled}
               selected={selected}
-              className="h-11 rounded-xl pl-11 text-item font-semibold"
+              className="h-11 rounded-xl pl-11 text-left text-body font-medium lg:text-item lg:font-semibold"
             />
           </div>
         </div>
@@ -82,7 +92,7 @@ export function SessionContextCard({
             Estaban acá como "los datos con los que decidís", y no lo son: son
             tus pacientes, ya sabés en qué anda cada uno. Lo que sí hace falta a
             mano es la ficha, que es donde está todo eso y el resto. */}
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2 max-lg:hidden">
           <Button asChild variant="secondary" className="h-11 rounded-xl px-4">
             <Link href={`/pacientes/${patient.id}`}>
               <User className="size-[15px]" />

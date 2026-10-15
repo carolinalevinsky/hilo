@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from '@/components/icons'
+import { CalendarDays } from '@/components/icons'
 import { ConfirmAction } from '@/components/confirm-action'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -12,6 +12,7 @@ import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { readAgendaSlot } from '@/lib/agenda-slot'
 import { GOOGLE_NOTICE_COOKIE } from '@/lib/storage-keys'
 import { SessionPanel } from '@/components/agenda/session-panel'
+import { PeriodBar } from '@/components/period-bar'
 import { PeriodNav } from '@/components/period-nav'
 import { WeekViewSelect } from '@/components/agenda/week-view-select'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
@@ -182,29 +183,14 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // entre las dos flechas. En escritorio es una barra de herramientas arriba de
   // la grilla, y ahí los controles van juntos a la izquierda. Ver `WeekNav`.
   const weekNavMobile = (
-    // La fecha a la izquierda, del tamaño de un subtítulo, y las flechas juntas
-    // a la derecha, como en la agenda del teléfono. Centrada entre dos flechas
-    // grandes y en negrita de 16 px, competía con el título "Agenda" de arriba.
-    <>
-      <p className="min-w-0 flex-1 truncate text-item font-bold">{weekLabel(dates)}</p>
-      {offset !== 0 ? (
-        <Button asChild variant="outline" size="sm">
-          <Link href="/agenda">Hoy</Link>
-        </Button>
-      ) : null}
-      <div className="flex shrink-0 items-center gap-1">
-        <Button asChild variant="outline" size="icon-sm" aria-label="Semana anterior">
-          <Link href={`/agenda?semana=${offset - 1}`}>
-            <ChevronLeft className="size-4" />
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="icon-sm" aria-label="Semana siguiente">
-          <Link href={`/agenda?semana=${offset + 1}`}>
-            <ChevronRight className="size-4" />
-          </Link>
-        </Button>
-      </div>
-    </>
+    <PeriodBar
+      prevHref={`/agenda?semana=${offset - 1}`}
+      nextHref={`/agenda?semana=${offset + 1}`}
+      label={weekLabel(dates)}
+      resetHref="/agenda"
+      resetLabel="Hoy"
+      isCurrent={offset === 0}
+    />
   )
 
   // Cuántos días dibuja la grilla. "laboral" es el valor por defecto, así que la
@@ -372,9 +358,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
             {/* En teléfono la navegación va suelta arriba de las tarjetas del día,
                 que es la vista que manda ahí. En escritorio entra adentro de la
                 tarjeta del calendario — ver el `header` de `WeekCalendar`. */}
-            <div className="mb-2.5 flex items-center gap-2 lg:hidden">
-              {weekNavMobile}
-            </div>
+            <div className="mb-2.5 lg:hidden">{weekNavMobile}</div>
 
             {/* Google está conectado y no se pudo leer. Sin esta línea la semana
                 se veía limpia y un turno con el dentista aparecía libre — ahí

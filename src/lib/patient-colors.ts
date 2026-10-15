@@ -22,29 +22,9 @@ export const PATIENT_COLOR_HEX: Record<string, string> = {
 }
 
 /**
- * Filled: the colour itself, the initials on top.
- *
- * This is what an avatar wears (`legacy/index.html:.av`). It is the strongest
- * use of the palette in the product and it is doing real work: at a glance down
- * a list, the colour *is* how you find a patient, before you have read a single
- * name. A tinted avatar with coloured initials reads as a placeholder for a
- * photo that failed to load.
- *
- * Blanco encima sólo sobre el violeta. v1 ponía blanco sobre todos, y sobre
- * ámbar eso es 2:1 — las iniciales no se leían. Sobre los otros cinco va el
- * color del texto de la app, como ya hacían los avatares de la pantalla de
- * entrada; ver `patientInk` para los fondos que se pintan con el hex.
+ * Tinted: a pale background and the deep version of the colour on top. What an
+ * avatar wears, and every chip or badge that carries a patient's colour.
  */
-export const PATIENT_COLOR_SOLID: Record<string, string> = {
-  violet: 'bg-violet text-white',
-  teal: 'bg-teal text-foreground',
-  coral: 'bg-coral text-foreground',
-  blue: 'bg-blue text-foreground',
-  amber: 'bg-amber text-foreground',
-  green: 'bg-green text-foreground',
-}
-
-/** Tinted: for chips and badges, where the colour is a label and not the subject. */
 export const PATIENT_COLOR_CLASSES: Record<string, string> = {
   violet: 'bg-violet-soft text-violet',
   teal: 'bg-teal-soft text-teal-ink',
@@ -61,7 +41,7 @@ export function patientHex(color: string | null) {
 /**
  * El color del texto que va encima de `patientHex`: blanco sobre violeta, el
  * del texto de la app sobre los demás. Para los lugares que pintan el fondo con
- * el hex en línea y no pueden usar `PATIENT_COLOR_SOLID`.
+ * el hex en línea (la grilla de la Agenda en escritorio y su panel).
  */
 export function patientInk(color: string | null) {
   return patientHex(color) === PATIENT_COLOR_HEX.violet ? '#ffffff' : BRAND_FOREGROUND
@@ -69,8 +49,4 @@ export function patientInk(color: string | null) {
 
 export function patientClasses(color: string | null) {
   return PATIENT_COLOR_CLASSES[color ?? 'violet'] ?? PATIENT_COLOR_CLASSES.violet!
-}
-
-export function patientSolidClasses(color: string | null) {
-  return PATIENT_COLOR_SOLID[color ?? 'violet'] ?? PATIENT_COLOR_SOLID.violet!
 }

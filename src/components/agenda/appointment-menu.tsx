@@ -7,6 +7,7 @@ import {
   CircleX,
   ClipboardList,
   Eye,
+  MessageCircle,
   MoreHorizontal,
   CalendarClock,
   RotateCw,
@@ -34,7 +35,9 @@ import {
 import { appointmentStatusLabel } from '@/lib/appointment-labels'
 import { cn } from '@/lib/utils'
 import { calendarEventTitle } from '@/lib/calendar-privacy'
-import { googleCalendarLink } from '@/lib/week'
+import { formatLongDate, today } from '@/lib/dates'
+import { firstName, whatsappLink } from '@/lib/whatsapp'
+import { formatTime, googleCalendarLink } from '@/lib/week'
 import { recordLink } from '@/lib/record-link'
 import type { AppointmentWithPatient } from '@/server/appointments'
 
@@ -138,7 +141,12 @@ export function AppointmentMenu({
   const showGoogle = !appointment.gcal_event_id
   // Sólo lo agendado se mueve. Ver `src/server/reschedule.ts`.
   const canMove = status === 'scheduled'
-  const hasActionItems = showRecord || showGoogle || canMove
+  // Recordarle a la familia, de cualquier sesión que todavía no pasó — no sólo
+  // las de mañana, que son las únicas que lista "Recordá las sesiones de
+  // mañana" y que el viernes no ayuda con la del lunes.
+  const canRemind =
+    Boolean(patient) && status === 'scheduled' && appointment.scheduled_on >= today()
+  const hasActionItems = showRecord || showGoogle || canMove || canRemind
   const [moving, setMoving] = useState(false)
 
   return (
@@ -204,6 +212,30 @@ export function AppointmentMenu({
           <DropdownMenuItem className="whitespace-nowrap" onSelect={() => setMoving(true)}>
             <CalendarClock className="size-4" />
             Cambiar día u hora
+          </DropdownMenuItem>
+        ) : null}
+
+        {canRemind && patient ? (
+          <DropdownMenuItem asChild>
+            {/* Sin teléfono, el link de WhatsApp saldría sin destinatario: dice
+                lo que falta y lleva a cargarlo, como en los recordatorios de
+                mañana. */}
+            {patient.phone ? (
+              <a
+                href={whatsappLink(patient.phone, reminderText(appointment, patient.full_name))}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whitespace-nowrap"
+              >
+                <MessageCircle className="size-4 text-[#1da851]" />
+                Recordar por WhatsApp
+              </a>
+            ) : (
+              <Link href={`/pacientes/${patient.id}/editar`} className="whitespace-nowrap">
+                <MessageCircle className="size-4" />
+                Cargar teléfono para recordar
+              </Link>
+            )}
           </DropdownMenuItem>
         ) : null}
 
@@ -302,4 +334,25 @@ function StatusItem({
       </DropdownMenuItem>
     </form>
   )
+}
+
+/**
+ * El mensaje del recordatorio. Nada clínico: un nombre, un día y una hora — sale
+ * en una conversación de WhatsApp, que es una copia sin control para siempre (Ley N.º
+ * 18.331). Las mismas palabras que `tomorrow-reminders.tsx`, con el día dicho
+ * como se dice: "hoy", "mañana" o la fecha.
+ */
+function reminderText(appointment: AppointmentWithPatient, fullName: string) {
+  const now = today()
+  const tomorrow = new Date(`${now}T12:00:00`)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowIso = tomorrow.toISOString().slice(0, 10)
+  const long = formatLongDate(appointment.scheduled_on) ?? ''
+  const when =
+    appointment.scheduled_on === now
+      ? 'hoy'
+      : appointment.scheduled_on === tomorrowIso
+        ? `mañana ${long}`
+        : `el ${long}`
+  return `¡Hola! Te recuerdo la sesión de ${firstName(fullName)} ${when} a las ${formatTime(appointment.start_time)}. Cualquier cosa avisame. ¡Saludos!`
 }

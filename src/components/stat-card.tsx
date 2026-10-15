@@ -14,8 +14,9 @@ import { cn } from '@/lib/utils'
  * number is right.
  *
  * The measurements are v1's and are not approximations: 44px icon at 13px
- * radius, 27px number at -0.6px tracking, 12.5px label. They shrink on a phone
- * exactly where v1 shrank them (`legacy/index.html:384-386`).
+ * radius, 27px number at -0.6px tracking, 12.5px label — from `sm` up. On a
+ * phone the row becomes one card with the numbers side by side; see
+ * `StatCardGrid`.
  */
 
 export type StatTone = 'violet' | 'teal' | 'coral' | 'amber' | 'green' | 'blue'
@@ -39,10 +40,11 @@ export function StatCardGrid({
   return (
     <div
       className={cn(
-        // The last card of an odd count spans both columns on a phone. Pagos has
-        // three, and the third sat alone under the other two with half a row of
-        // empty background beside it.
-        'mb-4 grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4 lg:mb-6 max-lg:[&>:last-child:nth-child(odd)]:col-span-2',
+        // En teléfono, una sola tarjeta con los números lado a lado, separados
+        // por una línea, sin los cuadrados de color. Como tarjetas sueltas, tres
+        // números se llevaban dos filas y la tercera quedaba sola y estirada;
+        // los íconos repetían lo que ya dice la palabra de abajo.
+        'mb-4 grid grid-flow-col auto-cols-fr divide-x divide-border overflow-hidden rounded-lg bg-card shadow-card sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-2 sm:gap-4 sm:divide-x-0 sm:overflow-visible sm:bg-transparent sm:shadow-none lg:mb-6 lg:grid-cols-4',
         className,
       )}
     >
@@ -71,20 +73,17 @@ export function StatCard({
   hint?: string
 }) {
   return (
-    // En teléfono, el ícono al costado del número y no encima. Apilados, tres
-    // tarjetas se llevaban 360 px —casi media pantalla— para decir tres
-    // números, y lo que se venía a ver (la lista de abajo) quedaba afuera.
-    <div className="flex items-center gap-3 overflow-hidden rounded-lg bg-card p-3 shadow-card sm:block sm:p-4.5">
+    <div className="min-w-0 px-2 py-3 text-center sm:overflow-hidden sm:rounded-lg sm:bg-card sm:p-4.5 sm:text-left sm:shadow-card">
       <div
         className={cn(
-          'flex size-9 shrink-0 items-center justify-center rounded-[11px] sm:mb-3 sm:size-11 sm:rounded-[13px]',
+          'mb-3 hidden size-11 items-center justify-center rounded-[13px] sm:flex',
           TONE_CLASSES[tone],
         )}
       >
-        <Icon className="size-[18px] sm:size-[23px]" />
+        <Icon className="size-[23px]" />
       </div>
       <div className="min-w-0">
-        <div className="text-[19px] leading-tight font-extrabold tracking-[-0.5px] sm:text-[27px] sm:tracking-[-0.6px]">
+        <div className="truncate text-[18px] leading-tight font-extrabold tracking-[-0.5px] sm:text-[27px] sm:tracking-[-0.6px]">
           {value}
         </div>
         <div className="text-meta leading-snug text-muted-foreground sm:mt-0.5">
