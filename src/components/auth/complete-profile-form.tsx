@@ -67,7 +67,7 @@ export function CompleteProfileForm() {
           name="discipline"
           defaultValue={typed.discipline ?? ''}
           required
-          className="h-11 rounded-[14px] bg-transparent text-sm shadow-xs"
+          className="h-11 rounded-xl bg-transparent text-sm shadow-xs"
         >
           <option value="" disabled>
             Elegí tu profesión

@@ -151,7 +151,7 @@ export function Ask({ fill = false }: { fill?: boolean }) {
           {fill ? (
             <MessageCircle className="size-[18px] text-violet" />
           ) : (
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-violet to-[#5f50d7] text-white sm:size-12 sm:rounded-[14px]">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-violet to-[#5f50d7] text-white sm:size-12 sm:rounded-xl">
               <Sparkles className="size-5 sm:size-6" />
             </span>
           )}
@@ -298,7 +298,7 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             {/* Qué se le puede preguntar, dicho con un ejemplo en vez de con una
                 promesa. Es texto fijo: no es una respuesta del modelo. */}
             {fill ? null : (
-              <p className="flex items-start gap-2 rounded-[16px] bg-muted/70 px-4 py-3.5 text-body leading-relaxed text-muted-foreground max-sm:hidden">
+              <p className="flex items-start gap-2 rounded-xl bg-muted/70 px-4 py-3.5 text-body leading-relaxed text-muted-foreground max-sm:hidden">
                 <MessageCircle className="mt-0.5 size-5 shrink-0 text-violet" />
                 Podés consultarme dudas sobre el progreso terapéutico, informes clínicos
                 pendientes o recursos didácticos recomendados.
@@ -317,10 +317,8 @@ export function Ask({ fill = false }: { fill?: boolean }) {
           // the focus ring move from the field to the box; the field keeps the
           // caret and gives up everything else.
           className={cn(
-            'transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
-            fill
-              ? 'rounded-xl border border-input bg-card px-3 py-2.5'
-              : 'rounded-[16px] border border-transparent bg-muted p-1.5 sm:flex sm:items-center sm:gap-1',
+            'flex items-center gap-1 rounded-xl border py-1.5 pr-1.5 pl-3 transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
+            fill ? 'border-input bg-card' : 'border-transparent bg-muted',
           )}
         >
           <Input
@@ -336,54 +334,37 @@ export function Ask({ fill = false }: { fill?: boolean }) {
               event.preventDefault()
               void ask(question)
             }}
-            placeholder={
-              turns.length ? 'Seguí preguntando…' : 'Ej: ¿qué me recomendás para Tomás?'
-            }
+            // Sin "Ej:" y sin un nombre de ejemplo: las sugerencias de arriba
+            // ya dicen qué se puede preguntar, y "Tomás" no es nadie de tus
+            // pacientes. Corto, además, para que entre entero en un teléfono
+            // con los dos botones al lado.
+            placeholder={turns.length ? 'Seguí preguntando…' : 'Preguntale algo a Ombúa…'}
             maxLength={500}
             disabled={asking}
             aria-label="Tu pregunta"
-            className={cn(
-              'h-auto w-full border-0 bg-transparent py-0 shadow-none focus-visible:border-transparent focus-visible:ring-0',
-              fill ? 'px-0' : 'px-2 py-1.5 text-sm sm:py-0',
-            )}
+            className="h-9 min-w-0 flex-1 border-0 bg-transparent px-0 py-0 shadow-none focus-visible:border-transparent focus-visible:ring-0"
           />
-          {/* En el panel los controles van debajo del campo; en la tarjeta,
-              en el mismo renglón.
 
-              No es una inconsistencia: compartir renglón dejaba el campo a la
-              mitad del ancho del panel —tan angosto que se cortaba su propio
-              placeholder a mitad de palabra, que es la única línea que le dice a
-              alguien qué escribir ahí—. El panel es angosto en todos lados: un
-              diálogo en el escritorio, la pantalla entera en un teléfono. La
-              tarjeta de Inicio no tiene ese problema y el diseño la pide así.
+          {/* Un solo renglón, como cualquier chat: el campo, el micrófono y la
+              flecha de enviar, los dos últimos como íconos. Con "Preguntar"
+              escrito el botón se llevaba un tercio del ancho y en el teléfono
+              los controles tenían que bajar a un renglón propio.
 
-              `ml-auto` en vez de `justify-between`: el micrófono no dibuja nada
-              donde el navegador no puede escuchar, y el botón sigue yendo a la
-              derecha cuando queda solo. En la tarjeta eso lo resuelve el
-              `contents` — los dos controles son hijos directos del renglón. */}
-          <div
-            className={cn(
-              'mt-2 flex items-center gap-2',
-              // En la tarjeta, un solo renglón — pero recién cuando entra. En un
-              // teléfono el campo quedaría tan angosto que se corta su propio
-              // placeholder, que es la única línea que dice qué escribir ahí.
-              !fill && 'sm:mt-0 sm:contents',
-            )}
+              The same dictation as every note field. The audio goes to the
+              browser's dictation service, not to Ombúa — see
+              `src/lib/speech.ts`. It draws nothing where the browser cannot
+              listen. */}
+          <DictateButton compact value={question} onText={setQuestion} />
+          <Button
+            type="submit"
+            size="icon"
+            disabled={asking || !question.trim()}
+            aria-label={asking ? 'Pensando…' : 'Preguntar'}
+            title="Preguntar"
+            className={cn('size-9 shrink-0 rounded-full', asking && 'animate-pulse')}
           >
-            {/* The same dictation as every note field. The audio goes to the
-                browser's dictation service, not to Ombúa — see
-                `src/lib/speech.ts`. Icon only: this box is often used with a
-                patient still in the room. */}
-            <DictateButton compact value={question} onText={setQuestion} />
-            <Button
-              type="submit"
-              disabled={asking || !question.trim()}
-              className={cn('ml-auto shrink-0', fill || 'rounded-xl sm:ml-0')}
-            >
-              {asking ? 'Pensando…' : 'Preguntar'}
-              <Send className="size-4" />
-            </Button>
-          </div>
+            <Send className="size-4" />
+          </Button>
         </form>
       </CardContent>
     </Card>

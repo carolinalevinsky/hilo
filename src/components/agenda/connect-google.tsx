@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarPlus, X } from '@/components/icons'
+import { CalendarPlus } from '@/components/icons'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
@@ -69,39 +69,41 @@ export function ConnectGoogle({ cookieName }: { cookieName: string }) {
   }
 
   return (
-    // `flex-wrap`: con la ✕ al lado del botón, en un teléfono de 375 px el
-    // título se recortaba a "Conectá tu Google…" y el párrafo caía a cuatro
-    // renglones. Envuelto, el texto se lleva la línea entera y los botones la
-    // siguiente.
-    <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet/30 bg-violet-soft px-4 py-3.5">
-      <div className="min-w-[190px] flex-1">
-        <p className="flex items-center gap-2 text-body font-bold">
-          <CalendarPlus className="size-[18px] shrink-0 text-violet" />
-          Conectá tu Google Calendar
-        </p>
-        <p className="mt-1 text-meta text-muted-foreground">
+    // El ícono a la izquierda y todo lo demás en una columna, con los botones
+    // alineados bajo el texto. Antes "Conectar" y la ✕ quedaban sueltos contra
+    // el borde derecho, lejos del texto que explican, y el aire de cada lado
+    // era distinto.
+    <div className="flex gap-3 rounded-xl border border-violet/25 bg-violet-soft p-4 lg:mb-3.5">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-card/80 text-violet">
+        <CalendarPlus className="size-[18px]" />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-body font-bold">Conectá tu Google Calendar</p>
+        <p className="mt-0.5 text-meta leading-relaxed text-muted-foreground">
           Conectá tu cuenta de Google para tener tu calendario siempre sincronizado.
         </p>
-      </div>
 
-      <div className="flex shrink-0 items-center gap-1 max-sm:w-full max-sm:justify-end">
-        {/* Un enlace y no un botón con acción: el final del camino es una
-            redirección al dominio de Google. */}
-        <Button asChild>
-          <a href="/api/google/conectar">Conectar</a>
-        </Button>
+        <div className="mt-3 flex items-center gap-2">
+          {/* Un enlace y no un botón con acción: el final del camino es una
+              redirección al dominio de Google. */}
+          <Button asChild size="sm">
+            <a href="/api/google/conectar">Conectar</a>
+          </Button>
 
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="Ocultar este aviso por un mes"
-          title="Ahora no"
-          // 44 px de zona táctil en teléfono, como el `···` de Cobros: el ícono
-          // se queda chico y lo que crece es el aire alrededor.
-          className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-violet/10 hover:text-foreground max-lg:size-11"
-        >
-          <X className="size-4" />
-        </button>
+          {/* "Ahora no" escrito, no una ✕: oculta el aviso por un mes, y una
+              cruz promete que no vuelve nunca. */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={dismiss}
+            title="Ocultar este aviso por un mes"
+            className="text-muted-foreground hover:bg-violet/10"
+          >
+            Ahora no
+          </Button>
+        </div>
       </div>
     </div>
   )

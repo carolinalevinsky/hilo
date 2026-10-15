@@ -37,7 +37,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
   const done = sessions.filter((session) => session.status === 'attended').length
 
   return (
-    <Card className="mt-5">
+    <Card className="mt-4 lg:mt-5">
       <CardHeader>
         <CardTitle>Plan de la semana</CardTitle>
         <p className="text-meta text-muted-foreground">

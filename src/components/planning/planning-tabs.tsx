@@ -55,7 +55,7 @@ export function PlanningTabs() {
     // track still read as a broken control.
     <div
       role="tablist"
-      className="no-print mb-4 grid grid-cols-3 gap-1 rounded-[22px] border border-border bg-muted p-1 sm:inline-flex sm:max-w-full sm:rounded-full"
+      className="no-print mb-4 grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted p-1 sm:inline-flex sm:max-w-full sm:rounded-full"
     >
       {TABS.map((tab) => {
         const active = tab.exact
@@ -68,7 +68,7 @@ export function PlanningTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'flex items-center justify-center rounded-[18px] px-2 py-2 text-center text-body leading-tight font-bold transition-colors sm:rounded-full sm:px-4 sm:text-body',
+              'flex items-center justify-center rounded-lg px-2 py-2 text-center text-body leading-tight font-bold transition-colors sm:rounded-full sm:px-4 sm:text-body',
               active
                 ? 'bg-card text-violet shadow-xs'
                 : 'text-muted-foreground hover:text-foreground',

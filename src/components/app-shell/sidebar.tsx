@@ -69,7 +69,7 @@ export function Sidebar({
       <Link
         href="/perfil"
         aria-label="Editar mi perfil"
-        className="rounded-[14px] bg-white/12 px-3.5 py-3 text-meta leading-relaxed hover:bg-white/18"
+        className="rounded-xl bg-white/12 px-3.5 py-3 text-meta leading-relaxed hover:bg-white/18"
       >
         <b className="block text-white">{fullName}</b>
         <span className="opacity-85">{disciplineLabel}</span>

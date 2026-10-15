@@ -196,7 +196,12 @@
   --chart-3: var(--brand-blue);
   --chart-4: var(--brand-amber);
   --chart-5: var(--brand-green);
-  --radius: 18px;
+  /* 10 px de base: las tarjetas quedan en 14 (`rounded-xl`) y los botones en 10
+     (`rounded-lg`). Con 18 todo era píldora o almohadón —una tarjeta de 25 px
+     de radio, un botón de 36 px de alto totalmente redondo— y el conjunto se
+     leía blando, más juguete que herramienta clínica. Las etiquetas chicas
+     siguen siendo píldoras: ésas llevan `rounded-full` a propósito. */
+  --radius: 10px;
   --sidebar: var(--brand-violet);
   /* El celeste de la marca, aclarado.
      El celeste puro sobre el violeta da 3.5:1, por debajo del 3.8:1 que tenía

@@ -9,11 +9,10 @@ import { cn } from '@/lib/utils'
  * La barra de navegación por período: flechas juntas a la izquierda, el rango al
  * lado, y el botón para volver al actual.
  *
- * Distinta de `PeriodSwitcher`, que sigue usándose en la Agenda en teléfono. Ahí
- * el período es el *título* de lo que hay abajo, así que va centrado con una
- * flecha de cada lado. Acá no es un título: es una barra de herramientas arriba
- * del contenido, y en una barra los controles van juntos a la izquierda y el
- * texto los acompaña.
+ * En la Agenda en teléfono la fila es otra, escrita en la página: el rango a la
+ * izquierda y las flechas juntas a la derecha. Acá es una barra de herramientas
+ * arriba del contenido, y en una barra los controles van juntos a la izquierda y
+ * el texto los acompaña.
  *
  * Devuelve un fragmento, no un contenedor. Quien la usa pone la fila: en la
  * Agenda va adentro de la barra de la tarjeta del calendario, que además tiene
