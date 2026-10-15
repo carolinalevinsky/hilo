@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import { setNewPasswordAction } from '@/app/(auth)/actions'
 import { AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
+import { submitKeepingFields } from '@/components/auth/keep-fields'
 import { PasswordField } from '@/components/auth/password-field'
 import { Button } from '@/components/ui/button'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
@@ -13,7 +14,7 @@ export function NewPasswordForm() {
   const [state, formAction, pending] = useActionState(setNewPasswordAction, EMPTY_FORM_STATE)
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} onSubmit={submitKeepingFields(formAction)} className="space-y-4">
       <FormMessage message={state.message} />
 
       <PasswordField

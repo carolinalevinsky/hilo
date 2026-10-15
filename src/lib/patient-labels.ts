@@ -83,3 +83,36 @@ export function guardianSummary(name: string | null, relationship: string | null
       : null
   return label ? `${name} · ${label.toLowerCase()}` : name
 }
+
+/**
+ * The columns a spreadsheet import can fill, in the order the preview shows
+ * them. See `src/server/patient-import.ts`.
+ */
+export const IMPORT_FIELDS = [
+  'fullName',
+  'dateOfBirth',
+  'school',
+  'schoolLevel',
+  'healthInsurer',
+  'phone',
+  'guardianName',
+  'guardianEmail',
+  'referralReason',
+  'startDate',
+] as const
+
+export type ImportField = (typeof IMPORT_FIELDS)[number]
+
+/** What the preview calls each column. The same words as the patient form. */
+export const IMPORT_FIELD_LABELS: Record<ImportField, string> = {
+  fullName: 'Nombre y apellido',
+  dateOfBirth: 'Fecha de nacimiento',
+  school: 'Centro educativo',
+  schoolLevel: 'Clase',
+  healthInsurer: 'Mutualista',
+  phone: 'Teléfono',
+  guardianName: 'Responsable',
+  guardianEmail: 'Correo del responsable',
+  referralReason: 'Motivo de consulta',
+  startDate: 'Inicio del tratamiento',
+}

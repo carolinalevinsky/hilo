@@ -57,11 +57,22 @@ export default function PrivacyPage() {
         «Borrador · sin firmar».
       </p>
       <p>
-        <b>Archivos enviados a la IA.</b> Al subir un material propio (un PDF o una imagen)
-        y pedir que Ombúa lo describa, ese archivo se envía al proveedor de IA para poder
-        leerlo. La pantalla de carga lo advierte antes de elegir el archivo y
-        recomienda que no contenga datos de ningún paciente. La descripción que devuelve la
-        IA queda como borrador editable y no se guarda hasta que el/la profesional la
+        <b>Archivos enviados a la IA.</b> En tres casos Ombúa envía un archivo al proveedor
+        de IA para poder leerlo, y la pantalla lo advierte antes de elegirlo: al subir un
+        material propio (un PDF o una imagen) para que lo describa; al importar una
+        planificación (un Word, un PDF o una foto) para pasar sus actividades a la
+        biblioteca, donde se recomienda que no contenga datos de ningún paciente; y al
+        completar la ficha de un paciente nuevo desde un documento (una ficha de ingreso,
+        una derivación, un informe anterior). En este último caso el nombre que escribe
+        el/la profesional no se envía, y en un archivo de Word se tapa antes de enviarlo;
+        en un PDF o una foto no se puede tapar, así que si el nombre está escrito en el
+        documento, viaja con él. Lo que devuelve la IA es siempre un borrador editable que no
+        se guarda hasta que el/la profesional lo confirma.
+      </p>
+      <p>
+        <b>Planillas importadas.</b> Al importar pacientes desde una planilla (Excel o
+        CSV), Ombúa la lee en sus propios servidores, sin IA. La planilla no se envía a
+        ningún proveedor y no se guarda: quedan sólo los pacientes que el/la profesional
         confirma.
       </p>
       <p>

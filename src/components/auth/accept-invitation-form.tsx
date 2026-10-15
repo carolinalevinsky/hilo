@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { SelfGenderField } from '@/components/profile/self-gender-field'
-import { useActionState, useState } from 'react'
+import { useActionState } from 'react'
 
 import { acceptInvitationAction } from '@/app/(auth)/actions'
 import { AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
+import { submitKeepingFields } from '@/components/auth/keep-fields'
 import { PasswordField } from '@/components/auth/password-field'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -35,24 +36,12 @@ export function AcceptInvitationForm({
     EMPTY_FORM_STATE,
   )
 
-  // El checkbox no sobrevive al reset que hace React cuando la acción contesta
-  // —lo marca sólo al montar—, así que se remonta con una key que cambia. La
-  // explicación larga está en `invite-form.tsx`, que hace lo mismo con su
-  // `<select>`.
-  //
-  // Olvidarse de tildar los términos es la forma más probable de que este
-  // formulario vuelva rechazado, y perder el tilde en el camino es una pequeña
-  // falta de respeto en el peor momento.
-  const [seenState, setSeenState] = useState(state)
-  const [attempt, setAttempt] = useState(0)
-
-  if (state !== seenState) {
-    setSeenState(state)
-    setAttempt((count) => count + 1)
-  }
-
+  // Nada se borra cuando la acción contesta que no: ni la contraseña ni el
+  // tilde. Olvidarse de tildar los términos es la forma más probable de que este
+  // formulario vuelva rechazado, y tener que escribir la contraseña de nuevo
+  // por eso era lo que hacía difícil entrar la primera vez. Ver `keep-fields.ts`.
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} onSubmit={submitKeepingFields(formAction)} className="space-y-4">
       <FormMessage message={state.message} />
 
       <input type="hidden" name="token" value={token} />
@@ -71,7 +60,6 @@ export function AcceptInvitationForm({
         className="flex items-start gap-2 text-meta leading-relaxed font-normal"
       >
         <Checkbox
-          key={`terms-${attempt}`}
           id="acceptedTerms"
           name="acceptedTerms"
           className="mt-0.5"

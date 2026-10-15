@@ -12,6 +12,7 @@ import { claimUsage, releaseUsage } from '@/server/ai-usage'
 import { QuotaExceededError, quotaMessage } from '@/server/plans'
 import { getPractitioner } from '@/server/practitioners'
 import { withDone } from '@/lib/done'
+import { importPlanningMaterials } from '@/server/planning-import'
 
 /**
  * The sentence a practitioner sees when a material could not be saved.
@@ -231,8 +232,15 @@ export async function copyMaterialAction(formData: FormData) {
 
   revalidatePath('/materiales')
   // Straight to the copy's own edit form: you copy something in order to change
-  // it, and landing on a read-only view of a duplicate is a dead end.
-  redirect(withDone(`/materiales/${copy.id}/editar`, 'material-copiado'))
+  // it, and landing on a read-only view of a duplicate is a dead end. From
+  // "Ajustar con IA" it lands on the box where you ask for the change.
+  const adjust = formData.get('ajustar') === '1'
+  redirect(
+    withDone(
+      `/materiales/${copy.id}/editar${adjust ? '?ajustar=1' : ''}`,
+      adjust ? 'material-copiado-ajustar' : 'material-copiado',
+    ),
+  )
 }
 
 export async function deleteMaterialAction(formData: FormData) {
@@ -241,4 +249,22 @@ export async function deleteMaterialAction(formData: FormData) {
   await deleteMaterial(user.id, String(formData.get('materialId')))
   revalidatePath('/materiales')
   redirect(withDone('/materiales', 'material-borrado'))
+}
+
+/**
+ * Saves the activities kept from an imported plan. The reading happened in
+ * `/api/ai/planificacion`; this only writes what the practitioner approved.
+ */
+export async function importPlanningAction(activities: unknown): Promise<{ error: string }> {
+  const user = await requireUser()
+  const practitioner = await getPractitioner(user.id)
+
+  try {
+    await importPlanningMaterials(user.id, practitioner.discipline, activities)
+  } catch (error) {
+    return { error: failed(error, 'No pudimos guardar las actividades. Probá de nuevo.').message! }
+  }
+
+  revalidatePath('/materiales')
+  redirect(withDone('/materiales', 'materiales-importados'))
 }

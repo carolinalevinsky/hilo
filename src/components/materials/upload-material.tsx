@@ -81,7 +81,7 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
               className="w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-body file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
             <p className="text-xs text-muted-foreground">
-              {fileName ?? 'PDF, JPG, PNG o HEIC. Hasta 10 MB.'}
+              {fileName ?? 'PDF, JPG, PNG o HEIC. Hasta 4 MB.'}
             </p>
           </div>
 

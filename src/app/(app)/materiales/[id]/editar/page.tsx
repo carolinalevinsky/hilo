@@ -29,7 +29,7 @@ export default async function EditMaterialPage({
   searchParams,
 }: PageProps<'/materiales/[id]/editar'>) {
   const { id } = await params
-  const { generar, describir } = await searchParams
+  const { generar, describir, ajustar } = await searchParams
   const { user, practitioner } = await currentSession()
 
   const material = await getMaterial(id)
@@ -58,7 +58,9 @@ export default async function EditMaterialPage({
             ? 'Ombúa escribe un borrador. Revisalo y ajustalo antes de guardarlo.'
             : describir === '1'
               ? 'Ombúa lee el archivo y completa la descripción. Revisala antes de guardar.'
-              : material.title
+              : ajustar === '1'
+                ? 'Contale a Ombúa qué querés cambiar —otra edad, otra temática, más fácil— y reescribe la actividad.'
+                : material.title
         }
       />
 
@@ -69,6 +71,7 @@ export default async function EditMaterialPage({
             material={material}
             generateFor={typeof generar === 'string' ? generar : undefined}
             describeFile={describir === '1'}
+            adjustFirst={ajustar === '1'}
             file={await getMaterialFileUrl(
               material.file_path,
               materialFileName(material.title, material.file_type),

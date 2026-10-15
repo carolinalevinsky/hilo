@@ -29,8 +29,9 @@ export const MaterialFileUpload = z.object({
     .instanceof(ArrayBuffer)
     .refine((b) => b.byteLength > 0, 'El archivo llegó vacío.')
     .refine(
-      (b) => b.byteLength <= 10 * 1024 * 1024,
-      'El archivo no puede pesar más de 10 MB.',
+      // Lo mismo que deja pasar `serverActions.bodySizeLimit` en `next.config.ts`.
+      (b) => b.byteLength <= 4 * 1024 * 1024,
+      'El archivo no puede pesar más de 4 MB.',
     ),
 })
 

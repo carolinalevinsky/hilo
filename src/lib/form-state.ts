@@ -23,8 +23,9 @@ export type FormState = {
    * `defaultValue`.
    *
    * **Never put a password in here.** It would travel back to the browser and
-   * sit in the DOM as an attribute. A cleared password field is a small cost;
-   * that is not.
+   * sit in the DOM as an attribute. The sign-in forms keep the password another
+   * way: they never let React reset the form at all. See
+   * `src/components/auth/keep-fields.ts`.
    */
   values?: Record<string, string>
 }
