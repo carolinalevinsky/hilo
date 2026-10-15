@@ -6,6 +6,7 @@ import { useActionState, useEffect, useRef } from 'react'
 import { signInAction } from '@/app/(auth)/actions'
 import { AUTH_FIELD, AUTH_LABEL, AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
+import { submitKeepingFields } from '@/components/auth/keep-fields'
 import { PasswordField } from '@/components/auth/password-field'
 import { ArrowRight } from '@/components/icons'
 import { Button } from '@/components/ui/button'
@@ -66,8 +67,17 @@ export function SignInForm({ back }: { back?: string }) {
     }
   }
 
+  const send = submitKeepingFields(formAction)
+
   return (
-    <form action={formAction} onSubmit={persist} className="space-y-4">
+    <form
+      action={formAction}
+      onSubmit={(event) => {
+        persist()
+        send(event)
+      }}
+      className="space-y-4"
+    >
       <FormMessage message={state.message} />
 
       {/* Where to land after signing in — set by the proxy when it bounced

@@ -5,6 +5,7 @@ import { useActionState, useState } from 'react'
 import { completeProfileAction } from '@/app/(auth)/actions'
 import { AUTH_FIELD, AUTH_LABEL, AUTH_SUBMIT } from '@/components/auth/field-styles'
 import { FormMessage } from '@/components/auth/form-message'
+import { submitKeepingFields } from '@/components/auth/keep-fields'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,7 +39,7 @@ export function CompleteProfileForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} onSubmit={submitKeepingFields(formAction)} className="space-y-4">
       <FormMessage message={state.message} />
 
       <div className="space-y-1.5">
