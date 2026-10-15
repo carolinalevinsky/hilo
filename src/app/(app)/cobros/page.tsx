@@ -133,7 +133,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
             <CardContent>
               <ul className="divide-y divide-border">
                 {ledger.rows.map((row) => (
-                  <li key={row.patientId} className="flex flex-wrap items-center gap-3 py-3">
+                  <li key={row.patientId} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 sm:gap-y-3 sm:py-3">
                     <PatientAvatar
                       fullName={row.fullName}
                       color={row.color}

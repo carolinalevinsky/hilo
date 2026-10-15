@@ -396,3 +396,14 @@
     @apply font-sans;
   }
 }
+/* Las pestañas de la ficha en el teléfono (`patient-tabs.tsx`): se ve sólo la
+   sección elegida. Una regla por pestaña porque CSS no compara dos atributos
+   entre sí. Sólo en pantalla, no al imprimir, y sólo por debajo de `lg`. */
+@media screen and (max-width: 1023.98px) {
+  [data-patient-tab='resumen'] [data-section]:not([data-section='resumen']),
+  [data-patient-tab='objetivos'] [data-section]:not([data-section='objetivos']),
+  [data-patient-tab='historial'] [data-section]:not([data-section='historial']),
+  [data-patient-tab='datos'] [data-section]:not([data-section='datos']) {
+    display: none;
+  }
+}

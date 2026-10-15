@@ -47,7 +47,8 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
       <DialogTrigger asChild>
         <Button size="lg" variant="outline">
           <Upload className="size-[18px]" />
-          Subir un material
+          <span className="sm:hidden">Subir</span>
+          <span className="max-sm:hidden">Subir un material</span>
         </Button>
       </DialogTrigger>
 

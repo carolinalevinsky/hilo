@@ -126,11 +126,18 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
             type="button"
             onClick={() => setSheetOpen(true)}
             className={cn(
-              'flex min-w-0 flex-auto flex-col items-center gap-[3px] rounded-xl px-0.5 py-1.5 text-micro font-semibold',
-              sheetHasActive ? 'text-violet' : 'text-[#8b90a3]',
+              'flex min-w-0 flex-auto flex-col items-center gap-[3px] rounded-xl px-0.5 py-1 text-micro font-semibold',
+              sheetHasActive ? 'text-violet' : 'text-[#6b7186]',
             )}
           >
-            <Menu className="size-5" />
+            <span
+              className={cn(
+                'flex h-7 w-12 items-center justify-center rounded-full',
+                sheetHasActive && 'bg-violet-soft',
+              )}
+            >
+              <Menu className="size-5" />
+            </span>
             Más
           </button>
         ) : null}
@@ -152,11 +159,20 @@ function BarItem({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <span
       className={cn(
-        'flex min-w-0 flex-auto flex-col items-center gap-[3px] rounded-xl px-0.5 py-1.5 text-micro font-semibold',
-        active || pending ? 'text-violet' : 'text-[#8b90a3]',
+        'flex min-w-0 flex-auto flex-col items-center gap-[3px] rounded-xl px-0.5 py-1 text-micro font-semibold',
+        active || pending ? 'text-violet' : 'text-[#6b7186]',
       )}
     >
-      <item.icon className="size-5 shrink-0" />
+      {/* La píldora detrás del ícono es la marca de "estás acá". El color
+          solo, violeta contra gris, se perdía a pleno sol. */}
+      <span
+        className={cn(
+          'flex h-7 w-12 items-center justify-center rounded-full transition-colors',
+          (active || pending) && 'bg-violet-soft',
+        )}
+      >
+        <item.icon className="size-5 shrink-0" />
+      </span>
       {/* `truncate`: a 320 px phone leaves ~52 px per item and "Pacientes" wants
           80. Recortado se lee peor; desbordado se le encima al de al lado. */}
       <span className="max-w-full truncate">{item.label}</span>

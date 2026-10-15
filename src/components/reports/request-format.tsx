@@ -48,25 +48,27 @@ export function RequestFormat() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex flex-col items-start rounded-2xl border border-dashed border-border bg-card p-4 text-left transition-colors hover:border-violet"
+        className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card p-3 text-left transition-colors hover:border-violet sm:flex-col sm:items-start sm:gap-0 sm:p-4"
       >
         <span
           aria-hidden
-          className="mb-2.5 inline-flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground"
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground sm:mb-2.5"
         >
           <Plus className="size-[18px]" />
         </span>
 
-        <span className="text-item font-bold">¿Te falta un formato?</span>
-        <span className="mt-1 mb-2.5 text-meta text-muted-foreground">
-          Contanos cuál necesitás y lo agregamos
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-body font-bold sm:text-item">¿Te falta un formato?</span>
+          <span className="mt-0.5 text-meta leading-snug text-muted-foreground sm:mt-1 sm:mb-2.5">
+            Contanos cuál necesitás y lo agregamos
+          </span>
         </span>
 
         {/* Every other card in this grid ends in a violet "Crear →". Without
             one, the odd card out reads as a caption at the foot of the grid
             rather than as the button it has always been. Outlined rather than
             solid, because it opens a form instead of starting a report. */}
-        <span className="mt-auto rounded-full border border-violet px-3 py-1.5 text-meta font-bold text-violet">
+        <span className="mt-auto shrink-0 rounded-full border border-violet px-3 py-1.5 text-meta font-bold text-violet">
           Pedir →
         </span>
       </button>

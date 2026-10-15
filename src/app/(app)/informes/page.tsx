@@ -2,6 +2,7 @@ import {
   BookOpen,
   ChartColumn,
   ChartPie,
+  ChevronRight,
   ClipboardList,
   Compass,
   FileText,
@@ -112,7 +113,7 @@ export default async function DocumentsPage() {
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2 sm:gap-3.5 xl:grid-cols-3">
                 {recipients.map((recipient) => (
                   <FormatCard
                     key={recipient}
@@ -283,22 +284,31 @@ function FormatCard({
 }) {
   const Icon = style.icon
 
+  // En teléfono es un renglón: ícono, nombre, para qué sirve, flecha. Como
+  // tarjeta, cada formato medía 150 px y los seis llenaban tres pantallas antes
+  // de "Últimos informes generados", que es lo que se vuelve a buscar.
   return (
     <Link
       href={href}
-      className="flex flex-col rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-violet"
+      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card transition-colors hover:border-violet sm:flex-col sm:items-stretch sm:gap-0 sm:p-4"
     >
       <span
         aria-hidden
-        className={`mb-2.5 inline-flex size-9 items-center justify-center rounded-xl ${style.className}`}
+        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl sm:mb-2.5 ${style.className}`}
       >
         <Icon className="size-[18px]" />
       </span>
 
-      <span className="text-item font-bold">{title}</span>
-      <span className="mt-1 mb-2.5 text-meta text-muted-foreground">{blurb}</span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-body font-bold sm:text-item">{title}</span>
+        <span className="mt-0.5 text-meta leading-snug text-muted-foreground sm:mt-1 sm:mb-2.5">
+          {blurb}
+        </span>
+      </span>
 
-      <span className="mt-auto flex items-center justify-between gap-2">
+      <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground sm:hidden" />
+
+      <span className="mt-auto flex items-center justify-between gap-2 max-sm:hidden">
         <span className="rounded-full bg-violet-soft px-2.5 py-1 text-micro font-bold text-violet">
           {chip}
         </span>

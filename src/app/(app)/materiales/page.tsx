@@ -69,13 +69,17 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
         action={
           // v1 had both here, in this order (`legacy/index.html:615`).
-          <div className="flex flex-wrap gap-2">
+          // En teléfono, los tres en una fila de tres y con una palabra cada uno:
+          // escritos enteros se partían en dos renglones y "Nuevo material", el
+          // principal, quedaba solo abajo.
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap [&>*]:max-sm:px-2">
             <UploadMaterial areas={areas} />
             <GenerateMaterial areas={areas} />
             <Button asChild size="lg">
               <Link href="/materiales/nuevo">
-                <Plus className="size-[18px] max-lg:hidden" />
-                Nuevo material
+                <Plus className="size-[18px]" />
+                <span className="sm:hidden">Nuevo</span>
+                <span className="max-sm:hidden">Nuevo material</span>
               </Link>
             </Button>
           </div>

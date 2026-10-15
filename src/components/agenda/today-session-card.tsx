@@ -1,8 +1,8 @@
-import { TriangleAlert, User, Wallet } from '@/components/icons'
+import { ChevronRight, TriangleAlert, User, Wallet } from '@/components/icons'
 import Link from 'next/link'
 
 import { PatientAvatar } from '@/components/patients/patient-avatar'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatTime } from '@/lib/week'
 import type { TodaySession } from '@/server/planning'
@@ -40,19 +40,18 @@ export function TodaySessionCard({
   ageLabel?: string | null
 }) {
   return (
-    <div className="mb-3 rounded-2xl border border-border bg-card px-4 py-3.5 last:mb-0">
-      {/* ─── Por qué el nombre baja de renglón en teléfono ──────────────────
-          Esta fila mide 281 px adentro de la tarjeta de Inicio, no 375: la
-          página tiene su margen, la tarjeta el suyo y ésta el suyo. La hora se
-          lleva 46, el avatar 38, el botón 79 y los espacios 36 — al nombre le
-          quedaban 82 y necesitaba 237. "Renata Fernández Olivera · 11 años"
-          aparecía como "Renata …".
-
-          Acortar la etiqueta del botón no alcanzaba: le devolvía nueve píxeles.
-          Así que abajo de `sm` el nombre se lleva la línea entera y la hora, la
-          cara y el botón se quedan arriba. En escritorio, donde entra, no
-          cambia nada. */}
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="mb-2.5 rounded-2xl border border-border bg-card px-3.5 py-3 last:mb-0 sm:mb-3 sm:px-4 sm:py-3.5">
+      {/* ─── Toda la fila lleva a la ficha ───────────────────────────────────
+          En teléfono esta fila mide 281 px y no entraban hora, cara, nombre y
+          un botón "Abrir ficha": el nombre bajaba a un renglón propio y cada
+          sesión de hoy ocupaba media pantalla. Ahora la fila entera es el
+          link, y en teléfono la cara y el botón se cambian por una flecha — el
+          gesto que toda lista de un celular entiende como "entrar". El nombre
+          se queda con el ancho. */}
+      <Link
+        href={`/pacientes/${session.patientId}`}
+        className="group flex items-center gap-3"
+      >
         <div className="w-[46px] shrink-0 text-item font-extrabold text-violet tabular-nums">
           {formatTime(session.startTime)}
         </div>
@@ -61,10 +60,11 @@ export function TodaySessionCard({
           fullName={session.patientName}
           color={session.patientColor}
           size={38}
+          className="max-sm:hidden"
         />
 
-        <div className="min-w-0 flex-1 max-sm:order-last max-sm:w-full max-sm:flex-none">
-          <p className="truncate text-item font-bold">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-item font-bold group-hover:underline">
             {session.patientName}
             {ageLabel ? (
               <span className="text-body font-medium text-muted-foreground">
@@ -75,17 +75,21 @@ export function TodaySessionCard({
           </p>
         </div>
 
-        <Button asChild variant="outline" size="sm" className="max-sm:ml-auto">
-          <Link href={`/pacientes/${session.patientId}`}>
-            <User className="size-4" />
-            Abrir ficha
-          </Link>
-        </Button>
-      </div>
+        <span
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'sm' }),
+            'max-sm:hidden',
+          )}
+        >
+          <User className="size-4" />
+          Abrir ficha
+        </span>
+        <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground sm:hidden" />
+      </Link>
 
       <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3 text-body leading-[1.55] text-[#4a5163]">
         {session.lastNote ? (
-          <p>
+          <p className="max-sm:line-clamp-2">
             <Label>Última vez</Label>
             {session.lastNote}
           </p>

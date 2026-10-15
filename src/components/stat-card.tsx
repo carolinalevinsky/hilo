@@ -42,7 +42,7 @@ export function StatCardGrid({
         // The last card of an odd count spans both columns on a phone. Pagos has
         // three, and the third sat alone under the other two with half a row of
         // empty background beside it.
-        'mb-4.5 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:mb-6 max-lg:[&>:last-child:nth-child(odd)]:col-span-2',
+        'mb-4 grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4 lg:mb-6 max-lg:[&>:last-child:nth-child(odd)]:col-span-2',
         className,
       )}
     >
@@ -71,22 +71,29 @@ export function StatCard({
   hint?: string
 }) {
   return (
-    <div className="overflow-hidden rounded-lg bg-card p-3.5 shadow-card sm:p-4.5">
+    // En teléfono, el ícono al costado del número y no encima. Apilados, tres
+    // tarjetas se llevaban 360 px —casi media pantalla— para decir tres
+    // números, y lo que se venía a ver (la lista de abajo) quedaba afuera.
+    <div className="flex items-center gap-3 overflow-hidden rounded-lg bg-card p-3 shadow-card sm:block sm:p-4.5">
       <div
         className={cn(
-          'mb-2 flex size-[38px] items-center justify-center rounded-[13px] sm:mb-3 sm:size-11',
+          'flex size-9 shrink-0 items-center justify-center rounded-[11px] sm:mb-3 sm:size-11 sm:rounded-[13px]',
           TONE_CLASSES[tone],
         )}
       >
         <Icon className="size-[18px] sm:size-[23px]" />
       </div>
-      <div className="text-[22px] font-extrabold tracking-[-0.6px] sm:text-[27px]">
-        {value}
+      <div className="min-w-0">
+        <div className="text-[19px] leading-tight font-extrabold tracking-[-0.5px] sm:text-[27px] sm:tracking-[-0.6px]">
+          {value}
+        </div>
+        <div className="text-meta leading-snug text-muted-foreground sm:mt-0.5">
+          {label}
+        </div>
+        {hint ? (
+          <div className="mt-0.5 text-micro text-muted-foreground/80">{hint}</div>
+        ) : null}
       </div>
-      <div className="mt-0.5 text-meta text-muted-foreground">{label}</div>
-      {hint ? (
-        <div className="mt-0.5 text-micro text-muted-foreground/80">{hint}</div>
-      ) : null}
     </div>
   )
 }
