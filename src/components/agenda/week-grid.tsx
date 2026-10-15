@@ -46,17 +46,60 @@ export function WeekGrid({
     else busyByDate.set(block.date, [block])
   }
 
+  const days = dates.map((date, index) => ({
+    date,
+    weekday: WEEK_ORDER[index]!,
+    appointments: byDate.get(date) ?? [],
+    busy: busyByDate.get(date) ?? [],
+  }))
+
+  // Los días libres seguidos van juntos en un renglón: "Lun 12 – Mié 14 ·
+  // Libre". Hoy nunca se junta con nada — es el día que se busca con la vista.
+  type Row = { free: true; days: typeof days } | { free: false; day: (typeof days)[number] }
+  const rows: Row[] = []
+  for (const day of days) {
+    const free = day.appointments.length === 0 && day.busy.length === 0
+    const last = rows.at(-1)
+    if (free && day.date !== today) {
+      if (last?.free && last.days.at(-1)!.date !== today) last.days.push(day)
+      else rows.push({ free: true, days: [day] })
+    } else {
+      rows.push({ free: false, day })
+    }
+  }
+
+  const short = (day: (typeof days)[number]) =>
+    `${weekdayName(day.weekday).slice(0, 3)} ${Number(day.date.slice(8, 10))}`
+
   return (
     // Una lista, no siete tarjetas. Como tarjetas, cada día vacío ocupaba 85 px
     // para decir "Libre", y una semana con dos días de trabajo eran dos
-    // pantallas de scroll hasta el viernes. Así un día libre es un renglón, y
-    // la fecha a la izquierda —día corto y número grande— es lo que el ojo
-    // recorre para ubicarse, como en la agenda del teléfono.
+    // pantallas de scroll hasta el viernes. Así los días libres son un renglón
+    // fino, y los que tienen sesiones llevan la fecha a la izquierda —día corto
+    // y número grande— que es lo que el ojo recorre, como en la agenda del
+    // teléfono.
     <div className="divide-y divide-border overflow-hidden rounded-lg bg-card shadow-card lg:hidden">
-      {dates.map((date, index) => {
-        const weekday = WEEK_ORDER[index]!
-        const dayAppointments = byDate.get(date) ?? []
-        const dayBusy = busyByDate.get(date) ?? []
+      {rows.map((row) => {
+        if (row.free) {
+          const first = row.days[0]!
+          const last = row.days.at(-1)!
+          return (
+            <p
+              key={first.date}
+              className={cn(
+                'flex items-center justify-between gap-3 px-3.5 py-2 text-meta text-muted-foreground',
+                last.date < today && 'opacity-60',
+              )}
+            >
+              <span className="font-semibold">
+                {first === last ? short(first) : `${short(first)} – ${short(last)}`}
+              </span>
+              <span className="opacity-75">Libre</span>
+            </p>
+          )
+        }
+
+        const { date, weekday, appointments: dayAppointments, busy: dayBusy } = row.day
         const isToday = date === today
         const isPast = date < today
         const dayNumber = Number(date.slice(8, 10))
@@ -66,11 +109,11 @@ export function WeekGrid({
           <section
             key={date}
             aria-label={`${name} ${dayNumber}`}
-            className={cn('flex gap-3 px-3 py-1.5', isToday && 'bg-violet-soft/45')}
+            className={cn('flex gap-2.5 px-2.5 py-2.5', isToday && 'bg-violet-soft/45')}
           >
             <header
               className={cn(
-                'flex w-10 shrink-0 flex-col items-center pt-0.5',
+                'flex w-9 shrink-0 flex-col items-center pt-1',
                 isPast && 'opacity-55',
               )}
             >
@@ -98,7 +141,7 @@ export function WeekGrid({
                   Libre
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {dayAppointments.map((appointment) => (
                     <li key={appointment.id}>
                       <AppointmentCard
