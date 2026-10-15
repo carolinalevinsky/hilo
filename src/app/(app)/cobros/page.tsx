@@ -22,6 +22,7 @@ import { monthlyLedger } from '@/server/payments'
 import { trashPaymentAction } from './actions'
 import { currentUser } from '../session'
 import { pageTitle } from '@/lib/brand'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: pageTitle('Pagos') }
 
@@ -199,7 +200,16 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     // `max-sm:pl-12`: en teléfono los botones bajan a su propia
                     // línea, y sin sangría quedaban flotando a la izquierda, sin
                     // decir de qué paciente eran. Así arrancan bajo el nombre.
-                    <div className="flex flex-wrap items-center gap-1.5 max-sm:w-full max-sm:pl-12">
+                    //
+                    // Sin honorario, en teléfono no va: lo único que quedaba en
+                    // el renglón eran los tres puntos, solos, y abren lo mismo
+                    // que "Cargar el honorario", que está justo arriba.
+                    <div
+                      className={cn(
+                        'flex flex-wrap items-center gap-1.5 max-sm:w-full max-sm:pl-12',
+                        row.expected === null && !row.archived && 'max-sm:hidden',
+                      )}
+                    >
                       {/* Sin honorario no hay pago que registrar acá: "Registrar
                           pago" abriría un diálogo que no sabe de cuánto, al lado
                           de una etiqueta que ya dice que falta el número. Se

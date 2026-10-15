@@ -96,7 +96,8 @@ export function ScheduleDialogs({
   }
 
   return (
-    <div className="max-lg:w-full">
+    // Primero y estirado en teléfono, con el link de reservas a su lado.
+    <div className="max-lg:order-first max-lg:min-w-0 max-lg:flex-1">
       <Button
         size="lg"
         onClick={() => setOpen(true)}

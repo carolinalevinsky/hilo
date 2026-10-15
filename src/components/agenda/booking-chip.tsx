@@ -28,14 +28,15 @@ export function BookingChip({ url }: { url: string }) {
   const [copied, setCopied] = useState(false)
 
   return (
-    <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card py-1.5 pr-1.5 pl-3">
+    <div className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-card py-1 pr-1 pl-2.5 sm:gap-2.5 sm:py-1.5 sm:pr-1.5 sm:pl-3">
       <Link2 className="size-4 shrink-0 text-violet" />
 
       <Link
         href="/reservas"
         className="text-meta font-bold hover:text-violet hover:underline"
       >
-        Reservas online
+        <span className="sm:hidden">Reservas</span>
+        <span className="max-sm:hidden">Reservas online</span>
       </Link>
 
       <Button
@@ -43,6 +44,7 @@ export function BookingChip({ url }: { url: string }) {
         variant="outline"
         size="sm"
         className="shrink-0"
+        aria-label={copied ? 'Link copiado' : 'Copiar link para reservar'}
         onClick={() => {
           void navigator.clipboard.writeText(url)
           setCopied(true)
@@ -50,7 +52,11 @@ export function BookingChip({ url }: { url: string }) {
         }}
       >
         <Copy className="size-3.5" />
-        {copied ? '¡Copiado!' : 'Copiar link'}
+        {/* En teléfono sólo el ícono: con la palabra, este recuadro y
+            "Agendar sesión" no entraban en una fila, y el botón principal de
+            la pantalla bajaba a un renglón propio. */}
+        <span className="max-sm:hidden">{copied ? '¡Copiado!' : 'Copiar link'}</span>
+        {copied ? <span className="sm:hidden">¡Listo!</span> : null}
       </Button>
     </div>
   )

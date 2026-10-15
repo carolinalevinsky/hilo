@@ -89,7 +89,7 @@ export function TodaySessionCard({
 
       <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3 text-body leading-[1.55] text-[#4a5163]">
         {session.lastNote ? (
-          <p className="max-sm:line-clamp-2">
+          <p className="max-sm:line-clamp-1">
             <Label>Última vez</Label>
             {session.lastNote}
           </p>

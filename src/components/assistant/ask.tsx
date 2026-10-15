@@ -151,8 +151,8 @@ export function Ask({ fill = false }: { fill?: boolean }) {
           {fill ? (
             <MessageCircle className="size-[18px] text-violet" />
           ) : (
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-violet to-[#5f50d7] text-white">
-              <Sparkles className="size-6" />
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-violet to-[#5f50d7] text-white sm:size-12 sm:rounded-[14px]">
+              <Sparkles className="size-5 sm:size-6" />
             </span>
           )}
           <span className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             is being seen for the first time, and it is where the promise that
             nothing is written down still gets made. */}
         {fill ? null : (
-          <p className="pl-15 text-meta text-muted-foreground">
+          <p className="pl-13 text-meta text-muted-foreground sm:pl-15">
             {turns.length
               ? 'Se acuerda de esta charla. Cuando la cerrás, no queda guardada.'
               : 'Sobre cualquier paciente o sobre tu práctica.'}
@@ -267,14 +267,23 @@ export function Ask({ fill = false }: { fill?: boolean }) {
                 Sugerencias rápidas
               </p>
             )}
-            <div className="flex flex-wrap gap-2">
+            {/* En la tarjeta de Inicio, en teléfono, una fila que se desliza:
+                apiladas, las cuatro ocupaban 230 px antes de la caja donde se
+                escribe, que es lo que se vino a usar. */}
+            <div
+              className={cn(
+                'flex flex-wrap gap-2',
+                !fill &&
+                  'max-sm:-mx-4 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4 max-sm:[scrollbar-width:none]',
+              )}
+            >
               {QUICK.map((text) => (
                 <button
                   key={text}
                   type="button"
                   onClick={() => void ask(text)}
                   className={cn(
-                    'flex items-center gap-1.5 rounded-full text-xs font-semibold transition-colors',
+                    'flex shrink-0 items-center gap-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors',
                     fill
                       ? 'border border-border bg-card px-3 py-1.5 text-muted-foreground hover:bg-muted'
                       : 'bg-muted px-3.5 py-2 text-foreground hover:bg-violet-soft',
@@ -289,7 +298,7 @@ export function Ask({ fill = false }: { fill?: boolean }) {
             {/* Qué se le puede preguntar, dicho con un ejemplo en vez de con una
                 promesa. Es texto fijo: no es una respuesta del modelo. */}
             {fill ? null : (
-              <p className="flex items-start gap-2 rounded-[16px] bg-muted/70 px-4 py-3.5 text-body leading-relaxed text-muted-foreground">
+              <p className="flex items-start gap-2 rounded-[16px] bg-muted/70 px-4 py-3.5 text-body leading-relaxed text-muted-foreground max-sm:hidden">
                 <MessageCircle className="mt-0.5 size-5 shrink-0 text-violet" />
                 Podés consultarme dudas sobre el progreso terapéutico, informes clínicos
                 pendientes o recursos didácticos recomendados.

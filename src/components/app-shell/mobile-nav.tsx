@@ -1,6 +1,6 @@
 'use client'
 
-import { Menu, MessageCircle, User, X } from '@/components/icons'
+import { ChevronRight, Menu, MessageCircle, User, X } from '@/components/icons'
 import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -35,6 +35,10 @@ import { cn } from '@/lib/utils'
  * to 344 and "Más" runs off the right edge. Without a label it costs 44 px and
  * the five words keep their room.
  */
+/** "Mi perfil" al final de la hoja. Una persona, no las tres rayitas: ésas ya
+ *  son "Más", el botón que la abrió. */
+const PROFILE_ITEM: NavItem = { href: '/perfil', label: 'Mi perfil', icon: User }
+
 export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname()
   const barItems = mobileBarItemsFor(isAdmin)
@@ -42,7 +46,6 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const askHilo = useAsk()
   const [sheetOpen, setSheetOpen] = useState(false)
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
   const sheetHasActive = sheetItems.some((item) => isNavItemActive(item, pathname))
 
   return (
@@ -56,7 +59,8 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
             className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-card p-5 pb-[calc(20px+env(safe-area-inset-bottom))]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mb-3 flex items-center justify-between">
+            <div aria-hidden className="mx-auto -mt-1.5 mb-3 h-1 w-10 rounded-full bg-border" />
+            <div className="mb-2 flex items-center justify-between">
               <h2 className="text-base font-bold">Más</h2>
               <button
                 type="button"
@@ -67,35 +71,39 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
                 <X className="size-5" />
               </button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {sheetItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSheetOpen(false)}
-                  className={cn(
-                    'flex flex-col items-center gap-1.5 rounded-2xl border border-border px-2 py-3.5 text-center text-micro font-semibold',
-                    isNavItemActive(item, pathname) && 'border-violet bg-violet-soft text-violet',
-                  )}
-                >
-                  <item.icon className="size-5" />
-                  {item.label}
-                </Link>
-              ))}
-              <Link
-                href="/perfil"
-                onClick={() => setSheetOpen(false)}
-                className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-2xl border border-border px-2 py-3.5 text-center text-micro font-semibold',
-                  isActive('/perfil') && 'border-violet bg-violet-soft text-violet',
-                )}
-              >
-                {/* Una persona, no las tres rayitas: ésas ya son "Más", el botón
-                    que abrió esta hoja. */}
-                <User className="size-5" />
-                Mi perfil
-              </Link>
-            </div>
+            {/* Una lista y no una grilla de baldosas: tres por fila partían
+                "Informes y evaluaciones" en dos renglones y cada baldosa medía
+                lo mismo que un botón de la barra, sin decir qué había adentro.
+                Renglón con ícono y flecha es lo que un teléfono lee como "ir a". */}
+            <ul className="-mx-2 flex flex-col">
+              {[...sheetItems, PROFILE_ITEM].map((item) => {
+                const active = isNavItemActive(item, pathname)
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setSheetOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={cn(
+                        'flex items-center gap-3 rounded-xl px-2 py-2.5 text-item font-semibold',
+                        active ? 'bg-violet-soft text-violet' : 'text-foreground active:bg-muted',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'flex size-9 shrink-0 items-center justify-center rounded-[11px]',
+                          active ? 'bg-white/70' : 'bg-muted',
+                        )}
+                      >
+                        <item.icon className="size-[18px]" />
+                      </span>
+                      <span className="flex-1">{item.label}</span>
+                      <ChevronRight className="size-4 text-muted-foreground" />
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </div>
       ) : null}

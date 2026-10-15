@@ -250,7 +250,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
         title="Agenda"
         subtitle="Tu semana de sesiones."
         action={
-          <div className="flex flex-wrap items-center gap-2.5 max-lg:w-full">
+          <div className="flex items-center gap-2 max-lg:w-full lg:flex-wrap lg:gap-2.5">
             {/* El link de reservas, donde se lo necesita: acá es donde estás
                 cuando alguien te pregunta cómo pedir hora. La pantalla completa
                 sigue en /reservas. Sin slug todavía no hay link que copiar. */}

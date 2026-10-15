@@ -66,7 +66,7 @@ export function WeekGrid({
           <section
             key={date}
             aria-label={`${name} ${dayNumber}`}
-            className={cn('flex gap-3 px-3 py-2', isToday && 'bg-violet-soft/45')}
+            className={cn('flex gap-3 px-3 py-1.5', isToday && 'bg-violet-soft/45')}
           >
             <header
               className={cn(
