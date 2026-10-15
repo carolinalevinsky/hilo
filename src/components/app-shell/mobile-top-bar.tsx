@@ -1,10 +1,12 @@
 import Link from 'next/link'
 
+import { AskButton } from '@/components/assistant/ask-button'
 import { Wordmark } from '@/components/brand/wordmark'
 import { initials } from '@/components/patients/patient-avatar'
 
 /**
- * The strip across the top of a phone: the brand on the left, you on the right.
+ * The strip across the top of a phone: the brand on the left; the assistant and
+ * you on the right.
  *
  * Without it a phone screen started straight on a 22px heading with nothing
  * above it — no sign of which app this is, and "Mi perfil" only reachable by
@@ -22,13 +24,16 @@ export function MobileTopBar({ fullName }: { fullName: string }) {
         <Wordmark height={20} />
       </Link>
 
-      <Link
-        href="/perfil"
-        aria-label="Mi perfil"
-        className="flex size-9 items-center justify-center rounded-full bg-violet-soft text-meta font-bold text-violet ring-1 ring-violet/15"
-      >
-        {initials(fullName)}
-      </Link>
+      <div className="flex items-center gap-2">
+        <AskButton />
+        <Link
+          href="/perfil"
+          aria-label="Mi perfil"
+          className="flex size-9 items-center justify-center rounded-full bg-muted text-meta font-bold text-foreground/75 ring-1 ring-border"
+        >
+          {initials(fullName)}
+        </Link>
+      </div>
     </header>
   )
 }

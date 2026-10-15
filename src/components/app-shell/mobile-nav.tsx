@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronRight, Menu, MessageCircle, User, X } from '@/components/icons'
+import { ChevronRight, Menu, User, X } from '@/components/icons'
 import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -11,7 +11,6 @@ import {
   mobileSheetItemsFor,
   type NavItem,
 } from '@/components/app-shell/nav-items'
-import { useAsk } from '@/components/assistant/ask-dock'
 import { cn } from '@/lib/utils'
 
 /**
@@ -21,19 +20,21 @@ import { cn } from '@/lib/utils'
  * buttons above the iPhone home indicator. v1 got this right
  * (`legacy/index.html:65`) and it is easy to lose.
  *
- * ─── Why the assistant is in here ─────────────────────────────────────────
+ * ─── Why the assistant is not in here ─────────────────────────────────────
  *
- * Because the alternative is a button floating over the page, and on a phone
- * the bottom-right corner of the page is never empty: it was measured sitting
- * on top of the Comentarios field of "Registrar sesión" and on top of a goal's
- * progress slider on the ficha. See `ask-dock.tsx`.
+ * It used to be: a violet circle between Pagos and Más, because a button
+ * floating over the page always lands on something (the Comentarios field of
+ * "Registrar sesión", a goal's slider). But a filled circle among five outline
+ * icons is the loudest thing on the screen, and it pushed the five labels so
+ * close together that the bar read as one grey sentence. It lives in the top
+ * bar now, beside the account — see `mobile-top-bar.tsx` — and this bar is
+ * five equal places, which is what a tab bar is.
  *
- * It is an action and the other five are destinations, and it is drawn as one:
- * a violet circle with no label, between Cobros and Más. That is not only
- * semantics — measured, six labelled items do not fit. At 375 px the six labels
- * add up to 367 of the 367 available and touch each other; at 320 px they add up
- * to 344 and "Más" runs off the right edge. Without a label it costs 44 px and
- * the five words keep their room.
+ * ─── The look ─────────────────────────────────────────────────────────────
+ *
+ * The iOS tab bar's, because that is what the thumb already knows: a 24px icon,
+ * a small medium-weight word under it, and nothing else. The place you are in
+ * is violet with a soft pill behind the icon; the rest are one quiet grey.
  */
 /** "Mi perfil" al final de la hoja. Una persona, no las tres rayitas: ésas ya
  *  son "Más", el botón que la abrió. */
@@ -43,7 +44,6 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname()
   const barItems = mobileBarItemsFor(isAdmin)
   const sheetItems = mobileSheetItemsFor(isAdmin)
-  const askHilo = useAsk()
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const sheetHasActive = sheetItems.some((item) => isNavItemActive(item, pathname))
@@ -108,45 +108,26 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
         </div>
       ) : null}
 
-      <nav className="fixed inset-x-0 bottom-0 z-70 flex justify-around border-t border-border bg-card/96 px-1 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] shadow-[0_-4px_22px_rgba(30,36,54,0.07)] backdrop-blur-md lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-70 grid auto-cols-fr grid-flow-col border-t border-border/80 bg-card/94 px-1 pt-1 pb-[calc(4px+env(safe-area-inset-bottom))] backdrop-blur-xl backdrop-saturate-150 lg:hidden">
         {barItems.map((item) => (
-          <Link key={item.href} href={item.href} className="flex min-w-0 flex-auto">
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isNavItemActive(item, pathname) ? 'page' : undefined}
+            className="flex min-w-0"
+          >
             <BarItem item={item} active={isNavItemActive(item, pathname)} />
           </Link>
         ))}
-
-        {/* Sin etiqueta y en violeta: es lo único de la barra que no lleva a
-            otra pantalla, y es lo único que no entra si además lleva palabra.
-            El color es el del `.fab` de v1 — quien lo usaba lo reconoce. */}
-        <button
-          type="button"
-          onClick={askHilo}
-          aria-haspopup="dialog"
-          aria-label="Preguntá a Ombúa"
-          title="Preguntá a Ombúa"
-          className="mx-1 flex size-11 shrink-0 items-center justify-center self-center rounded-full bg-violet text-white shadow-violet hover:brightness-107"
-        >
-          <MessageCircle className="size-5" />
-        </button>
 
         {sheetItems.length > 0 ? (
           <button
             type="button"
             onClick={() => setSheetOpen(true)}
-            className={cn(
-              'flex min-w-0 flex-auto flex-col items-center gap-[3px] rounded-xl px-0.5 py-1 text-micro font-semibold',
-              sheetHasActive ? 'text-violet' : 'text-[#6b7186]',
-            )}
+            aria-haspopup="dialog"
+            className="flex min-w-0"
           >
-            <span
-              className={cn(
-                'flex h-7 w-12 items-center justify-center rounded-full',
-                sheetHasActive && 'bg-violet-soft',
-              )}
-            >
-              <Menu className="size-5" />
-            </span>
-            Más
+            <BarLook icon={Menu} label="Más" active={sheetHasActive} />
           </button>
         ) : null}
       </nav>
@@ -163,27 +144,36 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
  */
 function BarItem({ item, active }: { item: NavItem; active: boolean }) {
   const { pending } = useLinkStatus()
+  return <BarLook icon={item.icon} label={item.label} active={active || pending} />
+}
 
+function BarLook({
+  icon: Icon,
+  label,
+  active,
+}: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  label: string
+  active: boolean
+}) {
   return (
     <span
       className={cn(
-        'flex min-w-0 flex-auto flex-col items-center gap-[3px] rounded-xl px-0.5 py-1 text-micro font-semibold',
-        active || pending ? 'text-violet' : 'text-[#6b7186]',
+        'flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1 text-[10.5px] leading-tight tracking-[-0.1px] transition-colors',
+        active ? 'font-semibold text-violet' : 'font-medium text-[#7c8194]',
       )}
     >
-      {/* La píldora detrás del ícono es la marca de "estás acá". El color
-          solo, violeta contra gris, se perdía a pleno sol. */}
       <span
         className={cn(
-          'flex h-7 w-12 items-center justify-center rounded-full transition-colors',
-          (active || pending) && 'bg-violet-soft',
+          'flex h-7 w-14 items-center justify-center rounded-full transition-colors',
+          active && 'bg-violet-soft',
         )}
       >
-        <item.icon className="size-5 shrink-0" />
+        <Icon className="size-[22px] shrink-0" strokeWidth={active ? 2.1 : 1.8} />
       </span>
-      {/* `truncate`: a 320 px phone leaves ~52 px per item and "Pacientes" wants
-          80. Recortado se lee peor; desbordado se le encima al de al lado. */}
-      <span className="max-w-full truncate">{item.label}</span>
+      {/* `truncate`: a 320 px phone leaves 62 px per place and "Pacientes" at
+          this size wants 50. It fits; this is for a larger system font. */}
+      <span className="max-w-full truncate px-0.5">{label}</span>
     </span>
   )
 }
