@@ -36,11 +36,13 @@ const MODEL = 'claude-opus-5'
  *   - `material`: una actividad, media página.
  *   - `chat`, `note`, `describe`: dos o tres frases, o un título. Esfuerzo
  *     bajo, que es más rápido y gasta menos sin perder nada en algo tan corto.
+ *   - `import`: leer un documento que la profesional ya tenía y ordenarlo.
+ *     Esfuerzo bajo y techo amplio: es largo, no difícil.
  *
  * Todo va por streaming, así que un techo alto no es un riesgo de timeout.
  * El modelo sigue siendo uno solo y fijo: esto cambia cuánto piensa, no quién.
  */
-export type AiTask = 'report' | 'assessment' | 'material' | 'chat' | 'note' | 'describe'
+export type AiTask = 'report' | 'assessment' | 'material' | 'chat' | 'note' | 'describe' | 'import'
 
 const TASKS: Record<AiTask, { maxTokens: number; effort: 'low' | 'medium' | 'high' }> = {
   report: { maxTokens: 32_000, effort: 'high' },
@@ -49,6 +51,9 @@ const TASKS: Record<AiTask, { maxTokens: number; effort: 'low' | 'medium' | 'hig
   chat: { maxTokens: 8_000, effort: 'low' },
   note: { maxTokens: 8_000, effort: 'low' },
   describe: { maxTokens: 6_000, effort: 'low' },
+  // Pasar a limpio un documento que ya existe: no hay nada que decidir, pero
+  // una planificación de varias páginas sale larga.
+  import: { maxTokens: 32_000, effort: 'low' },
 }
 
 export const AI_MODEL = MODEL
@@ -119,10 +124,12 @@ function systemPrompt(taskInstructions: string) {
 /**
  * A file sent along with the prompt, for the model to read.
  *
- * The only thing that uses this is describing an uploaded material, and it is
- * the one place a *file* of the practitioner's leaves the server — everywhere
- * else, only text they typed does. The upload form says so before a file is
- * chosen. See `supabase/migrations/…_add_material_files.sql`.
+ * Three things use this, and they are the only places a *file* of the
+ * practitioner's leaves the server — everywhere else, only text they typed
+ * does: describing an uploaded material, reading a plan into materials
+ * (`planning-import.ts`), and filling a new patient's form from a document
+ * (`patient-document.ts`). Each screen says so before a file is chosen, and so
+ * does the privacy policy.
  */
 export type Attachment = {
   mediaType: DescribableType

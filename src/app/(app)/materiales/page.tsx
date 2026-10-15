@@ -1,4 +1,4 @@
-import { BookOpen, Plus } from '@/components/icons'
+import { BookOpen, Plus, FileText } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -69,13 +69,20 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
         action={
           // v1 had both here, in this order (`legacy/index.html:615`).
-          // En teléfono, los tres en una fila de tres y con una palabra cada uno:
-          // escritos enteros se partían en dos renglones y "Nuevo material", el
-          // principal, quedaba solo abajo.
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap [&>*]:max-sm:px-2">
+          // En teléfono, una grilla de dos por dos con una palabra cada uno y
+          // "Nuevo" primero: escritos enteros se partían en tres renglones y
+          // el principal quedaba solo abajo de todo.
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap [&>*]:max-sm:px-2">
+            <Button asChild size="lg" variant="outline">
+              <Link href="/materiales/importar">
+                <FileText className="size-[18px]" />
+                <span className="sm:hidden">Importar</span>
+                <span className="max-sm:hidden">Importar planificaciones</span>
+              </Link>
+            </Button>
             <UploadMaterial areas={areas} />
             <GenerateMaterial areas={areas} />
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="max-sm:order-first">
               <Link href="/materiales/nuevo">
                 <Plus className="size-[18px]" />
                 <span className="sm:hidden">Nuevo</span>

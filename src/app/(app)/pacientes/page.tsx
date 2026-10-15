@@ -1,4 +1,4 @@
-import { UserPlus, Users } from '@/components/icons'
+import { UserPlus, Users, Upload } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -79,12 +79,20 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
         title="Pacientes"
         subtitle="Todos tus pacientes en un solo lugar."
         action={
-          <Button asChild size="lg">
-            <Link href="/pacientes/nuevo">
-              <UserPlus className="size-[18px] max-lg:hidden" />
-              Nuevo paciente
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="lg" variant="outline">
+              <Link href="/pacientes/importar">
+                <Upload className="size-[18px] max-lg:hidden" />
+                Importar planilla
+              </Link>
+            </Button>
+            <Button asChild size="lg">
+              <Link href="/pacientes/nuevo">
+                <UserPlus className="size-[18px] max-lg:hidden" />
+                Nuevo paciente
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -105,11 +113,16 @@ export default async function PatientsPage({ searchParams }: PageProps<'/pacient
             <EmptyState
               icon={Users}
               title="Todavía no tenés pacientes"
-              text="Cargá el primero y su ficha queda guardada para siempre."
+              text="Cargá el primero y su ficha queda guardada para siempre. Si ya los tenés en una planilla, los importás todos juntos."
               action={
-                <Button asChild>
-                  <Link href="/pacientes/nuevo">Cargar primer paciente</Link>
-                </Button>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button asChild>
+                    <Link href="/pacientes/nuevo">Cargar primer paciente</Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/pacientes/importar">Importar planilla</Link>
+                  </Button>
+                </div>
               }
             />
           )}

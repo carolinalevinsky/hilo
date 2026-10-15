@@ -136,7 +136,15 @@ test('an admin invites somebody, and they let themselves in with the link', asyn
     await expect(page.getByRole('heading', { name: `Hola, ${INVITEE}` })).toBeVisible()
     await expect(page.getByText(inviteeEmail)).toBeVisible()
 
-    await page.getByLabel('Elegí tu contraseña').fill(INVITEE_PASSWORD)
+    // Lo que le pasó a la primera persona invitada de verdad: se olvidó del
+    // tilde, el formulario volvió con el aviso y la contraseña vacía, la
+    // escribió otra vez, y así. Ahora vuelve con el aviso y con lo que escribió.
+    const password = page.getByLabel('Elegí tu contraseña')
+    await password.fill(INVITEE_PASSWORD)
+    await page.getByRole('button', { name: 'Entrar a Ombúa' }).click()
+    await expect(page.getByText('Necesitamos que aceptes los términos')).toBeVisible()
+    await expect(password).toHaveValue(INVITEE_PASSWORD)
+
     await page.getByRole('checkbox').check()
     await page.getByRole('button', { name: 'Entrar a Ombúa' }).click()
 
@@ -161,7 +169,17 @@ test('an admin invites somebody, and they let themselves in with the link', asyn
     // hidden from her — it does not exist.
     await page.goto('/entrar')
     await page.getByLabel('Correo electrónico').fill(inviteeEmail)
-    await page.getByLabel('Contraseña', { exact: true }).fill(INVITEE_PASSWORD)
+
+    // Una contraseña equivocada no se borra: se corrige una letra mirándola con
+    // el ojo, en vez de escribirla entera de nuevo a ciegas.
+    const password = page.getByLabel('Contraseña', { exact: true })
+    await password.fill(`${INVITEE_PASSWORD}x`)
+    await page.getByRole('button', { name: 'Entrar' }).click()
+    await expect(page.getByText('El correo o la contraseña no coinciden.')).toBeVisible()
+    await expect(page.getByLabel('Correo electrónico')).toHaveValue(inviteeEmail)
+    await expect(password).toHaveValue(`${INVITEE_PASSWORD}x`)
+
+    await password.fill(INVITEE_PASSWORD)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/inicio$/)
 

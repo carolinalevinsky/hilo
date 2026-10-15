@@ -2,6 +2,18 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   /**
+   * Lo que puede pesar un archivo que entra por un Server Action.
+   *
+   * Next corta en 1 MB si no se dice nada, y la subida de materiales prometía
+   * 10: una foto de celular de una ficha (2 o 3 MB) volvía con un error que no
+   * explicaba nada. 4,5 MB es el techo de Vercel para el cuerpo de un pedido,
+   * así que más que esto sería otra promesa que la plataforma no cumple.
+   */
+  experimental: {
+    serverActions: { bodySizeLimit: '4.5mb' },
+  },
+
+  /**
    * Who may ask this dev server for its client bundles.
    *
    * The dev server runs inside the container on `0.0.0.0` (see `./dx`), so a
