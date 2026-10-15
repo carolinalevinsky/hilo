@@ -1,4 +1,4 @@
-import { ArrowLeft, Copy, Pencil } from '@/components/icons'
+import { ArrowLeft, Copy, Pencil, Sparkles } from '@/components/icons'
 import { ConfirmAction } from '@/components/confirm-action'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -55,7 +55,30 @@ export default async function MaterialPage({ params }: PageProps<'/materiales/[i
           Volver a materiales
         </Link>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* "Ajustar con IA" va primero y en violeta: es lo que más se pide de
+              un material ya hecho —otra edad, otra temática, más fácil—. Antes
+              vivía sólo adentro de "Editar", así que en los materiales de Ombúa
+              y de la comunidad no aparecía nunca. En esos, primero se copia a tu
+              biblioteca (sólo se ajusta lo tuyo) y se llega directo al cuadro
+              para pedir el cambio. */}
+          {isMine ? (
+            <Button asChild size="sm">
+              <Link href={`/materiales/${material.id}/editar?ajustar=1`}>
+                <Sparkles className="size-4" />
+                Ajustar con IA
+              </Link>
+            </Button>
+          ) : (
+            <form action={copyMaterialAction}>
+              <input type="hidden" name="materialId" value={material.id} />
+              <input type="hidden" name="ajustar" value="1" />
+              <Button type="submit" size="sm">
+                <Sparkles className="size-4" />
+                Ajustar con IA
+              </Button>
+            </form>
+          )}
           {isMine ? (
             <>
               <Button asChild variant="outline" size="sm">

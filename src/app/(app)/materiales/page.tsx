@@ -1,4 +1,4 @@
-import { BookOpen, Plus } from '@/components/icons'
+import { BookOpen, Plus, FileText } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -70,6 +70,12 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
         action={
           // v1 had both here, in this order (`legacy/index.html:615`).
           <div className="flex flex-wrap gap-2">
+            <Button asChild size="lg" variant="outline">
+              <Link href="/materiales/importar">
+                <FileText className="size-[18px]" />
+                Importar planificaciones
+              </Link>
+            </Button>
             <UploadMaterial areas={areas} />
             <GenerateMaterial areas={areas} />
             <Button asChild size="lg">

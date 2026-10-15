@@ -42,9 +42,16 @@ import type { Patient } from '@/server/patients'
 export function PatientForm({
   patient,
   photoUrl,
+  prefill,
 }: {
   patient?: Patient
   photoUrl?: string | null
+  /**
+   * Lo que Ombúa leyó de un documento, con los mismos nombres que los campos.
+   * Llega una sola vez: quien lo usa remonta el formulario con otra `key`. Ver
+   * `PatientFromDocument`.
+   */
+  prefill?: Record<string, string>
 }) {
   const editing = Boolean(patient)
   const [state, formAction, pending] = useActionState(
@@ -54,7 +61,9 @@ export function PatientForm({
 
   // La población decide qué preguntas tienen sentido más abajo, así que es lo
   // único del formulario que el cliente necesita saber.
-  const [ageGroup, setAgeGroup] = useState<string>(patient?.age_group ?? 'children')
+  const [ageGroup, setAgeGroup] = useState<string>(
+    prefill?.ageGroup ?? patient?.age_group ?? 'children',
+  )
   // Un adolescente puede venir solo. Arranca en "sí" para quien todavía no
   // existe, y en lo que diga la ficha para quien ya está cargado.
   const [hasGuardian, setHasGuardian] = useState(!patient || Boolean(patient.guardian_name))
@@ -64,7 +73,7 @@ export function PatientForm({
   const [gender, setGender] = useState<string>(
     state.values?.grammaticalGender ??
       patient?.grammatical_gender ??
-      genderFromName(patient?.full_name) ??
+      genderFromName(patient?.full_name ?? prefill?.fullName) ??
       '',
   )
   const [genderTouched, setGenderTouched] = useState(Boolean(patient?.grammatical_gender))
@@ -75,7 +84,9 @@ export function PatientForm({
   // dato mal cargado devolvía el formulario entero en blanco: la ficha, el
   // motivo de consulta, el responsable, todo. Ver `FormState.values`.
   const kept = (name: string, fallback?: string | number | null) =>
-    state.values?.[name] ?? (fallback === null || fallback === undefined ? '' : String(fallback))
+    state.values?.[name] ??
+    prefill?.[name] ??
+    (fallback === null || fallback === undefined ? '' : String(fallback))
 
   const showsGuardian = ageGroup !== 'adults' && (ageGroup !== 'adolescents' || hasGuardian)
 
@@ -88,7 +99,7 @@ export function PatientForm({
    * un campo que se desmonta y se vuelve a montar arranca vacío. El valor vive
    * acá, así que el número escrito sigue estando después de la mudanza.
    */
-  const [phone, setPhone] = useState(patient?.phone ?? '')
+  const [phone, setPhone] = useState(prefill?.phone ?? patient?.phone ?? '')
   const phoneField = (
     <Field
       label={showsGuardian ? 'Teléfono del responsable' : 'Teléfono'}

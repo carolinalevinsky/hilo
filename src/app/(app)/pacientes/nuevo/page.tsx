@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { StepHint } from '@/components/onboarding/step-hint'
 import { PageHeader } from '@/components/page-header'
-import { PatientForm } from '@/components/patients/patient-form'
+import { PatientFromDocument } from '@/components/patients/patient-from-document'
 import { Card, CardContent } from '@/components/ui/card'
 import { pageTitle } from '@/lib/brand'
 import { readStepHint } from '@/lib/first-steps'
@@ -38,7 +38,7 @@ export default async function NewPatientPage({ searchParams }: PageProps<'/pacie
           form lays out at `xl`. */}
       <Card className="max-w-[1400px] [--card-spacing:--spacing(6)]">
         <CardContent>
-          <PatientForm />
+          <PatientFromDocument />
         </CardContent>
       </Card>
     </>

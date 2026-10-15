@@ -54,6 +54,7 @@ export function MaterialForm({
   material,
   generateFor,
   describeFile = false,
+  adjustFirst = false,
   file = null,
 }: {
   areas: Record<string, string[]>
@@ -65,6 +66,9 @@ export function MaterialForm({
   generateFor?: string
   /** Arriving from "Subir un material": read the file and fill the three fields. */
   describeFile?: boolean
+  /** Arriving from "Ajustar con IA": the box where you ask for the change is
+      what you came for, so it gets the focus instead of the title. */
+  adjustFirst?: boolean
   /** Signed links for the attached file, so it can be looked at while editing. */
   file?: MaterialFileLinks | null
 }) {
@@ -93,13 +97,22 @@ export function MaterialForm({
   const started = useRef(false)
   const [adjusting, setAdjusting] = useState(false)
   const [adjustment, setAdjustment] = useState('')
+  const adjustBox = useRef<HTMLInputElement>(null)
+
+  // Below a twelve-row activity, the box is off screen on a phone. Scrolled to
+  // and focused once, on arrival.
+  useEffect(() => {
+    if (!adjustFirst) return
+    adjustBox.current?.scrollIntoView({ block: 'center' })
+    adjustBox.current?.focus({ preventScroll: true })
+  }, [adjustFirst])
 
   // The field is being written by the model. Typing into it now would be
   // interleaved with the stream, and saving now would save half an activity.
   const busy = notice?.tone === 'working'
 
   /**
-   * "Modificar con IA" — v1's button, doing what it said.
+   * "Ajustar con IA" — v1's "Modificar con IA", doing what it said.
    *
    * v1 appended a canned paragraph based on which words it spotted in your
    * request; this rewrites the activity. The old text goes back if the request
@@ -290,7 +303,7 @@ export function MaterialForm({
           required
           // Not while Ombúa is filling the form in: a focus ring on the title
           // points at the one field where nothing is happening.
-          autoFocus={!generateFor && !describeFile}
+          autoFocus={!generateFor && !describeFile && !adjustFirst}
         />
       </div>
 
@@ -434,6 +447,7 @@ export function MaterialForm({
         {material ? (
           <div className="flex flex-wrap gap-2 pt-1">
             <Input
+              ref={adjustBox}
               value={adjustment}
               onChange={(event) => setAdjustment(event.target.value)}
               onKeyDown={(event) => {
@@ -454,7 +468,7 @@ export function MaterialForm({
               disabled={busy || !adjustment.trim()}
             >
               <Sparkles className="size-4" />
-              {adjusting ? 'Ajustando…' : 'Modificar con IA'}
+              {adjusting ? 'Ajustando…' : 'Ajustar con IA'}
             </Button>
           </div>
         ) : null}
