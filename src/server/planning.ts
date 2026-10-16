@@ -3,7 +3,6 @@ import { currentPeriod } from '@/lib/periods'
 
 import { listAppointments } from './appointments'
 import { getDb } from './db'
-import { everyRow } from './every-row'
 import { listMaterials, type MaterialSummary } from './materials'
 import { bestMaterialFor } from './material-matching'
 import { monthlyLedger } from './payments'
@@ -223,40 +222,47 @@ export async function todayBriefing(
   discipline: string,
 ): Promise<TodaySession[]> {
   const todayInUruguay = today()
-  const planned = (await planUpcoming(practitionerId, discipline, 0)).filter(
-    (session) => session.scheduledOn === todayInUruguay,
-  )
+  // The ledger does not depend on the plan, so it is asked for at the same time
+  // instead of after it. On a day with nothing scheduled it is one query wasted;
+  // on every other day it is one round trip fewer before Inicio can draw.
+  const [upcoming, ledger] = await Promise.all([
+    planUpcoming(practitionerId, discipline, 0),
+    monthlyLedger(practitionerId, currentPeriod()),
+  ])
+  const planned = upcoming.filter((session) => session.scheduledOn === todayInUruguay)
   if (planned.length === 0) return []
 
   const patientIds = [...new Set(planned.map((session) => session.patientId))]
   const db = await getDb()
 
+  // The newest note of each of today's patients: one row each, in parallel. It
+  // used to be every note they ever had, paged 500 at a time, to keep the first
+  // one of each — a patient a year in brought fifty notes to show one line.
+  //
   // `today` iba sin llamar: PostgREST recibía el código de la función como
   // fecha, contestaba error, y `data ?? []` lo leía como "sin notas". La última
   // nota no apareció nunca. Ahora la fecha va bien y un error se dice.
-  const [notes, ledger] = await Promise.all([
-    everyRow((from, to) =>
-      db
+  const notes = await Promise.all(
+    patientIds.map(async (patientId) => {
+      const { data, error } = await db
         .from('sessions')
-        .select('patient_id, held_on, progress_note')
+        .select('patient_id, progress_note')
         .eq('practitioner_id', practitionerId)
-        .in('patient_id', patientIds)
+        .eq('patient_id', patientId)
         .not('progress_note', 'is', null)
         .lt('held_on', todayInUruguay)
         .order('held_on', { ascending: false })
         .order('id')
-        .range(from, to),
-    ),
-    monthlyLedger(practitionerId, currentPeriod()),
-  ])
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    }),
+  )
 
-  // The query is ordered newest first, so the first note seen for a patient is
-  // the one to keep.
   const lastNote = new Map<string, string>()
   for (const note of notes) {
-    if (note.progress_note && !lastNote.has(note.patient_id)) {
-      lastNote.set(note.patient_id, note.progress_note)
-    }
+    if (note?.progress_note) lastNote.set(note.patient_id, note.progress_note)
   }
 
   const owes = new Map(
@@ -266,7 +272,12 @@ export async function todayBriefing(
   return planned.map((session) => {
     const alerts: TodaySession['alerts'] = []
 
-    const stalled = session.goals.find((goal) => goal.progress < STALLED_BELOW)
+    // Not the one "Para hoy" already names: the card said "priorizar X" and,
+    // right under it, "X viene lento" — the same goal twice in two colours.
+    // The alert is for a second goal that is also stuck.
+    const stalled = session.goals.find(
+      (goal) => goal.progress < STALLED_BELOW && goal.title !== session.focus?.title,
+    )
     if (stalled) alerts.push({ kind: 'goal', text: `${stalled.title} viene lento` })
 
     if (owes.get(session.patientId)) alerts.push({ kind: 'payment', text: 'pago pendiente' })

@@ -27,7 +27,24 @@ export async function materialiseAppointments(
   from: string,
   to: string,
 ) {
-  const schedules = await listSchedules(practitionerId)
+  const db = await getDb()
+
+  // Las fechas que se quitaron "sólo esta vez" (P5). Sin esto, una sesión de
+  // horario fijo borrada volvía en la próxima carga: la deduplicación de abajo es
+  // por la fila, y una fila borrada no deja nada contra qué deduplicar.
+  //
+  // Pedidas a la vez que los horarios y no después: corre en cada carga de la
+  // Agenda, y en fila eran tres viajes antes de poder dibujarla.
+  const [schedules, { data: skips, error: skipsError }] = await Promise.all([
+    listSchedules(practitionerId),
+    db
+      .from('schedule_skips')
+      .select('schedule_id, skipped_on')
+      .eq('practitioner_id', practitionerId)
+      .gte('skipped_on', from)
+      .lte('skipped_on', to),
+  ])
+  if (skipsError) throw skipsError
   if (schedules.length === 0) return
 
   const rows: Database['public']['Tables']['appointments']['Insert'][] = []
@@ -47,20 +64,6 @@ export async function materialiseAppointments(
   }
 
   if (rows.length === 0) return
-
-  const db = await getDb()
-
-  // Las fechas que se quitaron "sólo esta vez" (P5). Sin esto, una sesión de
-  // horario fijo borrada volvía en la próxima carga: la deduplicación de abajo es
-  // por la fila, y una fila borrada no deja nada contra qué deduplicar.
-  const { data: skips, error: skipsError } = await db
-    .from('schedule_skips')
-    .select('schedule_id, skipped_on')
-    .eq('practitioner_id', practitionerId)
-    .gte('skipped_on', from)
-    .lte('skipped_on', to)
-
-  if (skipsError) throw skipsError
 
   const skipped = new Set((skips ?? []).map((skip) => `${skip.schedule_id}:${skip.skipped_on}`))
   const wanted = rows.filter((row) => !skipped.has(`${row.schedule_id}:${row.scheduled_on}`))

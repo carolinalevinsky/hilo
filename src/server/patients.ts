@@ -309,9 +309,12 @@ export async function patientSummaries(
   if (patientIds.length === 0) return summaries
 
   const db = await getDb()
-  // Paginadas: las sesiones se cuentan de toda la historia, y cortadas en mil
-  // filas la lista mostraba menos sesiones de las que hubo.
-  const [goals, sessions] = await Promise.all([
+  // Los objetivos paginados; las sesiones, contadas por la base. Antes se traía
+  // cada sesión de la historia —de a 500, una página después de la otra— para
+  // contarlas acá: un consultorio con un año de uso eran miles de filas y varios
+  // viajes en fila para dibujar un número por paciente. `sessions(count)` es un
+  // conteo que hace PostgREST con las mismas reglas de RLS que una consulta.
+  const [goals, counts] = await Promise.all([
     everyRow((from, to) =>
       db
         .from('goals')
@@ -322,16 +325,13 @@ export async function patientSummaries(
         .order('id')
         .range(from, to),
     ),
-    everyRow((from, to) =>
-      db
-        .from('sessions')
-        .select('patient_id')
-        .eq('practitioner_id', practitionerId)
-        .in('patient_id', patientIds)
-        .order('id')
-        .range(from, to),
-    ),
+    db
+      .from('patients')
+      .select('id, sessions(count)')
+      .eq('practitioner_id', practitionerId)
+      .in('id', patientIds),
   ])
+  if (counts.error) throw counts.error
 
   const progressOf = new Map<string, number[]>()
   for (const goal of goals) {
@@ -341,8 +341,8 @@ export async function patientSummaries(
   }
 
   const sessionCount = new Map<string, number>()
-  for (const session of sessions) {
-    sessionCount.set(session.patient_id, (sessionCount.get(session.patient_id) ?? 0) + 1)
+  for (const row of counts.data) {
+    sessionCount.set(row.id, row.sessions[0]?.count ?? 0)
   }
 
   for (const id of patientIds) {

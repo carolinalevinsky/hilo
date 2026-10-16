@@ -74,7 +74,6 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   const horizon = weekDates(todayDate(), Math.max(offset, 0) + 3)
   const windowStart = weekDates(todayDate(), 0)[0]!
   const windowEnd = horizon[horizon.length - 1]!
-  await materialiseAppointments(user.id, windowStart, windowEnd)
 
   // Lo que se acaba de armar (y lo que falló antes) sale hacia Google después
   // de responder: la semana se dibuja sin esperar a Google, y las sesiones de
@@ -92,7 +91,15 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // semanas con las flechas no dispara un viaje a Google por cada click. Y si
   // Google falla o tarda, devuelve cero y la Agenda sigue: ver la regla en
   // `google-calendar.ts`.
-  await pullFromGoogle(user.id)
+  //
+  // Al mismo tiempo que se arman los horarios fijos y no después: los dos
+  // escriben citas pero no las mismas —lo de Google se busca por su id de evento,
+  // y una cita recién armada todavía no tiene—, así que esperar uno para empezar
+  // el otro sólo sumaba un viaje a cada carga.
+  await Promise.all([
+    materialiseAppointments(user.id, windowStart, windowEnd),
+    pullFromGoogle(user.id),
+  ])
 
   // Tomorrow, whichever week is on screen. The reminder is about the phone
   // calls tonight, not about the week you happen to be paging through.

@@ -605,6 +605,26 @@ export type BusyWeek = {
 
 const UNAVAILABLE: BusyWeek = { blocks: [], unavailable: true }
 
+/**
+ * Las semanas ya leídas de Google, por dos minutos.
+ *
+ * `listBusyBlocks` corre en cada carga de la Agenda, y la Agenda se recarga
+ * entera cada vez que abrís o cerrás una sesión del panel (vive en la URL). Eran
+ * un viaje a Google por click, con hasta seis segundos de espera si Google
+ * tardaba. Dos minutos es el mismo ritmo con el que `pullFromGoogle` trae lo que
+ * se movió allá: una reunión nueva en Google aparece como mucho a los dos
+ * minutos, igual que una cita movida.
+ *
+ * En la memoria de la instancia y no en la base: es lo que ya hace la Agenda con
+ * estos bloques —se leen, se dibujan y se olvidan— y no guardarlos es parte de
+ * la promesa. La clave lleva el id de la profesional, así que una instancia que
+ * atiende a dos personas no cruza nada. Sólo se guarda lo que llegó bien; un
+ * "Google no contestó" se vuelve a intentar en la próxima carga.
+ */
+const BUSY_TTL_MS = 2 * 60 * 1000
+const BUSY_CACHE_MAX = 500
+const busyCache = new Map<string, { at: number; week: BusyWeek }>()
+
 export async function listBusyBlocks(
   practitionerId: string,
   from: string,
@@ -619,6 +639,12 @@ export async function listBusyBlocks(
     const account = await findGoogleAccount(practitionerId)
     return account ? UNAVAILABLE : { blocks: [], unavailable: false }
   }
+
+  // Después de confirmar la conexión y no antes: si la desconectó, no se le
+  // siguen mostrando bloques de una cuenta que ya no está.
+  const key = `${practitionerId}:${from}:${to}`
+  const cached = busyCache.get(key)
+  if (cached && Date.now() - cached.at < BUSY_TTL_MS) return cached.week
 
   // La ventana se pide con un día de más de cada lado, en UTC, y después se
   // filtra por fecha local. Es a propósito: armar el instante exacto en que
@@ -651,7 +677,13 @@ export async function listBusyBlocks(
 
   try {
     const payload = (await response.json()) as { items?: GoogleEvent[] }
-    return { blocks: toBusyBlocks(payload.items ?? [], from, to), unavailable: false }
+    const week = { blocks: toBusyBlocks(payload.items ?? [], from, to), unavailable: false }
+    if (busyCache.size >= BUSY_CACHE_MAX) {
+      // El más viejo: un `Map` recorre en orden de inserción.
+      busyCache.delete(busyCache.keys().next().value!)
+    }
+    busyCache.set(key, { at: Date.now(), week })
+    return week
   } catch {
     return UNAVAILABLE
   }
