@@ -56,9 +56,9 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
 
   return (
     <>
-      <PageHeader title="Mi perfil" subtitle="Tus datos y los de tu cuenta." />
+      <PageHeader title="Mi perfil" />
 
-      <Card className="mb-5">
+      <Card className="mb-3 lg:mb-5">
         <CardHeader>
           <CardTitle>Tus datos</CardTitle>
         </CardHeader>
@@ -75,13 +75,9 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
       {/* Lo que firma la familia desde "Antes de empezar". Acá y no en cada
           link: se escribe una vez. Ver `@/lib/consent-template` para qué es el
           modelo y qué no. */}
-      <Card className="mb-5">
+      <Card className="mb-3 lg:mb-5">
         <CardHeader>
           <CardTitle>Consentimiento informado</CardTitle>
-          <p className="text-meta text-muted-foreground">
-            Lo que firma la familia desde el link «Antes de empezar». Donde escribas
-            {' {profesional}, {disciplina} o {paciente} '}se completa solo.
-          </p>
         </CardHeader>
         {/* Plegado: el texto mide catorce renglones y se edita una vez. Abierto,
             se llevaba dos pantallas de un celular entre "Tus datos" y todo lo
@@ -98,6 +94,10 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
               </span>
             </summary>
             <div className="mt-3 space-y-3">
+              <p className="text-meta leading-relaxed text-muted-foreground">
+                Lo firma la familia desde «Antes de empezar». Donde escribas
+                {' {profesional}, {disciplina} o {paciente} '}se completa solo.
+              </p>
               <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
                 Es un modelo escrito a partir de las leyes 19.529, 18.335 y 18.331, y no lo
                 revisó un abogado. Leelo y ajustalo a tu práctica antes de mandarlo.
@@ -120,20 +120,17 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
         </CardContent>
       </Card>
 
-      <Card className="mb-5">
+      <Card className="mb-3 lg:mb-5">
         <CardHeader>
           <CardTitle>Tu calendario</CardTitle>
+          {/* Una línea. El párrafo largo explicaba lo que cada opción ya dice
+              cuando la elegís; lo que no se puede perder es la garantía. */}
           <p className="text-meta leading-relaxed text-muted-foreground">
-            Cuando agregás una sesión a Google Calendar, el título del evento
-            queda guardado en un servidor de Google, fuera del país. Elegí cuánto
-            de tu paciente viaja hasta ahí.{' '}
-            <b className="font-semibold">
-              La nota de la sesión, el motivo de consulta y los objetivos no salen
-              nunca, con ninguna de las tres.
-            </b>
+            Qué ve Google de tus pacientes. Las notas y los objetivos nunca salen de
+            Ombúa.
           </p>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4">
           {result ? (
             <p
               role="status"
@@ -147,7 +144,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             </p>
           ) : null}
 
-          <div className="rounded-xl border border-border p-3.5">
+          <div className="rounded-xl border border-border px-3 py-2.5">
             {google ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -167,9 +164,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
                 <div className="min-w-0">
                   <p className="text-body font-bold">Google Calendar</p>
                   <p className="text-meta text-muted-foreground">
-                    Tus sesiones aparecen en tu calendario, y si movés una desde
-                    el celular se mueve acá. Borrar el evento en Google cancela la
-                    hora; la sesión y su nota quedan.
+                    Tus sesiones, también en tu calendario.
                   </p>
                 </div>
                 {/* Un enlace y no un botón con acción: el final del camino es
@@ -191,7 +186,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           una cosa de la cuenta, y "Mi perfil" es donde están las cosas de la
           cuenta. Además sólo la ve quien puede hacerlo. */}
       {practitioner.is_admin ? (
-        <Card className="mb-5">
+        <Card className="mb-3 lg:mb-5">
           <CardHeader>
             <CardTitle>Invitaciones</CardTitle>
           </CardHeader>
@@ -217,7 +212,7 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
           apertura de ficha sería una fila por carga de pantalla, y eso pide
           desduplicar por día y aceptar la escritura extra. Se puede agregar
           después; lo que no se podía seguir haciendo era escribir para nadie. */}
-      <Card className="mb-5">
+      <Card className="mb-3 lg:mb-5">
         <CardHeader>
           <CardTitle>Tu historial</CardTitle>
         </CardHeader>
@@ -245,14 +240,10 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             </ul>
           )}
 
-          <p className="mt-3 text-meta leading-relaxed text-muted-foreground">
-            Se guarda porque Ombúa tiene datos de salud y hay que poder reconstruir qué
-            pasó con ellos. Nadie más que vos lo ve, y no se puede editar — ni por vos.
-          </p>
         </CardContent>
       </Card>
 
-      <Card className="mb-5">
+      <Card className="mb-3 lg:mb-5">
         <CardHeader>
           <CardTitle>Verificación en dos pasos</CardTitle>
         </CardHeader>
@@ -265,19 +256,14 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
         <CardHeader>
           <CardTitle>Tu cuenta</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* El plan no se muestra. Los límites siguen existiendo y se aplican
-              en el servidor; lo que no hay todavía es forma de cambiar de plan,
-              y un dato que no se puede accionar sólo ocupa lugar. */}
-          <dl className="grid gap-3 text-body">
-            <div>
-              <dt className="text-muted-foreground">Correo</dt>
-              <dd className="font-semibold">{practitioner.email}</dd>
-            </div>
-          </dl>
+        {/* El plan no se muestra. Los límites siguen existiendo y se aplican
+            en el servidor; lo que no hay todavía es forma de cambiar de plan,
+            y un dato que no se puede accionar sólo ocupa lugar. */}
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-body font-semibold">{practitioner.email}</p>
 
           <form action={signOutAction}>
-            <Button type="submit" variant="outline">
+            <Button type="submit" variant="outline" size="sm">
               Salir de Ombúa
             </Button>
           </form>

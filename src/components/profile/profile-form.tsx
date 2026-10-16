@@ -66,9 +66,6 @@ export function ProfileForm({
             </option>
           ))}
         </NativeSelect>
-        <p className="text-xs text-muted-foreground">
-          Define qué instrumentos de evaluación y qué materiales ves en la app.
-        </p>
       </div>
 
       <div className="space-y-1.5">
