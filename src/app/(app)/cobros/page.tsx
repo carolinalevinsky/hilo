@@ -27,6 +27,8 @@ import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: pageTitle('Pagos') }
 
+type LedgerRow = Awaited<ReturnType<typeof monthlyLedger>>['rows'][number]
+
 const money = (value: number) =>
   `$ ${value.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`
 
@@ -58,6 +60,175 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
     id: patient.id,
     full_name: patient.full_name,
   }))
+
+  // Primero quién debe, después a quién le falta el honorario y lo que ya es
+  // historia (archivados, borrados), y aparte los que están al día. El orden
+  // de cada grupo es el de `monthlyLedger`, por nombre.
+  const isPaid = (row: LedgerRow) =>
+    !row.deleted && !row.archived && row.expected !== null && (row.outstanding ?? 0) <= 0
+  const owes = (row: LedgerRow) =>
+    !row.deleted && !row.archived && row.expected !== null && (row.outstanding ?? 0) > 0
+  const pending = [
+    ...ledger.rows.filter(owes),
+    ...ledger.rows.filter((row) => !owes(row) && !isPaid(row)),
+  ]
+  const paid = ledger.rows.filter(isPaid)
+
+  const renderRow = (row: LedgerRow) => (
+    // En teléfono, todas las filas con la misma forma: la cara, el
+    // nombre con el estado debajo —en color, como texto— y un
+    // solo grupo de botones a la derecha, centrado. La etiqueta
+    // de estado apilada arriba de los botones hacía cada fila de
+    // un alto distinto y la columna de la derecha no se alineaba
+    // con nada.
+    <li
+      key={row.patientId}
+      className="flex items-center gap-3 py-2.5 sm:flex-wrap sm:py-3"
+    >
+      <PatientAvatar
+        fullName={row.fullName}
+        color={row.color}
+        size={36}
+        className="max-sm:size-8!"
+      />
+
+      <div className="min-w-0 flex-1 sm:min-w-[140px]">
+        <p className="text-body font-bold">
+          {row.fullName}
+          {/* Dicho, y no sólo insinuado por la fila más apagada:
+              si el mes cierra con una cifra que no cuadra, esto
+              es lo que la explica. */}
+          {row.deleted ? (
+            <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
+              Borrado
+            </span>
+          ) : row.archived ? (
+            <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
+              Archivado
+            </span>
+          ) : null}
+        </p>
+        {/* Sin honorario la fila decía "Sin honorario cargado" acá
+            y "Sin honorario" en la etiqueta de al lado: lo mismo,
+            dos veces, a dos centímetros. Queda la etiqueta —que es
+            la que se lee de un vistazo bajando la lista— y esta
+            línea pasa a ser lo único que falta hacer. */}
+        <MobileStatus row={row} money={money} />
+        <p className="text-meta text-muted-foreground max-sm:hidden">
+          {row.archived || row.deleted ? (
+            `${money(row.paid)} cobrado`
+          ) : row.expected === null ? (
+            <BillingDialog
+              patientId={row.patientId}
+              patientName={row.fullName}
+              sessionFee={row.billing.sessionFee}
+              billingFrequency={row.billing.frequency}
+              expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
+              trigger={
+                <button
+                  type="button"
+                  className="font-semibold text-violet underline"
+                >
+                  Cargar el honorario
+                </button>
+              }
+            />
+          ) : (
+            `${money(row.paid)} de ${money(row.expected)}`
+          )}
+          {/* En teléfono sin las fechas: partían el renglón en dos, y
+              están en "Pagos de este mes", abajo. */}
+          {row.payments.length > 0 ? (
+            <span className="max-sm:hidden">
+              {` · ${row.payments
+                .map((payment) => formatDayMonth(payment.paid_on))
+                .join(', ')}`}
+            </span>
+          ) : null}
+        </p>
+      </div>
+
+      <div className="max-sm:hidden">
+        <Status row={row} />
+      </div>
+
+      {/* Nothing to do on a deleted patient's row: the payments are
+          history, and there is nobody to charge or bill anymore. */}
+      {row.deleted ? null : (
+      <div className="flex shrink-0 items-center gap-1 sm:flex-wrap sm:gap-1.5">
+        {/* Sin honorario, en teléfono el botón de la derecha es
+            cargarlo: el mismo lugar que el tic de pago en las
+            demás filas, en vez de un link subrayado abajo
+            del nombre y tres puntos sueltos. */}
+        {row.expected === null && !row.archived ? (
+          <BillingDialog
+            patientId={row.patientId}
+            patientName={row.fullName}
+            sessionFee={row.billing.sessionFee}
+            billingFrequency={row.billing.frequency}
+            expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
+            trigger={
+              <Button size="sm" variant="outline" className="sm:hidden">
+                Cargar honorario
+              </Button>
+            }
+          />
+        ) : null}
+
+        {/* Sin honorario no hay pago que registrar acá: "Registrar
+            pago" abriría un diálogo que no sabe de cuánto, al lado
+            de una etiqueta que ya dice que falta el número. Se
+            ofrece cargar el honorario, arriba, y nada se pierde —
+            el "Registrar pago" del encabezado sigue estando, con
+            su lista de pacientes, para el pago suelto de alguien a
+            quien todavía no le pusiste arancel. */}
+        {row.expected === null && !row.archived ? null : (
+          <PaymentDialog
+            period={period}
+            patients={patientOptions}
+            defaultPatientId={row.patientId}
+            defaultAmount={
+              row.outstanding !== null && row.outstanding > 0
+                ? row.outstanding
+                : null
+            }
+            trigger={
+              // `outline` y no `ghost`: sin borde, en teléfono era
+              // una palabra suelta y no se leía como un botón.
+              // En teléfono, un tic: "anotar que pagó", que es lo
+              // que se viene a hacer acá, en un botón cuadrado que
+              // deja el nombre con todo el ancho. Abre el mismo
+              // diálogo, con el monto que falta ya puesto.
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label={`Registrar pago de ${row.fullName}`}
+                title="Registrar pago"
+                className="max-sm:size-9 max-sm:p-0"
+              >
+                <Check className="size-4 text-green-ink sm:hidden" />
+                <span className="max-sm:hidden">Registrar pago</span>
+              </Button>
+            }
+          />
+        )}
+
+        {/* v1's `···` (`legacy/index.html:2421`): the fee and the
+            frequency, edited from the row you are already
+            reading. */}
+        <span className={cn('flex', row.expected === null && !row.archived && 'max-sm:hidden')}>
+          <BillingDialog
+            patientId={row.patientId}
+            patientName={row.fullName}
+            sessionFee={row.billing.sessionFee}
+            billingFrequency={row.billing.frequency}
+            expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
+          />
+        </span>
+      </div>
+      )}
+    </li>
+  )
 
   return (
     <>
@@ -142,178 +313,20 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
               <CardTitle>Por paciente</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="divide-y divide-border">
-                {ledger.rows.map((row) => (
-                  // En teléfono, todas las filas con la misma forma: la cara, el
-                  // nombre con el estado debajo —en color, como texto— y un
-                  // solo grupo de botones a la derecha, centrado. La etiqueta
-                  // de estado apilada arriba de los botones hacía cada fila de
-                  // un alto distinto y la columna de la derecha no se alineaba
-                  // con nada.
-                  <li
-                    key={row.patientId}
-                    className="flex items-center gap-3 py-2.5 sm:flex-wrap sm:py-3"
-                  >
-                    <PatientAvatar
-                      fullName={row.fullName}
-                      color={row.color}
-                      size={36}
-                      className="max-sm:size-8!"
-                    />
+              <ul className="divide-y divide-border">{pending.map(renderRow)}</ul>
 
-                    <div className="min-w-0 flex-1 sm:min-w-[140px]">
-                      <p className="text-body font-bold">
-                        {row.fullName}
-                        {/* Dicho, y no sólo insinuado por la fila más apagada:
-                            si el mes cierra con una cifra que no cuadra, esto
-                            es lo que la explica. */}
-                        {row.deleted ? (
-                          <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
-                            Borrado
-                          </span>
-                        ) : row.archived ? (
-                          <span className="ml-2 align-middle rounded-full bg-muted px-2 py-0.5 text-micro font-bold text-muted-foreground">
-                            Archivado
-                          </span>
-                        ) : null}
-                      </p>
-                      {/* Sin honorario la fila decía "Sin honorario cargado" acá
-                          y "Sin honorario" en la etiqueta de al lado: lo mismo,
-                          dos veces, a dos centímetros. Queda la etiqueta —que es
-                          la que se lee de un vistazo bajando la lista— y esta
-                          línea pasa a ser lo único que falta hacer. */}
-                      <MobileStatus row={row} money={money} />
-                      <p className="text-meta text-muted-foreground max-sm:hidden">
-                        {row.archived || row.deleted ? (
-                          `${money(row.paid)} cobrado`
-                        ) : row.expected === null ? (
-                          <BillingDialog
-                            patientId={row.patientId}
-                            patientName={row.fullName}
-                            sessionFee={row.billing.sessionFee}
-                            billingFrequency={row.billing.frequency}
-                            expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
-                            trigger={
-                              <button
-                                type="button"
-                                className="font-semibold text-violet underline"
-                              >
-                                Cargar el honorario
-                              </button>
-                            }
-                          />
-                        ) : (
-                          `${money(row.paid)} de ${money(row.expected)}`
-                        )}
-                        {/* En teléfono sin las fechas: partían el renglón en dos, y
-                            están en "Pagos de este mes", abajo. */}
-                        {row.payments.length > 0 ? (
-                          <span className="max-sm:hidden">
-                            {` · ${row.payments
-                              .map((payment) => formatDayMonth(payment.paid_on))
-                              .join(', ')}`}
-                          </span>
-                        ) : null}
-                      </p>
-                    </div>
-
-                    <div className="max-sm:hidden">
-                      <Status row={row} />
-                    </div>
-
-                    {/* Nothing to do on a deleted patient's row: the payments are
-                        history, and there is nobody to charge or bill anymore. */}
-                    {row.deleted ? null : (
-                    <div className="flex shrink-0 items-center gap-1 sm:flex-wrap sm:gap-1.5">
-                      {/* Sin honorario, en teléfono el botón de la derecha es
-                          cargarlo: el mismo lugar que el tic de pago en las
-                          demás filas, en vez de un link subrayado abajo
-                          del nombre y tres puntos sueltos. */}
-                      {row.expected === null && !row.archived ? (
-                        <BillingDialog
-                          patientId={row.patientId}
-                          patientName={row.fullName}
-                          sessionFee={row.billing.sessionFee}
-                          billingFrequency={row.billing.frequency}
-                          expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
-                          trigger={
-                            <Button size="sm" variant="outline" className="sm:hidden">
-                              Cargar honorario
-                            </Button>
-                          }
-                        />
-                      ) : null}
-
-                      {/* Sin honorario no hay pago que registrar acá: "Registrar
-                          pago" abriría un diálogo que no sabe de cuánto, al lado
-                          de una etiqueta que ya dice que falta el número. Se
-                          ofrece cargar el honorario, arriba, y nada se pierde —
-                          el "Registrar pago" del encabezado sigue estando, con
-                          su lista de pacientes, para el pago suelto de alguien a
-                          quien todavía no le pusiste arancel. */}
-                      {row.expected === null && !row.archived ? null : (
-                        <PaymentDialog
-                          period={period}
-                          patients={patientOptions}
-                          defaultPatientId={row.patientId}
-                          defaultAmount={
-                            row.outstanding !== null && row.outstanding > 0
-                              ? row.outstanding
-                              : null
-                          }
-                          trigger={
-                            // `outline` y no `ghost`: sin borde, en teléfono era
-                            // una palabra suelta y no se leía como un botón.
-                            // En teléfono, un tic: "anotar que pagó", que es lo
-                            // que se viene a hacer acá, en un botón cuadrado que
-                            // deja el nombre con todo el ancho. Abre el mismo
-                            // diálogo, con el monto que falta ya puesto.
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              aria-label={`Registrar pago de ${row.fullName}`}
-                              title="Registrar pago"
-                              className={cn(
-                                'max-sm:size-9 max-sm:p-0',
-                                // Al día, el tic ya está "puesto": verde lleno,
-                                // que se lee de lejos bajando la lista. Se
-                                // puede tocar igual, para un pago adelantado.
-                                row.expected !== null &&
-                                  (row.outstanding ?? 0) <= 0 &&
-                                  'max-sm:border-green max-sm:bg-green max-sm:text-white max-sm:hover:bg-green/90',
-                              )}
-                            >
-                              <Check
-                                className={cn(
-                                  'size-4 sm:hidden',
-                                  row.expected !== null && (row.outstanding ?? 0) <= 0
-                                    ? 'text-white'
-                                    : 'text-green-ink',
-                                )}
-                              />
-                              <span className="max-sm:hidden">Registrar pago</span>
-                            </Button>
-                          }
-                        />
-                      )}
-
-                      {/* v1's `···` (`legacy/index.html:2421`): the fee and the
-                          frequency, edited from the row you are already
-                          reading. */}
-                      <span className={cn('flex', row.expected === null && !row.archived && 'max-sm:hidden')}>
-                        <BillingDialog
-                          patientId={row.patientId}
-                          patientName={row.fullName}
-                          sessionFee={row.billing.sessionFee}
-                          billingFrequency={row.billing.frequency}
-                          expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
-                        />
-                      </span>
-                    </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              {/* Los que están al día, juntos al final y sobre verde suave. El
+                  estado se lee del grupo entero, de lejos, y lo que queda
+                  arriba es lo que hay que atender: quién debe y a quién le
+                  falta el honorario. */}
+              {paid.length > 0 ? (
+                <div className={cn('rounded-lg bg-green-soft/60 px-3', pending.length > 0 && 'mt-3')}>
+                  <p className="pt-2.5 text-nano font-bold tracking-[0.06em] text-green-ink uppercase">
+                    Al día · {paid.length}
+                  </p>
+                  <ul className="divide-y divide-green/15">{paid.map(renderRow)}</ul>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 
@@ -383,9 +396,8 @@ function MobileStatus({
   }
   if ((row.outstanding ?? 0) <= 0) {
     return (
-      <p className={cn(base, 'text-muted-foreground')}>
-        <span className="font-semibold text-green-ink">Al día</span> · {money(row.paid)}
-      </p>
+      // Sin "Al día": va adentro del grupo que ya lo dice en su título.
+      <p className={cn(base, 'text-muted-foreground')}>Pagó {money(row.paid)}</p>
     )
   }
   return (
@@ -418,13 +430,9 @@ function Status({
     )
   }
 
-  if ((row.outstanding ?? 0) <= 0) {
-    return (
-      <span className="rounded-full bg-green-soft px-2.5 py-1 text-micro font-bold text-green-ink">
-        Al día
-      </span>
-    )
-  }
+  // Sin etiqueta "Al día": esas filas van juntas en el grupo verde, que ya lo
+  // dice una vez arriba.
+  if ((row.outstanding ?? 0) <= 0) return null
 
   return (
     <span className="rounded-full bg-amber-soft px-2.5 py-1 text-micro font-bold text-amber-ink">
