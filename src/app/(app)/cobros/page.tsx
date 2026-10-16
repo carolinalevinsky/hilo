@@ -144,23 +144,24 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
             <CardContent>
               <ul className="divide-y divide-border">
                 {ledger.rows.map((row) => (
-                  // En teléfono, una grilla de tres columnas: la cara, el nombre
-                  // con lo pagado, y a la derecha el estado arriba y los botones
-                  // abajo. Antes los botones bajaban a un renglón propio con
-                  // sangría y cada paciente medía el doble, con un hueco a la
-                  // derecha de cada uno.
+                  // En teléfono, todas las filas con la misma forma: la cara, el
+                  // nombre con el estado debajo —en color, como texto— y un
+                  // solo grupo de botones a la derecha, centrado. La etiqueta
+                  // de estado apilada arriba de los botones hacía cada fila de
+                  // un alto distinto y la columna de la derecha no se alineaba
+                  // con nada.
                   <li
                     key={row.patientId}
-                    className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 py-2.5 sm:flex sm:flex-wrap sm:gap-3 sm:py-3"
+                    className="flex items-center gap-3 py-2.5 sm:flex-wrap sm:py-3"
                   >
                     <PatientAvatar
                       fullName={row.fullName}
                       color={row.color}
                       size={36}
-                      className="max-sm:row-span-2 max-sm:size-8!"
+                      className="max-sm:size-8!"
                     />
 
-                    <div className="min-w-0 max-sm:row-span-2 sm:min-w-[140px] sm:flex-1">
+                    <div className="min-w-0 flex-1 sm:min-w-[140px]">
                       <p className="text-body font-bold">
                         {row.fullName}
                         {/* Dicho, y no sólo insinuado por la fila más apagada:
@@ -181,7 +182,8 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                           dos veces, a dos centímetros. Queda la etiqueta —que es
                           la que se lee de un vistazo bajando la lista— y esta
                           línea pasa a ser lo único que falta hacer. */}
-                      <p className="text-meta text-muted-foreground">
+                      <MobileStatus row={row} money={money} />
+                      <p className="text-meta text-muted-foreground max-sm:hidden">
                         {row.archived || row.deleted ? (
                           `${money(row.paid)} cobrado`
                         ) : row.expected === null ? (
@@ -215,26 +217,33 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                       </p>
                     </div>
 
-                    <div className="justify-self-end">
+                    <div className="max-sm:hidden">
                       <Status row={row} />
                     </div>
 
                     {/* Nothing to do on a deleted patient's row: the payments are
                         history, and there is nobody to charge or bill anymore. */}
                     {row.deleted ? null : (
-                    // `max-sm:pl-12`: en teléfono los botones bajan a su propia
-                    // línea, y sin sangría quedaban flotando a la izquierda, sin
-                    // decir de qué paciente eran. Así arrancan bajo el nombre.
-                    //
-                    // Sin honorario, en teléfono no va: lo único que quedaba en
-                    // el renglón eran los tres puntos, solos, y abren lo mismo
-                    // que "Cargar el honorario", que está justo arriba.
-                    <div
-                      className={cn(
-                        'flex items-center gap-1 max-sm:col-start-3 max-sm:justify-end sm:flex-wrap sm:gap-1.5',
-                        row.expected === null && !row.archived && 'max-sm:hidden',
-                      )}
-                    >
+                    <div className="flex shrink-0 items-center gap-1 sm:flex-wrap sm:gap-1.5">
+                      {/* Sin honorario, en teléfono el botón de la derecha es
+                          cargarlo: el mismo lugar y la misma forma que "+ Pago"
+                          en las demás filas, en vez de un link subrayado abajo
+                          del nombre y tres puntos sueltos. */}
+                      {row.expected === null && !row.archived ? (
+                        <BillingDialog
+                          patientId={row.patientId}
+                          patientName={row.fullName}
+                          sessionFee={row.billing.sessionFee}
+                          billingFrequency={row.billing.frequency}
+                          expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
+                          trigger={
+                            <Button size="sm" variant="outline" className="sm:hidden">
+                              + Honorario
+                            </Button>
+                          }
+                        />
+                      ) : null}
+
                       {/* Sin honorario no hay pago que registrar acá: "Registrar
                           pago" abriría un diálogo que no sabe de cuánto, al lado
                           de una etiqueta que ya dice que falta el número. Se
@@ -266,13 +275,15 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                       {/* v1's `···` (`legacy/index.html:2421`): the fee and the
                           frequency, edited from the row you are already
                           reading. */}
-                      <BillingDialog
-                        patientId={row.patientId}
-                        patientName={row.fullName}
-                        sessionFee={row.billing.sessionFee}
-                        billingFrequency={row.billing.frequency}
-                        expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
-                      />
+                      <span className={cn('flex', row.expected === null && !row.archived && 'max-sm:hidden')}>
+                        <BillingDialog
+                          patientId={row.patientId}
+                          patientName={row.fullName}
+                          sessionFee={row.billing.sessionFee}
+                          billingFrequency={row.billing.frequency}
+                          expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
+                        />
+                      </span>
                     </div>
                     )}
                   </li>
@@ -317,6 +328,46 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
         </>
       )}
     </>
+  )
+}
+
+/**
+ * El estado de la fila en teléfono, como texto en color debajo del nombre, en
+ * lugar de la etiqueta de `Status`. Dice lo mismo con las mismas palabras; lo
+ * que cambia es que no ocupa una columna propia.
+ */
+function MobileStatus({
+  row,
+  money,
+}: {
+  row: {
+    expected: number | null
+    outstanding: number | null
+    paid: number
+    archived?: boolean
+    deleted?: boolean
+  }
+  money: (value: number) => string
+}) {
+  const base = 'text-meta sm:hidden'
+  if (row.archived || row.deleted) {
+    return <p className={cn(base, 'text-muted-foreground')}>{money(row.paid)} cobrado</p>
+  }
+  if (row.expected === null) {
+    return <p className={cn(base, 'text-muted-foreground')}>Sin honorario</p>
+  }
+  if ((row.outstanding ?? 0) <= 0) {
+    return (
+      <p className={cn(base, 'text-muted-foreground')}>
+        <span className="font-semibold text-green-ink">Al día</span> · {money(row.paid)}
+      </p>
+    )
+  }
+  return (
+    <p className={cn(base, 'text-muted-foreground')}>
+      <span className="font-semibold text-amber-ink">Debe {money(row.outstanding!)}</span>
+      {row.paid > 0 ? ` · pagó ${money(row.paid)}` : null}
+    </p>
   )
 }
 
