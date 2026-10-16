@@ -1,3 +1,4 @@
+import { ChevronDown } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -82,24 +83,40 @@ export default async function ProfilePage({ searchParams }: PageProps<'/perfil'>
             {' {profesional}, {disciplina} o {paciente} '}se completa solo.
           </p>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
-            Es un modelo escrito a partir de las leyes 19.529, 18.335 y 18.331, y no lo
-            revisó un abogado. Leelo y ajustalo a tu práctica antes de mandarlo.
-          </p>
-          {practitioner.consent_template ? (
-            <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
-              Usás tu propio texto. El modelo de Ombúa ahora incluye dos puntos que conviene
-              que el tuyo también tenga, porque la ley pide el consentimiento expreso para
-              guardar datos de salud fuera del país. Podés copiarlos de acá:
-            </p>
-          ) : null}
-          {practitioner.consent_template ? (
-            <p className="rounded-[11px] border border-border px-3.5 py-2.5 text-meta leading-relaxed whitespace-pre-line select-all">
-              {PROVIDER_AND_AI_CLAUSES}
-            </p>
-          ) : null}
-          <ConsentTemplateForm current={practitioner.consent_template} />
+        {/* Plegado: el texto mide catorce renglones y se edita una vez. Abierto,
+            se llevaba dos pantallas de un celular entre "Tus datos" y todo lo
+            demás. El aviso de que no lo revisó un abogado va adentro, junto al
+            texto que avisa. */}
+        <CardContent>
+          <details className="group">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg border border-border px-3.5 py-2.5 text-body font-semibold [&::-webkit-details-marker]:hidden">
+              {practitioner.consent_template ? 'Tu texto' : 'El modelo de Ombúa'}
+              <span className="flex items-center gap-1 text-meta text-violet">
+                <span className="group-open:hidden">Ver y editar</span>
+                <span className="hidden group-open:inline">Cerrar</span>
+                <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
+              </span>
+            </summary>
+            <div className="mt-3 space-y-3">
+              <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
+                Es un modelo escrito a partir de las leyes 19.529, 18.335 y 18.331, y no lo
+                revisó un abogado. Leelo y ajustalo a tu práctica antes de mandarlo.
+              </p>
+              {practitioner.consent_template ? (
+                <p className="rounded-[11px] bg-amber-soft px-3.5 py-2.5 text-meta leading-relaxed text-amber-ink">
+                  Usás tu propio texto. El modelo de Ombúa ahora incluye dos puntos que conviene
+                  que el tuyo también tenga, porque la ley pide el consentimiento expreso para
+                  guardar datos de salud fuera del país. Podés copiarlos de acá:
+                </p>
+              ) : null}
+              {practitioner.consent_template ? (
+                <p className="rounded-[11px] border border-border px-3.5 py-2.5 text-meta leading-relaxed whitespace-pre-line select-all">
+                  {PROVIDER_AND_AI_CLAUSES}
+                </p>
+              ) : null}
+              <ConsentTemplateForm current={practitioner.consent_template} />
+            </div>
+          </details>
         </CardContent>
       </Card>
 

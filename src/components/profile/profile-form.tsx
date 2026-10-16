@@ -83,7 +83,7 @@ export function ProfileForm({
         />
       </div>
 
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending} className="max-sm:w-full">
         {pending ? 'Guardando…' : 'Guardar cambios'}
       </Button>
     </form>

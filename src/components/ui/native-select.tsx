@@ -39,7 +39,10 @@ export function NativeSelect({
       <select
         {...props}
         className={cn(
-          'h-9 w-full appearance-none rounded-lg border border-input bg-background pl-3 pr-8 text-sm outline-none',
+          // `bg-card` y no `bg-background`: sobre una tarjeta, el fondo de la página
+          // pintaba los desplegables de gris al lado de campos de texto blancos,
+          // y un formulario parecía hecho de dos piezas distintas.
+          'h-9 w-full appearance-none rounded-lg border border-input bg-card pl-3 pr-8 text-sm outline-none',
           'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50',
           'disabled:cursor-not-allowed disabled:opacity-50',
           className,
