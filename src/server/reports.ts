@@ -16,7 +16,26 @@ import { replaceDocumentBody, type VersionReason } from './document-versions'
 
 export type Report = Database['public']['Tables']['reports']['Row']
 
-export type ReportWithPatient = Report & {
+/**
+ * What a list of reports shows — and only that. With `*` every row brought its
+ * whole text, the notes it was written from and the instructions: up to a
+ * hundred reports' worth of clinical prose to draw a name, a date and a badge.
+ */
+const REPORT_LIST_COLUMNS =
+  'id, patient_id, recipient, title, issued_on, created_at, signed_at, voided_at, deleted_at, patients!inner(id, full_name, color)'
+
+export type ReportWithPatient = Pick<
+  Report,
+  | 'id'
+  | 'patient_id'
+  | 'recipient'
+  | 'title'
+  | 'issued_on'
+  | 'created_at'
+  | 'signed_at'
+  | 'voided_at'
+  | 'deleted_at'
+> & {
   patients: { id: string; full_name: string; color: string | null } | null
 }
 
@@ -146,7 +165,7 @@ export async function listReports(
 
   let query = db
     .from('reports')
-    .select('*, patients!inner(id, full_name, color)')
+    .select(REPORT_LIST_COLUMNS)
     .is('patients.deleted_at', null)
     .eq('practitioner_id', practitionerId)
 

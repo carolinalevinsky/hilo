@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown } from '@/components/icons'
+import { ChevronDown, MoreHorizontal } from '@/components/icons'
 import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -46,15 +46,17 @@ export function PatientActions({
         type="button"
         onClick={() => setOpen((was) => !was)}
         aria-expanded={open}
-        className="inline-flex h-9 items-center gap-1 rounded-lg bg-white/16 px-3 text-body font-semibold text-white hover:bg-white/26 sm:hidden"
+        aria-label={open ? 'Menos acciones' : 'Más acciones'}
+        className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-white/16 px-2.5 text-white hover:bg-white/26 sm:hidden"
       >
-        {open ? 'Menos' : 'Más'}
-        <ChevronDown className={cn('size-4 transition-transform', open && 'rotate-180')} />
+        {/* Sin palabra: con "Más" escrito no entraba en la fila de los otros
+            dos y quedaba solo en un renglón propio. */}
+        {open ? <ChevronDown className="size-4 rotate-180" /> : <MoreHorizontal className="size-5" />}
       </button>
 
       <div
         className={cn(
-          'w-full flex-wrap gap-2 sm:contents',
+          'grid w-full grid-cols-2 gap-2 sm:contents',
           open ? 'flex' : 'hidden',
         )}
       >

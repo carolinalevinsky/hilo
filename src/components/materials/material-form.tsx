@@ -481,14 +481,16 @@ export function MaterialForm({
         <div className="flex gap-1.5 rounded-xl border border-border bg-muted/60 p-1">
           <VisibilityOption
             icon={Lock}
-            label="Privado · solo para mí"
+            label="Privado"
+            detail="solo para mí"
             value="private"
             current={visibility}
             onPick={setVisibility}
           />
           <VisibilityOption
             icon={Globe}
-            label="Público · comunidad"
+            label="Público"
+            detail="comunidad"
             value="public"
             current={visibility}
             onPick={setVisibility}
@@ -547,12 +549,15 @@ export function MaterialForm({
 function VisibilityOption({
   icon: Icon,
   label,
+  detail,
   value,
   current,
   onPick,
 }: {
   icon: (props: React.SVGProps<SVGSVGElement>) => React.ReactElement
   label: string
+  /** Después del punto medio; en teléfono no va, y la explicación de abajo lo dice. */
+  detail: string
   value: MaterialVisibility
   current: MaterialVisibility
   onPick: (value: MaterialVisibility) => void
@@ -571,6 +576,7 @@ function VisibilityOption({
     >
       <Icon className="size-[15px]" />
       {label}
+      <span className="max-sm:hidden">· {detail}</span>
     </button>
   )
 }

@@ -21,7 +21,7 @@ export function EmptyState({
 }) {
   return (
     <div className="px-5 py-9 text-center">
-      <div className="mx-auto mb-3.5 flex size-16 items-center justify-center rounded-[18px] bg-violet-soft text-violet">
+      <div className="mx-auto mb-3.5 flex size-16 items-center justify-center rounded-xl bg-violet-soft text-violet">
         <Icon className="size-7" />
       </div>
       <p className="mb-1.5 text-[16.5px] font-extrabold">{title}</p>

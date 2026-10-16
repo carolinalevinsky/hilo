@@ -51,10 +51,8 @@ export function TwoStepCard({ enabled, factorId }: { enabled: boolean; factorId:
       <div className="space-y-3">
         <FormMessage message={disableState.ok ? disableState.message : null} ok />
         <FormMessage message={startError} />
-        <p className="text-body leading-relaxed">
-          Además de la contraseña, un código de 6 números que cambia cada 30 segundos, de una
-          app como Google Authenticator o 1Password. Si alguien consigue tu contraseña, sin tu
-          teléfono no entra.
+        <p className="text-meta leading-relaxed text-muted-foreground">
+          Un código de tu celular además de la contraseña.
         </p>
         <Button
           type="button"

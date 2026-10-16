@@ -59,6 +59,32 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
   }
   more.set('ver', String(shown + MATERIALS_PAGE))
 
+  // v1 had "Subir" and "Generar" here, in this order (`legacy/index.html:615`).
+  // Drawn twice — in the header on a desktop, under the tabs on a phone — and
+  // that costs nothing: a closed dialog mounts nothing but its button.
+  const actions = (
+    <>
+      <Button asChild size="lg" variant="outline">
+        <Link href="/materiales/importar">
+          <FileText className="size-[18px]" />
+          <span className="sm:hidden">Importar</span>
+          <span className="max-sm:hidden">Importar planificaciones</span>
+        </Link>
+      </Button>
+      <UploadMaterial areas={areas} />
+      <GenerateMaterial areas={areas} />
+      {/* Last on a desktop, where the primary closes the row; first on a phone,
+          where the toolbar reads left to right from what you came to do. */}
+      <Button asChild size="lg" className="max-sm:order-first">
+        <Link href="/materiales/nuevo">
+          <Plus className="size-[18px]" />
+          <span className="sm:hidden">Nuevo</span>
+          <span className="max-sm:hidden">Nuevo material</span>
+        </Link>
+      </Button>
+    </>
+  )
+
   return (
     <>
       {/* Same title and subtitle as /planificacion on purpose: to a practitioner
@@ -67,28 +93,19 @@ export default async function MaterialsPage({ searchParams }: PageProps<'/materi
       <PageHeader
         title="Planificación"
         subtitle="Tu biblioteca de materiales y la planificación de cada paciente, en un solo lugar."
-        action={
-          // v1 had both here, in this order (`legacy/index.html:615`).
-          <div className="flex flex-wrap gap-2">
-            <Button asChild size="lg" variant="outline">
-              <Link href="/materiales/importar">
-                <FileText className="size-[18px]" />
-                Importar planificaciones
-              </Link>
-            </Button>
-            <UploadMaterial areas={areas} />
-            <GenerateMaterial areas={areas} />
-            <Button asChild size="lg">
-              <Link href="/materiales/nuevo">
-                <Plus className="size-[18px] max-lg:hidden" />
-                Nuevo material
-              </Link>
-            </Button>
-          </div>
-        }
+        action={<div className="flex flex-wrap gap-2 max-sm:hidden">{actions}</div>}
       />
 
       <PlanningTabs />
+
+      {/* En teléfono, abajo de las pestañas y como una barra de herramientas:
+          cuatro íconos con la palabra chiquita debajo, en una sola fila. Como
+          botones enteros eran dos filas de botones grandes entre el título y
+          las pestañas, y las pestañas —que son por dónde se navega— quedaban
+          lejos de lo que nombran. */}
+      <div className="mb-3 grid grid-cols-4 gap-2 sm:hidden [&>*]:h-auto [&>*]:flex-col [&>*]:gap-1 [&>*]:px-1 [&>*]:py-2 [&>*]:text-micro [&>*]:font-semibold">
+        {actions}
+      </div>
 
       {/* La caja de buscar vivía sólo en el planificador. Acá, que es donde
           alguien mira las cincuenta de su profesión más lo que publicó la

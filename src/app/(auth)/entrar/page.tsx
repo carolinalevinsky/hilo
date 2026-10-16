@@ -30,7 +30,7 @@ export default async function SignInPage({ searchParams }: PageProps<'/entrar'>)
           Supabase —ver `src/server/invitations.ts`—; esto es lo que se ve. */}
       <nav
         aria-label="Entrar o crear cuenta"
-        className="mb-6 flex items-center gap-1.5 rounded-[16px] bg-muted p-1.5"
+        className="mb-6 flex items-center gap-1.5 rounded-xl bg-muted p-1.5"
       >
         <span className="flex-1 rounded-[10px] bg-card py-2.5 text-center text-sm font-semibold text-violet shadow-xs">
           Iniciar sesión

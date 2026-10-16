@@ -46,7 +46,7 @@ export function AcceptInvitationForm({
 
       <input type="hidden" name="token" value={token} />
 
-      <SelfGenderField defaultValue={suggestedGender} />
+      <SelfGenderField defaultValue={suggestedGender} withHint />
 
       <PasswordField
         id="password"

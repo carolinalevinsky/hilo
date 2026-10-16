@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation'
 import { AssistantMemory, PatientDocuments } from '@/components/documents/patient-documents'
 import { GoalList } from '@/components/goals/goal-list'
 import { ProgressChart } from '@/components/goals/progress-chart'
+import { PatientTabs } from '@/components/patients/patient-tabs'
 import { PatientActions } from '@/components/patients/patient-actions'
 import { PatientDangerZone } from '@/components/patients/patient-danger-zone'
 import { TrashCard } from '@/components/patients/trash-card'
@@ -193,7 +194,8 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
                 >
                   <Link href={`/informes/nuevo?paciente=${patient.id}`}>
                     <FileText className="size-4" />
-                    Generar informe
+                    <span className="max-sm:hidden">Generar informe</span>
+                    <span className="sm:hidden">Informe</span>
                   </Link>
                 </Button>
               </>
@@ -274,183 +276,201 @@ export default async function PatientPage({ params }: PageProps<'/pacientes/[id]
           consulta arrancaba en y 1788 y la ficha en y 1916, o sea 2,4 pantallas
           de scroll para llegar a quién es el chico. Es lo que no cambia nunca y
           lo que más se mira, así que en teléfono sube primero. */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-4 max-lg:order-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Evolución</CardTitle>
-              <p className="text-meta text-muted-foreground">
-                {goals.length > 0
-                  ? `Avance promedio: ${averageProgress(goals)}%`
-                  : 'Avance por objetivo en el tiempo'}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ProgressChart goals={goals} points={progress} />
-              {/* When each goal moved, and a way to take back a mistake (P17). */}
-              <GoalHistory patientId={patient.id} goals={goals} points={progress} />
-            </CardContent>
-          </Card>
-
-          <Card id="objetivos" className="scroll-mt-4">
-            <CardHeader>
-              <CardTitle>Objetivos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GoalList patientId={patient.id} goals={goals} />
-            </CardContent>
-          </Card>
-
-          {/* Right under the goals: the goals say what is being worked on, the
-              scales say how the patient reports feeling while it is. Not for
-              children — PHQ-9 and GAD-7 are answered by the person themselves,
-              and they are validated from adolescence on. */}
-          {patient.age_group === 'children' ? null : (
-            <ScalesCard
-              patientId={patient.id}
-              phone={patient.phone}
-              patientFirstName={firstName(patient.full_name)}
-              practitionerFirstName={firstName(practitioner.full_name)}
-              history={scales}
-              ready={Object.fromEntries(SCALE_IDS.map((id) => [id, scaleIsReady(id)])) as Record<(typeof SCALE_IDS)[number], boolean>}
-            />
-          )}
-
-          {/* v1 put what you prepared right here, above the history
-              (`legacy/index.html:1674`). A plan is only worth making if it is on
-              the screen you open with the child already in the room. */}
-          <NextSessionCard
-            next={nextAppointment}
-            patientId={patient.id}
-            patientFirstName={firstName(patient.full_name)}
-            items={planItems}
-          />
-
-          {/* v1's card, right after "Próxima sesión" (`legacy/index.html:1219`).
-              `/informes` lists everybody's, which is the right screen for "what
-              did I write this month" and the wrong one for "what do I already
-              have on this child" — the question you ask while looking at them. */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Evaluaciones e informes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PatientDocuments assessments={assessments} reports={reports} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Registros de sesiones</CardTitle>
-              <p className="text-meta text-muted-foreground">
-                {sessions.length === 1 ? '1 sesión' : `${sessions.length} sesiones`}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <SessionTimeline patientId={patient.id} sessions={sessions} />
-            </CardContent>
-          </Card>
-
-          <TrashCard patientId={patient.id} items={trash} />
-        </div>
-
-        <div className="flex flex-col gap-4 max-lg:order-1">
-          {/* v1 put this at the top of the right column. It looks like
-              decoration and is not: it answers the doubt a practitioner has in
-              month one, which is whether they are writing all this into a
-              hole.
-
-              En teléfono se va al final de las tres: la columna entera sube
-              para que el motivo y la ficha queden arriba, y esto es lo único de
-              acá que no hace falta a los dos segundos de abrir la pantalla. */}
-          <Card className="max-lg:order-3">
-            <CardHeader>
-              <CardTitle>Memoria de Ombúa</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AssistantMemory
-                firstName={firstName(patient.full_name)}
-                sessions={sessions.length}
-                goals={goals.length}
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="max-lg:order-1">
-            <CardHeader>
-              <CardTitle>Motivo de consulta</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {patient.referral_reason ? (
-                <p className="text-body leading-relaxed">{patient.referral_reason}</p>
-              ) : (
-                <p className="text-body text-muted-foreground">
-                  Todavía no cargaste el motivo.{' '}
-                  <Link
-                    href={`/pacientes/${patient.id}/editar`}
-                    className="font-semibold text-violet underline"
-                  >
-                    Agregalo acá
-                  </Link>
-                  .
+      {/* En teléfono, las dos columnas se disuelven (`contents`) y cada tarjeta
+          queda bajo una pestaña — ver `PatientTabs`. El `order` sólo decide el
+          orden adentro de "Resumen", la única pestaña que junta tarjetas de las
+          dos columnas. */}
+      <PatientTabs
+        counts={{
+          objetivos: goals.length,
+          historial: sessions.length + assessments.length + reports.length,
+        }}
+      >
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="flex flex-col gap-4 max-lg:contents">
+            <Card data-section="objetivos">
+              <CardHeader>
+                <CardTitle>Evolución</CardTitle>
+                <p className="text-meta text-muted-foreground">
+                  {goals.length > 0
+                    ? `Avance promedio: ${averageProgress(goals)}%`
+                    : 'Avance por objetivo en el tiempo'}
                 </p>
-              )}
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <ProgressChart goals={goals} points={progress} />
+                {/* When each goal moved, and a way to take back a mistake (P17). */}
+                <GoalHistory patientId={patient.id} goals={goals} points={progress} />
+              </CardContent>
+            </Card>
 
-          {/* Right under the motivo, and on a phone right under it too: the
-              consent and the family's answers are what you look for before a
-              first session, and the answers waiting for review are the one
-              thing on this column that asks you to do something. */}
-          <IntakeCard
-            className="max-lg:order-1"
-            patientId={patient.id}
-            phone={patient.phone}
-            patientFirstName={firstName(patient.full_name)}
-            practitionerFirstName={firstName(practitioner.full_name)}
-            status={intake}
-          />
+            <Card id="objetivos" data-section="objetivos" className="scroll-mt-4 max-lg:-order-1">
+              <CardHeader>
+                <CardTitle>Objetivos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GoalList patientId={patient.id} goals={goals} />
+              </CardContent>
+            </Card>
 
-          <Card className="max-lg:order-2">
-            <CardHeader>
-              <CardTitle>Ficha</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Only the rows that have something in them. A ficha filled in
-                  during a first appointment is mostly empty, and nine labels
-                  each answered "Sin datos" is a wall that hides the two answers
-                  that exist. What is missing is still said — once, at the end,
-                  naming the fields and linking to where they are filled in. */}
-              <dl className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-body">
-                {fichaRows
-                  .filter((row) => row.value)
-                  .map((row) => (
-                    <Row key={row.label} label={row.label} value={row.value!} />
-                  ))}
-              </dl>
+            {/* Right under the goals: the goals say what is being worked on, the
+                scales say how the patient reports feeling while it is. Not for
+                children — PHQ-9 and GAD-7 are answered by the person themselves,
+                and they are validated from adolescence on. */}
+            {patient.age_group === 'children' ? null : (
+              <div data-section="objetivos">
+                <ScalesCard
+                  patientId={patient.id}
+                  phone={patient.phone}
+                  patientFirstName={firstName(patient.full_name)}
+                  practitionerFirstName={firstName(practitioner.full_name)}
+                  history={scales}
+                  ready={Object.fromEntries(SCALE_IDS.map((id) => [id, scaleIsReady(id)])) as Record<(typeof SCALE_IDS)[number], boolean>}
+                />
+              </div>
+            )}
 
-              {missingFicha.length > 0 ? (
-                <p className="mt-3 border-t border-border pt-3 text-meta leading-relaxed text-muted-foreground">
-                  Sin cargar: {listEs(missingFicha)}.{' '}
-                  <Link
-                    href={`/pacientes/${patient.id}/editar`}
-                    className="font-semibold text-violet underline"
-                  >
-                    Completar
-                  </Link>
-                </p>
-              ) : null}
-
-              <PatientDangerZone
+            {/* v1 put what you prepared right here, above the history
+                (`legacy/index.html:1674`). A plan is only worth making if it is on
+                the screen you open with the child already in the room. */}
+            <div data-section="resumen" className="max-lg:order-3">
+              <NextSessionCard
+                next={nextAppointment}
                 patientId={patient.id}
-                fullName={patient.full_name}
-                archived={Boolean(patient.archived_at)}
-                scheduleCount={schedules.length}
+                patientFirstName={firstName(patient.full_name)}
+                items={planItems}
               />
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* v1's card, right after "Próxima sesión" (`legacy/index.html:1219`).
+                `/informes` lists everybody's, which is the right screen for "what
+                did I write this month" and the wrong one for "what do I already
+                have on this child" — the question you ask while looking at them. */}
+            <Card data-section="historial" className="max-lg:order-2">
+              <CardHeader>
+                <CardTitle>Evaluaciones e informes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PatientDocuments assessments={assessments} reports={reports} />
+              </CardContent>
+            </Card>
+
+            <Card data-section="historial" className="max-lg:order-1">
+              <CardHeader>
+                <CardTitle>Registros de sesiones</CardTitle>
+                <p className="text-meta text-muted-foreground">
+                  {sessions.length === 1 ? '1 sesión' : `${sessions.length} sesiones`}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <SessionTimeline patientId={patient.id} sessions={sessions} />
+              </CardContent>
+            </Card>
+
+            <div data-section="historial" className="max-lg:order-3">
+              <TrashCard patientId={patient.id} items={trash} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 max-lg:contents">
+            {/* v1 put this at the top of the right column. It looks like
+                decoration and is not: it answers the doubt a practitioner has in
+                month one, which is whether they are writing all this into a
+                hole.
+
+                En teléfono se va al final de las tres: la columna entera sube
+                para que el motivo y la ficha queden arriba, y esto es lo único de
+                acá que no hace falta a los dos segundos de abrir la pantalla. */}
+            <Card data-section="resumen" className="max-lg:order-4">
+              <CardHeader>
+                <CardTitle>Memoria de Ombúa</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AssistantMemory
+                  firstName={firstName(patient.full_name)}
+                  sessions={sessions.length}
+                  goals={goals.length}
+                />
+              </CardContent>
+            </Card>
+
+            <Card data-section="resumen" className="max-lg:order-1">
+              <CardHeader>
+                <CardTitle>Motivo de consulta</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {patient.referral_reason ? (
+                  <p className="text-body leading-relaxed">{patient.referral_reason}</p>
+                ) : (
+                  <p className="text-body text-muted-foreground">
+                    Todavía no cargaste el motivo.{' '}
+                    <Link
+                      href={`/pacientes/${patient.id}/editar`}
+                      className="font-semibold text-violet underline"
+                    >
+                      Agregalo acá
+                    </Link>
+                    .
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Right under the motivo, and on a phone right under it too: the
+                consent and the family's answers are what you look for before a
+                first session, and the answers waiting for review are the one
+                thing on this column that asks you to do something. */}
+            <div data-section="resumen" className="max-lg:order-2">
+              <IntakeCard
+                patientId={patient.id}
+                phone={patient.phone}
+                patientFirstName={firstName(patient.full_name)}
+                practitionerFirstName={firstName(practitioner.full_name)}
+                status={intake}
+              />
+            </div>
+
+            <Card data-section="datos">
+              <CardHeader>
+                <CardTitle>Ficha</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Only the rows that have something in them. A ficha filled in
+                    during a first appointment is mostly empty, and nine labels
+                    each answered "Sin datos" is a wall that hides the two answers
+                    that exist. What is missing is still said — once, at the end,
+                    naming the fields and linking to where they are filled in. */}
+                <dl className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-body">
+                  {fichaRows
+                    .filter((row) => row.value)
+                    .map((row) => (
+                      <Row key={row.label} label={row.label} value={row.value!} />
+                    ))}
+                </dl>
+
+                {missingFicha.length > 0 ? (
+                  <p className="mt-3 border-t border-border pt-3 text-meta leading-relaxed text-muted-foreground">
+                    Sin cargar: {listEs(missingFicha)}.{' '}
+                    <Link
+                      href={`/pacientes/${patient.id}/editar`}
+                      className="font-semibold text-violet underline"
+                    >
+                      Completar
+                    </Link>
+                  </p>
+                ) : null}
+
+                <PatientDangerZone
+                  patientId={patient.id}
+                  fullName={patient.full_name}
+                  archived={Boolean(patient.archived_at)}
+                  scheduleCount={schedules.length}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </PatientTabs>
     </>
   )
 }

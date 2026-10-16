@@ -31,11 +31,11 @@ import { cn } from '@/lib/utils'
  * because a material's own page is still the library.
  */
 const TABS = [
-  { href: '/planificacion', label: 'Planificar sesión', exact: true },
+  { href: '/planificacion', label: 'Planificar sesión', short: 'Planificar', exact: true },
   // "Planes", not "Próximas sesiones" (P13): the upcoming sessions are the ones
   // in the Agenda. What this tab lists is what was prepared for them.
-  { href: '/planificacion/proximas', label: 'Planes preparados', exact: false },
-  { href: '/materiales', label: 'Materiales', exact: false },
+  { href: '/planificacion/proximas', label: 'Planes preparados', short: 'Planes', exact: false },
+  { href: '/materiales', label: 'Materiales', short: 'Materiales', exact: false },
 ]
 
 export function PlanningTabs() {
@@ -51,10 +51,11 @@ export function PlanningTabs() {
     // On a phone the three labels do not fit in one row, and `flex-wrap` used to
     // drop "Materiales" alone onto a second line inside a pill-shaped track —
     // it read as a broken control. Below `sm` it is three equal columns, the
-    // full width, and a long label breaks inside its own tab instead.
+    // full width, each with a one-word label: two-line tabs inside a pill
+    // track still read as a broken control.
     <div
       role="tablist"
-      className="no-print mb-4 grid grid-cols-3 gap-1 rounded-[22px] border border-border bg-muted p-1 sm:inline-flex sm:max-w-full sm:rounded-full"
+      className="no-print mb-4 grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted p-1 sm:inline-flex sm:max-w-full sm:rounded-full"
     >
       {TABS.map((tab) => {
         const active = tab.exact
@@ -67,13 +68,14 @@ export function PlanningTabs() {
             role="tab"
             aria-selected={active}
             className={cn(
-              'flex items-center justify-center rounded-[18px] px-2 py-2 text-center text-meta leading-tight font-bold transition-colors sm:rounded-full sm:px-4 sm:text-body',
+              'flex items-center justify-center rounded-lg px-2 py-2 text-center text-body leading-tight font-bold transition-colors sm:rounded-full sm:px-4 sm:text-body',
               active
                 ? 'bg-card text-violet shadow-xs'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {tab.label}
+            <span className="sm:hidden">{tab.short}</span>
+            <span className="max-sm:hidden">{tab.label}</span>
           </Link>
         )
       })}

@@ -12,6 +12,7 @@ import { ScheduleDialogs } from '@/components/agenda/schedule-dialogs'
 import { readAgendaSlot } from '@/lib/agenda-slot'
 import { GOOGLE_NOTICE_COOKIE } from '@/lib/storage-keys'
 import { SessionPanel } from '@/components/agenda/session-panel'
+import { PeriodBar } from '@/components/period-bar'
 import { PeriodNav } from '@/components/period-nav'
 import { WeekViewSelect } from '@/components/agenda/week-view-select'
 import { TomorrowReminders } from '@/components/agenda/tomorrow-reminders'
@@ -21,7 +22,6 @@ import { WeekPlan } from '@/components/agenda/week-plan'
 import { EmptyState } from '@/components/empty-state'
 import { PendingBookingRequests } from '@/components/booking/pending-requests'
 import { PageHeader } from '@/components/page-header'
-import { PeriodSwitcher } from '@/components/period-switcher'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ageLabel } from '@/lib/age'
@@ -74,7 +74,6 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   const horizon = weekDates(todayDate(), Math.max(offset, 0) + 3)
   const windowStart = weekDates(todayDate(), 0)[0]!
   const windowEnd = horizon[horizon.length - 1]!
-  await materialiseAppointments(user.id, windowStart, windowEnd)
 
   // Lo que se acaba de armar (y lo que falló antes) sale hacia Google después
   // de responder: la semana se dibuja sin esperar a Google, y las sesiones de
@@ -92,7 +91,15 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // semanas con las flechas no dispara un viaje a Google por cada click. Y si
   // Google falla o tarda, devuelve cero y la Agenda sigue: ver la regla en
   // `google-calendar.ts`.
-  await pullFromGoogle(user.id)
+  //
+  // Al mismo tiempo que se arman los horarios fijos y no después: los dos
+  // escriben citas pero no las mismas —lo de Google se busca por su id de evento,
+  // y una cita recién armada todavía no tiene—, así que esperar uno para empezar
+  // el otro sólo sumaba un viaje a cada carga.
+  await Promise.all([
+    materialiseAppointments(user.id, windowStart, windowEnd),
+    pullFromGoogle(user.id),
+  ])
 
   // Tomorrow, whichever week is on screen. The reminder is about the phone
   // calls tonight, not about the week you happen to be paging through.
@@ -183,22 +190,14 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
   // entre las dos flechas. En escritorio es una barra de herramientas arriba de
   // la grilla, y ahí los controles van juntos a la izquierda. Ver `WeekNav`.
   const weekNavMobile = (
-    <>
-      <PeriodSwitcher
-        prevHref={`/agenda?semana=${offset - 1}`}
-        nextHref={`/agenda?semana=${offset + 1}`}
-        label={weekLabel(dates)}
-        // Sin "Esta semana": la columna de hoy ya viene pintada en la grilla, y
-        // cuando no estás en la semana actual aparece el botón "Hoy". Decirlo
-        // además con texto era la tercera vez.
-        className="min-w-0"
-      />
-      {offset !== 0 ? (
-        <Button asChild variant="outline" size="sm">
-          <Link href="/agenda">Hoy</Link>
-        </Button>
-      ) : null}
-    </>
+    <PeriodBar
+      prevHref={`/agenda?semana=${offset - 1}`}
+      nextHref={`/agenda?semana=${offset + 1}`}
+      label={weekLabel(dates)}
+      resetHref="/agenda"
+      resetLabel="Hoy"
+      isCurrent={offset === 0}
+    />
   )
 
   // Cuántos días dibuja la grilla. "laboral" es el valor por defecto, así que la
@@ -250,7 +249,7 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
         title="Agenda"
         subtitle="Tu semana de sesiones."
         action={
-          <div className="flex flex-wrap items-center gap-2.5 max-lg:w-full">
+          <div className="flex items-center gap-2 max-lg:w-full lg:flex-wrap lg:gap-2.5">
             {/* El link de reservas, donde se lo necesita: acá es donde estás
                 cuando alguien te pregunta cómo pedir hora. La pantalla completa
                 sigue en /reservas. Sin slug todavía no hay link que copiar. */}
@@ -296,7 +295,10 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
         //
         // Las reservas nuevas siguen siendo lo primero. Son la única cosa de
         // esta pantalla que espera una respuesta de tu parte hoy.
-        <div className="flex flex-col">
+        // En teléfono los bloques se separan con un solo `gap`, y no cada uno
+        // con su margen: sumados daban 14 px en un lado y 34 en otro, y
+        // `empty:hidden` saca del medio los que no tienen nada que mostrar.
+        <div className="flex flex-col max-lg:gap-4 max-lg:[&>*]:mb-0! max-lg:[&>*]:mt-0! [&>*]:empty:hidden">
           {/* Reservas sits at the top of the Agenda, as in v1
               (`legacy/index.html:1499`), and only when there is something to
               do about it. A family asking for a time is an interruption to the
@@ -359,16 +361,11 @@ export default async function AgendaPage({ searchParams }: PageProps<'/agenda'>)
 
           {/* La semana entera —flechas, aviso de semana vacía, grilla y plan—
               en un solo bloque, para que en teléfono suba junta. */}
-          {/* `max-lg:mb-5`: en teléfono lo que viene abajo —los recordatorios de
-              mañana, el cartel de Google— quedaba pegado al plan de la semana,
-              borde contra borde. */}
-          <div className="max-lg:order-2 max-lg:mb-5">
+          <div className="max-lg:order-2">
             {/* En teléfono la navegación va suelta arriba de las tarjetas del día,
                 que es la vista que manda ahí. En escritorio entra adentro de la
                 tarjeta del calendario — ver el `header` de `WeekCalendar`. */}
-            <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2.5 lg:hidden">
-              {weekNavMobile}
-            </div>
+            <div className="mb-2.5 lg:hidden">{weekNavMobile}</div>
 
             {/* Google está conectado y no se pudo leer. Sin esta línea la semana
                 se veía limpia y un turno con el dentista aparecía libre — ahí

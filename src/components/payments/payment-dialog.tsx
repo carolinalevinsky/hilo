@@ -59,9 +59,16 @@ export function PaymentDialog({
 
   return (
     <>
-      <span onClick={() => setOpen(true)}>
+      {/* Sin disparador propio es el botón del encabezado de Pagos, y en
+          teléfono va a lo ancho como el de las demás pantallas: adentro de un
+          `<span>` en línea quedaba a la mitad, el único botón principal de la
+          app que no se estiraba. */}
+      <span
+        onClick={() => setOpen(true)}
+        className={trigger ? undefined : 'max-lg:block max-lg:w-full'}
+      >
         {trigger ?? (
-          <Button size="lg">
+          <Button size="lg" className="max-lg:w-full">
             <Plus className="size-[18px]" />
             Registrar pago
           </Button>

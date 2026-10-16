@@ -5,7 +5,7 @@ import type { AppointmentWithPatient } from '@/server/appointments'
 import type { BusyBlock } from '@/server/google-calendar'
 
 /**
- * The week as one card per day — what a phone gets, where the hour grid in
+ * The week as one row per day — what a phone gets, where the hour grid in
  * `week-calendar.tsx` would be eight columns of forty pixels. v1 made the same
  * split (`.agmob`, `legacy/index.html:1459`).
  *
@@ -46,65 +46,129 @@ export function WeekGrid({
     else busyByDate.set(block.date, [block])
   }
 
+  const days = dates.map((date, index) => ({
+    date,
+    weekday: WEEK_ORDER[index]!,
+    appointments: byDate.get(date) ?? [],
+    busy: busyByDate.get(date) ?? [],
+  }))
+
+  // Los días libres seguidos van juntos en un renglón: "Lun 12 – Mié 14 ·
+  // Libre". Hoy nunca se junta con nada — es el día que se busca con la vista.
+  type Row = { free: true; days: typeof days } | { free: false; day: (typeof days)[number] }
+  const rows: Row[] = []
+  for (const day of days) {
+    const free = day.appointments.length === 0 && day.busy.length === 0
+    const last = rows.at(-1)
+    if (free && day.date !== today) {
+      if (last?.free && last.days.at(-1)!.date !== today) last.days.push(day)
+      else rows.push({ free: true, days: [day] })
+    } else {
+      rows.push({ free: false, day })
+    }
+  }
+
+  const short = (day: (typeof days)[number]) =>
+    `${weekdayName(day.weekday).slice(0, 3)} ${Number(day.date.slice(8, 10))}`
+
   return (
-    <div className="grid gap-2.5 sm:grid-cols-2 lg:hidden">
-      {dates.map((date, index) => {
-        const weekday = WEEK_ORDER[index]!
-        const dayAppointments = byDate.get(date) ?? []
-        const dayBusy = busyByDate.get(date) ?? []
+    // Una lista, no siete tarjetas. Como tarjetas, cada día vacío ocupaba 85 px
+    // para decir "Libre", y una semana con dos días de trabajo eran dos
+    // pantallas de scroll hasta el viernes. Así los días libres son un renglón
+    // fino, y los que tienen sesiones llevan la fecha a la izquierda —día corto
+    // y número grande— que es lo que el ojo recorre, como en la agenda del
+    // teléfono.
+    <div className="divide-y divide-border overflow-hidden rounded-lg bg-card shadow-card lg:hidden">
+      {rows.map((row) => {
+        if (row.free) {
+          const first = row.days[0]!
+          const last = row.days.at(-1)!
+          return (
+            <p
+              key={first.date}
+              className={cn(
+                'flex items-center justify-between gap-3 px-3.5 py-2 text-meta text-muted-foreground',
+                last.date < today && 'opacity-60',
+              )}
+            >
+              <span className="font-semibold">
+                {first === last ? short(first) : `${short(first)} – ${short(last)}`}
+              </span>
+              <span className="opacity-75">Libre</span>
+            </p>
+          )
+        }
+
+        const { date, weekday, appointments: dayAppointments, busy: dayBusy } = row.day
         const isToday = date === today
+        const isPast = date < today
         const dayNumber = Number(date.slice(8, 10))
+        const name = weekdayName(weekday)
 
         return (
           <section
             key={date}
-            className={cn(
-              'rounded-lg bg-card p-3 shadow-card',
-              isToday && 'ring-2 ring-violet',
-            )}
+            aria-label={`${name} ${dayNumber}`}
+            className={cn('flex gap-2.5 px-2.5 py-2.5', isToday && 'bg-violet-soft/45')}
           >
-            <header className="mb-2.5 flex items-baseline justify-between gap-1">
-              <h3
+            <header
+              className={cn(
+                'flex w-9 shrink-0 flex-col items-center pt-1',
+                isPast && 'opacity-55',
+              )}
+            >
+              <span
                 className={cn(
-                  'text-body font-extrabold',
-                  isToday ? 'text-violet' : 'text-foreground',
+                  'text-nano font-bold tracking-[0.6px] uppercase',
+                  isToday ? 'text-violet' : 'text-muted-foreground',
                 )}
               >
-                {weekdayName(weekday)}
-              </h3>
-              <span className="text-meta text-muted-foreground">{dayNumber}</span>
+                {name.slice(0, 3)}
+              </span>
+              <span
+                className={cn(
+                  'flex size-7 items-center justify-center rounded-full text-[15px] font-extrabold',
+                  isToday ? 'bg-violet text-white' : 'text-foreground',
+                )}
+              >
+                {dayNumber}
+              </span>
             </header>
 
-            {dayAppointments.length === 0 && dayBusy.length === 0 ? (
-              <p className="py-2 text-meta text-muted-foreground">Libre</p>
-            ) : (
-              <ul className="space-y-2">
-                {dayAppointments.map((appointment) => (
-                  <li key={appointment.id}>
-                    <AppointmentCard
-                      appointment={appointment}
-                      calendarPrivacy={calendarPrivacy}
-                    />
-                  </li>
-                ))}
+            <div className="min-w-0 flex-1 self-center">
+              {dayAppointments.length === 0 && dayBusy.length === 0 ? (
+                <p className={cn('text-meta text-muted-foreground', isPast && 'opacity-55')}>
+                  Libre
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {dayAppointments.map((appointment) => (
+                    <li key={appointment.id}>
+                      <AppointmentCard
+                        appointment={appointment}
+                        calendarPrivacy={calendarPrivacy}
+                      />
+                    </li>
+                  ))}
 
-                {/* Debajo de las sesiones: lo de Ombúa primero, que es lo que se
-                    viene a hacer acá. Ver `Busy` en `week-calendar.tsx`. */}
-                {dayBusy.map((block) => (
-                  <li
-                    key={block.id}
-                    className="rounded-[9px] border border-dashed border-border bg-muted px-2.5 py-2 text-meta leading-tight text-muted-foreground"
-                  >
-                    <div className="font-semibold">{block.title}</div>
-                    <div className="opacity-90">
-                      {block.startTime
-                        ? `${formatTime(block.startTime)}${block.endTime ? ` – ${formatTime(block.endTime)}` : ''}`
-                        : 'Todo el día'}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                  {/* Debajo de las sesiones: lo de Ombúa primero, que es lo que se
+                      viene a hacer acá. Ver `Busy` en `week-calendar.tsx`. */}
+                  {dayBusy.map((block) => (
+                    <li
+                      key={block.id}
+                      className="rounded-[9px] border border-dashed border-border bg-muted px-2.5 py-2 text-meta leading-tight text-muted-foreground"
+                    >
+                      <div className="font-semibold">{block.title}</div>
+                      <div className="opacity-90">
+                        {block.startTime
+                          ? `${formatTime(block.startTime)}${block.endTime ? ` – ${formatTime(block.endTime)}` : ''}`
+                          : 'Todo el día'}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </section>
         )
       })}

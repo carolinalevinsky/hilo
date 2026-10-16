@@ -74,7 +74,7 @@ export default function AuthLayout({ children }: LayoutProps<'/'>) {
           </p>
 
           <div className="mt-10 grid max-w-lg gap-4 sm:grid-cols-2">
-            <article className="rounded-[18px] border border-white/20 bg-white/12 p-5 shadow-[0_8px_32px_rgba(31,38,135,0.15)] backdrop-blur-md">
+            <article className="rounded-xl border border-white/20 bg-white/12 p-5 shadow-[0_8px_32px_rgba(31,38,135,0.15)] backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <span className="flex size-9 items-center justify-center rounded-[11px] bg-white/15">
                   <TrendingUp className="size-[18px]" />
@@ -93,7 +93,7 @@ export default function AuthLayout({ children }: LayoutProps<'/'>) {
               </div>
             </article>
 
-            <article className="rounded-[18px] border border-white/20 bg-white/12 p-5 shadow-[0_8px_32px_rgba(31,38,135,0.15)] backdrop-blur-md">
+            <article className="rounded-xl border border-white/20 bg-white/12 p-5 shadow-[0_8px_32px_rgba(31,38,135,0.15)] backdrop-blur-md">
               <span className="flex size-9 items-center justify-center rounded-[11px] bg-white/15">
                 <Layers className="size-[18px]" />
               </span>

@@ -1,6 +1,7 @@
 'use client'
 
 import { Results } from '@/components/results'
+import { NativeSelect } from '@/components/ui/native-select'
 import { useUrlState } from '@/components/use-url-state'
 import { cn } from '@/lib/utils'
 
@@ -40,9 +41,41 @@ export function MaterialFilters({
     set({ area: '', mios: '', comunidad: '', ver: '', ...values })
   }
 
+  const selected = onlyMine ? 'mios' : onlyCommunity ? 'comunidad' : area ? `area:${area}` : ''
+
   return (
     <>
-      <div className="mb-4 flex flex-wrap gap-1.5">
+      {/* En teléfono, un desplegable: las pastillas ocupaban tres renglones
+          entre el buscador y el primer material, y en una profesión con más
+          áreas eran cuatro. Las mismas opciones, en el mismo orden. */}
+      <NativeSelect
+        value={selected}
+        onChange={(event) => {
+          const value = event.target.value
+          if (value === 'mios') only({ mios: '1' })
+          else if (value === 'comunidad') only({ comunidad: '1' })
+          else if (value.startsWith('area:')) only({ area: value.slice(5) })
+          else only({})
+        }}
+        aria-label="Filtrar materiales"
+        wrapperClassName="mb-4 sm:hidden"
+        className="h-10 bg-card"
+      >
+        <option value="">Todas las áreas</option>
+        <optgroup label="Área">
+          {areas.map((name) => (
+            <option key={name} value={`area:${name}`}>
+              {name}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="De quién">
+          <option value="mios">Los míos</option>
+          <option value="comunidad">De la comunidad</option>
+        </optgroup>
+      </NativeSelect>
+
+      <div className="mb-4 flex flex-wrap gap-1.5 max-sm:hidden">
         <Chip active={!area && !onlyMine && !onlyCommunity} onClick={() => only({})}>
           Todos
         </Chip>

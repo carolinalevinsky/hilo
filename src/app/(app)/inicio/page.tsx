@@ -123,7 +123,7 @@ export default async function HomePage() {
             </CardHeader>
             <CardContent>
               {todaySessions.length === 0 ? (
-                <div className="flex flex-col items-center rounded-[16px] bg-gradient-to-b from-muted/60 to-transparent px-4 py-10 text-center">
+                <div className="flex flex-col items-center rounded-xl bg-gradient-to-b from-muted/60 to-transparent px-4 py-10 text-center">
                   <span className="mb-4 flex size-20 items-center justify-center rounded-full bg-violet-soft text-violet">
                     <Sun className="size-9" />
                   </span>

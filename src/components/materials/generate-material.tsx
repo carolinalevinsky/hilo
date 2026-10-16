@@ -44,7 +44,8 @@ export function GenerateMaterial({ areas }: { areas: string[] }) {
       <DialogTrigger asChild>
         <Button size="lg" variant="outline">
           <Sparkles className="size-[18px]" />
-          Generar con IA
+          <span className="sm:hidden">Con IA</span>
+          <span className="max-sm:hidden">Generar con IA</span>
         </Button>
       </DialogTrigger>
 

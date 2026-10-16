@@ -204,7 +204,9 @@ function GoalRow({ goal, defaultChecked }: { goal: Goal; defaultChecked: boolean
           checked={checked}
           onCheckedChange={(next) => setChecked(next === true)}
         />
-        {goal.title}
+        {/* Con su propio interlineado: el de `Label` es 1, y un objetivo
+            largo en dos renglones quedaba con las líneas pegadas. */}
+        <span className="leading-snug">{goal.title}</span>
         <span className="ml-auto shrink-0 text-meta text-muted-foreground tabular-nums">
           {goal.progress}%
         </span>

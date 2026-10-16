@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 
 import { PatientAvatar } from '@/components/patients/patient-avatar'
 import { ageLabel } from '@/lib/age'
-import { patientHex, patientInk } from '@/lib/patient-colors'
 import { ageGroupLabel } from '@/lib/patient-labels'
 import type { Patient } from '@/server/patients'
 
@@ -25,7 +24,6 @@ export function PatientHeader({
   photoUrl: string | null
   actions?: ReactNode
 }) {
-  const hex = patientHex(patient.color)
   const meta = [
     ageLabel(patient.date_of_birth),
     patient.school_level,
@@ -35,17 +33,23 @@ export function PatientHeader({
 
   return (
     <div
-      className="mb-5 rounded-lg p-5 shadow-card"
-      // El texto según el color: blanco sólo sobre violeta (ver `patientInk`).
+      className="mb-3 rounded-lg p-4 shadow-card lg:mb-5 lg:p-5"
+      // Siempre el violeta de la marca, no el color del paciente. Pintado con
+      // el de cada uno, una ficha era naranja, la siguiente roja y la otra
+      // verde: el color se llevaba la pantalla entera, y era lo que menos
+      // decía. El color del paciente sigue en su avatar, en la lista y en la
+      // agenda, que es donde sirve para encontrarlo.
+      //
       // El degradé termina en el mismo color sin transparencia: con `cc` se
       // aclaraba hacia la derecha y el contraste bajaba justo donde van los
       // botones.
       style={{
-        background: `linear-gradient(120deg, ${hex}, color-mix(in srgb, ${hex} 88%, white))`,
-        color: patientInk(patient.color),
+        background:
+          'linear-gradient(120deg, var(--brand-violet), color-mix(in srgb, var(--brand-violet) 88%, white))',
+        color: '#ffffff',
       }}
     >
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 lg:gap-4">
         {/* The camera badge is v1's (`legacy/index.html:1186`) and it is only a
             shortcut: the upload itself lives in the edit form, where it already
             worked. Worth having anyway — adding a face to a patient is something
@@ -73,8 +77,14 @@ export function PatientHeader({
           </Link>
         </div>
 
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-[24px] font-extrabold tracking-[-0.6px]">
+        {/* `sm:min-w-[260px]`: con base 0, en escritorio los seis botones se
+            quedaban con la fila entera y el nombre medía 50 px — se leía "M" y
+            la edad caía de a una palabra por renglón. Con un piso, cuando no
+            entran todos, son los botones los que bajan de renglón. */}
+        <div className="min-w-0 flex-1 sm:min-w-[260px]">
+          {/* Dos renglones en teléfono: "Martina Rodríguez …" cortado es
+              justo la parte del nombre que distingue a dos hermanos. */}
+          <h1 className="line-clamp-2 text-[21px] leading-tight font-extrabold tracking-[-0.5px] break-words lg:truncate lg:text-[24px]">
             {patient.full_name}
           </h1>
           <p className="mt-0.5 text-body opacity-85">

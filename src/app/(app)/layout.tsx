@@ -1,4 +1,5 @@
 import { MobileNav } from '@/components/app-shell/mobile-nav'
+import { MobileTopBar } from '@/components/app-shell/mobile-top-bar'
 import { Sidebar } from '@/components/app-shell/sidebar'
 import { AskProvider } from '@/components/assistant/ask-dock'
 import { InstallPrompt } from '@/components/install-prompt'
@@ -52,12 +53,19 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           isAdmin={practitioner.is_admin}
         />
 
-        <main className="min-w-0 px-3.5 pt-4.5 pb-[calc(80px+env(safe-area-inset-bottom))] lg:px-8.5 lg:pt-11 lg:pb-16">
-          {/* Signed-in screens only. Offering to install the app to someone who
-              has not signed in yet is asking for a commitment before the value. */}
-          <InstallPrompt />
-          {children}
-        </main>
+        {/* The top bar sits above the page and scrolls with nothing: sticky to
+            this wrapper, which is the grid's second column on a desktop and
+            the whole width on a phone. */}
+        <div className="min-w-0">
+          <MobileTopBar fullName={practitioner.full_name} />
+
+          <main className="min-w-0 px-3.5 pt-4 pb-[calc(80px+env(safe-area-inset-bottom))] lg:px-8.5 lg:pt-11 lg:pb-16">
+            {/* Signed-in screens only. Offering to install the app to someone who
+                has not signed in yet is asking for a commitment before the value. */}
+            <InstallPrompt />
+            {children}
+          </main>
+        </div>
 
         <MobileNav isAdmin={practitioner.is_admin} />
         <Toaster position="top-center" />

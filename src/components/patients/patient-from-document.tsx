@@ -7,10 +7,8 @@ import { FileText, Sparkles } from '@/components/icons'
 import { PatientForm } from '@/components/patients/patient-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
-
-const FILE_INPUT =
-  'w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-body file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
 
 /**
  * "Nuevo paciente", with the option of starting from a document.
@@ -95,12 +93,10 @@ export function PatientFromDocument() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="document-file">El documento</Label>
-              <input
+              <FileInput
                 id="document-file"
-                type="file"
                 accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,image/jpeg,image/png,image/webp"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                className={FILE_INPUT}
               />
               <p className="text-xs text-muted-foreground">Word, PDF, JPG o PNG. Hasta 4 MB.</p>
             </div>

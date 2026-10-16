@@ -55,7 +55,7 @@ export default async function InvitationPage({ params }: PageProps<'/invitacion/
         Te invitaron a Ombúa. Elegí una contraseña y ya entrás a tu espacio de trabajo.
       </p>
 
-      <dl className="mb-5 rounded-[14px] bg-muted px-3.5 py-3 text-meta">
+      <dl className="mb-5 rounded-xl bg-muted px-3.5 py-3 text-meta">
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">Tu correo</dt>
           <dd className="truncate font-semibold">{invitation.email}</dd>

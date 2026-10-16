@@ -7,7 +7,17 @@ import { GRAMMATICAL_GENDERS, SELF_GENDER_LABELS } from '@/lib/grammatical-gende
  * "Bienvenida" o "Bienvenido". Arranca con lo que se deduce del nombre; si no
  * se deduce, vacío, que se lee en masculino. Ver `grammatical-gender.ts`.
  */
-export function SelfGenderField({ defaultValue }: { defaultValue: string | null }) {
+export function SelfGenderField({
+  defaultValue,
+  withHint = false,
+}: {
+  defaultValue: string | null
+  /**
+   * Para qué se pregunta. Al aceptar la invitación, que es la primera vez que
+   * alguien lo ve y se puede preguntar por qué; en Mi perfil ya lo sabe.
+   */
+  withHint?: boolean
+}) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor="grammaticalGender">Me identifico como</Label>
@@ -19,9 +29,11 @@ export function SelfGenderField({ defaultValue }: { defaultValue: string | null 
           </option>
         ))}
       </NativeSelect>
-      <p className="text-xs text-muted-foreground">
-        Sólo para cómo te habla Ombúa («bienvenido» o «bienvenida»).
-      </p>
+      {withHint ? (
+        <p className="text-xs text-muted-foreground">
+          Sólo para cómo te habla Ombúa («bienvenido» o «bienvenida»).
+        </p>
+      ) : null}
     </div>
   )
 }

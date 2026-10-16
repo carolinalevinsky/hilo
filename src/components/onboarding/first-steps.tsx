@@ -58,14 +58,22 @@ export function FirstSteps({
 
   return (
     <Card className="mb-4 border-violet">
-      <CardContent className="px-5 py-4.5">
+      <CardContent className="px-4 py-4 sm:px-5 sm:py-4.5">
         <div className="mb-0.5 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-[16px] font-extrabold">Primeros pasos</h2>
           <span className="text-meta text-muted-foreground">
             {done} de {steps.length}
           </span>
         </div>
-        <p className="mb-3 text-meta text-muted-foreground">
+        {/* En teléfono, la barra dice lo mismo que el párrafo en un cuarto del
+            alto: la tarjeta llegaba a ocupar la pantalla entera. */}
+        <div className="mt-1.5 mb-3 h-1.5 overflow-hidden rounded-full bg-muted sm:hidden">
+          <div
+            className="h-full rounded-full bg-violet transition-[width]"
+            style={{ width: `${(done / steps.length) * 100}%` }}
+          />
+        </div>
+        <p className="mb-3 text-meta text-muted-foreground max-sm:hidden">
           Tres pasos para empezar. Cada uno te lleva a la pantalla donde se hace, y al
           terminar volvés acá.
         </p>
@@ -110,15 +118,17 @@ export function FirstSteps({
           {/* The tour runs itself on the first visit and then never again. This
               is its only way back, and it lives here because this card is the
               one thing on the screen that is already about getting started. */}
-          <p className="mb-3 text-meta text-muted-foreground">
+          <p className="text-meta text-muted-foreground sm:mb-3">
             ¿Querés que te muestre dónde está cada cosa?{' '}
             <TourButton>Ver el recorrido</TourButton>
           </p>
 
           {/* "Ombúa arma", never "Ombúa te arma": the product's voice is one
               that does things, not one that does them for you. Carolina. */}
-          <p className="mb-2 text-meta text-muted-foreground">Con lo que cargás, Ombúa arma:</p>
-          <ul className="grid gap-2 sm:grid-cols-3">
+          {/* No en teléfono: tres renglones más de una tarjeta que ya es la
+              más alta de Inicio, y lo que prometen se ve haciendo los pasos. */}
+          <p className="mb-2 text-meta text-muted-foreground max-sm:hidden">Con lo que cargás, Ombúa arma:</p>
+          <ul className="grid gap-2 max-sm:hidden sm:grid-cols-3">
             <Promise icon={FileText} text="Informes para el colegio o la mutualista" />
             <Promise icon={Target} text="El seguimiento de cada objetivo" />
             <Promise icon={Sparkles} text="La próxima sesión, casi lista" />

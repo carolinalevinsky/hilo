@@ -30,7 +30,7 @@ export default async function NewPasswordPage() {
 
         <Link
           href="/recuperar"
-          className="flex h-12 w-full items-center justify-center rounded-[14px] bg-violet text-base font-semibold text-white"
+          className="flex h-12 w-full items-center justify-center rounded-xl bg-violet text-base font-semibold text-white"
         >
           Pedir un enlace nuevo
         </Link>

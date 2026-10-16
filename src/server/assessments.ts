@@ -25,7 +25,21 @@ import { replaceDocumentBody, type VersionReason } from './document-versions'
 
 export type Assessment = Database['public']['Tables']['assessments']['Row']
 
-export type AssessmentWithPatient = Assessment & {
+/** What a list of evaluations shows; see `REPORT_LIST_COLUMNS` for why not `*`. */
+const ASSESSMENT_LIST_COLUMNS =
+  'id, patient_id, instrument, assessed_on, created_at, signed_at, voided_at, deleted_at, patients!inner(id, full_name, color)'
+
+export type AssessmentWithPatient = Pick<
+  Assessment,
+  | 'id'
+  | 'patient_id'
+  | 'instrument'
+  | 'assessed_on'
+  | 'created_at'
+  | 'signed_at'
+  | 'voided_at'
+  | 'deleted_at'
+> & {
   patients: { id: string; full_name: string; color: string | null } | null
 }
 
@@ -133,7 +147,7 @@ export async function listAssessments(
 
   let query = db
     .from('assessments')
-    .select('*, patients!inner(id, full_name, color)')
+    .select(ASSESSMENT_LIST_COLUMNS)
     .is('patients.deleted_at', null)
     .eq('practitioner_id', practitionerId)
 

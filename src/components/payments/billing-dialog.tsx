@@ -79,10 +79,10 @@ export function BillingDialog({
             title="Editar honorario o frecuencia"
             aria-label={`Editar honorario o frecuencia de ${patientName}`}
             // 32px es cómodo con un mouse y chico para un pulgar. En teléfono pasa
-            // a 44, que es el mínimo de Apple. No se nota: el botón es `ghost`, no
-            // tiene fondo hasta que lo tocás, así que lo único que cambia es el
-            // aire alrededor de los tres puntos.
-            className="max-lg:size-11"
+            // a 36, al lado de "+ Pago" que mide lo mismo: con 44 la columna de
+            // la derecha de Pagos se ensanchaba y le robaba el renglón al
+            // nombre. El botón es `ghost`, así que lo que cambia es el aire.
+            className="max-lg:size-9"
           >
             <MoreHorizontal className="size-[18px]" />
           </Button>

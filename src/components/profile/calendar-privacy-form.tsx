@@ -45,13 +45,13 @@ export function CalendarPrivacyForm({ value }: { value: string }) {
         <FormMessage message={state.message} />
       )}
 
-      <fieldset className="space-y-2.5">
+      <fieldset className="space-y-2">
         <legend className="sr-only">Qué se ve en tu calendario</legend>
 
         {CALENDAR_PRIVACY.map((option) => (
           <label
             key={option}
-            className="flex cursor-pointer gap-3 rounded-xl border border-border bg-card p-3 has-checked:border-violet has-checked:bg-violet-soft"
+            className="group flex cursor-pointer gap-3 rounded-xl border border-border bg-card px-3 py-2.5 has-checked:border-violet has-checked:bg-violet-soft"
           >
             <input
               type="radio"
@@ -69,7 +69,9 @@ export function CalendarPrivacyForm({ value }: { value: string }) {
                   {CALENDAR_PRIVACY_EXAMPLES[option]}
                 </span>
               </span>
-              <span className="mt-1 block text-meta leading-relaxed text-muted-foreground">
+              {/* Sólo la de la opción elegida: las tres juntas eran nueve
+                  renglones para leer una vez. */}
+              <span className="mt-1 hidden text-meta leading-relaxed text-muted-foreground group-has-checked:block">
                 {CALENDAR_PRIVACY_HINTS[option]}
               </span>
             </span>

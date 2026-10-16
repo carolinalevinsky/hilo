@@ -41,7 +41,7 @@ export default async function BookingPage({ params }: PageProps<'/reservar/[slug
           <div className="mb-5 flex items-center gap-3">
             <span
               aria-hidden
-              className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-violet text-[19px] font-extrabold text-white"
+              className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-violet text-[19px] font-extrabold text-white"
             >
               {practitioner.full_name.trim().charAt(0).toUpperCase()}
             </span>

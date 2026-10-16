@@ -37,7 +37,7 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
   const done = sessions.filter((session) => session.status === 'attended').length
 
   return (
-    <Card className="mt-5">
+    <Card className="mt-4 lg:mt-5">
       <CardHeader>
         <CardTitle>Plan de la semana</CardTitle>
         <p className="text-meta text-muted-foreground">
@@ -56,12 +56,19 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
               return (
                 <li
                   key={session.appointmentId}
+                  // En teléfono: la casilla a la izquierda y todo lo demás en
+                  // una columna — día y hora con el nombre, la línea de qué hay
+                  // preparado, y los botones abajo. Antes cada pieza buscaba
+                  // su lugar en una fila que se partía donde podía, y el
+                  // nombre quedaba lejos de su hora. Los `sm:contents` hacen
+                  // que en escritorio esos contenedores no existan y la fila
+                  // quede como estaba.
                   className={cn(
-                    'flex flex-wrap items-center gap-2.5 py-2.5',
+                    'flex items-start gap-3 py-3 sm:flex-wrap sm:items-center sm:gap-2.5 sm:py-2.5',
                     attended && 'opacity-55',
                   )}
                 >
-                  <form action={setAppointmentStatusAction}>
+                  <form action={setAppointmentStatusAction} className="max-sm:pt-0.5">
                     <input
                       type="hidden"
                       name="appointmentId"
@@ -90,76 +97,83 @@ export function WeekPlan({ sessions }: { sessions: PlannedSession[] }) {
                     </button>
                   </form>
 
-                  <span className="w-[74px] shrink-0 text-body text-muted-foreground">
-                    <b className="text-foreground">
-                      {weekdayName(new Date(`${session.scheduledOn}T12:00:00`).getDay())
-                        .slice(0, 3)
-                        .toLowerCase()}
-                    </b>{' '}
-                    {formatTime(session.startTime)}
-                  </span>
-
-                  <PatientAvatar
-                    fullName={session.patientName}
-                    color={session.patientColor}
-                    size={34}
-                  />
-
-                  <Link
-                    href={`/pacientes/${session.patientId}`}
-                    className={cn(
-                      'min-w-[90px] flex-1 text-item font-bold hover:underline',
-                      attended && 'line-through',
-                    )}
-                  >
-                    {session.patientName}
-                  </Link>
-
-                  {/* What is prepared for this session, or what Ombúa would
-                      start from. One line: the whole list is one click away.
-                      On a phone it takes the whole width, so it is a line and
-                      not twenty characters, and "Preparar" and "Material" go
-                      under it together instead of one of them alone. */}
-                  <p className="min-w-[180px] flex-1 truncate text-meta max-sm:basis-full">
-                    {session.plan.length > 0 ? (
-                      <>
-                        <b className="font-semibold">Preparada:</b>{' '}
-                        {session.plan.map((line) => line.title).join(' · ')}
-                      </>
-                    ) : session.focus ? (
-                      <span className="text-muted-foreground">
-                        Sin preparar · Ombúa sugiere {session.focus.title} (
-                        {session.focus.progress}%)
+                  <div className="min-w-0 flex-1 sm:contents">
+                    <div className="flex items-baseline gap-2 sm:contents">
+                      <span className="shrink-0 text-meta text-muted-foreground sm:w-[74px] sm:text-body">
+                        <b className="text-foreground">
+                          {weekdayName(new Date(`${session.scheduledOn}T12:00:00`).getDay())
+                            .slice(0, 3)
+                            .toLowerCase()}
+                        </b>{' '}
+                        {formatTime(session.startTime)}
                       </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Sin preparar · sin objetivos cargados
-                      </span>
-                    )}
-                  </p>
 
-                  <Button asChild size="sm" variant={session.plan.length > 0 ? 'outline' : 'default'}>
-                    <Link href={`/planificacion?sesion=${session.appointmentId}`}>
-                      {session.plan.length > 0 ? (
-                        <Pencil className="size-3.5" />
-                      ) : (
-                        <ClipboardList className="size-3.5" />
-                      )}
-                      {session.plan.length > 0 ? 'Editar' : 'Preparar'}
-                    </Link>
-                  </Button>
+                      <PatientAvatar
+                        fullName={session.patientName}
+                        color={session.patientColor}
+                        size={34}
+                        className="max-sm:hidden"
+                      />
 
-                  {session.suggestedMaterial ? (
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={`/materiales/${session.suggestedMaterial.id}`}>
-                        <BookOpen className="size-3.5" />
-                        Material
+                      <Link
+                        href={`/pacientes/${session.patientId}`}
+                        className={cn(
+                          'min-w-0 truncate text-item font-bold hover:underline sm:min-w-[90px] sm:flex-1 sm:whitespace-normal',
+                          attended && 'line-through',
+                        )}
+                      >
+                        {session.patientName}
                       </Link>
-                    </Button>
-                  ) : null}
-                  {/* Nothing in the material's place when there is none: the
-                      line beside it already says "sin objetivos cargados", and
-                      "Sin objetivo" here said it a second time. */}
+                    </div>
+
+                    {/* What is prepared for this session, or what Ombúa would
+                        start from. One line: the whole list is one click away.
+                        On a phone it takes the whole width, so it is a line and
+                        not twenty characters, and "Preparar" and "Material" go
+                        under it together instead of one of them alone. */}
+                    <p className="mt-0.5 truncate text-meta sm:mt-0 sm:min-w-[180px] sm:flex-1">
+                      {session.plan.length > 0 ? (
+                        <>
+                          <b className="font-semibold">Preparada:</b>{' '}
+                          {session.plan.map((line) => line.title).join(' · ')}
+                        </>
+                      ) : session.focus ? (
+                        <span className="text-muted-foreground">
+                          Sin preparar · Ombúa sugiere {session.focus.title} (
+                          {session.focus.progress}%)
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Sin preparar · sin objetivos cargados
+                        </span>
+                      )}
+                    </p>
+
+                    <div className="mt-2 flex gap-2 sm:contents">
+                      <Button asChild size="sm" variant={session.plan.length > 0 ? 'outline' : 'default'}>
+                        <Link href={`/planificacion?sesion=${session.appointmentId}`}>
+                          {session.plan.length > 0 ? (
+                            <Pencil className="size-3.5" />
+                          ) : (
+                            <ClipboardList className="size-3.5" />
+                          )}
+                          {session.plan.length > 0 ? 'Editar' : 'Preparar'}
+                        </Link>
+                      </Button>
+
+                      {session.suggestedMaterial ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/materiales/${session.suggestedMaterial.id}`}>
+                            <BookOpen className="size-3.5" />
+                            Material
+                          </Link>
+                        </Button>
+                      ) : null}
+                      {/* Nothing in the material's place when there is none: the
+                          line beside it already says "sin objetivos cargados", and
+                          "Sin objetivo" here said it a second time. */}
+                    </div>
+                  </div>
                 </li>
               )
             })}

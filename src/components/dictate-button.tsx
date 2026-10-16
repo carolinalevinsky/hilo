@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { Mic, Square } from '@/components/icons'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   newRecognition,
   speechErrorMessage,
@@ -133,7 +134,7 @@ export function DictateButton({
         variant={listening ? 'destructive' : 'ghost'}
         size="icon"
         aria-label={listening ? 'Parar el dictado' : 'Dictar la pregunta'}
-        className="shrink-0"
+        className={cn('size-9 shrink-0 rounded-full', !listening && 'text-muted-foreground')}
         onClick={() => (listening ? stop() : start())}
       >
         {listening ? <Square className="size-3.5" /> : <Mic className="size-4" />}

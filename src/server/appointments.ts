@@ -28,7 +28,12 @@ export type Schedule = Database['public']['Tables']['schedules']['Row']
 export type Appointment = Database['public']['Tables']['appointments']['Row']
 
 export type AppointmentWithPatient = Appointment & {
-  patients: { id: string; full_name: string; color: string | null } | null
+  /**
+   * `phone` es el de la familia, y viaja para una sola cosa: "Recordar por
+   * WhatsApp" en el menú de la sesión. Nada clínico sale en ese mensaje —
+   * nombre, día y hora—; ver `tomorrow-reminders.tsx`.
+   */
+  patients: { id: string; full_name: string; color: string | null; phone: string | null } | null
   /**
    * El registro escrito de esta sesión, si ya existe. Es una lista porque así lo
    * devuelve PostgREST, pero tiene uno como mucho: lo garantiza el único parcial
@@ -442,7 +447,7 @@ export async function listAppointments(
   // borran al archivar, así que no hay nada que esconder acá.
   const { data, error } = await db
     .from('appointments')
-    .select('*, patients!inner(id, full_name, color), sessions(id)')
+    .select('*, patients!inner(id, full_name, color, phone), sessions(id)')
     .eq('practitioner_id', practitionerId)
     .is('patients.deleted_at', null)
     .gte('scheduled_on', from)

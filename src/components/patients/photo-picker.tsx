@@ -41,7 +41,7 @@ export function PhotoPicker({ currentUrl }: { currentUrl?: string | null }) {
 
   return (
     <div className="flex items-center gap-3.5">
-      <div className="flex size-[58px] shrink-0 items-center justify-center overflow-hidden rounded-[16px] bg-violet-soft text-violet">
+      <div className="flex size-[58px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-violet-soft text-violet">
         {preview ? (
           /* A plain <img>: the preview is a `blob:` URL for a file that has not
              been uploaded yet, so there is nothing for next/image to optimise
