@@ -59,6 +59,9 @@ export default async function DocumentsPage() {
         subtitle="Vinculados a cada paciente y disponibles en su ficha."
         action={
           hasPatients ? (
+            // Las dos con el mismo peso: son las dos cosas que se vienen a
+            // hacer acá, y la evaluación en contorno se leía como opcional,
+            // un paso secundario del informe.
             <div className="flex gap-2 max-lg:w-full">
               <Button asChild size="lg" className="max-lg:flex-1">
                 <Link href="/informes/nuevo">
@@ -66,10 +69,10 @@ export default async function DocumentsPage() {
                   Nuevo informe
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="max-lg:flex-1">
+              <Button asChild size="lg" className="max-lg:flex-1">
                 <Link href="/evaluaciones/nueva">
                   <ChartPie className="size-[18px]" />
-                  Evaluación
+                  Nueva evaluación
                 </Link>
               </Button>
             </div>
