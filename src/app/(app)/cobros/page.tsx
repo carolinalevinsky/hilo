@@ -1,4 +1,4 @@
-import { Clock, DollarSign, Users, Wallet } from '@/components/icons'
+import { Check, Clock, DollarSign, Users, Wallet } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -226,8 +226,8 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                     {row.deleted ? null : (
                     <div className="flex shrink-0 items-center gap-1 sm:flex-wrap sm:gap-1.5">
                       {/* Sin honorario, en teléfono el botón de la derecha es
-                          cargarlo: el mismo lugar y la misma forma que "+ Pago"
-                          en las demás filas, en vez de un link subrayado abajo
+                          cargarlo: el mismo lugar que el tic de pago en las
+                          demás filas, en vez de un link subrayado abajo
                           del nombre y tres puntos sueltos. */}
                       {row.expected === null && !row.archived ? (
                         <BillingDialog
@@ -238,7 +238,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                           expectedSessionsPerMonth={row.billing.expectedSessionsPerMonth}
                           trigger={
                             <Button size="sm" variant="outline" className="sm:hidden">
-                              + Honorario
+                              Cargar honorario
                             </Button>
                           }
                         />
@@ -264,8 +264,18 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                           trigger={
                             // `outline` y no `ghost`: sin borde, en teléfono era
                             // una palabra suelta y no se leía como un botón.
-                            <Button size="sm" variant="outline">
-                              <span className="sm:hidden">+ Pago</span>
+                            // En teléfono, un tic: "anotar que pagó", que es lo
+                            // que se viene a hacer acá, en un botón cuadrado que
+                            // deja el nombre con todo el ancho. Abre el mismo
+                            // diálogo, con el monto que falta ya puesto.
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              aria-label={`Registrar pago de ${row.fullName}`}
+                              title="Registrar pago"
+                              className="max-sm:size-9 max-sm:p-0"
+                            >
+                              <Check className="size-4 text-green-ink sm:hidden" />
                               <span className="max-sm:hidden">Registrar pago</span>
                             </Button>
                           }
