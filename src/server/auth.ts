@@ -29,14 +29,9 @@ import { getDb } from './db'
  * anything reachable while signed out uses `getUser()` instead.
  */
 export async function requireUser() {
-  const db = await getDb()
-  const { data, error } = await db.auth.getUser()
-
-  if (error || !data.user) {
-    throw new Error('not_authenticated')
-  }
-
-  return { id: data.user.id, email: data.user.email ?? '' }
+  const user = await getUser()
+  if (!user) throw new Error('not_authenticated')
+  return user
 }
 
 /**
@@ -45,8 +40,13 @@ export async function requireUser() {
  */
 export async function getUser() {
   const db = await getDb()
-  const { data } = await db.auth.getUser()
-  return data.user ? { id: data.user.id, email: data.user.email ?? '' } : null
+  // Verified locally, not asked of the Auth server: see the same call in
+  // `src/proxy.ts`, which explains the trade. The proxy has already run this
+  // request, so a round trip here was the second one before any data.
+  const { data, error } = await db.auth.getClaims()
+  const claims = data?.claims
+  if (error || !claims?.sub) return null
+  return { id: claims.sub, email: typeof claims.email === 'string' ? claims.email : '' }
 }
 
 // ─── Sign-up: there isn't one ───────────────────────────────────────────────

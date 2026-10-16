@@ -129,9 +129,20 @@ export async function proxy(request: NextRequest) {
 
   // Do not remove or reorder: this call is what refreshes the token, and the
   // refreshed cookie has to be written onto the response above.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  //
+  // `getClaims` and not `getUser`. `getUser` asks the Auth server on every
+  // request — and this runs on every page, every navigation and every link
+  // prefetch, so a screen with a dozen links in its menus paid a dozen round
+  // trips before anything rendered. `getClaims` verifies the token's signature
+  // locally against the project's published keys (with asymmetric JWT signing
+  // keys enabled; without them it falls back to asking the server, which is
+  // what `getUser` did anyway). It still refreshes an expired session.
+  //
+  // What it gives up is noticing, before the token expires, a session revoked
+  // elsewhere. That changes nothing about who can read what: PostgREST checks
+  // the same token the same way on every query, and RLS is still the lock.
+  const { data: auth } = await supabase.auth.getClaims()
+  const user = auth?.claims?.sub ? { id: auth.claims.sub } : null
 
   const { pathname } = request.nextUrl
 
