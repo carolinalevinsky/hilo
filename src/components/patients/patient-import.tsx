@@ -6,6 +6,7 @@ import { importPatientsAction, previewPatientImportAction } from '@/app/(app)/pa
 import { FormMessage } from '@/components/auth/form-message'
 import { Upload } from '@/components/icons'
 import { Button } from '@/components/ui/button'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { formatDate } from '@/lib/dates'
 import {
@@ -88,14 +89,12 @@ export function PatientImport() {
       >
         <div className="space-y-1.5">
           <Label htmlFor="patients-file">Tu planilla</Label>
-          <input
+          <FileInput
             id="patients-file"
             name="file"
-            type="file"
             required
             accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={(event) => event.currentTarget.form?.requestSubmit()}
-            className="w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-body file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
             Excel (.xlsx) o CSV, con los títulos en la primera fila. Desde Google Sheets:

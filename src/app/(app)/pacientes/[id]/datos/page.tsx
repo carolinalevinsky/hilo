@@ -52,21 +52,24 @@ export default async function PatientDataPage({ params }: PageProps<'/pacientes/
           Volver a la ficha
         </Link>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        {/* En teléfono, los dos a lo ancho y lado a lado; envueltos quedaban
+            uno abajo del otro con anchos distintos. */}
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-1.5">
           <Button asChild variant="outline" size="sm">
             {/* A route handler, not a Server Action: an action cannot return a
                 file, and this has to arrive with a filename attached. */}
             <a href={`/api/pacientes/${patient.id}/datos`} download>
               <Download className="size-4" />
-              Descargar todo (.json)
+              <span className="sm:hidden">Descargar</span>
+              <span className="max-sm:hidden">Descargar todo (.json)</span>
             </a>
           </Button>
-          <PrintButton label="Imprimir o guardar en PDF" />
+          <PrintButton label="Imprimir o PDF" />
         </div>
       </div>
 
       <Card className="app-doc mx-auto max-w-[760px]">
-        <CardContent className="px-6 py-7 sm:px-10">
+        <CardContent className="px-4 py-5 sm:px-10 sm:py-7">
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px]">
             Datos de {patient.full_name}
           </h1>

@@ -7,6 +7,7 @@ import { FormMessage } from '@/components/auth/form-message'
 import { Sparkles } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,9 +16,6 @@ import { cn } from '@/lib/utils'
 import type { ImportedActivity } from '@/server/planning-import'
 
 type Draft = ImportedActivity & { keep: boolean }
-
-const FILE_INPUT =
-  'w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-body file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
 
 /**
  * Bringing a plan in: pick the file, Ombúa proposes one material per activity,
@@ -99,12 +97,10 @@ export function PlanningImport({ areas }: { areas: string[] }) {
 
         <div className="space-y-1.5">
           <Label htmlFor="planning-file">Tu planificación</Label>
-          <input
+          <FileInput
             id="planning-file"
-            type="file"
             accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,image/jpeg,image/png,image/webp"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            className={FILE_INPUT}
           />
           <p className="text-xs text-muted-foreground">
             Word, PDF o una foto (JPG o PNG). Hasta 4 MB. Si tenés varias, subilas de a una.

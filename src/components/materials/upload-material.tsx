@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/ui/native-select'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
@@ -40,7 +41,6 @@ import { AGE_RANGES, MATERIAL_KIND_LABELS } from '@/lib/material-areas'
 export function UploadMaterial({ areas }: { areas: string[] }) {
   const [state, formAction, pending] = useActionState(uploadMaterialAction, EMPTY_FORM_STATE)
   const [open, setOpen] = useState(false)
-  const [fileName, setFileName] = useState<string | null>(null)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -72,17 +72,14 @@ export function UploadMaterial({ areas }: { areas: string[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="material-file">El archivo</Label>
-            <input
+            <FileInput
               id="material-file"
               name="file"
-              type="file"
               required
               accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif"
-              onChange={(event) => setFileName(event.target.files?.[0]?.name ?? null)}
-              className="w-full rounded-lg border border-input bg-background p-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-violet-soft file:px-3 file:py-1.5 file:text-body file:font-bold file:text-violet focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
             <p className="text-xs text-muted-foreground">
-              {fileName ?? 'PDF, JPG, PNG o HEIC. Hasta 4 MB.'}
+              PDF, JPG, PNG o HEIC. Hasta 4 MB.
             </p>
           </div>
 
