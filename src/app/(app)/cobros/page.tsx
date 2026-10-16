@@ -273,9 +273,24 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
                               variant="outline"
                               aria-label={`Registrar pago de ${row.fullName}`}
                               title="Registrar pago"
-                              className="max-sm:size-9 max-sm:p-0"
+                              className={cn(
+                                'max-sm:size-9 max-sm:p-0',
+                                // Al día, el tic ya está "puesto": verde lleno,
+                                // que se lee de lejos bajando la lista. Se
+                                // puede tocar igual, para un pago adelantado.
+                                row.expected !== null &&
+                                  (row.outstanding ?? 0) <= 0 &&
+                                  'max-sm:border-green max-sm:bg-green max-sm:text-white max-sm:hover:bg-green/90',
+                              )}
                             >
-                              <Check className="size-4 text-green-ink sm:hidden" />
+                              <Check
+                                className={cn(
+                                  'size-4 sm:hidden',
+                                  row.expected !== null && (row.outstanding ?? 0) <= 0
+                                    ? 'text-white'
+                                    : 'text-green-ink',
+                                )}
+                              />
                               <span className="max-sm:hidden">Registrar pago</span>
                             </Button>
                           }
