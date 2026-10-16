@@ -182,7 +182,10 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/cobros'
             el "Registrar pago" del encabezado sigue estando, con
             su lista de pacientes, para el pago suelto de alguien a
             quien todavía no le pusiste arancel. */}
-        {row.expected === null && !row.archived ? null : (
+        {/* Al día tampoco: el grupo verde ya dice que pagó, y un botón de
+            pagar al lado se leía como que faltaba algo. Un pago adelantado se
+            anota con "Registrar pago", arriba de todo. */}
+        {(row.expected === null && !row.archived) || isPaid(row) ? null : (
           <PaymentDialog
             period={period}
             patients={patientOptions}
